@@ -1,0 +1,66 @@
+@import 'tailwindcss';
+
+/* Dense, professional multi-vendor storefront — modeled on established
+   BD e-commerce conventions (startech.com.bd, daraz.com.bd): a neutral
+   light-gray page background with white bordered product cards, clear
+   sale badges (percent-off + amount saved), and a busy, deal-forward
+   homepage. The CTA orange is inherited from the vendor dashboard's own
+   brand mark (client/tailwind.config.js's regantify-cta) for continuity
+   across Regantify's surfaces. This pass adds a proper depth/elevation
+   scale and refines spacing so the density reads as considered rather
+   than cramped. */
+@theme {
+  --color-ink: #16181d;
+  --color-canvas: #f2f3f5;
+  --color-surface: #ffffff;
+  --color-accent: #e4572e;
+  --color-accent-dark: #c73f1b;
+  --color-accent-light: #fdeee8;
+  --color-muted: #6b7280;
+  --color-line: #e7e8ec;
+  --color-line-strong: #d6d8de;
+  --color-success: #1a7a4c;
+  --color-success-bg: #e8f6ee;
+  --color-save: #1a7a4c;
+
+  /* Fraunces carries the store name in the header only — everywhere
+     else on this dense layout uses Hanken Grotesk, matching how real
+     BD storefronts set nearly everything in one workhorse sans and
+     reserve any serif for the wordmark. Noto Sans Bengali falls in
+     wherever a character isn't in either Latin face. */
+  --font-display: var(--font-fraunces), 'Noto Sans Bengali', serif;
+  --font-sans: var(--font-hanken), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+
+  /* A restrained elevation scale — one level for resting cards, one for
+     hover/active. Kept subtle (low blur, low opacity) so density never
+     reads as heavy or "card soup." */
+  --shadow-card: 0 1px 2px rgba(16, 18, 22, 0.04), 0 1px 1px rgba(16, 18, 22, 0.03);
+  --shadow-card-hover: 0 8px 24px rgba(16, 18, 22, 0.08), 0 2px 6px rgba(16, 18, 22, 0.04);
+  --shadow-popover: 0 12px 32px rgba(16, 18, 22, 0.14), 0 4px 10px rgba(16, 18, 22, 0.06);
+}
+
+body {
+  margin: 0;
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-accent-light);
+  color: var(--color-accent-dark);
+}
+
+/* Sticky Add to Cart / Buy Now bar on the product page — hidden on
+   desktop, shown as a fixed bottom bar on small screens. */
+@media (max-width: 760px) {
+  .storefront-sticky-bar {
+    display: flex !important;
+  }
+}
+
+@media print {
+  .print\:hidden {
+    display: none !important;
+  }
+}
