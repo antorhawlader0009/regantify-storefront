@@ -40,6 +40,25 @@ export async function placeOrder(subdomain: string, payload: unknown): Promise<C
   return res.json();
 }
 
+// Debounced sync of an in-progress checkout to the vendor's "Incomplete
+// Orders" list (see server/src/incomplete-orders/) — called from
+// checkout/page.tsx a couple of seconds after the shopper stops typing,
+// not on every keystroke. Deliberately fire-and-forget: this is
+// background bookkeeping the shopper never sees, so a failure here
+// (network hiccup, store momentarily unreachable) must never interrupt
+// or show an error on the checkout page they're actively filling in —
+// unlike placeOrder above, which is a deliberate action and does surface
+// errors.
+export function syncIncompleteOrder(subdomain: string, payload: unknown): void {
+  fetch(`${apiOrigin()}/api/v1/store/${subdomain}/incomplete-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {
+    // Silently ignored — see comment above.
+  });
+}
+
 export interface TrackedOrderItem {
   id: string;
   productName: string;

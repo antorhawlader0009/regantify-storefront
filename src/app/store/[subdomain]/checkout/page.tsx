@@ -1,6 +1,6 @@
 'use client';
 
-import { use, useState } from 'react';
+import { use, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,7 +8,8 @@ import { ArrowLeft, Minus, Plus, X } from 'lucide-react';
 import { useShallow } from 'zustand/react/shallow';
 import { formatPrice } from '@/lib/productDisplay';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
-import { placeOrder } from '@/lib/checkoutApi';
+import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
+import { placeOrder, syncIncompleteOrder } from '@/lib/checkoutApi';
 
 const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
   DHAKA: 70,
@@ -45,6 +46,66 @@ export default function CheckoutPage({ params }: { params: Promise<{ subdomain: 
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState<string | null>(null);
 
+  // Prefill name/phone for a logged-in customer — still fully editable,
+  // and a guest (not logged in) checks out exactly as before with an
+  // empty form. Only fills in once (guards on both fields already being
+  // empty) so it never clobbers something the shopper is mid-typing if
+  // this effect re-runs for any reason.
+  const authHydrated = useCustomerAuthHydrated();
+  const customer = useCustomerAuthStore((s) => s.customer);
+  useEffect(() => {
+    if (!authHydrated || !customer) return;
+    setForm((prev) =>
+      prev.fullName === '' && prev.phone === ''
+        ? { ...prev, fullName: customer.fullName, phone: customer.phone }
+        : prev,
+    );
+  }, [authHydrated, customer]);
+
+  // Identifies this checkout attempt for "Incomplete Orders" (see
+  // checkoutApi.ts's syncIncompleteOrder) — persisted in sessionStorage
+  // per store so repeated syncs from the same visit update the same
+  // vendor-side row instead of creating a new one on every render, but a
+  // brand-new tab/session (or a different store) gets its own key.
+  // Never sent anywhere except this vendor's own incomplete-order sync
+  // and, on success, the real checkout call (see handlePlaceOrder) — not
+  // a tracking identifier used for anything else.
+  const [sessionKey] = useState(() => {
+    if (typeof window === 'undefined') return '';
+    const key = `regantify-checkout-session:${subdomain}`;
+    const existing = sessionStorage.getItem(key);
+    if (existing) return existing;
+    const generated = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
+    sessionStorage.setItem(key, generated);
+    return generated;
+  });
+
+  // Debounced sync to "Incomplete Orders" — fires ~2s after the shopper
+  // stops typing/editing the cart, not on every keystroke. Skipped
+  // entirely until the cart has actually hydrated from localStorage (see
+  // useCartHydrated), so an empty `lines` on first paint never gets
+  // synced as "cart is empty" before the real cart has even loaded.
+  useEffect(() => {
+    if (!hydrated || !sessionKey) return;
+    const timer = setTimeout(() => {
+      syncIncompleteOrder(subdomain, {
+        sessionKey,
+        customerName: form.fullName.trim() || undefined,
+        customerPhone: form.phone.trim() || undefined,
+        customerNote: form.note.trim() || undefined,
+        shippingAddress: form.address.trim() || undefined,
+        items: lines.map((l) => ({
+          productName: l.name,
+          productSku: l.productSlug,
+          productImage: l.image,
+          selectedOptions: l.selectedOptions,
+          quantity: l.quantity,
+        })),
+      });
+    }, 2000);
+    return () => clearTimeout(timer);
+  }, [hydrated, sessionKey, subdomain, form.fullName, form.phone, form.note, form.address, lines]);
+
   const storeName = lines[0]?.storeName ?? '';
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
   const deliveryCharge = lines.length > 0 ? DELIVERY_CHARGE[form.zone] : 0;
@@ -75,6 +136,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ subdomain: 
         customerNote: form.note.trim() || undefined,
         shippingAddress: form.address.trim(),
         deliveryZone: form.zone,
+        sessionKey: sessionKey || undefined,
         items: lines.map((l) => ({
           productSlug: l.productSlug,
           productName: l.name,
@@ -86,6 +148,7 @@ export default function CheckoutPage({ params }: { params: Promise<{ subdomain: 
         })),
       });
       clearStore(subdomain);
+      sessionStorage.removeItem(`regantify-checkout-session:${subdomain}`);
       // Hand off to the order-tracking page so the confirmation is a real
       // server-backed view (survives a refresh, matches what a shopper
       // would see coming back later) rather than transient React state

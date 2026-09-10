@@ -1,10 +1,27 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 
+// Minimal shape ProductCard actually reads — satisfied by both the full
+// StorefrontProduct (product listing/search) and the leaner
+// StorefrontCardProduct (product detail page's related-products sidebar,
+// see getStoreSidebar) without needing two near-identical card
+// components.
+interface CardProduct {
+  slug: string;
+  name: string;
+  photoSize: string;
+  photoUrls: string[];
+  brand?: string | null;
+  price: string;
+  discountPrice?: string | null;
+  isPreOrder: boolean;
+  variants: { stock: number }[];
+  stockQuantity?: number | null;
+}
+
 interface ProductCardProps {
-  product: StorefrontProduct;
+  product: CardProduct;
   subdomain: string;
 }
 

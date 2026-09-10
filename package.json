@@ -4,7 +4,7 @@
   "private": true,
   "description": "Regantify — public, server-rendered vendor storefront (Next.js). Renders /store/:subdomain in dev/LAN, and {subdomain}.yourdomain.com in production via middleware rewrite. Talks to the same NestJS API as the vendor dashboard (server/), read-only — no auth.",
   "scripts": {
-    "dev": "next dev -p 3000",
+    "dev": "next dev --turbopack -p 3000",
     "build": "next build",
     "start": "next start -p 3000",
     "lint": "next lint"

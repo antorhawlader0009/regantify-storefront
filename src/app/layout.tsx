@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { NuqsAdapter } from 'nuqs/adapters/next/app';
 import { fontVariables } from '@/lib/fonts';
 import { CartStoreProvider } from '@/providers/cart-store-provider';
+import { CustomerAuthProvider } from '@/providers/customer-auth-store-provider';
 import './globals.css';
 
 // metadataBase lets every page's relative OG/Twitter image URLs resolve to
@@ -21,7 +22,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="en" className={fontVariables}>
       <body className="font-sans">
         <NuqsAdapter>
-          <CartStoreProvider>{children}</CartStoreProvider>
+          <CustomerAuthProvider>
+            <CartStoreProvider>{children}</CartStoreProvider>
+          </CustomerAuthProvider>
         </NuqsAdapter>
       </body>
     </html>

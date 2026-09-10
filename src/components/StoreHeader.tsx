@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { useQueryState } from 'nuqs';
 import Link from 'next/link';
-import { Search, ShoppingBag, Menu, X } from 'lucide-react';
+import { Search, ShoppingBag, Menu, X, User } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
+import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 
 interface StoreHeaderProps {
   subdomain: string;
@@ -28,6 +29,8 @@ export function StoreHeader({ subdomain, storeName, categories }: StoreHeaderPro
   const cartCount = useCartStore((s) =>
     s.lines.filter((l) => l.subdomain === subdomain).reduce((sum, l) => sum + l.quantity, 0),
   );
+  const authHydrated = useCustomerAuthHydrated();
+  const customer = useCustomerAuthStore((s) => s.customer);
 
   return (
     <header className="sticky top-0 z-20 bg-surface shadow-card">
@@ -58,6 +61,17 @@ export function StoreHeader({ subdomain, storeName, categories }: StoreHeaderPro
             >
               {mobileSearchOpen ? <X size={19} /> : <Search size={19} />}
             </button>
+
+            <Link
+              href={authHydrated && customer ? `/store/${subdomain}/account/orders` : `/store/${subdomain}/account/login`}
+              className="flex items-center gap-2 px-3 py-2 text-ink hover:bg-canvas rounded-md transition-colors"
+              aria-label="Account"
+            >
+              <User size={20} strokeWidth={1.75} />
+              <span className="hidden md:inline text-[13px] font-medium">
+                {authHydrated && customer ? customer.fullName.split(' ')[0] : 'Login'}
+              </span>
+            </Link>
 
             <Link
               href={`/store/${subdomain}/cart`}

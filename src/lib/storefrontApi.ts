@@ -80,6 +80,31 @@ export interface StorefrontDetailData {
   product: StorefrontProduct;
 }
 
+// Lean shape for the product detail page's sidebar — see
+// getStoreSidebar/productCardSelect on the backend for why this is
+// deliberately NOT the same as StorefrontProduct (no description,
+// variationOptions, variationPhotos, etc — only what ProductCard reads).
+export interface StorefrontCardProduct {
+  id: string;
+  name: string;
+  slug: string;
+  category?: string | null;
+  brand?: string | null;
+  photoSize: string;
+  photoUrls: string[];
+  price: string;
+  discountPrice?: string | null;
+  isPreOrder: boolean;
+  stockQuantity?: number | null;
+  variants: { stock: number }[];
+  createdAt: string;
+}
+
+export interface StorefrontSidebarData {
+  categories: string[];
+  related: StorefrontCardProduct[];
+}
+
 // Store data changes whenever a vendor adds/edits a product, so a short
 // time-based revalidation window keeps pages fast (served from cache most
 // of the time) without going stale for long. Tune this per environment if
@@ -137,4 +162,24 @@ export async function getStoreProduct(subdomain: string, slug: string): Promise<
   ]);
   if (!data) throw new ProductNotFoundError(slug);
   return data;
+}
+
+// Category strip + related products for the product detail page's
+// sidebar — deliberately lean (see StorefrontSidebarData/
+// productCardSelect on the backend) instead of reusing getStoreProducts,
+// which would fetch the vendor's ENTIRE catalog with every relation just
+// to show 4 cards. Falls back to an empty result rather than throwing —
+// this is decorative sidebar content, so a hiccup here shouldn't ever
+// take down the whole product page (see the product page's .catch()).
+export async function getStoreSidebar(
+  subdomain: string,
+  slug: string,
+  category?: string | null,
+): Promise<StorefrontSidebarData> {
+  const query = category ? `?category=${encodeURIComponent(category)}` : '';
+  const data = await fetchJson<StorefrontSidebarData>(
+    `/api/v1/store/${subdomain}/products/${slug}/sidebar${query}`,
+    [`store:${subdomain}`],
+  );
+  return data ?? { categories: [], related: [] };
 }

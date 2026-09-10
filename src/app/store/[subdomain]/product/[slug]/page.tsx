@@ -3,7 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   getStoreProduct,
-  getStoreProducts,
+  getStoreSidebar,
   StoreNotFoundError,
   ProductNotFoundError,
   siteUrl,
@@ -74,13 +74,17 @@ export default async function ProductPage({ params }: PageProps) {
 
   const { store, product } = data;
 
-  const storeList = await getStoreProducts(subdomain).catch(() => null);
-  const categories = storeList?.categories ?? [];
-  const related = storeList
-    ? (product.category ? storeList.products.filter((p) => p.category === product.category) : storeList.products)
-        .filter((p) => p.slug !== product.slug)
-        .slice(0, 4)
-    : [];
+  // Lean sidebar fetch (category strip + up to 4 related products) —
+  // see getStoreSidebar: this is intentionally NOT getStoreProducts, which
+  // would pull the vendor's entire catalog (every product's full
+  // relations — variationOptions, variationPhotos, description, etc) just
+  // to compute a handful of cards. Non-fatal on failure: the product page
+  // itself still renders fine without its sidebar.
+  const sidebar = await getStoreSidebar(subdomain, slug, product.category).catch(() => ({
+    categories: [] as string[],
+    related: [] as Awaited<ReturnType<typeof getStoreSidebar>>['related'],
+  }));
+  const { categories, related } = sidebar;
 
   // Structured data (schema.org Product) — this is what lets Google show
   // price and stock directly in search results ("rich snippets").
