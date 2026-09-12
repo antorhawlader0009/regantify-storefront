@@ -125,8 +125,9 @@ export function LoginView({ subdomain }: { subdomain: string }) {
                 <label className="block text-[13px] font-medium text-ink mb-1.5">Email or Phone Number</label>
                 <input
                   value={identifier}
-                  onChange={(e) => setIdentifier(e.target.value)}
+                  onChange={(e) => setIdentifier(e.target.value.slice(0, 150))}
                   autoFocus
+                  maxLength={150}
                   className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors"
                 />
               </div>
@@ -135,7 +136,8 @@ export function LoginView({ subdomain }: { subdomain: string }) {
                 <input
                   type="password"
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value.slice(0, 72))}
+                  maxLength={72}
                   className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors"
                 />
               </div>
@@ -173,9 +175,10 @@ export function LoginView({ subdomain }: { subdomain: string }) {
                 <label className="block text-[13px] font-medium text-ink mb-1.5">Phone Number</label>
                 <input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={(e) => setPhone(e.target.value.slice(0, 30))}
                   placeholder="01XXXXXXXXX"
                   autoFocus
+                  maxLength={30}
                   className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors"
                 />
               </div>
@@ -201,9 +204,10 @@ export function LoginView({ subdomain }: { subdomain: string }) {
               <p className="text-[13px] text-muted">Enter the 6-digit code sent to {phone}.</p>
               <input
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => setCode(e.target.value.slice(0, 6))}
                 placeholder="6-digit code"
                 autoFocus
+                maxLength={6}
                 className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors text-center tracking-[0.3em]"
               />
 

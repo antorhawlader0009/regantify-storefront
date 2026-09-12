@@ -1,64 +1,92 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-
-interface CampaignSummary {
-  id: string;
-  name: string;
-  slug: string;
-  coverPhotoUrl: string | null;
-}
+import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
 
 interface HeroBannerProps {
   subdomain: string;
-  campaigns: CampaignSummary[];
+  categoryDetails: StorefrontCategoryDetail[];
+}
+
+// How many banners the hero cycles through at most, and how long each
+// one stays up before auto-advancing — see the component doc comment
+// below for why this is randomized per page load rather than a fixed
+// server-picked order.
+const MAX_SLIDES = 5;
+const AUTO_SLIDE_MS = 5000;
+
+/** Fisher-Yates shuffle — used instead of `sort(() => Math.random() - 0.5)`,
+ * which is a common but statistically biased shuffle. */
+function shuffle<T>(items: T[]): T[] {
+  const arr = [...items];
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
 }
 
 /**
- * Matches the reference homepage's hero exactly: a large campaign
- * cover photo with a "SHOP NOW" link and small dot indicators when
- * there's more than one campaign to show (see storepal.com.bd — the
- * banner cycles between the vendor's own promotional campaigns, not
- * fabricated marketing copy). Renders nothing when the vendor has no
- * campaign with a cover photo set — see StorefrontService.getStoreCampaigns
- * for why that's already filtered server-side.
+ * Home page hero: cycles through this vendor's own Store > Categories
+ * cover photos (PUBLIC categories only — see StorefrontService's
+ * getStoreProducts categoryDetails). Renders nothing when no category
+ * has a cover photo set — an empty hero is preferable to a placeholder
+ * that doesn't belong to this store. With exactly one cover photo
+ * available, that one is shown with no dots/auto-advance (nothing to
+ * cycle between). With more than one, a random subset of up to
+ * MAX_SLIDES is picked fresh on every page load (so a vendor with more
+ * categories than fit in the hero gets even rotation across visits
+ * instead of always leading with the same one) and auto-advances every
+ * AUTO_SLIDE_MS — the dots below still let a visitor jump to any slide.
+ * The shuffle happens client-side after mount (not during server
+ * render) so the server-rendered HTML and the first client render
+ * match — picking randomly during SSR would cause a hydration mismatch
+ * since the server and client would each roll their own order.
  */
-export function HeroBanner({ subdomain, campaigns }: HeroBannerProps) {
+export function HeroBanner({ subdomain, categoryDetails }: HeroBannerProps) {
   const [active, setActive] = useState(0);
 
-  if (campaigns.length === 0) return null;
+  const withCover = useMemo(
+    () => categoryDetails.filter((c): c is StorefrontCategoryDetail & { coverPhotoUrl: string } => Boolean(c.coverPhotoUrl)),
+    [categoryDetails],
+  );
+  const slides = useMemo(() => shuffle(withCover).slice(0, MAX_SLIDES), [withCover]);
 
-  const campaign = campaigns[active];
+  useEffect(() => {
+    if (slides.length <= 1) return;
+    const timer = setInterval(() => {
+      setActive((i) => (i + 1) % slides.length);
+    }, AUTO_SLIDE_MS);
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  if (slides.length === 0) return null;
+
+  const category = slides[active];
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
-      <div className="relative aspect-[21/9] sm:aspect-[3/1] rounded-lg overflow-hidden bg-canvas">
-        {campaign.coverPhotoUrl && (
+      <div className="relative rounded-lg overflow-hidden bg-surface">
+        <Link href={`/store/${subdomain}?category=${encodeURIComponent(category.name)}`} className="block">
           <Image
-            key={campaign.id}
-            src={campaign.coverPhotoUrl}
-            alt={campaign.name}
-            fill
-            priority
+            key={category.name}
+            src={category.coverPhotoUrl}
+            alt={category.name}
+            width={0}
+            height={0}
             sizes="(max-width: 1100px) 100vw, 1100px"
-            className="object-cover"
+            className="w-full h-auto"
+            priority
           />
-        )}
-
-        <Link
-          href={`/store/${subdomain}/campaigns/${campaign.slug}`}
-          className="absolute right-4 bottom-4 sm:right-6 sm:bottom-6 px-4 py-2 rounded-md bg-ink text-white text-[12.5px] font-bold hover:bg-ink/90 transition-colors"
-        >
-          SHOP NOW
         </Link>
 
-        {campaigns.length > 1 && (
+        {slides.length > 1 && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex gap-1.5">
-            {campaigns.map((c, i) => (
+            {slides.map((c, i) => (
               <button
-                key={c.id}
+                key={c.name}
                 onClick={() => setActive(i)}
                 aria-label={`Show ${c.name}`}
                 className={`w-2 h-2 rounded-full transition-colors ${i === active ? 'bg-white' : 'bg-white/50'}`}

@@ -97,8 +97,9 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
                 <input
                   type="email"
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value.slice(0, 150))}
                   autoFocus
+                  maxLength={150}
                   className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors"
                 />
               </div>
@@ -118,9 +119,10 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
               <p className="text-[13px] text-muted">If an account exists for {email}, a code has been sent.</p>
               <input
                 value={code}
-                onChange={(e) => setCode(e.target.value)}
+                onChange={(e) => setCode(e.target.value.slice(0, 6))}
                 placeholder="6-digit code"
                 autoFocus
+                maxLength={6}
                 className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors text-center tracking-[0.3em]"
               />
               {error && <p className="text-[12.5px] text-accent">{error}</p>}
@@ -141,8 +143,9 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
                 <input
                   type="password"
                   value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
+                  onChange={(e) => setNewPassword(e.target.value.slice(0, 72))}
                   autoFocus
+                  maxLength={72}
                   className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors"
                 />
               </div>

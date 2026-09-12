@@ -86,10 +86,20 @@ export interface StorefrontProduct {
   createdAt: string;
 }
 
+export interface StorefrontCategoryDetail {
+  name: string;
+  coverPhotoUrl: string | null;
+  squarePhotoUrl: string | null;
+  /** Real subcategories (Category.parentId) — powers StorePal's header dropdown (see StoreHeader.tsx). Optional: older cached responses may omit it. */
+  children?: { name: string }[];
+}
+
 export interface StorefrontListData {
   store: StorefrontInfo;
   products: StorefrontProduct[];
   categories: string[];
+  /** Store > Categories' own photos for the names in `categories`, when set — see StorePal's HomeView shortcut cards. */
+  categoryDetails?: StorefrontCategoryDetail[];
 }
 
 export interface StorefrontDetailData {

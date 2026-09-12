@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import Image from 'next/image';
-import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary } from '@/lib/storefrontApi';
+import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail } from '@/lib/storefrontApi';
 import type { SocialLinks } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
@@ -26,10 +26,13 @@ interface HomeViewProps {
   storeName: string;
   products: StorefrontProduct[];
   categories: string[];
+  /** Store > Categories' own photos, when the category is PUBLIC — powers the shortcut row below and the cover banner on a filtered category view. */
+  categoryDetails?: StorefrontCategoryDetail[];
   reviews: StorefrontReview[];
   activeCategory?: string;
   search?: string;
   socialLinks?: SocialLinks;
+  /** Accepted for callers that still fetch it (e.g. for Marketing > Campaigns pages elsewhere) — the homepage hero itself now uses categoryDetails instead, see HeroBanner. */
   campaigns?: StorefrontCampaignSummary[];
   logoUrl?: string | null;
 }
@@ -41,12 +44,13 @@ const TRUST_ICONS = [Truck, ShieldCheck, HandCoins];
 // categories (see storepal.com.bd: "men shoes", "watch", "belts",
 // "wallets", each with its own square photo) — a fast way back into
 // the header's own nav without scrolling up. Built from whatever
-// categories this vendor actually has (up to 4), each one's image
-// taken from that category's own first product — there's no separate
-// per-category "shortcut image" field to draw from instead (Category
-// does have its own squarePhotoUrl, but the homepage here only ever
-// fetches products, not Category rows, to keep this page's one query
-// cheap — see getStoreProducts).
+// categories this vendor actually has (up to 4). Prefers that
+// category's own Store > Categories square/cover photo (categoryDetails,
+// PUBLIC categories only — see StorefrontService.getStoreProducts) and
+// falls back to that category's first product's photo when the category
+// has no photo set (or isn't a real Category row at all — Category is a
+// plain-text field on Product, see CategoryCombobox's doc comment, so a
+// typed-in name with no matching row is possible).
 const MAX_SHORTCUTS = 4;
 
 // Matches the reference site's second info block — plain three-column
@@ -76,6 +80,7 @@ export function HomeView({
   storeName,
   products,
   categories,
+  categoryDetails = [],
   reviews,
   activeCategory,
   search,
@@ -96,24 +101,48 @@ export function HomeView({
     .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
     .slice(0, 4);
 
-  const shortcutCategories = categories.slice(0, MAX_SHORTCUTS).map((name) => ({
-    name,
-    image: products.find((p) => p.category === name)?.photoUrls[0],
-  }));
+  const activeCategoryDetail = activeCategory ? categoryDetails.find((c) => c.name === activeCategory) : undefined;
+
+  const shortcutCategories = categories.slice(0, MAX_SHORTCUTS).map((name) => {
+    const detail = categoryDetails.find((c) => c.name === name);
+    const image = detail?.squarePhotoUrl || detail?.coverPhotoUrl || products.find((p) => p.category === name)?.photoUrls[0];
+    return { name, image };
+  });
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
-      <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} logoUrl={logoUrl} />
+      <StoreHeader
+        subdomain={subdomain}
+        storeName={storeName}
+        categories={categories}
+        logoUrl={logoUrl}
+        categoryDetails={categoryDetails}
+      />
 
-      {!isFiltered && <HeroBanner subdomain={subdomain} campaigns={campaigns} />}
+      {!isFiltered && <HeroBanner subdomain={subdomain} categoryDetails={categoryDetails} />}
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
         {isFiltered && (
-          <div className="flex items-center justify-between mb-4">
-            <h1 className="text-[16px] font-bold text-ink">
-              {search?.trim() ? `Results for "${search}"` : activeCategory}
-            </h1>
-            <span className="text-[12.5px] text-muted">{filtered.length} products</span>
+          <div className="mb-4">
+            {activeCategoryDetail?.coverPhotoUrl && (
+              <div className="w-full rounded-lg overflow-hidden mb-4 bg-surface">
+                <Image
+                  src={activeCategoryDetail.coverPhotoUrl}
+                  alt={activeCategory ?? ''}
+                  width={0}
+                  height={0}
+                  sizes="100vw"
+                  className="w-full h-auto"
+                  priority
+                />
+              </div>
+            )}
+            <div className="flex items-center justify-between">
+              <h1 className="text-[16px] font-bold text-ink">
+                {search?.trim() ? `Results for "${search}"` : activeCategory}
+              </h1>
+              <span className="text-[12.5px] text-muted">{filtered.length} products</span>
+            </div>
           </div>
         )}
 

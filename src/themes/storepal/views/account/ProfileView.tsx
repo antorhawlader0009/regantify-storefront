@@ -113,7 +113,8 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
               <label className="block text-[13px] font-medium text-ink mb-1.5">Full Name</label>
               <input
                 value={fullName}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={(e) => setFullName(e.target.value.slice(0, 100))}
+                maxLength={100}
                 className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
               />
             </div>
@@ -123,7 +124,8 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
               <input
                 type="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => setEmail(e.target.value.slice(0, 150))}
+                maxLength={150}
                 className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
               />
             </div>
@@ -132,8 +134,9 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
               <label className="block text-[13px] font-medium text-ink mb-1.5">Delivery Address (optional)</label>
               <textarea
                 value={address}
-                onChange={(e) => setAddress(e.target.value)}
+                onChange={(e) => setAddress(e.target.value.slice(0, 300))}
                 rows={3}
+                maxLength={300}
                 className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none resize-y font-[inherit] focus:border-ink transition-colors"
               />
             </div>

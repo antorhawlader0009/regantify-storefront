@@ -22,8 +22,8 @@ interface StoreHeaderProps {
  * filtering/rendering stays server-side in page.tsx.
  */
 export function StoreHeader({ subdomain, storeName, categories }: StoreHeaderProps) {
-  const [activeCategory, setActiveCategory] = useQueryState('category');
-  const [search, setSearch] = useQueryState('q', { defaultValue: '' });
+  const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
+  const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
   const hydrated = useCartHydrated();
   const cartCount = useCartStore((s) =>

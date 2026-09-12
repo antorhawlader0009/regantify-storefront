@@ -133,8 +133,22 @@ export function useCheckout(subdomain: string) {
   const effectiveDeliveryCharge = couponFreeShipping ? 0 : deliveryCharge;
   const grandTotal = Math.max(0, subtotal + effectiveDeliveryCharge - couponDiscount);
 
+  // Same limits enforced server-side by CreateOrderDto — kept here too so
+  // a shopper is stopped from typing past them in the first place, on
+  // every theme (Medium, Minimal, StorePal all share this hook).
+  const FIELD_MAX_LENGTH: Record<keyof CheckoutFormState, number> = {
+    fullName: 100,
+    phone: 30,
+    address: 300,
+    city: 100,
+    district: 100,
+    zone: 20, // not user-typed (a <select> value), generous ceiling only
+    note: 500,
+  };
+
   const updateField = (field: keyof CheckoutFormState, value: string) => {
-    setForm((prev) => ({ ...prev, [field]: value }));
+    const capped = value.slice(0, FIELD_MAX_LENGTH[field]);
+    setForm((prev) => ({ ...prev, [field]: capped }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 

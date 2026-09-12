@@ -9,6 +9,7 @@ import {
 } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { isOutOfStock } from '@/lib/productDisplay';
+import { safeJsonLd } from '@/lib/safeJsonLd';
 import { ProductView as MediumProductView } from '@/themes/medium/views/ProductView';
 import { ProductView as MinimalProductView } from '@/themes/minimal/views/ProductView';
 import { ProductView as StorepalProductView } from '@/themes/storepal/views/ProductView';
@@ -137,7 +138,7 @@ export default async function ProductPage({ params }: PageProps) {
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(productJsonLd) }}
       />
       {resolveTheme(store.theme) === 'MINIMAL' ? (
         <MinimalProductView {...viewProps} />

@@ -351,10 +351,17 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
               <Minus size={13} />
             </button>
             <span className="w-10 text-center text-[13.5px] font-semibold bg-surface h-9 flex items-center justify-center">{quantity}</span>
-            <button onClick={() => setQuantity((q) => q + 1)} className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors">
+            <button
+              onClick={() => setQuantity((q) => (availableStock !== undefined ? Math.min(availableStock, q + 1) : q + 1))}
+              disabled={availableStock !== undefined && quantity >= availableStock}
+              className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+            >
               <Plus size={13} />
             </button>
           </div>
+          {availableStock !== undefined && quantity >= availableStock && availableStock > 0 && (
+            <p className="text-[12px] text-muted mt-1.5">Max available quantity selected.</p>
+          )}
         </div>
 
         <div className="flex gap-2.5">

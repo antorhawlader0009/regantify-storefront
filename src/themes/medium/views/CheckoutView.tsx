@@ -64,6 +64,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   value={form.fullName}
                   onChange={(e) => updateField('fullName', e.target.value)}
                   placeholder="Full name"
+                  maxLength={100}
                   className={`w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-canvas border outline-none transition-colors ${
                     errors.fullName ? 'border-accent' : 'border-line focus:border-ink focus:bg-surface'
                   }`}
@@ -76,6 +77,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   value={form.phone}
                   onChange={(e) => updateField('phone', e.target.value)}
                   placeholder="Phone number (01XXXXXXXXX)"
+                  maxLength={30}
                   className={`w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-canvas border outline-none transition-colors ${
                     errors.phone ? 'border-accent' : 'border-line focus:border-ink focus:bg-surface'
                   }`}
@@ -90,6 +92,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   onChange={(e) => updateField('address', e.target.value)}
                   placeholder="House, road, area, city"
                   rows={3}
+                  maxLength={300}
                   className={`w-full px-3.5 py-2.5 rounded text-[13.5px] bg-canvas border outline-none resize-y font-[inherit] ${
                     errors.address ? 'border-accent' : 'border-line focus:border-ink focus:bg-surface'
                   }`}
@@ -119,6 +122,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                 onChange={(e) => updateField('note', e.target.value)}
                 placeholder="Order note (optional)"
                 rows={2}
+                maxLength={500}
                 className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-canvas border border-line outline-none resize-y font-[inherit] transition-colors focus:border-ink focus:bg-surface"
               />
 

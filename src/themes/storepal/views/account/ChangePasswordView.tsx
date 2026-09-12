@@ -70,7 +70,8 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
             <input
               type="password"
               value={currentPassword}
-              onChange={(e) => setCurrentPassword(e.target.value)}
+              onChange={(e) => setCurrentPassword(e.target.value.slice(0, 72))}
+              maxLength={72}
               className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
             />
           </div>
@@ -79,7 +80,8 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
             <input
               type="password"
               value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
+              onChange={(e) => setNewPassword(e.target.value.slice(0, 72))}
+              maxLength={72}
               className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
             />
           </div>

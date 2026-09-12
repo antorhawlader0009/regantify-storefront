@@ -61,6 +61,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   value={form.fullName}
                   onChange={(e) => updateField('fullName', e.target.value)}
                   placeholder="Full name"
+                  maxLength={100}
                   className={`w-full px-0 py-2.5 bg-transparent text-[13.5px] border-b outline-none transition-colors ${
                     errors.fullName ? 'border-accent-dark' : 'border-line focus:border-ink'
                   }`}
@@ -73,6 +74,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   value={form.phone}
                   onChange={(e) => updateField('phone', e.target.value)}
                   placeholder="Phone number (01XXXXXXXXX)"
+                  maxLength={30}
                   className={`w-full px-0 py-2.5 bg-transparent text-[13.5px] border-b outline-none transition-colors ${
                     errors.phone ? 'border-accent-dark' : 'border-line focus:border-ink'
                   }`}
@@ -87,6 +89,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   onChange={(e) => updateField('address', e.target.value)}
                   placeholder="House, road, area, city"
                   rows={3}
+                  maxLength={300}
                   className={`w-full px-0 py-2.5 bg-transparent text-[13.5px] border-b outline-none resize-y font-[inherit] ${
                     errors.address ? 'border-accent-dark' : 'border-line focus:border-ink'
                   }`}
@@ -116,6 +119,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                 onChange={(e) => updateField('note', e.target.value)}
                 placeholder="Order note (optional)"
                 rows={2}
+                maxLength={500}
                 className="w-full px-0 py-2.5 bg-transparent text-[13.5px] border-b border-line outline-none resize-y font-[inherit] transition-colors focus:border-ink placeholder:text-muted"
               />
 

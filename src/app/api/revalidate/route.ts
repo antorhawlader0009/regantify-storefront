@@ -24,6 +24,7 @@ export async function POST(request: NextRequest) {
   try {
     body = await request.json();
   } catch {
+    console.warn('[revalidate] rejected: invalid JSON body');
     return NextResponse.json({ message: 'Invalid JSON body.' }, { status: 400 });
   }
 
@@ -32,9 +33,11 @@ export async function POST(request: NextRequest) {
     // Fails closed: if the secret isn't configured, no request can be
     // trusted, so revalidation is refused rather than silently allowed
     // for anyone who finds this URL.
+    console.warn('[revalidate] rejected: REVALIDATE_SECRET is not set in this storefront app\'s .env.local');
     return NextResponse.json({ message: 'Revalidation is not configured on this deployment.' }, { status: 503 });
   }
   if (body.secret !== expectedSecret) {
+    console.warn('[revalidate] rejected: secret in request does not match this app\'s REVALIDATE_SECRET');
     return NextResponse.json({ message: 'Invalid secret.' }, { status: 401 });
   }
 
@@ -52,5 +55,6 @@ export async function POST(request: NextRequest) {
     revalidated.push(tag);
   }
 
+  console.log(`[revalidate] ok: ${revalidated.join(', ')}`);
   return NextResponse.json({ revalidated: true, tags: revalidated });
 }

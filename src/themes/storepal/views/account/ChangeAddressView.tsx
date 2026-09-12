@@ -76,7 +76,8 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
             <label className="block text-[13px] font-medium text-ink mb-1.5">Street Address</label>
             <input
               value={streetAddress}
-              onChange={(e) => setStreetAddress(e.target.value)}
+              onChange={(e) => setStreetAddress(e.target.value.slice(0, 300))}
+              maxLength={300}
               className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
             />
           </div>
@@ -84,7 +85,8 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
             <label className="block text-[13px] font-medium text-ink mb-1.5">City</label>
             <input
               value={city}
-              onChange={(e) => setCity(e.target.value)}
+              onChange={(e) => setCity(e.target.value.slice(0, 100))}
+              maxLength={100}
               className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
             />
           </div>
@@ -92,7 +94,8 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
             <label className="block text-[13px] font-medium text-ink mb-1.5">District</label>
             <input
               value={district}
-              onChange={(e) => setDistrict(e.target.value)}
+              onChange={(e) => setDistrict(e.target.value.slice(0, 100))}
+              maxLength={100}
               className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
             />
           </div>
@@ -100,7 +103,8 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
             <label className="block text-[13px] font-medium text-ink mb-1.5">ZIP Code</label>
             <input
               value={zipCode}
-              onChange={(e) => setZipCode(e.target.value)}
+              onChange={(e) => setZipCode(e.target.value.slice(0, 20))}
+              maxLength={20}
               className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
             />
           </div>

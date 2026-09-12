@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { useQueryState } from 'nuqs';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -8,6 +9,7 @@ import { Search, ShoppingBag, User, ChevronDown } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
+import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
 
 interface StoreHeaderProps {
   subdomain: string;
@@ -20,6 +22,12 @@ interface StoreHeaderProps {
   // the header then fetches it itself client-side, same prop-or-fetch
   // convention as StoreFooter's own logoUrl/socialLinks.
   logoUrl?: string | null;
+  // Real subcategories per category name (Category.parentId, PUBLIC
+  // only — see StorefrontService.getStoreProducts). Optional because
+  // several pages that render this header (account/*, checkout) never
+  // fetch categoryDetails at all — those simply get a chevron-only nav
+  // with no dropdown, same as before this prop existed.
+  categoryDetails?: StorefrontCategoryDetail[];
 }
 
 // The reference site's top bar scrolls a repeating set of delivery
@@ -46,11 +54,48 @@ function AnnouncementBar() {
   );
 }
 
-export function StoreHeader({ subdomain, storeName, categories, logoUrl: logoUrlProp }: StoreHeaderProps) {
-  const [activeCategory, setActiveCategory] = useQueryState('category');
-  const [search, setSearch] = useQueryState('q', { defaultValue: '' });
+export function StoreHeader({
+  subdomain,
+  storeName,
+  categories,
+  logoUrl: logoUrlProp,
+  categoryDetails = [],
+}: StoreHeaderProps) {
+  const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
+  const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
   const [searchDraft, setSearchDraft] = useState(search);
   const [fetchedLogoUrl, setFetchedLogoUrl] = useState<string | null>(null);
+  // Which category's dropdown is currently open on hover — null when
+  // none. Only categories with at least one PUBLIC subcategory (see
+  // categoryDetails below) ever open one.
+  const [openCategory, setOpenCategory] = useState<string | null>(null);
+  // Screen position of the currently-open category's own button, so the
+  // dropdown panel below can render via a portal at `position: fixed`
+  // instead of nested inside the category strip. The strip scrolls
+  // horizontally (overflow-x-auto, for narrow screens) which clips any
+  // normal absolutely-positioned child to its own box — an
+  // `overflow-x-auto` element also clips the y-axis per the CSS spec, so
+  // a plain `absolute` dropdown here gets cut off / rendered behind
+  // whatever comes next in the page (e.g. the hero banner) instead of
+  // floating above it.
+  const [menuRect, setMenuRect] = useState<{ left: number; top: number } | null>(null);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const openDropdown = (name: string, target: HTMLElement) => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    const rect = target.getBoundingClientRect();
+    setMenuRect({ left: rect.left, top: rect.bottom });
+    setOpenCategory(name);
+  };
+  // Small delay before closing so moving the mouse from the category
+  // label down into the dropdown panel doesn't close it in transit.
+  const scheduleClose = () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+    closeTimer.current = setTimeout(() => setOpenCategory(null), 150);
+  };
+  useEffect(() => () => {
+    if (closeTimer.current) clearTimeout(closeTimer.current);
+  }, []);
 
   useEffect(() => {
     if (logoUrlProp !== undefined) return; // Caller already has it — no need to fetch.
@@ -71,15 +116,14 @@ export function StoreHeader({ subdomain, storeName, categories, logoUrl: logoUrl
     setSearch(searchDraft.trim() || null);
   };
 
-  // The category nav is a flat list on the reference site except a
-  // couple of entries that open a dropdown of subcategories on hover.
-  // Without a real subcategory hierarchy exposed by this storefront API
-  // yet (Category.parentId exists on the backend, but getStoreProducts
-  // only ever returns a flat distinct-category-name list — see
-  // StorefrontService), the first two categories get the visual
-  // "with dropdown" chevron purely for fidelity; clicking one still
-  // just filters by that one category name, same as any other.
+  // The category nav is a flat list on the reference site except
+  // entries that have real subcategories (Category.parentId, see
+  // StorefrontService.getStoreProducts), which open a dropdown of those
+  // subcategories on hover. Only categories with at least one child get
+  // the chevron; the parent label itself still filters by its own name
+  // when clicked, same as any other category.
   const visibleCategories = categories.slice(0, 9);
+  const childrenByCategory = new Map(categoryDetails.map((c) => [c.name, c.children ?? []]));
 
   return (
     <header className="sticky top-0 z-20 bg-surface">
@@ -161,18 +205,62 @@ export function StoreHeader({ subdomain, storeName, categories, logoUrl: logoUrl
             >
               50% OFF
             </button>
-            {visibleCategories.map((cat, i) => (
-              <button
-                key={cat}
-                onClick={() => setActiveCategory(cat)}
-                className={`flex items-center gap-1 text-[13px] font-medium whitespace-nowrap transition-colors ${
-                  activeCategory === cat ? 'text-accent' : 'text-ink hover:text-accent'
-                }`}
-              >
-                {cat}
-                {i < 2 && <ChevronDown size={13} strokeWidth={2.5} />}
-              </button>
-            ))}
+            {visibleCategories.map((cat) => {
+              const children = childrenByCategory.get(cat) ?? [];
+              const hasDropdown = children.length > 0;
+              return (
+                <div
+                  key={cat}
+                  className="relative"
+                  onMouseEnter={hasDropdown ? (e) => openDropdown(cat, e.currentTarget) : undefined}
+                  onMouseLeave={hasDropdown ? scheduleClose : undefined}
+                >
+                  <button
+                    onClick={() => setActiveCategory(cat)}
+                    className={`flex items-center gap-1 text-[13px] font-medium whitespace-nowrap transition-colors ${
+                      activeCategory === cat ? 'text-accent' : 'text-ink hover:text-accent'
+                    }`}
+                    aria-expanded={hasDropdown ? openCategory === cat : undefined}
+                    aria-haspopup={hasDropdown ? 'menu' : undefined}
+                  >
+                    {cat}
+                    {hasDropdown && <ChevronDown size={13} strokeWidth={2.5} />}
+                  </button>
+
+                  {hasDropdown &&
+                    openCategory === cat &&
+                    menuRect &&
+                    createPortal(
+                      <div
+                        role="menu"
+                        onMouseEnter={() => {
+                          if (closeTimer.current) clearTimeout(closeTimer.current);
+                        }}
+                        onMouseLeave={scheduleClose}
+                        style={{ left: menuRect.left, top: menuRect.top }}
+                        className="fixed z-50 min-w-[200px] rounded-lg border border-line bg-surface py-1.5 shadow-lg"
+                      >
+                        {children.map((child) => (
+                          <button
+                            key={child.name}
+                            role="menuitem"
+                            onClick={() => {
+                              setActiveCategory(child.name);
+                              setOpenCategory(null);
+                            }}
+                            className={`block w-full whitespace-nowrap px-4 py-2 text-left text-[13px] font-medium transition-colors ${
+                              activeCategory === child.name ? 'text-accent' : 'text-ink hover:bg-canvas hover:text-accent'
+                            }`}
+                          >
+                            {child.name}
+                          </button>
+                        ))}
+                      </div>,
+                      document.body,
+                    )}
+                </div>
+              );
+            })}
           </div>
         </div>
       )}

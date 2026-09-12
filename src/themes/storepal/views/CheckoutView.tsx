@@ -62,6 +62,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                 <input
                   value={form.fullName}
                   onChange={(e) => updateField('fullName', e.target.value)}
+                  maxLength={100}
                   className={`w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border outline-none transition-colors ${
                     errors.fullName ? 'border-accent' : 'border-line-strong focus:border-ink'
                   }`}
@@ -79,6 +80,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                     value={form.phone}
                     onChange={(e) => updateField('phone', e.target.value)}
                     placeholder="01XXXXXXXXX"
+                    maxLength={30}
                     className={`flex-1 px-3.5 py-2.5 rounded-r-md text-[13.5px] bg-surface border outline-none transition-colors ${
                       errors.phone ? 'border-accent' : 'border-line-strong focus:border-ink'
                     }`}
@@ -94,6 +96,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   onChange={(e) => updateField('address', e.target.value)}
                   placeholder="Your full address including upazila"
                   rows={3}
+                  maxLength={300}
                   className={`w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border outline-none resize-y font-[inherit] transition-colors ${
                     errors.address ? 'border-accent' : 'border-line-strong focus:border-ink'
                   }`}
@@ -106,6 +109,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                 <input
                   value={form.city}
                   onChange={(e) => updateField('city', e.target.value)}
+                  maxLength={100}
                   className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
                 />
               </div>
@@ -116,6 +120,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   value={form.district}
                   onChange={(e) => updateField('district', e.target.value)}
                   placeholder="Please select district"
+                  maxLength={100}
                   className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
                 />
               </div>
@@ -138,6 +143,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   value={form.note}
                   onChange={(e) => updateField('note', e.target.value)}
                   rows={3}
+                  maxLength={500}
                   className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none resize-y font-[inherit] focus:border-ink transition-colors"
                 />
               </div>
@@ -270,8 +276,9 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                     <div className="flex gap-2">
                       <input
                         value={couponCode}
-                        onChange={(e) => setCouponCode(e.target.value)}
+                        onChange={(e) => setCouponCode(e.target.value.slice(0, 50))}
                         placeholder="Enter coupon code"
+                        maxLength={50}
                         className="flex-1 px-3 py-2 rounded-md text-[13px] bg-canvas border border-line-strong outline-none focus:border-ink transition-colors uppercase"
                       />
                       <button

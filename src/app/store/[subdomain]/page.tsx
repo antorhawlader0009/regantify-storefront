@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { getStoreProducts, getStoreReviews, getStoreCampaigns, StoreNotFoundError, siteUrl } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
+import { safeJsonLd } from '@/lib/safeJsonLd';
 import { HomeView as MediumHomeView } from '@/themes/medium/views/HomeView';
 import { HomeView as MinimalHomeView } from '@/themes/minimal/views/HomeView';
 import { HomeView as StorepalHomeView } from '@/themes/storepal/views/HomeView';
@@ -47,7 +48,7 @@ export default async function StorePage({ params, searchParams }: PageProps) {
   }
 
   const reviews = await getStoreReviews(subdomain);
-  const { store, products, categories } = data;
+  const { store, products, categories, categoryDetails } = data;
   const storeJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Store',
@@ -84,17 +85,27 @@ export default async function StorePage({ params, searchParams }: PageProps) {
       <script
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(storeJsonLd) }}
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(storeJsonLd) }}
       />
       {await (async () => {
         const theme = resolveTheme(store.theme);
         if (theme === 'MINIMAL') return <MinimalHomeView {...viewProps} />;
         if (theme === 'STOREPAL') {
-          // Campaigns power StorePal's homepage hero banner (see
-          // HomeView's own comment) — only fetched for this theme,
-          // since Medium/Minimal's HomeView has no use for them.
+          // Campaigns still power StorePal's Marketing > Campaigns
+          // landing pages (see storefront/[subdomain]/campaigns/[slug]);
+          // the homepage hero itself now cycles through Store >
+          // Categories' cover photos instead (see HeroBanner's doc
+          // comment) via categoryDetails below.
           const campaigns = await getStoreCampaigns(subdomain);
-          return <StorepalHomeView {...viewProps} logoUrl={store.logoUrl} socialLinks={socialLinks} campaigns={campaigns} />;
+          return (
+            <StorepalHomeView
+              {...viewProps}
+              logoUrl={store.logoUrl}
+              socialLinks={socialLinks}
+              campaigns={campaigns}
+              categoryDetails={categoryDetails}
+            />
+          );
         }
         return <MediumHomeView {...viewProps} />;
       })()}

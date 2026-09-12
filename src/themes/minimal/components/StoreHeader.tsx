@@ -23,8 +23,8 @@ interface StoreHeaderProps {
  * filtering as Medium (via nuqs) — only the presentation differs.
  */
 export function StoreHeader({ subdomain, storeName, categories }: StoreHeaderProps) {
-  const [activeCategory, setActiveCategory] = useQueryState('category');
-  const [search, setSearch] = useQueryState('q', { defaultValue: '' });
+  const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
+  const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
   const [searchOpen, setSearchOpen] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const hydrated = useCartHydrated();
