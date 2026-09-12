@@ -16,6 +16,7 @@ export interface CustomerAuthState {
 
 export interface CustomerAuthActions {
   setSession: (customer: Customer, accessToken: string) => void;
+  updateCustomer: (customer: Customer) => void;
   clearSession: () => void;
 }
 
@@ -32,6 +33,10 @@ export const createCustomerAuthStore = (initState: CustomerAuthState = defaultIn
       (set) => ({
         ...initState,
         setSession: (customer, accessToken) => set({ customer, accessToken }),
+        // Refreshes the persisted profile in place after Account > Edit
+        // Profile saves — the access token is untouched, since a
+        // profile edit doesn't invalidate the current session.
+        updateCustomer: (customer) => set({ customer }),
         clearSession: () => set({ customer: null, accessToken: null }),
       }),
       {

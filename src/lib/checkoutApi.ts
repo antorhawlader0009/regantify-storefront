@@ -40,6 +40,43 @@ export async function placeOrder(subdomain: string, payload: unknown): Promise<C
   return res.json();
 }
 
+export interface ValidatedCoupon {
+  code: string;
+  discountType: 'FIXED' | 'PERCENT' | 'FREE_SHIPPING';
+  discountAmount: number;
+}
+
+export interface CouponPreviewLine {
+  productSlug: string;
+  quantity: number;
+}
+
+/**
+ * Checkout's "Have Coupon?" preview (see reference screenshot) — see
+ * StorefrontService.validateCoupon on the backend for why this never
+ * sends prices, only product/variant ids and quantities.
+ */
+export async function validateCoupon(
+  subdomain: string,
+  code: string,
+  customerPhone: string,
+  items: CouponPreviewLine[],
+): Promise<ValidatedCoupon> {
+  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/coupons/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code, customerPhone, items }),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
+    throw new Error(message || 'This coupon code is not valid.');
+  }
+
+  return res.json();
+}
+
 // Debounced sync of an in-progress checkout to the vendor's "Incomplete
 // Orders" list (see server/src/incomplete-orders/) — called from
 // checkout/page.tsx a couple of seconds after the shopper stops typing,

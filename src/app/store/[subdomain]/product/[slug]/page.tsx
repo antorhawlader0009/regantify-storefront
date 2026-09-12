@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import {
   getStoreProduct,
@@ -8,12 +7,11 @@ import {
   ProductNotFoundError,
   siteUrl,
 } from '@/lib/storefrontApi';
-import { StoreHeader } from '@/components/StoreHeader';
-import { StoreFooter } from '@/components/StoreFooter';
-import { ProductCard } from '@/components/ProductCard';
-import { ProductPurchasePanel } from '@/components/ProductPurchasePanel';
-import { ProductTabs } from '@/components/ProductTabs';
+import { resolveTheme } from '@/lib/theme';
 import { isOutOfStock } from '@/lib/productDisplay';
+import { ProductView as MediumProductView } from '@/themes/medium/views/ProductView';
+import { ProductView as MinimalProductView } from '@/themes/minimal/views/ProductView';
+import { ProductView as StorepalProductView } from '@/themes/storepal/views/ProductView';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -120,8 +118,19 @@ export default async function ProductPage({ params }: PageProps) {
     },
   };
 
+  const viewProps = { subdomain, storeName: store.storeName, product, categories, related };
+  const socialLinks = {
+    facebookUrl: store.facebookUrl,
+    instagramUrl: store.instagramUrl,
+    twitterUrl: store.twitterUrl,
+    youtubeUrl: store.youtubeUrl,
+    tiktokUrl: store.tiktokUrl,
+    linkedinUrl: store.linkedinUrl,
+    whatsappUrl: store.whatsappUrl,
+  };
+
   return (
-    <div className="min-h-screen bg-canvas text-ink pb-[70px] sm:pb-0">
+    <>
       {/* Structured data for search engines — invisible to visitors,
           read by crawlers to power rich results (price/stock/rating
           shown directly in Google search listings). */}
@@ -130,51 +139,13 @@ export default async function ProductPage({ params }: PageProps) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(productJsonLd) }}
       />
-
-      <StoreHeader subdomain={subdomain} storeName={store.storeName} categories={categories} />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 text-[12px] text-muted">
-        <Link href={`/store/${subdomain}`} className="hover:text-accent transition-colors">
-          Home
-        </Link>
-        {product.category && (
-          <>
-            {' / '}
-            <Link href={`/store/${subdomain}?category=${encodeURIComponent(product.category)}`} className="hover:text-accent transition-colors">
-              {product.category}
-            </Link>
-          </>
-        )}
-        {' / '}
-        <span className="text-ink">{product.name}</span>
-      </div>
-
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
-        <div className="bg-surface border border-line rounded grid gap-8 p-4 sm:p-6 lg:[grid-template-columns:1.1fr_1fr]">
-          <ProductPurchasePanel subdomain={subdomain} storeName={store.storeName} product={product} />
-        </div>
-      </main>
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="bg-surface border border-line rounded mb-5">
-          <ProductTabs description={product.description} />
-        </div>
-
-        {related.length > 0 && (
-          <section className="bg-surface border border-line rounded p-4 sm:p-6 mb-8">
-            <h3 className="text-[15px] font-bold text-ink mb-4">Related Products</h3>
-            <div className="grid gap-3 [grid-template-columns:repeat(auto-fill,minmax(150px,1fr))]">
-              {related.map((p) => (
-                <ProductCard key={p.id} product={p} subdomain={subdomain} />
-              ))}
-            </div>
-          </section>
-        )}
-      </div>
-
-      <div className="hidden sm:block">
-        <StoreFooter subdomain={subdomain} storeName={store.storeName} />
-      </div>
-    </div>
+      {resolveTheme(store.theme) === 'MINIMAL' ? (
+        <MinimalProductView {...viewProps} />
+      ) : resolveTheme(store.theme) === 'STOREPAL' ? (
+        <StorepalProductView {...viewProps} logoUrl={store.logoUrl} socialLinks={socialLinks} />
+      ) : (
+        <MediumProductView {...viewProps} />
+      )}
+    </>
   );
 }

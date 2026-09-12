@@ -39,6 +39,81 @@
   --shadow-popover: 0 12px 32px rgba(16, 18, 22, 0.14), 0 4px 10px rgba(16, 18, 22, 0.06);
 }
 
+/* Minimal theme — a spacious, editorial/boutique storefront built as the
+   deliberate opposite of Medium's dense marketplace look above: an
+   off-white (not gray) canvas, a near-black ink used sparingly rather
+   than a loud accent color everywhere, generous line/shadow weights, and
+   an entirely different font pairing (Newsreader + Archivo, see
+   fonts.ts) so nothing about it reads as a reskin. Every semantic token
+   name is identical to Medium's above — only the values differ — so
+   every component can be written once with the same utility classes
+   (bg-canvas, text-ink, border-line, ...) and simply render correctly
+   under whichever theme wraps it. Scoped under [data-theme="minimal"],
+   set on a wrapper div by the store/[subdomain] segment layout from the
+   vendor's resolved theme — see lib/theme.ts and
+   app/store/[subdomain]/layout.tsx. */
+[data-theme='minimal'] {
+  --color-ink: #1c1c1a;
+  --color-canvas: #faf9f7;
+  --color-surface: #ffffff;
+  --color-accent: #6b6357;
+  --color-accent-dark: #4a4339;
+  --color-accent-light: #f0eee8;
+  --color-muted: #8a8578;
+  --color-line: #e5e2da;
+  --color-line-strong: #d3cfc3;
+  --color-success: #3f6b4f;
+  --color-success-bg: #eaf1ec;
+  --color-save: #3f6b4f;
+
+  /* Newsreader carries headings and the store name throughout — Minimal
+     leans on its display serif far more than Medium does, since a quiet
+     editorial feel is the whole point. Archivo is the plain workhorse
+     sans for body copy, prices, and forms. */
+  --font-display: var(--font-newsreader), 'Noto Sans Bengali', serif;
+  --font-sans: var(--font-archivo), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+
+  /* A quieter, more diffuse elevation scale than Medium's — softer blur,
+     lower opacity, no hard popover shadow — matching the theme's overall
+     restraint. */
+  --shadow-card: 0 1px 3px rgba(28, 28, 26, 0.03);
+  --shadow-card-hover: 0 12px 28px rgba(28, 28, 26, 0.06);
+  --shadow-popover: 0 16px 40px rgba(28, 28, 26, 0.1);
+}
+
+/* StorePal theme — modeled directly on the storepal.com.bd reference
+   screenshots: a light blue-gray canvas, white cards, a dark navy
+   wordmark/nav accent, and a hot-pink/red CTA accent (the "subscribe"
+   button, price highlights). Every semantic token name is identical to
+   Medium/Minimal's above — only the values differ — so every shared
+   component (ProductPurchasePanel, CartList, useCheckout, ProductTabs)
+   renders correctly under this theme with zero changes of its own. */
+[data-theme='storepal'] {
+  --color-ink: #1a2b3c;
+  --color-canvas: #eef2f7;
+  --color-surface: #ffffff;
+  --color-accent: #e91e63;
+  --color-accent-dark: #c2185b;
+  --color-accent-light: #fce4ec;
+  --color-muted: #6b7684;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-success: #1a7a4c;
+  --color-success-bg: #e8f6ee;
+  --color-save: #dc2626;
+
+  /* One plain grotesque sans for everything — including the wordmark
+     itself — matching the reference site's single-font UI (see
+     lib/fonts.ts's own comment on why Poppins rather than a serif
+     pairing here). */
+  --font-display: var(--font-poppins), 'Noto Sans Bengali', sans-serif;
+  --font-sans: var(--font-poppins), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+
+  --shadow-card: 0 1px 2px rgba(26, 43, 60, 0.05), 0 1px 1px rgba(26, 43, 60, 0.04);
+  --shadow-card-hover: 0 8px 24px rgba(26, 43, 60, 0.1), 0 2px 6px rgba(26, 43, 60, 0.05);
+  --shadow-popover: 0 12px 32px rgba(26, 43, 60, 0.16), 0 4px 10px rgba(26, 43, 60, 0.07);
+}
+
 body {
   margin: 0;
   background: var(--color-canvas);
@@ -62,5 +137,27 @@ body {
 @media print {
   .print\:hidden {
     display: none !important;
+  }
+}
+
+/* StorePal theme's scrolling top announcement bar — see
+   themes/storepal/components/StoreHeader.tsx's own comment on why the
+   content is tripled: translating by exactly one-third of the total
+   width moves the strip by one full copy, so the loop point is
+   invisible. Paused on hover so a shopper can actually read one before
+   it scrolls away. */
+.storepal-marquee {
+  width: max-content;
+  animation: storepal-marquee-scroll 22s linear infinite;
+}
+.storepal-marquee:hover {
+  animation-play-state: paused;
+}
+@keyframes storepal-marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-33.3333%);
   }
 }

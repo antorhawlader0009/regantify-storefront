@@ -8,10 +8,27 @@
 
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
+export type StoreTheme = 'MEDIUM' | 'MINIMAL' | 'STOREPAL';
+
 export interface StorefrontInfo {
   id: string;
   storeName: string;
   subdomain: string;
+  theme: StoreTheme;
+  // Store > Logo — replaces the plain-text storeName wordmark wherever
+  // a theme's header/footer shows it, when set. Nullable: a vendor who
+  // hasn't uploaded one yet keeps the existing text-wordmark fallback.
+  logoUrl?: string | null;
+  // Store > Social — see StorefrontController's socialLinks selection
+  // on the backend. Every field is independently nullable; a vendor who
+  // hasn't set a given platform simply omits that icon in the footer.
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  twitterUrl?: string | null;
+  youtubeUrl?: string | null;
+  tiktokUrl?: string | null;
+  linkedinUrl?: string | null;
+  whatsappUrl?: string | null;
 }
 
 export interface StorefrontVariationOption {
@@ -125,7 +142,21 @@ class ProductNotFoundError extends Error {
   }
 }
 
-export { StoreNotFoundError, ProductNotFoundError };
+class CampaignNotFoundError extends Error {
+  constructor(slug: string) {
+    super(`No campaign found for slug "${slug}"`);
+    this.name = 'CampaignNotFoundError';
+  }
+}
+
+class StorePageNotFoundError extends Error {
+  constructor(slug: string) {
+    super(`No page found for slug "${slug}"`);
+    this.name = 'StorePageNotFoundError';
+  }
+}
+
+export { StoreNotFoundError, ProductNotFoundError, CampaignNotFoundError, StorePageNotFoundError };
 
 // Canonical absolute URL for a storefront path — used in generateMetadata
 // (alternates.canonical, Open Graph og:url) and JSON-LD. Built from
@@ -155,6 +186,44 @@ export async function getStoreProducts(subdomain: string): Promise<StorefrontLis
   return data;
 }
 
+// Lean vendor-only lookup (id/storeName/subdomain/theme) — no products,
+// no categories. Used wherever a route only needs to know which theme
+// to render with (see the store/[subdomain] layout) rather than the
+// full catalog getStoreProducts fetches. Next.js's fetch cache
+// deduplicates this against any other call to the same URL within the
+// same render pass, so a page that also calls getStoreProducts (which
+// hits a different URL) still only pays for one extra lightweight
+// request, not a duplicate of its own full-catalog fetch.
+export async function getStoreInfo(subdomain: string): Promise<StorefrontInfo> {
+  const data = await fetchJson<StorefrontInfo>(`/api/v1/store/${subdomain}`, [`store:${subdomain}`]);
+  if (!data) throw new StoreNotFoundError(subdomain);
+  return data;
+}
+
+export interface StorefrontReview {
+  id: string;
+  title: string;
+  content: string | null;
+  rating: number;
+  photos: string[];
+  customerName: string | null;
+  featured: boolean;
+  createdAt: string;
+}
+
+// Homepage "Customer Reviews" section — falls back to an empty array
+// rather than throwing, same reasoning as getStoreSidebar below: this
+// is decorative content, a hiccup here shouldn't ever break the whole
+// homepage from rendering.
+export async function getStoreReviews(subdomain: string): Promise<StorefrontReview[]> {
+  try {
+    const data = await fetchJson<StorefrontReview[]>(`/api/v1/store/${subdomain}/reviews`, [`store:${subdomain}`]);
+    return data ?? [];
+  } catch {
+    return [];
+  }
+}
+
 export async function getStoreProduct(subdomain: string, slug: string): Promise<StorefrontDetailData> {
   const data = await fetchJson<StorefrontDetailData>(`/api/v1/store/${subdomain}/products/${slug}`, [
     `store:${subdomain}`,
@@ -162,6 +231,48 @@ export async function getStoreProduct(subdomain: string, slug: string): Promise<
   ]);
   if (!data) throw new ProductNotFoundError(slug);
   return data;
+}
+
+export interface StorefrontCampaignData {
+  store: StorefrontInfo;
+  campaign: { id: string; name: string; coverPhotoUrl: string | null };
+  products: StorefrontProduct[];
+  categories: string[];
+}
+
+// Marketing > Campaigns' public landing page (Medium theme only — see
+// themes/medium/views/CampaignView.tsx). Same tag shape as
+// getStoreProduct so a product/campaign change still revalidates
+// correctly (see StorefrontRevalidateService on the backend).
+export async function getStoreCampaign(subdomain: string, slug: string): Promise<StorefrontCampaignData> {
+  const data = await fetchJson<StorefrontCampaignData>(`/api/v1/store/${subdomain}/campaigns/${slug}`, [
+    `store:${subdomain}`,
+  ]);
+  if (!data) throw new CampaignNotFoundError(slug);
+  return data;
+}
+
+export interface StorefrontCampaignSummary {
+  id: string;
+  name: string;
+  slug: string;
+  coverPhotoUrl: string | null;
+}
+
+// Campaign list with cover photos — powers the StorePal theme's
+// homepage hero banner (see themes/storepal/views/HomeView.tsx). Falls
+// back to an empty array rather than throwing — a store with no
+// campaigns yet (or a hiccup fetching them) just means no hero banner,
+// not a broken homepage.
+export async function getStoreCampaigns(subdomain: string): Promise<StorefrontCampaignSummary[]> {
+  try {
+    const data = await fetchJson<StorefrontCampaignSummary[]>(`/api/v1/store/${subdomain}/campaigns`, [
+      `store:${subdomain}`,
+    ]);
+    return data ?? [];
+  } catch {
+    return [];
+  }
 }
 
 // Category strip + related products for the product detail page's
@@ -182,4 +293,29 @@ export async function getStoreSidebar(
     [`store:${subdomain}`],
   );
   return data ?? { categories: [], related: [] };
+}
+
+export interface StorefrontPage {
+  id: string;
+  title: string;
+  slug: string;
+  content: string | null;
+  updatedAt: string;
+}
+
+export interface StorefrontPageData {
+  store: StorefrontInfo;
+  page: StorefrontPage;
+}
+
+// Store > Pages' public rendering (About Us, Contact Us, Privacy
+// Policy, etc — see reference screenshot at
+// storepal.com.bd/page/about-us). Only ever a PUBLISHED page — see
+// StorefrontService.getStorePage on the backend.
+export async function getStorePage(subdomain: string, slug: string): Promise<StorefrontPageData> {
+  const data = await fetchJson<StorefrontPageData>(`/api/v1/store/${subdomain}/pages/${slug}`, [
+    `store:${subdomain}`,
+  ]);
+  if (!data) throw new StorePageNotFoundError(slug);
+  return data;
 }
