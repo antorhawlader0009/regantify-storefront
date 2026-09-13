@@ -1,11 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Minus, Plus, X, Tag } from 'lucide-react';
+import { Minus, Plus, X, Tag, ShieldCheck, Truck } from 'lucide-react';
 import { formatPrice } from '../lib/formatPrice';
 import { useCheckout, DELIVERY_CHARGE } from '@/lib/useCheckout';
+import { useStoreDisplayName } from '../lib/useStoreDisplayName';
+import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
+import { getStoreSocialLinks } from '@/lib/socialLinksApi';
+import { StoreHeader } from '../components/StoreHeader';
+import { StoreFooter } from '../components/StoreFooter';
+import { WhatsAppBubble } from '../components/WhatsAppBubble';
 
 export function CheckoutView({ subdomain }: { subdomain: string }) {
   const {
@@ -29,9 +35,30 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     couponError,
     applyCoupon,
     removeCoupon,
-  } = useCheckout(subdomain);
+  } = useCheckout(subdomain, 'thank-you');
 
   const [couponBoxOpen, setCouponBoxOpen] = useState(false);
+  const storeName = useStoreDisplayName(subdomain);
+
+  // Checkout is a Client Component (needs cart state from
+  // localStorage), so it has no server-fetched StorefrontListData the
+  // way home/product pages do — the full category nav + logo/social
+  // for StoreHeader/StoreFooter are fetched here instead, same
+  // prop-or-fetch pattern those components already support for
+  // account/* pages. Matches the reference site, which keeps its
+  // complete header (logo, search, category strip) on /checkout rather
+  // than a stripped-down bar.
+  const [nav, setNav] = useState<StoreNavData>({ categories: [], categoryDetails: [] });
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  const [socialLinks, setSocialLinks] = useState<Awaited<ReturnType<typeof getStoreSocialLinks>>>({});
+
+  useEffect(() => {
+    getStoreNavData(subdomain).then(setNav);
+    getStoreSocialLinks(subdomain).then((b) => {
+      setLogoUrl(b.logoUrl ?? null);
+      setSocialLinks(b);
+    });
+  }, [subdomain]);
 
   if (!hydrated) return null;
 
@@ -49,8 +76,16 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   const couponDiscountAmount = appliedCoupon && appliedCoupon.discountType !== 'FREE_SHIPPING' ? appliedCoupon.discountAmount : 0;
 
   return (
-    <div className="min-h-screen bg-canvas text-ink py-8">
-      <div className="max-w-5xl mx-auto px-4 sm:px-6">
+    <div className="min-h-screen bg-canvas text-ink">
+      <StoreHeader
+        subdomain={subdomain}
+        storeName={storeName}
+        categories={nav.categories}
+        categoryDetails={nav.categoryDetails}
+        logoUrl={logoUrl}
+      />
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
         <div className="grid gap-6 items-start lg:[grid-template-columns:1.2fr_1fr]">
           {/* Place Order form */}
           <div>
@@ -162,14 +197,25 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
             <button
               onClick={handlePlaceOrder}
               disabled={placing}
-              className="w-full mt-6 py-3.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[14px] font-bold disabled:opacity-60 transition-colors"
+              className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
             >
               {placing ? 'Placing order…' : 'Submit Order'}
             </button>
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
+                <Truck size={13} className="text-accent shrink-0" />
+                Cash On Delivery All Over Bangladesh
+              </div>
+              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
+                <ShieldCheck size={13} className="text-accent shrink-0" />
+                100% genuine products
+              </div>
+            </div>
           </div>
 
           {/* Your cart summary */}
-          <div className="bg-surface border border-line rounded-lg p-4 sm:p-5">
+          <div className="bg-surface border border-line rounded-lg p-4 sm:p-5 lg:sticky lg:top-24">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-line">
               <p className="text-[16px] font-semibold text-muted">Your cart</p>
               <span className="w-6 h-6 rounded-full bg-muted text-white text-[12px] font-bold flex items-center justify-center">
@@ -297,6 +343,9 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
           </div>
         </div>
       </div>
+
+      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
+      <WhatsAppBubble socialLinks={socialLinks} />
     </div>
   );
 }

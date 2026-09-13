@@ -1,3 +1,6 @@
+'use client';
+
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail } from '@/lib/storefrontApi';
@@ -7,9 +10,10 @@ import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
 import { HeroBanner } from '../components/HeroBanner';
 import { WhatsAppBubble } from '../components/WhatsAppBubble';
+import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { TRUST_BADGES } from '@/lib/placeholderContent';
 import { Stars } from '../../medium/components/Stars';
-import { Truck, ShieldCheck, HandCoins } from 'lucide-react';
+import { Truck, ShieldCheck, HandCoins, SlidersHorizontal, X } from 'lucide-react';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -88,10 +92,44 @@ export function HomeView({
   campaigns = [],
   logoUrl,
 }: HomeViewProps) {
+  // Price bounds derived from the vendor's actual catalog (discounted
+  // price when set, since that's what a shopper actually pays) — the
+  // filter panel's slider/min-max inputs are scoped to this range
+  // rather than an arbitrary fixed ceiling, matching the reference
+  // site's own Price Filter (see screenshot 2/3: max reflects the real
+  // catalog, e.g. "20770").
+  const priceBounds = useMemo(() => {
+    if (products.length === 0) return { min: 0, max: 0 };
+    const prices = products.map((p) => Number(p.discountPrice ?? p.price));
+    return { min: Math.floor(Math.min(...prices)), max: Math.ceil(Math.max(...prices)) };
+  }, [products]);
+
+  const [filters, setFilters] = useState<ProductFilterState>({
+    minPrice: priceBounds.min,
+    maxPrice: priceBounds.max,
+    categories: [],
+    brands: [],
+  });
+  // Keep the slider's working range in sync if the catalog itself
+  // changes (e.g. navigating between stores in dev) without clobbering
+  // a shopper's still-valid narrower selection.
+  const effectiveFilters: ProductFilterState = {
+    ...filters,
+    minPrice: filters.minPrice === 0 && filters.maxPrice === 0 ? priceBounds.min : filters.minPrice,
+    maxPrice: filters.minPrice === 0 && filters.maxPrice === 0 ? priceBounds.max : filters.maxPrice,
+  };
+  const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
+
   const filtered = products.filter((p) => {
     const matchesSearch = search?.trim() ? p.name.toLowerCase().includes(search.trim().toLowerCase()) : true;
     const matchesCategory = activeCategory ? p.category === activeCategory : true;
-    return matchesSearch && matchesCategory;
+    const price = Number(p.discountPrice ?? p.price);
+    const matchesPrice = price >= effectiveFilters.minPrice && price <= effectiveFilters.maxPrice;
+    const matchesFilterCategory =
+      effectiveFilters.categories.length === 0 || (p.category ? effectiveFilters.categories.includes(p.category) : false);
+    const matchesBrand =
+      effectiveFilters.brands.length === 0 || (p.brand ? effectiveFilters.brands.includes(p.brand) : false);
+    return matchesSearch && matchesCategory && matchesPrice && matchesFilterCategory && matchesBrand;
   });
 
   const isFiltered = Boolean(search?.trim() || activeCategory);
@@ -125,14 +163,13 @@ export function HomeView({
         {isFiltered && (
           <div className="mb-4">
             {activeCategoryDetail?.coverPhotoUrl && (
-              <div className="w-full rounded-lg overflow-hidden mb-4 bg-surface">
+              <div className="relative w-full aspect-[21/9] rounded-lg overflow-hidden mb-4 bg-surface">
                 <Image
                   src={activeCategoryDetail.coverPhotoUrl}
                   alt={activeCategory ?? ''}
-                  width={0}
-                  height={0}
+                  fill
                   sizes="100vw"
-                  className="w-full h-auto"
+                  className="object-cover"
                   priority
                 />
               </div>
@@ -141,7 +178,16 @@ export function HomeView({
               <h1 className="text-[16px] font-bold text-ink">
                 {search?.trim() ? `Results for "${search}"` : activeCategory}
               </h1>
-              <span className="text-[12.5px] text-muted">{filtered.length} products</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[12.5px] text-muted">{filtered.length} products</span>
+                <button
+                  onClick={() => setMobileFiltersOpen(true)}
+                  className="lg:hidden flex items-center gap-1.5 text-[12.5px] font-semibold text-ink border border-line-strong rounded-md px-2.5 py-1.5"
+                >
+                  <SlidersHorizontal size={13} />
+                  Filters
+                </button>
+              </div>
             </div>
           </div>
         )}
@@ -152,24 +198,52 @@ export function HomeView({
             <p className="text-[13.5px] text-muted">This store hasn&apos;t added any products. Check back soon.</p>
           </div>
         ) : isFiltered ? (
-          filtered.length === 0 ? (
-            <div className="text-center py-20 bg-surface border border-line rounded-lg">
-              <p className="text-lg font-semibold text-ink mb-1.5">No matches</p>
-              <p className="text-[13.5px] text-muted">Try a different search or browse another category.</p>
-            </div>
-          ) : (
-            <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-              {filtered.map((product) => (
-                <ProductCard key={product.id} product={product} subdomain={subdomain} />
-              ))}
-            </div>
-          )
+          <div className="grid gap-6 lg:[grid-template-columns:240px_1fr] items-start">
+            {/* Filter sidebar — desktop: static column; mobile: slide-over panel opened via the "Filters" button above. */}
+            <aside className="hidden lg:block lg:sticky lg:top-24">
+              <ProductFilters products={products} value={effectiveFilters} onChange={setFilters} bounds={priceBounds} />
+            </aside>
+
+            {mobileFiltersOpen && (
+              <div className="fixed inset-0 z-40 lg:hidden">
+                <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileFiltersOpen(false)} />
+                <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-canvas overflow-y-auto p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-[15px] font-bold text-ink">Filters</span>
+                    <button onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters">
+                      <X size={18} />
+                    </button>
+                  </div>
+                  <ProductFilters products={products} value={effectiveFilters} onChange={setFilters} bounds={priceBounds} />
+                  <button
+                    onClick={() => setMobileFiltersOpen(false)}
+                    className="w-full mt-4 py-2.5 rounded-md bg-ink text-white text-[13px] font-bold"
+                  >
+                    Show {filtered.length} results
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {filtered.length === 0 ? (
+              <div className="text-center py-20 bg-surface border border-line rounded-lg">
+                <p className="text-lg font-semibold text-ink mb-1.5">No matches</p>
+                <p className="text-[13.5px] text-muted">Try adjusting your filters or browsing another category.</p>
+              </div>
+            ) : (
+              <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                {filtered.map((product) => (
+                  <ProductCard key={product.id} product={product} subdomain={subdomain} />
+                ))}
+              </div>
+            )}
+          </div>
         ) : (
           <>
             {topSelling.length > 0 && (
               <section className="mb-6">
                 <h2 className="text-[18px] font-bold text-ink mb-4 text-center">🔥 Top Selling 🔥</h2>
-                <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                   {topSelling.map((product) => (
                     <ProductCard key={product.id} product={product} subdomain={subdomain} />
                   ))}
@@ -178,7 +252,7 @@ export function HomeView({
             )}
 
             {shortcutCategories.length > 0 && (
-              <div className="flex flex-wrap items-start justify-center gap-6 mb-10">
+              <div className="flex flex-wrap items-start justify-center gap-4 sm:gap-6 mb-10">
                 {shortcutCategories.map((cat) => (
                   <Link
                     key={cat.name}
@@ -213,7 +287,7 @@ export function HomeView({
                     View all →
                   </Link>
                 </div>
-                <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                   {section.items.slice(0, 8).map((product) => (
                     <ProductCard key={product.id} product={product} subdomain={subdomain} />
                   ))}

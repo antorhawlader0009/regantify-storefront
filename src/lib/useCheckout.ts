@@ -37,8 +37,15 @@ export interface CheckoutFormState {
  * exact same behavior and only differ in JSX/styling. See the original
  * checkout/page.tsx (pre-theme-split) for the reasoning behind each
  * piece; nothing here changes that reasoning, only where it lives.
+ *
+ * `redirectTo` picks where a successful order sends the shopper:
+ * 'orders' (default — Medium/Minimal's existing "Order placed
+ * successfully" banner on the order-tracking page, unchanged) or
+ * 'thank-you' (StorePal's own animated confirmation + memo page, see
+ * themes/storepal/views/ThankYouView.tsx). Both destinations read the
+ * same sessionStorage handoff (see HANDOFF_KEY) via useTrackOrder.
  */
-export function useCheckout(subdomain: string) {
+export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you' = 'orders') {
   const router = useRouter();
 
   const lines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));
@@ -232,7 +239,7 @@ export function useCheckout(subdomain: string) {
         HANDOFF_KEY,
         JSON.stringify({ subdomain, invoiceNumber: result.invoiceNumber, phone: form.phone.trim() }),
       );
-      router.push(`/store/${subdomain}/orders`);
+      router.push(`/store/${subdomain}/${redirectTo === 'thank-you' ? 'thank-you' : 'orders'}`);
     } catch (err) {
       setPlaceError(err instanceof Error ? err.message : 'Could not place the order. Please try again.');
       setPlacing(false);

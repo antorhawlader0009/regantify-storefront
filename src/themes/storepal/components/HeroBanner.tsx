@@ -68,16 +68,25 @@ export function HeroBanner({ subdomain, categoryDetails }: HeroBannerProps) {
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
-      <div className="relative rounded-lg overflow-hidden bg-surface">
-        <Link href={`/store/${subdomain}?category=${encodeURIComponent(category.name)}`} className="block">
+      {/* Fixed aspect ratio, the SAME ratio on every screen size (mobile,
+          tablet, desktop, ultra-wide) — matches the reference site's
+          own slider, which never changes shape, only scales with the
+          container. A vendor's cover photos of any source size/shape
+          all render at this one ratio via object-cover (crops to fill
+          rather than distorting or letterboxing). 21:9 mirrors the
+          reference site's wide, short banner proportions. */}
+      <div className="relative rounded-lg overflow-hidden bg-surface aspect-[21/9]">
+        <Link
+          href={`/store/${subdomain}?category=${encodeURIComponent(category.name)}`}
+          className="absolute inset-0 block"
+        >
           <Image
             key={category.name}
             src={category.coverPhotoUrl}
             alt={category.name}
-            width={0}
-            height={0}
+            fill
             sizes="(max-width: 1100px) 100vw, 1100px"
-            className="w-full h-auto"
+            className="object-cover"
             priority
           />
         </Link>

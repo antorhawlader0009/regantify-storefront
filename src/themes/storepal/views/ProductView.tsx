@@ -61,7 +61,7 @@ export function ProductView({ subdomain, storeName, product, categories, related
         {related.length > 0 && (
           <section className="bg-surface border border-line rounded p-4 sm:p-6 mb-8">
             <h3 className="text-[15px] font-bold text-ink mb-4">Related Products</h3>
-            <div className="grid gap-4 [grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+            <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
               {related.map((p) => (
                 <ProductCard key={p.id} product={p} subdomain={subdomain} />
               ))}
