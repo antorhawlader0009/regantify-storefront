@@ -10,6 +10,8 @@ export interface ProductFilterState {
   maxPrice: number;
   categories: string[];
   brands: string[];
+  /** Selected values per variation-option name (e.g. `{ Color: ['Red'], Storage: ['128GB'] }`) — see the variant-facet section below. */
+  variantOptions: Record<string, string[]>;
 }
 
 interface ProductFiltersProps {
@@ -18,6 +20,18 @@ interface ProductFiltersProps {
   onChange: (next: ProductFilterState) => void;
   /** Absolute floor/ceiling derived from the full product set — the slider's own range never narrows as filters are applied, only `value` does. */
   bounds: { min: number; max: number };
+  /**
+   * Override for the Category section's checkbox options. HomeView passes
+   * this when the listing is already scoped to one category (activeCategory)
+   * — that category's own subcategories (Category.parentId, same data as
+   * the header nav dropdown) are far more useful here than the store's full
+   * top-level category list, which just duplicates the header nav and
+   * can't narrow anything within the current page. Pass an empty array to
+   * hide the Category section entirely (a leaf category with no
+   * subcategories has nothing left to filter by). Omit to fall back to
+   * deriving options from `products` — the un-scoped browse/search view.
+   */
+  categoryOptions?: string[];
 }
 
 /** Collapsible section — matches the reference site's "Color"/"Size" accordions (see screenshot 2). */
@@ -45,15 +59,43 @@ function FilterSection({ title, defaultOpen = true, children }: { title: string;
  * loaded up front (see StorefrontListData), so filtering narrows that
  * in-memory list rather than round-tripping to the API.
  */
-export function ProductFilters({ products, value, onChange, bounds }: ProductFiltersProps) {
-  const categories = useMemo(
+export function ProductFilters({ products, value, onChange, bounds, categoryOptions }: ProductFiltersProps) {
+  const derivedCategories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))).sort(),
     [products],
   );
+  const categories = categoryOptions ?? derivedCategories;
+  // Only a real "Category" list (the store-wide fallback, no activeCategory)
+  // when categoryOptions wasn't passed — once HomeView scopes this to one
+  // category's own subcategories, the heading should say so.
+  const categoryFilterLabel = categoryOptions ? 'Sub Category' : 'Category';
   const brands = useMemo(
     () => Array.from(new Set(products.map((p) => p.brand).filter((b): b is string => Boolean(b)))).sort(),
     [products],
   );
+
+  // Variant facets (Color, Storage, Size, ...) — built from real variant
+  // data rather than the products' own variationOptions lists, since a
+  // product can declare an option value (e.g. "Storage: 256GB") with no
+  // in-stock variant actually offering it; only in-stock combinations are
+  // worth letting a shopper filter down to (see faceted-search best
+  // practice: surface only what's actually purchasable).
+  const variantFacets = useMemo(() => {
+    const facets = new Map<string, Set<string>>();
+    for (const p of products) {
+      for (const v of p.variants) {
+        if (v.stock <= 0) continue;
+        for (const [optionName, optionValue] of Object.entries(v.optionValues)) {
+          if (!optionValue) continue;
+          if (!facets.has(optionName)) facets.set(optionName, new Set());
+          facets.get(optionName)!.add(optionValue);
+        }
+      }
+    }
+    return Array.from(facets.entries())
+      .map(([name, values]) => ({ name, values: Array.from(values).sort() }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [products]);
 
   const toggle = (list: string[], item: string) =>
     list.includes(item) ? list.filter((x) => x !== item) : [...list, item];
@@ -61,9 +103,20 @@ export function ProductFilters({ products, value, onChange, bounds }: ProductFil
   const activeCount =
     value.categories.length +
     value.brands.length +
+    Object.values(value.variantOptions).reduce((sum, list) => sum + list.length, 0) +
     (value.minPrice > bounds.min || value.maxPrice < bounds.max ? 1 : 0);
 
-  const reset = () => onChange({ minPrice: bounds.min, maxPrice: bounds.max, categories: [], brands: [] });
+  const reset = () =>
+    onChange({ minPrice: bounds.min, maxPrice: bounds.max, categories: [], brands: [], variantOptions: {} });
+
+  const toggleVariantValue = (optionName: string, val: string) =>
+    onChange({
+      ...value,
+      variantOptions: {
+        ...value.variantOptions,
+        [optionName]: toggle(value.variantOptions[optionName] ?? [], val),
+      },
+    });
 
   return (
     <div className="bg-surface border border-line rounded-md p-4">
@@ -125,7 +178,7 @@ export function ProductFilters({ products, value, onChange, bounds }: ProductFil
       </FilterSection>
 
       {categories.length > 0 && (
-        <FilterSection title="Category">
+        <FilterSection title={categoryFilterLabel}>
           <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
             {categories.map((cat) => (
               <label key={cat} className="flex items-center gap-2 text-[13px] text-ink cursor-pointer">
@@ -159,6 +212,24 @@ export function ProductFilters({ products, value, onChange, bounds }: ProductFil
           </div>
         </FilterSection>
       )}
+
+      {variantFacets.map((facet) => (
+        <FilterSection key={facet.name} title={facet.name} defaultOpen={false}>
+          <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
+            {facet.values.map((val) => (
+              <label key={val} className="flex items-center gap-2 text-[13px] text-ink cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={(value.variantOptions[facet.name] ?? []).includes(val)}
+                  onChange={() => toggleVariantValue(facet.name, val)}
+                  className="accent-accent w-3.5 h-3.5"
+                />
+                {val}
+              </label>
+            ))}
+          </div>
+        </FilterSection>
+      ))}
     </div>
   );
 }

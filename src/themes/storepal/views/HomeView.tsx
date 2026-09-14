@@ -109,6 +109,7 @@ export function HomeView({
     maxPrice: priceBounds.max,
     categories: [],
     brands: [],
+    variantOptions: {},
   });
   // Keep the slider's working range in sync if the catalog itself
   // changes (e.g. navigating between stores in dev) without clobbering
@@ -122,14 +123,30 @@ export function HomeView({
 
   const filtered = products.filter((p) => {
     const matchesSearch = search?.trim() ? p.name.toLowerCase().includes(search.trim().toLowerCase()) : true;
-    const matchesCategory = activeCategory ? p.category === activeCategory : true;
+    // Matches on secondaryCategories too — a promo bucket like "50% OFF"
+    // (see the header nav) is typically tagged onto products from many
+    // different primary categories purely via Secondary Categories, never
+    // set as any product's own `category`.
+    const matchesCategory = activeCategory
+      ? p.category === activeCategory || p.secondaryCategories.includes(activeCategory)
+      : true;
     const price = Number(p.discountPrice ?? p.price);
     const matchesPrice = price >= effectiveFilters.minPrice && price <= effectiveFilters.maxPrice;
     const matchesFilterCategory =
       effectiveFilters.categories.length === 0 || (p.category ? effectiveFilters.categories.includes(p.category) : false);
     const matchesBrand =
       effectiveFilters.brands.length === 0 || (p.brand ? effectiveFilters.brands.includes(p.brand) : false);
-    return matchesSearch && matchesCategory && matchesPrice && matchesFilterCategory && matchesBrand;
+    // A product matches a variant facet when at least one of its in-stock
+    // variants carries a selected value for that option (OR within an
+    // option, AND across different options — standard faceted-filter
+    // semantics: e.g. Color=Red AND Storage=128GB must both be satisfiable,
+    // by the same or different variants).
+    const matchesVariantOptions = Object.entries(effectiveFilters.variantOptions).every(
+      ([optionName, selectedValues]) =>
+        selectedValues.length === 0 ||
+        p.variants.some((v) => v.stock > 0 && selectedValues.includes(v.optionValues[optionName])),
+    );
+    return matchesSearch && matchesCategory && matchesPrice && matchesFilterCategory && matchesBrand && matchesVariantOptions;
   });
 
   const isFiltered = Boolean(search?.trim() || activeCategory);
@@ -141,9 +158,30 @@ export function HomeView({
 
   const activeCategoryDetail = activeCategory ? categoryDetails.find((c) => c.name === activeCategory) : undefined;
 
+  // When browsing inside one category, the sidebar's Category filter
+  // should offer that category's own subcategories (matching the header
+  // nav's dropdown) instead of the store's full top-level category list —
+  // see ProductFilters' categoryOptions doc comment. undefined (no
+  // activeCategory, e.g. a search) keeps the old store-wide behavior.
+  const activeCategorySubcategories = activeCategory
+    ? (activeCategoryDetail?.children ?? []).map((c) => c.name)
+    : undefined;
+
+  // ProductFilters derives its Brand list (and, absent categoryOptions
+  // above, its Category list) from whatever product array it's given —
+  // pass it only this category's own products so Brand doesn't mix in
+  // brands from every other category in the store (e.g. Organic Food
+  // brands showing up while browsing Phone).
+  const categoryScopedProducts = activeCategory
+    ? products.filter((p) => p.category === activeCategory || p.secondaryCategories.includes(activeCategory))
+    : products;
+
   const shortcutCategories = categories.slice(0, MAX_SHORTCUTS).map((name) => {
     const detail = categoryDetails.find((c) => c.name === name);
-    const image = detail?.squarePhotoUrl || detail?.coverPhotoUrl || products.find((p) => p.category === name)?.photoUrls[0];
+    const image =
+      detail?.squarePhotoUrl ||
+      detail?.coverPhotoUrl ||
+      products.find((p) => p.category === name || p.secondaryCategories.includes(name))?.photoUrls[0];
     return { name, image };
   });
 
@@ -201,7 +239,13 @@ export function HomeView({
           <div className="grid gap-6 lg:[grid-template-columns:240px_1fr] items-start">
             {/* Filter sidebar — desktop: static column; mobile: slide-over panel opened via the "Filters" button above. */}
             <aside className="hidden lg:block lg:sticky lg:top-24">
-              <ProductFilters products={products} value={effectiveFilters} onChange={setFilters} bounds={priceBounds} />
+              <ProductFilters
+                products={categoryScopedProducts}
+                value={effectiveFilters}
+                onChange={setFilters}
+                bounds={priceBounds}
+                categoryOptions={activeCategorySubcategories}
+              />
             </aside>
 
             {mobileFiltersOpen && (
@@ -214,7 +258,13 @@ export function HomeView({
                       <X size={18} />
                     </button>
                   </div>
-                  <ProductFilters products={products} value={effectiveFilters} onChange={setFilters} bounds={priceBounds} />
+                  <ProductFilters
+                    products={categoryScopedProducts}
+                    value={effectiveFilters}
+                    onChange={setFilters}
+                    bounds={priceBounds}
+                    categoryOptions={activeCategorySubcategories}
+                  />
                   <button
                     onClick={() => setMobileFiltersOpen(false)}
                     className="w-full mt-4 py-2.5 rounded-md bg-ink text-white text-[13px] font-bold"

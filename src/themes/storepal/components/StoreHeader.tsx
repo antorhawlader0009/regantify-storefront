@@ -197,14 +197,6 @@ export function StoreHeader({
       {categories.length > 0 && (
         <div className="border-t border-line">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
-            <button
-              onClick={() => setActiveCategory(null)}
-              className={`text-[13px] font-medium whitespace-nowrap transition-colors ${
-                activeCategory === null ? 'text-accent' : 'text-muted hover:text-ink'
-              }`}
-            >
-              50% OFF
-            </button>
             {visibleCategories.map((cat) => {
               const children = childrenByCategory.get(cat) ?? [];
               const hasDropdown = children.length > 0;
