@@ -43,3 +43,63 @@ export async function getStoreNavData(subdomain: string): Promise<StoreNavData> 
     return EMPTY_NAV;
   }
 }
+
+export interface StoreSearchProduct {
+  slug: string;
+  name: string;
+  photoUrls: string[];
+  price: string;
+  discountPrice?: string | null;
+}
+
+const EMPTY_SEARCH_INDEX: StoreSearchProduct[] = [];
+
+/**
+ * Lean product list (name/slug/photo/price only) for StoreHeader's live
+ * search-suggestions dropdown — same `/products` endpoint as
+ * getStoreNavData above (and the same reasoning: header components
+ * don't have a server-fetched product list in scope on every page), but
+ * this one keeps the `products` array instead of discarding it. Falls
+ * back to an empty list rather than throwing — no suggestions dropdown
+ * is a fine degraded state, Enter-to-search still works either way.
+ */
+export async function getStoreSearchIndex(subdomain: string): Promise<StoreSearchProduct[]> {
+  try {
+    const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/products`);
+    if (!res.ok) return EMPTY_SEARCH_INDEX;
+    const data = await res.json();
+    if (!Array.isArray(data.products)) return EMPTY_SEARCH_INDEX;
+    return data.products.map((p: { slug: string; name: string; photoUrls?: string[]; price: string; discountPrice?: string | null }) => ({
+      slug: p.slug,
+      name: p.name,
+      photoUrls: p.photoUrls ?? [],
+      price: p.price,
+      discountPrice: p.discountPrice ?? null,
+    }));
+  } catch {
+    return EMPTY_SEARCH_INDEX;
+  }
+}
+
+export interface StorefrontPageSummary {
+  title: string;
+  slug: string;
+}
+
+/**
+ * Store > Pages nav list (title+slug, PUBLISHED only) — powers
+ * StoreFooter's "INFORMATION" column with whatever pages the vendor has
+ * actually published, instead of a fixed guess at well-known slugs.
+ * Falls back to an empty list rather than throwing: a footer with no
+ * page links is a fine degraded state, not worth blocking the page over.
+ */
+export async function getStorePages(subdomain: string): Promise<StorefrontPageSummary[]> {
+  try {
+    const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/pages`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    return Array.isArray(data) ? data : [];
+  } catch {
+    return [];
+  }
+}

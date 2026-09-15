@@ -5,6 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
 import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
+import { getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
 
 interface StoreFooterProps {
   subdomain: string;
@@ -32,17 +33,6 @@ interface StoreFooterProps {
   socialLinks?: SocialLinks;
 }
 
-// Store > Pages links the reference footer always shows — matched by
-// slug against whatever pages a vendor has actually published (see
-// Store > Pages on the dashboard). A page that doesn't exist for this
-// vendor simply doesn't render its link, rather than pointing at a 404.
-const INFO_LINKS: { label: string; slug: string }[] = [
-  { label: 'ABOUT US', slug: 'about-us' },
-  { label: 'CONTACT US', slug: 'contact-us' },
-  { label: 'PRIVACY POLICY', slug: 'privacy-policy' },
-  { label: 'Return, Refund & Exchange Policy', slug: 'return-refund-exchange-policy' },
-];
-
 // Ordered platform list — each maps a Vendor field to its icon and a
 // human label (for aria-label only; the reference footer shows icons
 // without visible text). WhatsApp uses MessageCircle since lucide-react
@@ -60,11 +50,20 @@ export function StoreFooter({ subdomain, storeName, aboutBlurb, logoUrl: logoUrl
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [fetchedBranding, setFetchedBranding] = useState<SocialLinks & { logoUrl?: string | null } | null>(null);
+  // Store > Pages' published list — no caller currently fetches this
+  // server-side (unlike logoUrl/socialLinks above), so the footer always
+  // fetches it itself rather than threading a new prop through every
+  // view that renders this footer.
+  const [pages, setPages] = useState<StorefrontPageSummary[]>([]);
 
   useEffect(() => {
     if (socialLinksProp && logoUrlProp !== undefined) return; // Caller already has both — no need to fetch.
     getStoreSocialLinks(subdomain).then(setFetchedBranding);
   }, [subdomain, socialLinksProp, logoUrlProp]);
+
+  useEffect(() => {
+    getStorePages(subdomain).then(setPages);
+  }, [subdomain]);
 
   const socialLinks = socialLinksProp ?? fetchedBranding ?? {};
   const logoUrl = logoUrlProp ?? fetchedBranding?.logoUrl ?? null;
@@ -130,20 +129,22 @@ export function StoreFooter({ subdomain, storeName, aboutBlurb, logoUrl: logoUrl
           )}
         </div>
 
-        <div>
-          <p className="text-[15px] font-semibold text-ink mb-3">INFORMATION</p>
-          <div className="flex flex-col gap-2.5 text-[13px]">
-            {INFO_LINKS.map((link) => (
-              <Link
-                key={link.slug}
-                href={`/store/${subdomain}/page/${link.slug}`}
-                className="text-accent hover:text-accent-dark transition-colors w-fit"
-              >
-                {link.label}
-              </Link>
-            ))}
+        {pages.length > 0 && (
+          <div>
+            <p className="text-[15px] font-semibold text-ink mb-3">INFORMATION</p>
+            <div className="flex flex-col gap-2.5 text-[13px]">
+              {pages.map((page) => (
+                <Link
+                  key={page.slug}
+                  href={`/store/${subdomain}/page/${page.slug}`}
+                  className="text-accent hover:text-accent-dark transition-colors w-fit"
+                >
+                  {page.title}
+                </Link>
+              ))}
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           {aboutBlurb?.trim() ? (

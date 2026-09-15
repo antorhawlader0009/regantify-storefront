@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import type { StorefrontProduct, StorefrontCardProduct } from '@/lib/storefrontApi';
+import type { StorefrontProduct, StorefrontCardProduct, StorefrontCategoryDetail } from '@/lib/storefrontApi';
 import type { SocialLinks } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
@@ -18,15 +18,28 @@ interface ProductViewProps {
   storeName: string;
   product: StorefrontProduct;
   categories: string[];
+  // Real subcategories per category name — same prop StoreHeader takes
+  // on the homepage (see HomeView), so the header's dropdown shows up
+  // here too instead of only on the homepage. Optional/defaulted since
+  // getStoreSidebar's fetch is non-fatal (see the product page's
+  // .catch()) and can come back without it.
+  categoryDetails?: StorefrontCategoryDetail[];
   related: StorefrontCardProduct[];
   socialLinks?: SocialLinks;
   logoUrl?: string | null;
 }
 
-export function ProductView({ subdomain, storeName, product, categories, related, socialLinks, logoUrl }: ProductViewProps) {
+export function ProductView({ subdomain, storeName, product, categories, categoryDetails, related, socialLinks, logoUrl }: ProductViewProps) {
   return (
     <div className="min-h-screen bg-canvas text-ink pb-[70px] sm:pb-0">
-      <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} logoUrl={logoUrl} />
+      <StoreHeader
+        subdomain={subdomain}
+        storeName={storeName}
+        categories={categories}
+        categoryDetails={categoryDetails}
+        logoUrl={logoUrl}
+        socialLinks={socialLinks}
+      />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 text-[12px] text-muted">
         <Link href={`/store/${subdomain}`} className="hover:text-accent transition-colors">

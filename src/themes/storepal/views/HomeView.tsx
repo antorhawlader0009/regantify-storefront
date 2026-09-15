@@ -9,7 +9,6 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
 import { HeroBanner } from '../components/HeroBanner';
-import { WhatsAppBubble } from '../components/WhatsAppBubble';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { TRUST_BADGES } from '@/lib/placeholderContent';
 import { Stars } from '../../medium/components/Stars';
@@ -192,6 +191,7 @@ export function HomeView({
         storeName={storeName}
         categories={categories}
         logoUrl={logoUrl}
+        socialLinks={socialLinks}
         categoryDetails={categoryDetails}
       />
 
@@ -402,7 +402,6 @@ export function HomeView({
       )}
 
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
-      <WhatsAppBubble socialLinks={socialLinks} />
     </div>
   );
 }

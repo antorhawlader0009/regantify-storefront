@@ -12,7 +12,6 @@ import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
-import { WhatsAppBubble } from '../components/WhatsAppBubble';
 
 export function ThankYouView({ subdomain }: { subdomain: string }) {
   const { order, loading, justPlaced } = useTrackOrder(subdomain);
@@ -80,6 +79,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
         categories={nav.categories}
         categoryDetails={nav.categoryDetails}
         logoUrl={logoUrl}
+        socialLinks={socialLinks}
       />
 
       <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
@@ -219,7 +219,6 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
       </main>
 
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
-      <WhatsAppBubble socialLinks={socialLinks} />
     </div>
   );
 }

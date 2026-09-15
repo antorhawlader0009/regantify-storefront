@@ -1,14 +1,18 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryState } from 'nuqs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, User, ChevronDown } from 'lucide-react';
+import { Search, ShoppingBag, User, ChevronDown, X } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
-import { getStoreSocialLinks } from '@/lib/socialLinksApi';
+import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
+import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi';
+import { formatPrice } from '../lib/formatPrice';
+import { WhatsAppBubble } from './WhatsAppBubble';
+import { AiAssistantWidget } from './AiAssistantWidget';
 import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
 
 interface StoreHeaderProps {
@@ -22,6 +26,13 @@ interface StoreHeaderProps {
   // the header then fetches it itself client-side, same prop-or-fetch
   // convention as StoreFooter's own logoUrl/socialLinks.
   logoUrl?: string | null;
+  // Store > Social — only ever read here for whatsappUrl (see
+  // WhatsAppBubble below); everywhere else that needs the full set
+  // (StoreFooter's icon row) still gets it as its own prop. Same
+  // prop-or-fetch convention as logoUrl: omit entirely on pages with no
+  // server-fetched copy already in scope and this component fetches it
+  // itself client-side.
+  socialLinks?: SocialLinks;
   // Real subcategories per category name (Category.parentId, PUBLIC
   // only — see StorefrontService.getStoreProducts). Optional because
   // several pages that render this header (account/*, checkout) never
@@ -59,12 +70,14 @@ export function StoreHeader({
   storeName,
   categories,
   logoUrl: logoUrlProp,
+  socialLinks: socialLinksProp,
   categoryDetails = [],
 }: StoreHeaderProps) {
   const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
   const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
   const [searchDraft, setSearchDraft] = useState(search);
   const [fetchedLogoUrl, setFetchedLogoUrl] = useState<string | null>(null);
+  const [fetchedSocialLinks, setFetchedSocialLinks] = useState<SocialLinks>({});
   // Which category's dropdown is currently open on hover — null when
   // none. Only categories with at least one PUBLIC subcategory (see
   // categoryDetails below) ever open one.
@@ -98,11 +111,19 @@ export function StoreHeader({
   }, []);
 
   useEffect(() => {
-    if (logoUrlProp !== undefined) return; // Caller already has it — no need to fetch.
-    getStoreSocialLinks(subdomain).then((branding) => setFetchedLogoUrl(branding.logoUrl ?? null));
-  }, [subdomain, logoUrlProp]);
+    // Skip the fetch entirely if the caller already gave us everything —
+    // most pages pass at least one of these (see each prop's own doc
+    // comment on why), and a fetch that would only fill in an already-
+    // covered field is wasted work.
+    if (logoUrlProp !== undefined && socialLinksProp !== undefined) return;
+    getStoreSocialLinks(subdomain).then((branding) => {
+      if (logoUrlProp === undefined) setFetchedLogoUrl(branding.logoUrl ?? null);
+      if (socialLinksProp === undefined) setFetchedSocialLinks(branding);
+    });
+  }, [subdomain, logoUrlProp, socialLinksProp]);
 
   const logoUrl = logoUrlProp !== undefined ? logoUrlProp : fetchedLogoUrl;
+  const socialLinks = socialLinksProp !== undefined ? socialLinksProp : fetchedSocialLinks;
 
   const hydrated = useCartHydrated();
   const cartCount = useCartStore((s) =>
@@ -111,9 +132,59 @@ export function StoreHeader({
   const authHydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
 
+  // Live "type to see matches" dropdown (reference site: typing "shoe"
+  // shows matching Categories + a handful of products with thumb/price
+  // before you've even hit Enter — Enter still lands on the full
+  // "Results for ..." grid, unchanged, via the existing q query param).
+  // The product list itself isn't in scope here (StoreHeader renders on
+  // pages — cart, checkout, account — that never fetch the catalog), so
+  // it's fetched client-side once, lazily, the same way logoUrl above
+  // falls back to a client fetch when no prop is passed.
+  const [searchIndex, setSearchIndex] = useState<StoreSearchProduct[] | null>(null);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
+  const searchBoxRef = useRef<HTMLDivElement>(null);
+  const mobileSearchBoxRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (searchIndex !== null) return;
+    getStoreSearchIndex(subdomain).then(setSearchIndex);
+  }, [subdomain, searchIndex]);
+
+  useEffect(() => {
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Node;
+      if (searchBoxRef.current?.contains(target)) return;
+      if (mobileSearchBoxRef.current?.contains(target)) return;
+      setSuggestionsOpen(false);
+    };
+    document.addEventListener('pointerdown', onPointerDown);
+    return () => document.removeEventListener('pointerdown', onPointerDown);
+  }, []);
+
+  const draftLower = searchDraft.trim().toLowerCase();
+  const matchedCategories = useMemo(() => {
+    if (!draftLower) return [];
+    return categories.filter((c) => c.toLowerCase().includes(draftLower)).slice(0, 3);
+  }, [categories, draftLower]);
+  const matchedProducts = useMemo(() => {
+    if (!draftLower || !searchIndex) return [];
+    return searchIndex.filter((p) => p.name.toLowerCase().includes(draftLower)).slice(0, 6);
+  }, [searchIndex, draftLower]);
+  const showSuggestions = suggestionsOpen && draftLower.length > 0 && (matchedCategories.length > 0 || matchedProducts.length > 0);
+
+  const goToSearch = (value: string) => {
+    setSuggestionsOpen(false);
+    setSearch(value.trim() || null);
+  };
+
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setSearch(searchDraft.trim() || null);
+    goToSearch(searchDraft);
+  };
+
+  const handleClearSearch = () => {
+    setSearchDraft('');
+    setSuggestionsOpen(false);
   };
 
   // The category nav is a flat list on the reference site except
@@ -140,24 +211,76 @@ export function StoreHeader({
           )}
         </Link>
 
-        <form onSubmit={handleSearchSubmit} className="hidden sm:flex flex-1 max-w-2xl">
-          <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
-            <input
-              type="text"
-              value={searchDraft}
-              onChange={(e) => setSearchDraft(e.target.value)}
-              placeholder="Search Your Product By Product Name, Code…"
-              className="flex-1 px-4 py-2.5 text-[13.5px] text-ink bg-surface outline-none"
-            />
-            <button
-              type="submit"
-              className="px-4 bg-ink text-white flex items-center justify-center hover:bg-ink/90 transition-colors"
-              aria-label="Search"
-            >
-              <Search size={17} />
-            </button>
-          </div>
-        </form>
+        <div ref={searchBoxRef} className="hidden sm:block relative flex-1 max-w-2xl">
+          <form onSubmit={handleSearchSubmit} className="flex w-full">
+            <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
+              <input
+                type="text"
+                value={searchDraft}
+                onChange={(e) => setSearchDraft(e.target.value)}
+                onFocus={() => setSuggestionsOpen(true)}
+                placeholder="Search Your Product By Product Name, Code…"
+                className="flex-1 px-4 py-2.5 text-[13.5px] text-ink bg-surface outline-none"
+                autoComplete="off"
+              />
+              {searchDraft && (
+                <button
+                  type="button"
+                  onClick={handleClearSearch}
+                  className="px-2 text-muted hover:text-ink flex items-center justify-center"
+                  aria-label="Clear search"
+                >
+                  <X size={15} />
+                </button>
+              )}
+              <button
+                type="submit"
+                className="px-4 bg-ink text-white flex items-center justify-center hover:bg-ink/90 transition-colors"
+                aria-label="Search"
+              >
+                <Search size={17} />
+              </button>
+            </div>
+          </form>
+
+          {showSuggestions && (
+            <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
+              {matchedCategories.map((cat) => (
+                <button
+                  key={`cat-${cat}`}
+                  type="button"
+                  onClick={() => {
+                    setSuggestionsOpen(false);
+                    setSearchDraft('');
+                    setActiveCategory(cat);
+                  }}
+                  className="flex w-full items-center justify-between px-4 py-2.5 text-left text-[13px] font-medium text-ink hover:bg-canvas transition-colors border-b border-line last:border-b-0"
+                >
+                  <span>{cat}</span>
+                  <span className="text-[11px] text-muted">Category</span>
+                </button>
+              ))}
+              {matchedProducts.map((p) => (
+                <Link
+                  key={p.slug}
+                  href={`/store/${subdomain}/product/${p.slug}`}
+                  onClick={() => setSuggestionsOpen(false)}
+                  className="flex w-full items-center gap-3 px-4 py-2 text-left hover:bg-canvas transition-colors border-b border-line last:border-b-0"
+                >
+                  <span className="relative w-9 h-9 shrink-0 rounded overflow-hidden bg-canvas border border-line">
+                    {p.photoUrls[0] && (
+                      <Image src={p.photoUrls[0]} alt={p.name} fill sizes="36px" className="object-cover" />
+                    )}
+                  </span>
+                  <span className="flex-1 min-w-0 text-[13px] text-ink truncate">{p.name}</span>
+                  <span className="text-[12.5px] font-semibold text-ink shrink-0">
+                    {formatPrice(p.discountPrice ?? p.price)}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
 
         <div className="flex items-center gap-4 ml-auto shrink-0">
           <Link
@@ -179,20 +302,72 @@ export function StoreHeader({
         </div>
       </div>
 
-      <form onSubmit={handleSearchSubmit} className="sm:hidden px-4 pb-3">
-        <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
-          <input
-            type="text"
-            value={searchDraft}
-            onChange={(e) => setSearchDraft(e.target.value)}
-            placeholder="Search products"
-            className="flex-1 px-3.5 py-2.5 text-[13px] text-ink bg-surface outline-none"
-          />
-          <button type="submit" className="px-3.5 bg-ink text-white flex items-center justify-center" aria-label="Search">
-            <Search size={16} />
-          </button>
-        </div>
-      </form>
+      <div ref={mobileSearchBoxRef} className="sm:hidden relative px-4 pb-3">
+        <form onSubmit={handleSearchSubmit} className="flex w-full">
+          <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
+            <input
+              type="text"
+              value={searchDraft}
+              onChange={(e) => setSearchDraft(e.target.value)}
+              onFocus={() => setSuggestionsOpen(true)}
+              placeholder="Search products"
+              className="flex-1 px-3.5 py-2.5 text-[13px] text-ink bg-surface outline-none"
+              autoComplete="off"
+            />
+            {searchDraft && (
+              <button
+                type="button"
+                onClick={handleClearSearch}
+                className="px-2 text-muted hover:text-ink flex items-center justify-center"
+                aria-label="Clear search"
+              >
+                <X size={14} />
+              </button>
+            )}
+            <button type="submit" className="px-3.5 bg-ink text-white flex items-center justify-center" aria-label="Search">
+              <Search size={16} />
+            </button>
+          </div>
+        </form>
+
+        {showSuggestions && (
+          <div className="absolute left-4 right-4 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
+            {matchedCategories.map((cat) => (
+              <button
+                key={`cat-m-${cat}`}
+                type="button"
+                onClick={() => {
+                  setSuggestionsOpen(false);
+                  setSearchDraft('');
+                  setActiveCategory(cat);
+                }}
+                className="flex w-full items-center justify-between px-3.5 py-2.5 text-left text-[13px] font-medium text-ink hover:bg-canvas transition-colors border-b border-line last:border-b-0"
+              >
+                <span>{cat}</span>
+                <span className="text-[11px] text-muted">Category</span>
+              </button>
+            ))}
+            {matchedProducts.map((p) => (
+              <Link
+                key={`m-${p.slug}`}
+                href={`/store/${subdomain}/product/${p.slug}`}
+                onClick={() => setSuggestionsOpen(false)}
+                className="flex w-full items-center gap-3 px-3.5 py-2 text-left hover:bg-canvas transition-colors border-b border-line last:border-b-0"
+              >
+                <span className="relative w-9 h-9 shrink-0 rounded overflow-hidden bg-canvas border border-line">
+                  {p.photoUrls[0] && (
+                    <Image src={p.photoUrls[0]} alt={p.name} fill sizes="36px" className="object-cover" />
+                  )}
+                </span>
+                <span className="flex-1 min-w-0 text-[13px] text-ink truncate">{p.name}</span>
+                <span className="text-[12.5px] font-semibold text-ink shrink-0">
+                  {formatPrice(p.discountPrice ?? p.price)}
+                </span>
+              </Link>
+            ))}
+          </div>
+        )}
+      </div>
 
       {categories.length > 0 && (
         <div className="border-t border-line">
@@ -256,6 +431,14 @@ export function StoreHeader({
           </div>
         </div>
       )}
+
+      {/* Rendered from the header (not each page/view) so they show up on
+          every StorePal page with no risk of a new view forgetting to add
+          them — StoreHeader is the one component every StorePal view
+          already renders (home, product, cart, checkout, thank-you,
+          pages, account/*). */}
+      <WhatsAppBubble socialLinks={socialLinks} />
+      <AiAssistantWidget subdomain={subdomain} />
     </header>
   );
 }

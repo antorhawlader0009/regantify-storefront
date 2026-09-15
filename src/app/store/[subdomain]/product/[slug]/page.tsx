@@ -81,9 +81,10 @@ export default async function ProductPage({ params }: PageProps) {
   // itself still renders fine without its sidebar.
   const sidebar = await getStoreSidebar(subdomain, slug, product.category).catch(() => ({
     categories: [] as string[],
+    categoryDetails: [] as Awaited<ReturnType<typeof getStoreSidebar>>['categoryDetails'],
     related: [] as Awaited<ReturnType<typeof getStoreSidebar>>['related'],
   }));
-  const { categories, related } = sidebar;
+  const { categories, categoryDetails, related } = sidebar;
 
   // Structured data (schema.org Product) — this is what lets Google show
   // price and stock directly in search results ("rich snippets").
@@ -143,7 +144,7 @@ export default async function ProductPage({ params }: PageProps) {
       {resolveTheme(store.theme) === 'MINIMAL' ? (
         <MinimalProductView {...viewProps} />
       ) : resolveTheme(store.theme) === 'STOREPAL' ? (
-        <StorepalProductView {...viewProps} logoUrl={store.logoUrl} socialLinks={socialLinks} />
+        <StorepalProductView {...viewProps} categoryDetails={categoryDetails} logoUrl={store.logoUrl} socialLinks={socialLinks} />
       ) : (
         <MediumProductView {...viewProps} />
       )}

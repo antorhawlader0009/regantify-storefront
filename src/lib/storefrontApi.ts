@@ -129,6 +129,8 @@ export interface StorefrontCardProduct {
 
 export interface StorefrontSidebarData {
   categories: string[];
+  /** Real subcategories per category name — see StorefrontCategoryDetail; powers StorePal's header dropdown on the product page too. */
+  categoryDetails?: StorefrontCategoryDetail[];
   related: StorefrontCardProduct[];
 }
 

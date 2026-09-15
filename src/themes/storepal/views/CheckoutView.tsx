@@ -11,7 +11,6 @@ import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
-import { WhatsAppBubble } from '../components/WhatsAppBubble';
 
 export function CheckoutView({ subdomain }: { subdomain: string }) {
   const {
@@ -83,6 +82,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
         categories={nav.categories}
         categoryDetails={nav.categoryDetails}
         logoUrl={logoUrl}
+        socialLinks={socialLinks}
       />
 
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
@@ -345,7 +345,6 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
       </div>
 
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
-      <WhatsAppBubble socialLinks={socialLinks} />
     </div>
   );
 }
