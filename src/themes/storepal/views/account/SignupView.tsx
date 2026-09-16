@@ -31,7 +31,7 @@ export function SignupView({ subdomain }: { subdomain: string }) {
     }
     setLoading(true);
     try {
-      await customerSignup(phone.trim(), fullName.trim(), password, email.trim() || undefined);
+      await customerSignup(phone.trim(), fullName.trim(), password, email.trim() || undefined, subdomain);
       setStep('otp');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not create your account.');

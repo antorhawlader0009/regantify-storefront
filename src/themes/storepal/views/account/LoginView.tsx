@@ -65,7 +65,7 @@ export function LoginView({ subdomain }: { subdomain: string }) {
     }
     setOtpLoading(true);
     try {
-      await otpLoginSend(phone.trim());
+      await otpLoginSend(phone.trim(), subdomain);
       setOtpStep('code');
     } catch (err) {
       setOtpError(err instanceof Error ? err.message : 'Could not send OTP.');

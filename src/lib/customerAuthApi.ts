@@ -72,22 +72,36 @@ async function authFetch<T>(path: string, accessToken: string, init?: { method?:
   return res.json();
 }
 
-/** Step 1 of signup — sends an OTP to the given phone. */
-export function customerSignup(phone: string, fullName: string, password: string, email?: string) {
+/** Step 1 of signup — sends an OTP to the given phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
+export function customerSignup(
+  phone: string,
+  fullName: string,
+  password: string,
+  email?: string,
+  subdomain?: string,
+) {
   return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/signup', {
     phone,
     fullName,
     email,
     password,
+    subdomain,
   });
 }
 
-export function resendSignupOtp(phone: string, fullName: string, password: string, email?: string) {
+export function resendSignupOtp(
+  phone: string,
+  fullName: string,
+  password: string,
+  email?: string,
+  subdomain?: string,
+) {
   return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/signup/resend-otp', {
     phone,
     fullName,
     email,
     password,
+    subdomain,
   });
 }
 
@@ -101,9 +115,12 @@ export function customerLogin(identifier: string, password: string) {
   return post<AuthResult>('/api/v1/customer-auth/login', { identifier, password });
 }
 
-/** "OTP Login" — step 1: sends a login code to an existing account's phone. */
-export function otpLoginSend(phone: string) {
-  return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/otp-login/send', { phone });
+/** "OTP Login" — step 1: sends a login code to an existing account's phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
+export function otpLoginSend(phone: string, subdomain?: string) {
+  return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/otp-login/send', {
+    phone,
+    subdomain,
+  });
 }
 
 /** "OTP Login" — step 2: verifies the code and returns a full session. */
