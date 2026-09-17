@@ -23,7 +23,7 @@ export interface SocialLinks {
 }
 
 // Store > Logo — bundled into the same fetch/shape as social links
-// below since both live on the same public /api/v1/store/:subdomain
+// below since both live on the same public /v1/store/:subdomain
 // response; no separate round trip needed for account pages that need
 // one but not the other.
 export interface StoreBranding extends SocialLinks {
@@ -43,7 +43,7 @@ const EMPTY_LINKS: StoreBranding = {};
  */
 export async function getStoreSocialLinks(subdomain: string): Promise<StoreBranding> {
   try {
-    const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}`);
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}`);
     if (!res.ok) return EMPTY_LINKS;
     const data = await res.json();
     return {

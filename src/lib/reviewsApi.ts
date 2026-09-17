@@ -35,7 +35,7 @@ export interface SubmitReviewInput {
 
 /** Approved reviews for one product — see ReviewsService.listForProduct on the backend. */
 export async function getProductReviews(subdomain: string, slug: string): Promise<ProductReview[]> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/products/${slug}/reviews`);
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews`);
   if (!res.ok) {
     throw new Error('Could not load reviews.');
   }
@@ -50,7 +50,7 @@ export async function getProductReviews(subdomain: string, slug: string): Promis
  * immediately.
  */
 export async function submitProductReview(subdomain: string, slug: string, input: SubmitReviewInput): Promise<void> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/products/${slug}/reviews`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),

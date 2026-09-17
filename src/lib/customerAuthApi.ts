@@ -32,7 +32,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     // Required so the httpOnly refresh-token cookie (set on the
-    // /api/v1/customer-auth/* path — see CustomerAuthController) is sent
+    // /v1/customer-auth/* path — see CustomerAuthController) is sent
     // and stored despite the storefront (port 3000) and API (port 4000)
     // being different origins. The API's CORS config already allows
     // credentialed requests from this app — see server/src/main.ts.
@@ -80,7 +80,7 @@ export function customerSignup(
   email?: string,
   subdomain?: string,
 ) {
-  return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/signup', {
+  return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/signup', {
     phone,
     fullName,
     email,
@@ -96,7 +96,7 @@ export function resendSignupOtp(
   email?: string,
   subdomain?: string,
 ) {
-  return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/signup/resend-otp', {
+  return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/signup/resend-otp', {
     phone,
     fullName,
     email,
@@ -107,17 +107,17 @@ export function resendSignupOtp(
 
 /** Step 2 of signup — verifies the code and creates the account, returning a full session. */
 export function verifyCustomerSignup(phone: string, code: string) {
-  return post<AuthResult>('/api/v1/customer-auth/signup/verify-otp', { phone, code });
+  return post<AuthResult>('/v1/customer-auth/signup/verify-otp', { phone, code });
 }
 
 /** "Email Login" — identifier can be either an email or a phone number (see CustomerLoginDto). */
 export function customerLogin(identifier: string, password: string) {
-  return post<AuthResult>('/api/v1/customer-auth/login', { identifier, password });
+  return post<AuthResult>('/v1/customer-auth/login', { identifier, password });
 }
 
 /** "OTP Login" — step 1: sends a login code to an existing account's phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
 export function otpLoginSend(phone: string, subdomain?: string) {
-  return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/otp-login/send', {
+  return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/otp-login/send', {
     phone,
     subdomain,
   });
@@ -125,12 +125,12 @@ export function otpLoginSend(phone: string, subdomain?: string) {
 
 /** "OTP Login" — step 2: verifies the code and returns a full session. */
 export function otpLoginVerify(phone: string, code: string) {
-  return post<AuthResult>('/api/v1/customer-auth/otp-login/verify', { phone, code });
+  return post<AuthResult>('/v1/customer-auth/otp-login/verify', { phone, code });
 }
 
 /** "Change Password" (forgot-password) — step 1: sends a reset code to the given email. */
 export function forgotPasswordSendOtp(email: string) {
-  return post<{ message: string; expiresInSeconds: number }>('/api/v1/customer-auth/forgot-password/send-otp', {
+  return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/forgot-password/send-otp', {
     email,
   });
 }
@@ -138,18 +138,18 @@ export function forgotPasswordSendOtp(email: string) {
 /** Step 2: verifies the code, returning a short-lived resetToken. */
 export function forgotPasswordVerifyOtp(email: string, code: string) {
   return post<{ resetToken: string; expiresInSeconds: number }>(
-    '/api/v1/customer-auth/forgot-password/verify-otp',
+    '/v1/customer-auth/forgot-password/verify-otp',
     { email, code },
   );
 }
 
 /** Step 3: exchanges the resetToken for a new password. */
 export function resetPassword(resetToken: string, password: string) {
-  return post<{ message: string }>('/api/v1/customer-auth/forgot-password/reset', { resetToken, password });
+  return post<{ message: string }>('/v1/customer-auth/forgot-password/reset', { resetToken, password });
 }
 
 export async function refreshCustomerSession(): Promise<AuthResult> {
-  const res = await fetch(`${apiOrigin()}/api/v1/customer-auth/refresh`, {
+  const res = await fetch(`${apiOrigin()}/v1/customer-auth/refresh`, {
     method: 'POST',
     credentials: 'include',
   });
@@ -160,7 +160,7 @@ export async function refreshCustomerSession(): Promise<AuthResult> {
 }
 
 export async function customerLogout(accessToken: string): Promise<void> {
-  await fetch(`${apiOrigin()}/api/v1/customer-auth/logout`, {
+  await fetch(`${apiOrigin()}/v1/customer-auth/logout`, {
     method: 'POST',
     credentials: 'include',
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -182,11 +182,11 @@ export interface UpdateProfileInput {
 }
 
 export function getMyProfile(accessToken: string): Promise<Customer> {
-  return authFetch<Customer>('/api/v1/customer-auth/me', accessToken);
+  return authFetch<Customer>('/v1/customer-auth/me', accessToken);
 }
 
 export function updateMyProfile(accessToken: string, input: UpdateProfileInput): Promise<Customer> {
-  return authFetch<Customer>('/api/v1/customer-auth/me', accessToken, { method: 'PATCH', body: input });
+  return authFetch<Customer>('/v1/customer-auth/me', accessToken, { method: 'PATCH', body: input });
 }
 
 // -----------------------------------------------------------------
@@ -202,12 +202,12 @@ export interface UpdateAddressInput {
 
 /** Account > Change Address — see UpdateCustomerAddressDto's own comment on why these four fields join into one. */
 export function updateMyAddress(accessToken: string, input: UpdateAddressInput): Promise<Customer> {
-  return authFetch<Customer>('/api/v1/customer-auth/me/address', accessToken, { method: 'PATCH', body: input });
+  return authFetch<Customer>('/v1/customer-auth/me/address', accessToken, { method: 'PATCH', body: input });
 }
 
 /** Account > Change Password (requires the current password). */
 export function changeMyPassword(accessToken: string, currentPassword: string, newPassword: string) {
-  return authFetch<{ message: string }>('/api/v1/customer-auth/me/password', accessToken, {
+  return authFetch<{ message: string }>('/v1/customer-auth/me/password', accessToken, {
     method: 'PATCH',
     body: { currentPassword, newPassword },
   });
@@ -235,7 +235,7 @@ export interface CustomerOrder {
 }
 
 export async function listCustomerOrders(subdomain: string, accessToken: string): Promise<CustomerOrder[]> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/customer/orders`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/orders`, {
     credentials: 'include',
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -261,7 +261,7 @@ export interface CustomerCoupon {
 }
 
 export async function listCustomerCoupons(subdomain: string, accessToken: string): Promise<CustomerCoupon[]> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/customer/coupons`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/coupons`, {
     credentials: 'include',
     headers: { Authorization: `Bearer ${accessToken}` },
   });

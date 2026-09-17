@@ -25,7 +25,7 @@ export interface CheckoutResponse {
 }
 
 export async function placeOrder(subdomain: string, payload: unknown): Promise<CheckoutResponse> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/checkout`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -62,7 +62,7 @@ export async function validateCoupon(
   customerPhone: string,
   items: CouponPreviewLine[],
 ): Promise<ValidatedCoupon> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/coupons/validate`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/coupons/validate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code, customerPhone, items }),
@@ -87,7 +87,7 @@ export async function validateCoupon(
 // unlike placeOrder above, which is a deliberate action and does surface
 // errors.
 export function syncIncompleteOrder(subdomain: string, payload: unknown): void {
-  fetch(`${apiOrigin()}/api/v1/store/${subdomain}/incomplete-order`, {
+  fetch(`${apiOrigin()}/v1/store/${subdomain}/incomplete-order`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -133,7 +133,7 @@ export interface TrackedOrder {
 }
 
 export async function trackOrder(subdomain: string, invoiceNumber: number, phone: string): Promise<TrackedOrder> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/track-order`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track-order`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ invoiceNumber, phone }),

@@ -32,7 +32,7 @@ const EMPTY_NAV: StoreNavData = { categories: [], categoryDetails: [] };
  */
 export async function getStoreNavData(subdomain: string): Promise<StoreNavData> {
   try {
-    const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/products`);
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products`);
     if (!res.ok) return EMPTY_NAV;
     const data = await res.json();
     return {
@@ -65,7 +65,7 @@ const EMPTY_SEARCH_INDEX: StoreSearchProduct[] = [];
  */
 export async function getStoreSearchIndex(subdomain: string): Promise<StoreSearchProduct[]> {
   try {
-    const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/products`);
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products`);
     if (!res.ok) return EMPTY_SEARCH_INDEX;
     const data = await res.json();
     if (!Array.isArray(data.products)) return EMPTY_SEARCH_INDEX;
@@ -95,7 +95,7 @@ export interface StorefrontPageSummary {
  */
 export async function getStorePages(subdomain: string): Promise<StorefrontPageSummary[]> {
   try {
-    const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/pages`);
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/pages`);
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

@@ -202,7 +202,7 @@ async function fetchJson<T>(path: string, tags: string[]): Promise<T | null> {
 }
 
 export async function getStoreProducts(subdomain: string): Promise<StorefrontListData> {
-  const data = await fetchJson<StorefrontListData>(`/api/v1/store/${subdomain}/products`, [`store:${subdomain}`]);
+  const data = await fetchJson<StorefrontListData>(`/v1/store/${subdomain}/products`, [`store:${subdomain}`]);
   if (!data) throw new StoreNotFoundError(subdomain);
   return data;
 }
@@ -216,7 +216,7 @@ export async function getStoreProducts(subdomain: string): Promise<StorefrontLis
 // hits a different URL) still only pays for one extra lightweight
 // request, not a duplicate of its own full-catalog fetch.
 export async function getStoreInfo(subdomain: string): Promise<StorefrontInfo> {
-  const data = await fetchJson<StorefrontInfo>(`/api/v1/store/${subdomain}`, [`store:${subdomain}`]);
+  const data = await fetchJson<StorefrontInfo>(`/v1/store/${subdomain}`, [`store:${subdomain}`]);
   if (!data) throw new StoreNotFoundError(subdomain);
   return data;
 }
@@ -238,7 +238,7 @@ export interface StorefrontReview {
 // homepage from rendering.
 export async function getStoreReviews(subdomain: string): Promise<StorefrontReview[]> {
   try {
-    const data = await fetchJson<StorefrontReview[]>(`/api/v1/store/${subdomain}/reviews`, [`store:${subdomain}`]);
+    const data = await fetchJson<StorefrontReview[]>(`/v1/store/${subdomain}/reviews`, [`store:${subdomain}`]);
     return data ?? [];
   } catch {
     return [];
@@ -246,7 +246,7 @@ export async function getStoreReviews(subdomain: string): Promise<StorefrontRevi
 }
 
 export async function getStoreProduct(subdomain: string, slug: string): Promise<StorefrontDetailData> {
-  const data = await fetchJson<StorefrontDetailData>(`/api/v1/store/${subdomain}/products/${slug}`, [
+  const data = await fetchJson<StorefrontDetailData>(`/v1/store/${subdomain}/products/${slug}`, [
     `store:${subdomain}`,
     `store:${subdomain}:product:${slug}`,
   ]);
@@ -266,7 +266,7 @@ export interface StorefrontCampaignData {
 // getStoreProduct so a product/campaign change still revalidates
 // correctly (see StorefrontRevalidateService on the backend).
 export async function getStoreCampaign(subdomain: string, slug: string): Promise<StorefrontCampaignData> {
-  const data = await fetchJson<StorefrontCampaignData>(`/api/v1/store/${subdomain}/campaigns/${slug}`, [
+  const data = await fetchJson<StorefrontCampaignData>(`/v1/store/${subdomain}/campaigns/${slug}`, [
     `store:${subdomain}`,
   ]);
   if (!data) throw new CampaignNotFoundError(slug);
@@ -287,7 +287,7 @@ export interface StorefrontCampaignSummary {
 // not a broken homepage.
 export async function getStoreCampaigns(subdomain: string): Promise<StorefrontCampaignSummary[]> {
   try {
-    const data = await fetchJson<StorefrontCampaignSummary[]>(`/api/v1/store/${subdomain}/campaigns`, [
+    const data = await fetchJson<StorefrontCampaignSummary[]>(`/v1/store/${subdomain}/campaigns`, [
       `store:${subdomain}`,
     ]);
     return data ?? [];
@@ -310,7 +310,7 @@ export async function getStoreSidebar(
 ): Promise<StorefrontSidebarData> {
   const query = category ? `?category=${encodeURIComponent(category)}` : '';
   const data = await fetchJson<StorefrontSidebarData>(
-    `/api/v1/store/${subdomain}/products/${slug}/sidebar${query}`,
+    `/v1/store/${subdomain}/products/${slug}/sidebar${query}`,
     [`store:${subdomain}`],
   );
   return data ?? { categories: [], related: [] };
@@ -334,7 +334,7 @@ export interface StorefrontPageData {
 // storepal.com.bd/page/about-us). Only ever a PUBLISHED page — see
 // StorefrontService.getStorePage on the backend.
 export async function getStorePage(subdomain: string, slug: string): Promise<StorefrontPageData> {
-  const data = await fetchJson<StorefrontPageData>(`/api/v1/store/${subdomain}/pages/${slug}`, [
+  const data = await fetchJson<StorefrontPageData>(`/v1/store/${subdomain}/pages/${slug}`, [
     `store:${subdomain}`,
   ]);
   if (!data) throw new StorePageNotFoundError(slug);

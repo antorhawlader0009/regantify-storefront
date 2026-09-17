@@ -47,7 +47,7 @@ export async function middleware(request: NextRequest) {
   if (isLocalHost) return NextResponse.next();
 
   try {
-    const res = await fetch(`${API_URL}/api/v1/store/resolve-domain?host=${encodeURIComponent(host)}`);
+    const res = await fetch(`${API_URL}/v1/store/resolve-domain?host=${encodeURIComponent(host)}`);
     if (res.ok) {
       const { subdomain } = (await res.json()) as { subdomain: string | null };
       if (subdomain) return rewriteToStore(request, subdomain);

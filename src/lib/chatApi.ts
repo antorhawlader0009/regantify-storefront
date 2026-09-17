@@ -28,7 +28,7 @@ export interface ChatReply {
 }
 
 export async function sendChatMessage(subdomain: string, message: string, history: ChatTurn[]): Promise<ChatReply> {
-  const res = await fetch(`${apiOrigin()}/api/v1/store/${subdomain}/chat`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, history }),
