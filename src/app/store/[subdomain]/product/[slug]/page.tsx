@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title,
         description,
-        url: siteUrl(canonicalPath),
+        url: await siteUrl(canonicalPath),
         siteName: store.storeName,
         type: 'website',
         images: product.photoUrls[0] ? [{ url: product.photoUrls[0], width: 800, height: product.photoSize === 'PORTRAIT' ? 1200 : 800 }] : undefined,
@@ -109,7 +109,7 @@ export default async function ProductPage({ params }: PageProps) {
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     offers: {
       '@type': 'Offer',
-      url: siteUrl(`/store/${subdomain}/product/${product.slug}`),
+      url: await siteUrl(`/store/${subdomain}/product/${product.slug}`),
       priceCurrency: 'BDT',
       price: lowestPrice,
       availability: product.isPreOrder

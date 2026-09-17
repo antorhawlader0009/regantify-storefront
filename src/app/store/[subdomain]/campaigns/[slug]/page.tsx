@@ -21,7 +21,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: campaign.name,
         description,
-        url: siteUrl(canonicalPath),
+        url: await siteUrl(canonicalPath),
         siteName: store.storeName,
         type: 'website',
         images: campaign.coverPhotoUrl ? [{ url: campaign.coverPhotoUrl, width: 1200, height: 633 }] : undefined,
