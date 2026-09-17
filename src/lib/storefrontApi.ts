@@ -171,13 +171,22 @@ class StorePageNotFoundError extends Error {
 export { StoreNotFoundError, ProductNotFoundError, CampaignNotFoundError, StorePageNotFoundError };
 
 // Canonical absolute URL for a storefront path — used in generateMetadata
-// (alternates.canonical, Open Graph og:url) and JSON-LD. Built from
-// ROOT_DOMAIN (see middleware.ts) when set; without a production domain
-// yet, falls back to a path-only relative reference so nothing crashes
-// or hardcodes a fake domain in local/LAN dev.
-export function siteUrl(path: string): string {
-  const rootDomain = process.env.ROOT_DOMAIN?.trim();
-  return rootDomain ? `https://${rootDomain}${path}` : path;
+// (alternates.canonical, Open Graph og:url) and JSON-LD. A relative or
+// wrong-host og:url makes link-preview crawlers (Facebook Messenger,
+// WhatsApp, etc) silently drop the whole preview, including the image —
+// so this must resolve to whatever host actually served the request:
+// the vendor's Store > Domain custom domain, a {subdomain}.ROOT_DOMAIN
+// host, or the bare IP path (/store/:subdomain) in local/LAN dev. Reads
+// the real request Host header (see next/headers) rather than assuming
+// ROOT_DOMAIN, since a custom domain never matches ROOT_DOMAIN at all
+// (see middleware.ts's separate resolve-domain path for those).
+export async function siteUrl(path: string): Promise<string> {
+  const { headers } = await import('next/headers');
+  const h = await headers();
+  const host = h.get('host');
+  if (!host) return path;
+  const proto = h.get('x-forwarded-proto') ?? 'http';
+  return `${proto}://${host}${path}`;
 }
 
 

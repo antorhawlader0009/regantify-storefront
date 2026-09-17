@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: `${page.title} — ${store.storeName}`,
       alternates: { canonical: canonicalPath },
-      openGraph: { title: page.title, url: siteUrl(canonicalPath), siteName: store.storeName, type: 'website' },
+      openGraph: { title: page.title, url: await siteUrl(canonicalPath), siteName: store.storeName, type: 'website' },
     };
   } catch {
     return { title: 'Page not found' };

@@ -24,11 +24,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
   }
 
   const urls = [
-    { loc: siteUrl(`/store/${subdomain}`), lastmod: new Date().toISOString() },
-    ...products.map((p) => ({
-      loc: siteUrl(`/store/${subdomain}/product/${p.slug}`),
-      lastmod: p.createdAt,
-    })),
+    { loc: await siteUrl(`/store/${subdomain}`), lastmod: new Date().toISOString() },
+    ...(await Promise.all(
+      products.map(async (p) => ({
+        loc: await siteUrl(`/store/${subdomain}/product/${p.slug}`),
+        lastmod: p.createdAt,
+      })),
+    )),
   ];
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>

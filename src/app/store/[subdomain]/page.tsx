@@ -25,7 +25,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       openGraph: {
         title: store.storeName,
         description,
-        url: siteUrl(canonicalPath),
+        url: await siteUrl(canonicalPath),
         siteName: store.storeName,
         type: 'website',
       },
@@ -53,7 +53,7 @@ export default async function StorePage({ params, searchParams }: PageProps) {
     '@context': 'https://schema.org',
     '@type': 'Store',
     name: store.storeName,
-    url: siteUrl(`/store/${subdomain}`),
+    url: await siteUrl(`/store/${subdomain}`),
   };
 
   const viewProps = {
