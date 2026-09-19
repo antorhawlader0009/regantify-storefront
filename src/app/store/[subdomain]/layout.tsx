@@ -1,6 +1,7 @@
 import { getStoreInfo, StoreNotFoundError } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
+import { VisitBeacon } from '@/components/VisitBeacon';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -29,17 +30,25 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   const { subdomain } = await params;
 
   let theme = resolveTheme('MEDIUM');
+  let storeExists = false;
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
+    storeExists = true;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
-    // the actual 404 UI for this segment.
+    // the actual 404 UI for this segment. storeExists stays false so we
+    // never beacon a "visit" to a store that isn't real.
   }
 
   return (
     <div data-theme={theme.toLowerCase()}>
+      {/* Monthly Visit tracking (PLAN.md Step 5) — mounted here, not
+          inside any theme's own tree, so every theme is counted equally.
+          Renders nothing; see VisitBeacon's own doc comment. Only for a
+          store that actually resolved — see storeExists above. */}
+      {storeExists && <VisitBeacon subdomain={subdomain} />}
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
     </div>
   );
