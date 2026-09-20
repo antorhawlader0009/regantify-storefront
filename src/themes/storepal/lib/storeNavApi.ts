@@ -1,16 +1,18 @@
 import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
+import { detectApiOrigin } from '@/lib/detectApiOrigin';
 
 // Same host-detection pattern as checkoutApi.ts/socialLinksApi.ts — see
 // either file's header comment for why this can't use the server-only
-// API_URL from storefrontApi.ts. Checkout/thank-you are Client
-// Components (they read cart state from localStorage), so they can't
-// call storefrontApi.ts's own getStoreProducts directly the way the
+// API_URL from storefrontApi.ts, and detectApiOrigin.ts for the
+// local-vs-VPS auto-detect. Checkout/thank-you are Client Components
+// (they read cart state from localStorage), so they can't call
+// storefrontApi.ts's own getStoreProducts directly the way the
 // home/product pages do.
-function apiOrigin(): string {
+async function apiOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window === 'undefined') return 'http://localhost:4000';
-  return `${window.location.protocol}//${window.location.hostname}:4000`;
+  return detectApiOrigin(`${window.location.protocol}//${window.location.hostname}:4000`);
 }
 
 export interface StoreNavData {
@@ -32,7 +34,8 @@ const EMPTY_NAV: StoreNavData = { categories: [], categoryDetails: [] };
  */
 export async function getStoreNavData(subdomain: string): Promise<StoreNavData> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products`);
+    const origin = await apiOrigin();
+    const res = await fetch(`${origin}/v1/store/${subdomain}/products`);
     if (!res.ok) return EMPTY_NAV;
     const data = await res.json();
     return {
@@ -65,7 +68,8 @@ const EMPTY_SEARCH_INDEX: StoreSearchProduct[] = [];
  */
 export async function getStoreSearchIndex(subdomain: string): Promise<StoreSearchProduct[]> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products`);
+    const origin = await apiOrigin();
+    const res = await fetch(`${origin}/v1/store/${subdomain}/products`);
     if (!res.ok) return EMPTY_SEARCH_INDEX;
     const data = await res.json();
     if (!Array.isArray(data.products)) return EMPTY_SEARCH_INDEX;
@@ -95,7 +99,8 @@ export interface StorefrontPageSummary {
  */
 export async function getStorePages(subdomain: string): Promise<StorefrontPageSummary[]> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/pages`);
+    const origin = await apiOrigin();
+    const res = await fetch(`${origin}/v1/store/${subdomain}/pages`);
     if (!res.ok) return [];
     const data = await res.json();
     return Array.isArray(data) ? data : [];

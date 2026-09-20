@@ -1,13 +1,16 @@
+import { detectApiOrigin } from './detectApiOrigin';
+
 // Client-side (browser) fetch helper for the storefront's product
 // reviews (product page "Reviews" tab — see ProductTabs.tsx, which is a
 // Client Component). Same host-detection pattern as checkoutApi.ts; see
 // that file's header comment for why this can't use the server-only
-// API_URL from storefrontApi.ts.
-function apiOrigin(): string {
+// API_URL from storefrontApi.ts, and detectApiOrigin.ts for the
+// local-vs-VPS auto-detect.
+async function apiOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window === 'undefined') return 'http://localhost:4000';
-  return `${window.location.protocol}//${window.location.hostname}:4000`;
+  return detectApiOrigin(`${window.location.protocol}//${window.location.hostname}:4000`);
 }
 
 export interface ProductReview {
@@ -35,7 +38,8 @@ export interface SubmitReviewInput {
 
 /** Approved reviews for one product — see ReviewsService.listForProduct on the backend. */
 export async function getProductReviews(subdomain: string, slug: string): Promise<ProductReview[]> {
-  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews`);
+  const origin = await apiOrigin();
+  const res = await fetch(`${origin}/v1/store/${subdomain}/products/${slug}/reviews`);
   if (!res.ok) {
     throw new Error('Could not load reviews.');
   }
@@ -50,7 +54,8 @@ export async function getProductReviews(subdomain: string, slug: string): Promis
  * immediately.
  */
 export async function submitProductReview(subdomain: string, slug: string, input: SubmitReviewInput): Promise<void> {
-  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews`, {
+  const origin = await apiOrigin();
+  const res = await fetch(`${origin}/v1/store/${subdomain}/products/${slug}/reviews`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(input),

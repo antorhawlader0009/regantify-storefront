@@ -1,15 +1,18 @@
+import { detectApiOrigin } from './detectApiOrigin';
+
 // Client-side (browser) fetch helper for Store > Social's public links
 // — used only by client-component pages (account/*, which read cart/
 // customer-auth state from localStorage) that don't already have a
 // server-fetched StorefrontInfo in scope (see storefrontApi.ts, which
 // only runs server-side). Same host-detection pattern as
 // checkoutApi.ts/customerAuthApi.ts; see either file's header comment
-// for why this can't use the server-only API_URL.
-function apiOrigin(): string {
+// for why this can't use the server-only API_URL, and detectApiOrigin.ts
+// for the local-vs-VPS auto-detect.
+async function apiOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window === 'undefined') return 'http://localhost:4000';
-  return `${window.location.protocol}//${window.location.hostname}:4000`;
+  return detectApiOrigin(`${window.location.protocol}//${window.location.hostname}:4000`);
 }
 
 export interface SocialLinks {
@@ -43,7 +46,8 @@ const EMPTY_LINKS: StoreBranding = {};
  */
 export async function getStoreSocialLinks(subdomain: string): Promise<StoreBranding> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}`);
+    const origin = await apiOrigin();
+    const res = await fetch(`${origin}/v1/store/${subdomain}`);
     if (!res.ok) return EMPTY_LINKS;
     const data = await res.json();
     return {

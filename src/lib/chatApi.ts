@@ -1,11 +1,14 @@
+import { detectApiOrigin } from './detectApiOrigin';
+
 // Client-side (browser) fetch helper for the Store AI Chat Bot widget —
 // same host-detection pattern as checkoutApi.ts (see its own header
-// comment for why this can't use the server-only API_URL).
-function apiOrigin(): string {
+// comment for why this can't use the server-only API_URL, and
+// detectApiOrigin.ts for the local-vs-VPS auto-detect).
+async function apiOrigin(): Promise<string> {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window === 'undefined') return 'http://localhost:4000';
-  return `${window.location.protocol}//${window.location.hostname}:4000`;
+  return detectApiOrigin(`${window.location.protocol}//${window.location.hostname}:4000`);
 }
 
 export interface ChatTurn {
@@ -28,7 +31,8 @@ export interface ChatReply {
 }
 
 export async function sendChatMessage(subdomain: string, message: string, history: ChatTurn[]): Promise<ChatReply> {
-  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat`, {
+  const origin = await apiOrigin();
+  const res = await fetch(`${origin}/v1/store/${subdomain}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ message, history }),
