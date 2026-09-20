@@ -52,7 +52,16 @@ let cachedPromise: Promise<string> | null = null;
 /** Resolves to the local API origin if it's actually reachable, otherwise the VPS's. */
 export function detectApiOrigin(inferredLocalUrl: string): Promise<string> {
   if (!cachedPromise) {
-    cachedPromise = probeLocalApi(inferredLocalUrl).then((localIsUp) => (localIsUp ? inferredLocalUrl : VPS_API_URL));
+    cachedPromise = probeLocalApi(inferredLocalUrl).then((localIsUp) => {
+      const resolved = localIsUp ? inferredLocalUrl : VPS_API_URL;
+      // eslint-disable-next-line no-console
+      console.log(
+        localIsUp
+          ? `[Regantify] Using LOCAL server: ${resolved}`
+          : `[Regantify] Local server not reachable at ${inferredLocalUrl} — falling back to VPS: ${resolved}`,
+      );
+      return resolved;
+    });
   }
   return cachedPromise;
 }
