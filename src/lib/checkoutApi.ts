@@ -77,6 +77,25 @@ export async function validateCoupon(
   return res.json();
 }
 
+/**
+ * "Create custom link for this coupon" — resolves the `?coupon=` link a
+ * shopper landed on back to the coupon's real code (see
+ * StorefrontService.resolveCouponLink on the backend). Returns `null`
+ * on no match/network error rather than throwing — a stale or bad
+ * shared link should never block the page it's attached to, it should
+ * just fail to pre-fill a coupon.
+ */
+export async function resolveCouponLink(subdomain: string, link: string): Promise<string | null> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/coupons/by-link?link=${encodeURIComponent(link)}`);
+    if (!res.ok) return null;
+    const body = await res.json().catch(() => null);
+    return body?.code ?? null;
+  } catch {
+    return null;
+  }
+}
+
 // Debounced sync of an in-progress checkout to the vendor's "Incomplete
 // Orders" list (see server/src/incomplete-orders/) — called from
 // checkout/page.tsx a couple of seconds after the shopper stops typing,

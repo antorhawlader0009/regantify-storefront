@@ -1,10 +1,13 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail } from '@/lib/storefrontApi';
 import type { SocialLinks } from '@/lib/socialLinksApi';
+import { resolveCouponLink } from '@/lib/checkoutApi';
+import { setPendingCoupon } from '../lib/pendingCoupon';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
@@ -12,7 +15,7 @@ import { HeroBanner } from '../components/HeroBanner';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { TRUST_BADGES } from '@/lib/placeholderContent';
 import { Stars } from '../../medium/components/Stars';
-import { Truck, ShieldCheck, HandCoins, SlidersHorizontal, X } from 'lucide-react';
+import { Truck, ShieldCheck, HandCoins, SlidersHorizontal, X, Tag } from 'lucide-react';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -38,6 +41,8 @@ interface HomeViewProps {
   /** Accepted for callers that still fetch it (e.g. for Marketing > Campaigns pages elsewhere) — the homepage hero itself now uses categoryDetails instead, see HeroBanner. */
   campaigns?: StorefrontCampaignSummary[];
   logoUrl?: string | null;
+  /** "Create custom link for this coupon" — the `?coupon=` query param a shopper lands on from a vendor-shared link (see lib/pendingCoupon.ts). StorePal-only prop; Medium/Minimal's HomeView has no equivalent. */
+  couponLink?: string;
 }
 
 const TRUST_ICONS = [Truck, ShieldCheck, HandCoins];
@@ -90,7 +95,32 @@ export function HomeView({
   socialLinks,
   campaigns = [],
   logoUrl,
+  couponLink,
 }: HomeViewProps) {
+  const router = useRouter();
+
+  // "Create custom link for this coupon" — resolve the shared link to a
+  // real coupon code once, stash it for checkout to pick up (see
+  // lib/pendingCoupon.ts), show a one-line confirmation, then strip
+  // ?coupon= from the URL so it doesn't linger/re-trigger on a refresh
+  // or get shared onward as a raw query param. A link that doesn't
+  // resolve (typo'd/deleted/deactivated coupon) fails silently — see
+  // resolveCouponLink's own comment.
+  const [couponBannerCode, setCouponBannerCode] = useState<string | null>(null);
+  useEffect(() => {
+    if (!couponLink) return;
+    let cancelled = false;
+    resolveCouponLink(subdomain, couponLink).then((code) => {
+      if (cancelled || !code) return;
+      setPendingCoupon(subdomain, code);
+      setCouponBannerCode(code);
+    });
+    router.replace(`/store/${subdomain}`, { scroll: false });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [couponLink, subdomain]);
   // Price bounds derived from the vendor's actual catalog (discounted
   // price when set, since that's what a shopper actually pays) — the
   // filter panel's slider/min-max inputs are scoped to this range
@@ -194,6 +224,20 @@ export function HomeView({
         socialLinks={socialLinks}
         categoryDetails={categoryDetails}
       />
+
+      {couponBannerCode && (
+        <div className="bg-success-bg text-success text-[13px] font-medium">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+            <span className="flex items-center gap-1.5">
+              <Tag size={14} />
+              Coupon {couponBannerCode} is ready — it&apos;ll be applied at checkout.
+            </span>
+            <button onClick={() => setCouponBannerCode(null)} className="hover:opacity-70">
+              <X size={14} />
+            </button>
+          </div>
+        </div>
+      )}
 
       {!isFiltered && <HeroBanner subdomain={subdomain} categoryDetails={categoryDetails} />}
 

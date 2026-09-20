@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { Ticket } from 'lucide-react';
+import { useRouter } from 'next/navigation';
+import { Ticket, ShoppingCart } from 'lucide-react';
 import { listCustomerCoupons, type CustomerCoupon } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
+import { useCartStore } from '@/providers/cart-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
+import { setPendingCoupon } from '../../lib/pendingCoupon';
 
 function discountLabel(coupon: CustomerCoupon): string {
   if (coupon.discountType === 'FREE_SHIPPING') return 'Free Shipping';
@@ -18,10 +21,21 @@ function discountLabel(coupon: CustomerCoupon): string {
 
 /** Account > Coupons — matches the reference "Your Coupons" (Code/Discount) screenshot. */
 export function CouponsView({ subdomain }: { subdomain: string }) {
+  const router = useRouter();
   const storeName = useStoreDisplayName(subdomain);
   const hydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
   const accessToken = useCustomerAuthStore((s) => s.accessToken);
+  const hasCartItems = useCartStore((s) => s.lines.some((l) => l.subdomain === subdomain));
+
+  // Same hand-off CheckoutView reads for a shared custom link (see
+  // lib/pendingCoupon.ts) — lets a shopper go straight from "Your
+  // Coupons" to a checkout that already has the code queued up, instead
+  // of having to re-type it there.
+  const useThisCoupon = (code: string) => {
+    setPendingCoupon(subdomain, code);
+    router.push(`/store/${subdomain}/checkout`);
+  };
 
   const [coupons, setCoupons] = useState<CustomerCoupon[] | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -72,6 +86,7 @@ export function CouponsView({ subdomain }: { subdomain: string }) {
               <tr className="bg-canvas text-left text-ink">
                 <th className="px-5 py-3 font-semibold">Code</th>
                 <th className="px-5 py-3 font-semibold">Discount</th>
+                <th className="px-5 py-3 font-semibold" />
               </tr>
             </thead>
             <tbody>
@@ -79,6 +94,21 @@ export function CouponsView({ subdomain }: { subdomain: string }) {
                 <tr key={coupon.id} className="border-t border-line">
                   <td className="px-5 py-3 font-mono font-semibold text-ink">{coupon.code}</td>
                   <td className="px-5 py-3 text-accent font-medium">{discountLabel(coupon)}</td>
+                  <td className="px-5 py-3 text-right">
+                    {hasCartItems ? (
+                      <button
+                        onClick={() => useThisCoupon(coupon.code)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[12px] font-bold transition-colors"
+                      >
+                        <ShoppingCart size={12} />
+                        Use at checkout
+                      </button>
+                    ) : (
+                      <Link href={`/store/${subdomain}`} className="text-[12px] font-medium text-accent hover:underline">
+                        Shop now
+                      </Link>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Minus, Plus, X, Tag, ShieldCheck, Truck } from 'lucide-react';
@@ -9,6 +9,7 @@ import { useCheckout, DELIVERY_CHARGE } from '@/lib/useCheckout';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
+import { takePendingCoupon } from '../lib/pendingCoupon';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 
@@ -38,6 +39,33 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
 
   const [couponBoxOpen, setCouponBoxOpen] = useState(false);
   const storeName = useStoreDisplayName(subdomain);
+
+  // "Create custom link for this coupon" hand-off from HomeView (see
+  // lib/pendingCoupon.ts) — a code stashed there pre-fills the box open
+  // here, then auto-applies itself the moment a valid phone number is
+  // on hand (validateCoupon requires one — see useCheckout.applyCoupon).
+  // pendingRef both survives the one-time sessionStorage read (so a
+  // re-render doesn't re-open a box the shopper already closed/edited)
+  // and gates the auto-apply to fire exactly once.
+  const pendingRef = useRef<string | null>(null);
+  const [pendingConsumed, setPendingConsumed] = useState(false);
+  useEffect(() => {
+    const code = takePendingCoupon(subdomain);
+    if (code) {
+      pendingRef.current = code;
+      setCouponCode(code);
+      setCouponBoxOpen(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subdomain]);
+  useEffect(() => {
+    if (!pendingRef.current || pendingConsumed) return;
+    if (couponCode !== pendingRef.current) return; // shopper edited it before it had a chance to fire
+    if (!/^01[0-9]{9}$/.test(form.phone.trim())) return;
+    setPendingConsumed(true);
+    applyCoupon();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.phone, couponCode, pendingConsumed]);
 
   // Checkout is a Client Component (needs cart state from
   // localStorage), so it has no server-fetched StorefrontListData the

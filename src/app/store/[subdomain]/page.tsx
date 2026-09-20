@@ -9,7 +9,7 @@ import { HomeView as StorepalHomeView } from '@/themes/storepal/views/HomeView';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
-  searchParams: Promise<{ category?: string; q?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; coupon?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -37,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StorePage({ params, searchParams }: PageProps) {
   const { subdomain } = await params;
-  const { category: activeCategory, q: search } = await searchParams;
+  const { category: activeCategory, q: search, coupon: couponLink } = await searchParams;
 
   let data;
   try {
@@ -104,6 +104,12 @@ export default async function StorePage({ params, searchParams }: PageProps) {
               socialLinks={socialLinks}
               campaigns={campaigns}
               categoryDetails={categoryDetails}
+              // "Create custom link for this coupon" — only StorePal
+              // reads this (see [[theme-scope-storepal-only]]);
+              // Medium/Minimal's own viewProps spread never includes
+              // it, so a shared /store/:subdomain?coupon=... link is a
+              // no-op there.
+              couponLink={couponLink}
             />
           );
         }
