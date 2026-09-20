@@ -101,7 +101,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             {justPlaced ? 'Thank you for your order!' : 'Order confirmed'}
           </h1>
           <p className="storepal-fade-up text-[13.5px] text-muted max-w-md" style={{ animationDelay: '0.08s' }}>
-            Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.
+            {order.paymentMethod === 'ONLINE_PAYMENT'
+              ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'
+              : 'Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.'}
           </p>
         </div>
 
@@ -179,7 +181,8 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
 
           <div className="px-5 py-4 border-t border-line bg-canvas flex items-center gap-2 text-[12.5px] text-ink">
             <Package size={14} className="text-accent" />
-            Payment Method: <span className="font-semibold">Cash on Delivery</span>
+            Payment Method:{' '}
+            <span className="font-semibold">{order.paymentMethod === 'ONLINE_PAYMENT' ? 'Online Payment' : 'Cash on Delivery'}</span>
           </div>
         </div>
 
