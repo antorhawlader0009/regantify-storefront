@@ -1,5 +1,3 @@
-import { detectApiOrigin } from './detectApiOrigin';
-
 // Client-side (browser) fetch helper — used only by the checkout page,
 // which is a Client Component (needs cart state from localStorage) and
 // so can't use the server-only API_URL from storefrontApi.ts (that one
@@ -9,19 +7,16 @@ import { detectApiOrigin } from './detectApiOrigin';
 //
 // Same auto-detect-from-current-host pattern used throughout this
 // project (client/src/lib/api.ts, client/src/lib/storefrontUrl.ts): if
-// NEXT_PUBLIC_API_URL is set, always use it; otherwise probe whether the
-// API actually answers on port 4000 on whatever host served this page,
-// falling back to the real VPS if not (see detectApiOrigin.ts). This is
-// what lets the SAME build work from http://localhost:3000,
+// NEXT_PUBLIC_API_URL is set, always use it; otherwise assume the API
+// runs on port 4000 on whatever host served this page. This is what
+// lets the SAME build work from http://localhost:3000,
 // http://192.168.x.x:3000 (a tester's LAN PC), or a real deployed
-// domain without per-environment config — and, new here, lets a plain
-// `npm run dev` transparently fall back to the live VPS API when no
-// local server is running at all.
-async function apiOrigin(): Promise<string> {
+// domain without per-environment config.
+function apiOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window === 'undefined') return 'http://localhost:4000';
-  return detectApiOrigin(`${window.location.protocol}//${window.location.hostname}:4000`);
+  return `${window.location.protocol}//${window.location.hostname}:4000`;
 }
 
 export interface CheckoutResponse {
@@ -30,8 +25,7 @@ export interface CheckoutResponse {
 }
 
 export async function placeOrder(subdomain: string, payload: unknown): Promise<CheckoutResponse> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}/v1/store/${subdomain}/checkout`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/checkout`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
@@ -68,8 +62,7 @@ export async function validateCoupon(
   customerPhone: string,
   items: CouponPreviewLine[],
 ): Promise<ValidatedCoupon> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}/v1/store/${subdomain}/coupons/validate`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/coupons/validate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ code, customerPhone, items }),
@@ -94,8 +87,7 @@ export async function validateCoupon(
  */
 export async function resolveCouponLink(subdomain: string, link: string): Promise<string | null> {
   try {
-    const origin = await apiOrigin();
-    const res = await fetch(`${origin}/v1/store/${subdomain}/coupons/by-link?link=${encodeURIComponent(link)}`);
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/coupons/by-link?link=${encodeURIComponent(link)}`);
     if (!res.ok) return null;
     const body = await res.json().catch(() => null);
     return body?.code ?? null;
@@ -114,17 +106,13 @@ export async function resolveCouponLink(subdomain: string, link: string): Promis
 // unlike placeOrder above, which is a deliberate action and does surface
 // errors.
 export function syncIncompleteOrder(subdomain: string, payload: unknown): void {
-  apiOrigin()
-    .then((origin) =>
-      fetch(`${origin}/v1/store/${subdomain}/incomplete-order`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      }),
-    )
-    .catch(() => {
-      // Silently ignored — see comment above.
-    });
+  fetch(`${apiOrigin()}/v1/store/${subdomain}/incomplete-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  }).catch(() => {
+    // Silently ignored — see comment above.
+  });
 }
 
 export interface TrackedOrderItem {
@@ -164,8 +152,7 @@ export interface TrackedOrder {
 }
 
 export async function trackOrder(subdomain: string, invoiceNumber: number, phone: string): Promise<TrackedOrder> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}/v1/store/${subdomain}/track-order`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track-order`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ invoiceNumber, phone }),

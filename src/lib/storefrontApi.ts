@@ -5,21 +5,8 @@
 // lockstep with client/src/lib/storefrontApi.ts (the vendor-dashboard
 // app's copy of the same public endpoints) since both read the same
 // backend response.
-//
-// If API_URL is explicitly set, always use it. Otherwise auto-detect:
-// probe localhost:4000 (see detectApiOriginServer.ts) and fall back to
-// the real VPS if nothing answers there — lets a plain `npm run dev`
-// here transparently use whichever backend is actually running, local
-// or the live gadgetdepobd.com API, no .env editing needed.
-import { detectApiOriginServer } from './detectApiOriginServer';
 
-const CONFIGURED_API_URL = process.env.API_URL;
-const INFERRED_LOCAL_API_URL = 'http://localhost:4000';
-
-function resolveApiUrl(): Promise<string> {
-  if (CONFIGURED_API_URL) return Promise.resolve(CONFIGURED_API_URL);
-  return detectApiOriginServer(INFERRED_LOCAL_API_URL);
-}
+const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
 export type StoreTheme = 'MEDIUM' | 'MINIMAL' | 'STOREPAL';
 
@@ -204,8 +191,7 @@ export async function siteUrl(path: string): Promise<string> {
 
 
 async function fetchJson<T>(path: string, tags: string[]): Promise<T | null> {
-  const apiUrl = await resolveApiUrl();
-  const res = await fetch(`${apiUrl}${path}`, {
+  const res = await fetch(`${API_URL}${path}`, {
     next: { revalidate: REVALIDATE_SECONDS, tags },
   });
   if (res.status === 404) return null;

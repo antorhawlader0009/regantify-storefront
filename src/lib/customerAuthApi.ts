@@ -1,16 +1,13 @@
-import { detectApiOrigin } from './detectApiOrigin';
-
 // Client-side (browser) fetch helper for the storefront's customer
 // account system (signup/login/OTP/refresh/logout) — see
 // server/src/customer-auth/. Same host-detection pattern as
 // checkoutApi.ts; see that file's header comment for why this can't use
-// the server-only API_URL from storefrontApi.ts, and detectApiOrigin.ts
-// for the local-vs-VPS auto-detect.
-async function apiOrigin(): Promise<string> {
+// the server-only API_URL from storefrontApi.ts.
+function apiOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window === 'undefined') return 'http://localhost:4000';
-  return detectApiOrigin(`${window.location.protocol}//${window.location.hostname}:4000`);
+  return `${window.location.protocol}//${window.location.hostname}:4000`;
 }
 
 export interface Customer {
@@ -31,8 +28,7 @@ export interface AuthResult {
 }
 
 async function post<T>(path: string, body: unknown): Promise<T> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}${path}`, {
+  const res = await fetch(`${apiOrigin()}${path}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     // Required so the httpOnly refresh-token cookie (set on the
@@ -57,8 +53,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 // carry a bearer access token instead of (or in addition to) a JSON
 // body — used by the Account > Edit Profile page.
 async function authFetch<T>(path: string, accessToken: string, init?: { method?: string; body?: unknown }): Promise<T> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}${path}`, {
+  const res = await fetch(`${apiOrigin()}${path}`, {
     method: init?.method ?? 'GET',
     headers: {
       Authorization: `Bearer ${accessToken}`,
@@ -154,8 +149,7 @@ export function resetPassword(resetToken: string, password: string) {
 }
 
 export async function refreshCustomerSession(): Promise<AuthResult> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}/v1/customer-auth/refresh`, {
+  const res = await fetch(`${apiOrigin()}/v1/customer-auth/refresh`, {
     method: 'POST',
     credentials: 'include',
   });
@@ -166,8 +160,7 @@ export async function refreshCustomerSession(): Promise<AuthResult> {
 }
 
 export async function customerLogout(accessToken: string): Promise<void> {
-  const origin = await apiOrigin();
-  await fetch(`${origin}/v1/customer-auth/logout`, {
+  await fetch(`${apiOrigin()}/v1/customer-auth/logout`, {
     method: 'POST',
     credentials: 'include',
     headers: { Authorization: `Bearer ${accessToken}` },
@@ -242,8 +235,7 @@ export interface CustomerOrder {
 }
 
 export async function listCustomerOrders(subdomain: string, accessToken: string): Promise<CustomerOrder[]> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}/v1/store/${subdomain}/customer/orders`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/orders`, {
     credentials: 'include',
     headers: { Authorization: `Bearer ${accessToken}` },
   });
@@ -269,8 +261,7 @@ export interface CustomerCoupon {
 }
 
 export async function listCustomerCoupons(subdomain: string, accessToken: string): Promise<CustomerCoupon[]> {
-  const origin = await apiOrigin();
-  const res = await fetch(`${origin}/v1/store/${subdomain}/customer/coupons`, {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/coupons`, {
     credentials: 'include',
     headers: { Authorization: `Bearer ${accessToken}` },
   });

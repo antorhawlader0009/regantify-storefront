@@ -1,16 +1,14 @@
 'use client';
 
 import { useEffect } from 'react';
-import { detectApiOrigin } from '@/lib/detectApiOrigin';
 
 // Same host-detection pattern as checkoutApi.ts/chatApi.ts (see their
 // own comments for why): this runs in the browser, so it can't use the
-// server-only API_URL storefrontApi.ts relies on. See detectApiOrigin.ts
-// for the local-vs-VPS auto-detect.
-async function apiOrigin(): Promise<string> {
+// server-only API_URL storefrontApi.ts relies on.
+function apiOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
-  return detectApiOrigin(`${window.location.protocol}//${window.location.hostname}:4000`);
+  return `${window.location.protocol}//${window.location.hostname}:4000`;
 }
 
 // One sessionStorage key per store per browser tab-group, same
@@ -54,16 +52,12 @@ export function VisitBeacon({ subdomain }: { subdomain: string }) {
       const sessionKey = getOrCreateSessionKey(subdomain);
       // Fire-and-forget — no loading state, no retry, nothing in this
       // component ever needs to know whether it succeeded.
-      void apiOrigin()
-        .then((origin) =>
-          fetch(`${origin}/v1/store/${subdomain}/visit`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionKey }),
-            keepalive: true,
-          }),
-        )
-        .catch(() => {});
+      void fetch(`${apiOrigin()}/v1/store/${subdomain}/visit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionKey }),
+        keepalive: true,
+      }).catch(() => {});
     } catch {
       // sessionStorage can throw in some private-browsing modes — a
       // visit beacon is never worth breaking the page over.
