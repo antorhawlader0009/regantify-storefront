@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
-import { placeOrder, syncIncompleteOrder, validateCoupon, type ValidatedCoupon } from '@/lib/checkoutApi';
+import { placeOrder, syncIncompleteOrder, validateCoupon, initiateOrderPayment, type ValidatedCoupon } from '@/lib/checkoutApi';
 
 export const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
   DHAKA: 70,
@@ -66,6 +66,15 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormState, string>>>({});
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState<string | null>(null);
+
+  // "Payment Method" on checkout — COD (default, every theme today) or
+  // ONLINE_PAYMENT (StorePal only — see themes/storepal/views/
+  // CheckoutView.tsx). Medium/Minimal never render a payment-method
+  // selector and so never call setPaymentMethod, which is what keeps
+  // their checkout behavior byte-for-byte the same as before this was
+  // added — handlePlaceOrder only takes the ONLINE_PAYMENT branch when
+  // a theme's own UI explicitly switches to it.
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'ONLINE_PAYMENT'>('COD');
 
   // "Have Coupon?" (see reference checkout screenshot) — a coupon is
   // only ever previewed here (validateCoupon never touches usageCount,
@@ -223,6 +232,7 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
         deliveryZone: form.zone,
         sessionKey: sessionKey || undefined,
         couponCode: appliedCoupon?.code,
+        paymentMethod,
         items: lines.map((l) => ({
           productSlug: l.productSlug,
           productName: l.name,
@@ -233,8 +243,25 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
           quantity: l.quantity,
         })),
       });
+
+      // ONLINE_PAYMENT: the order now exists (PAYMENT_INITIATED, stock
+      // already decremented — see OrdersService.create), but it isn't
+      // "placed" from the shopper's point of view until PayStation
+      // confirms payment. Cart is cleared either way (the order is real
+      // either way — re-adding the same items and checking out again
+      // would double the stock decrement), but the redirect goes to
+      // PayStation's hosted checkout instead of the thank-you/orders
+      // page; that page is only reached once payment-callback confirms
+      // success (see themes/storepal/views/PaymentCallbackView.tsx).
       clearStore(subdomain);
       sessionStorage.removeItem(`regantify-checkout-session:${subdomain}`);
+
+      if (paymentMethod === 'ONLINE_PAYMENT') {
+        const payment = await initiateOrderPayment(result.orderId);
+        window.location.href = payment.paymentUrl;
+        return;
+      }
+
       sessionStorage.setItem(
         HANDOFF_KEY,
         JSON.stringify({ subdomain, invoiceNumber: result.invoiceNumber, phone: form.phone.trim() }),
@@ -268,5 +295,7 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
     couponError,
     applyCoupon,
     removeCoupon,
+    paymentMethod,
+    setPaymentMethod,
   };
 }

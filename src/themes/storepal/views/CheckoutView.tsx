@@ -35,6 +35,8 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     couponError,
     applyCoupon,
     removeCoupon,
+    paymentMethod,
+    setPaymentMethod,
   } = useCheckout(subdomain, 'thank-you');
 
   const [couponBoxOpen, setCouponBoxOpen] = useState(false);
@@ -214,10 +216,27 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
 
             <div className="border-t border-line mt-6 pt-6">
               <p className="text-[15px] font-semibold text-ink mb-3">Payment Method</p>
-              <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink">
-                <input type="radio" checked readOnly className="accent-accent w-4 h-4" />
-                Cash on Delivery
-              </label>
+              <div className="space-y-2.5">
+                <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={paymentMethod === 'COD'}
+                    onChange={() => setPaymentMethod('COD')}
+                    className="accent-accent w-4 h-4"
+                  />
+                  Cash on Delivery
+                </label>
+                <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
+                  <input
+                    type="radio"
+                    checked={paymentMethod === 'ONLINE_PAYMENT'}
+                    onChange={() => setPaymentMethod('ONLINE_PAYMENT')}
+                    className="accent-accent w-4 h-4"
+                  />
+                  Online Payment
+                  <span className="text-[11px] text-muted font-normal">(bKash, Nagad, cards &amp; more via PayStation)</span>
+                </label>
+              </div>
             </div>
 
             {placeError && <p className="mt-4 text-[13px] text-accent">{placeError}</p>}
@@ -227,7 +246,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               disabled={placing}
               className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
             >
-              {placing ? 'Placing order…' : 'Submit Order'}
+              {placing ? (paymentMethod === 'ONLINE_PAYMENT' ? 'Redirecting to payment…' : 'Placing order…') : 'Submit Order'}
             </button>
 
             <div className="flex flex-wrap gap-2 mt-4">

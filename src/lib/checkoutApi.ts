@@ -20,8 +20,10 @@ function apiOrigin(): string {
 }
 
 export interface CheckoutResponse {
+  orderId: string;
   invoiceNumber: number;
   total: string;
+  status: string;
 }
 
 export async function placeOrder(subdomain: string, payload: unknown): Promise<CheckoutResponse> {
@@ -37,6 +39,52 @@ export async function placeOrder(subdomain: string, payload: unknown): Promise<C
     throw new Error(message || 'Could not place the order. Please try again.');
   }
 
+  return res.json();
+}
+
+// StorePal theme's "Online Payment" option — called right after
+// placeOrder() when the shopper picked Online Payment, using the
+// orderId placeOrder just returned. Public, no auth (see
+// StorefrontPaymentsController on the backend) — a shopper is never
+// logged in during checkout.
+export interface InitiateOrderPaymentResponse {
+  invoiceNumber: string;
+  paymentUrl: string;
+  amount: number;
+}
+
+export async function initiateOrderPayment(orderId: string): Promise<InitiateOrderPaymentResponse> {
+  const res = await fetch(`${apiOrigin()}/v1/store-payments/orders/${orderId}/initiate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
+    throw new Error(message || 'Could not start the payment. Please try again.');
+  }
+
+  return res.json();
+}
+
+export type OrderPaymentStatus = 'PENDING' | 'SUCCESS' | 'FAILED' | 'CANCELLED';
+
+export interface OrderPaymentStatusResponse {
+  status: OrderPaymentStatus;
+  order: { invoiceNumber: number; status: string; customerPhone: string } | null;
+}
+
+/** payment-callback page's own re-verification — never trusts the redirect's own query params, always re-checks with PayStation server-to-server. */
+export async function reconcileOrderPayment(invoiceNumber: string): Promise<{ status: OrderPaymentStatus; alreadyFulfilled: boolean }> {
+  const res = await fetch(`${apiOrigin()}/v1/store-payments/reconcile/${invoiceNumber}`, { method: 'POST' });
+  if (!res.ok) throw new Error('Could not verify this payment.');
+  return res.json();
+}
+
+export async function getOrderPaymentStatus(invoiceNumber: string): Promise<OrderPaymentStatusResponse> {
+  const res = await fetch(`${apiOrigin()}/v1/store-payments/status/${invoiceNumber}`);
+  if (!res.ok) throw new Error('Could not find this payment.');
   return res.json();
 }
 
