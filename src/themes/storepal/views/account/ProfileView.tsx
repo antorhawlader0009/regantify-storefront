@@ -4,11 +4,15 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { User, Check } from 'lucide-react';
 import { getMyProfile, updateMyProfile } from '@/lib/customerAuthApi';
+import { getStoreDeliveryCharges } from '@/lib/checkoutApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 
-const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
+// Frozen fallback until the vendor's real Settings > Courier
+// Integration > Delivery Charge values load — same reasoning/values as
+// lib/useCheckout.ts's own DELIVERY_CHARGE fallback.
+const FALLBACK_DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
   DHAKA: 70,
   OUTSIDE_DHAKA: 130,
 };
@@ -31,6 +35,17 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
+  const [deliveryCharge, setDeliveryCharge] = useState(FALLBACK_DELIVERY_CHARGE);
+
+  useEffect(() => {
+    getStoreDeliveryCharges(subdomain).then((charges) => {
+      if (!charges) return;
+      setDeliveryCharge({
+        DHAKA: Number(charges.insideDhakaCharge),
+        OUTSIDE_DHAKA: Number(charges.outsideDhakaCharge),
+      });
+    });
+  }, [subdomain]);
 
   useEffect(() => {
     if (!hydrated || !accessToken) return;
@@ -153,7 +168,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
                       zone === z ? 'border-accent bg-accent text-white' : 'border-line-strong bg-canvas text-ink'
                     }`}
                   >
-                    {z === 'DHAKA' ? `Inside Dhaka — ৳${DELIVERY_CHARGE.DHAKA}` : `Outside Dhaka — ৳${DELIVERY_CHARGE.OUTSIDE_DHAKA}`}
+                    {z === 'DHAKA' ? `Inside Dhaka — ৳${deliveryCharge.DHAKA}` : `Outside Dhaka — ৳${deliveryCharge.OUTSIDE_DHAKA}`}
                   </button>
                 ))}
               </div>

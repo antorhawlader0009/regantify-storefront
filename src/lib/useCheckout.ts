@@ -5,12 +5,28 @@ import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
-import { placeOrder, syncIncompleteOrder, validateCoupon, type ValidatedCoupon } from '@/lib/checkoutApi';
+import {
+  placeOrder,
+  syncIncompleteOrder,
+  validateCoupon,
+  initiateOrderPayment,
+  getStoreDeliveryCharges,
+  type ValidatedCoupon,
+} from '@/lib/checkoutApi';
 
+// Frozen fallback — the exact old constant every theme's checkout used
+// before Settings > Courier Integration > Delivery Charge made this
+// vendor-configurable (see Vendor.insideDhakaCharge etc in
+// schema.prisma). Medium/Minimal's own CheckoutView.tsx/ProfileView.tsx
+// still import/hardcode this literal 70/130 pairing directly for their
+// own "Inside Dhaka — ৳70" style option labels — kept as-is/untouched.
+// This export only remains as that same fallback value for the brief
+// window before the real per-vendor charges below have loaded.
 export const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
   DHAKA: 70,
   OUTSIDE_DHAKA: 130,
 };
+const FALLBACK_COD_VAT_CHARGE = 5;
 
 const HANDOFF_KEY = 'regantify-last-order';
 
@@ -66,6 +82,43 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormState, string>>>({});
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState<string | null>(null);
+
+  // Settings > Courier Integration > Delivery Charge — the vendor's own
+  // saved charges, fetched once per subdomain. Falls back to the old
+  // frozen DELIVERY_CHARGE/FALLBACK_COD_VAT_CHARGE constants until this
+  // resolves (or if the fetch fails), so checkout never blocks on it.
+  const [vendorCharges, setVendorCharges] = useState<{
+    insideDhakaCharge: number;
+    outsideDhakaCharge: number;
+    codVatCharge: number;
+  } | null>(null);
+  useEffect(() => {
+    let cancelled = false;
+    getStoreDeliveryCharges(subdomain).then((charges) => {
+      if (cancelled || !charges) return;
+      setVendorCharges({
+        insideDhakaCharge: Number(charges.insideDhakaCharge),
+        outsideDhakaCharge: Number(charges.outsideDhakaCharge),
+        codVatCharge: Number(charges.codVatCharge),
+      });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [subdomain]);
+  const resolvedDeliveryCharge: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = vendorCharges
+    ? { DHAKA: vendorCharges.insideDhakaCharge, OUTSIDE_DHAKA: vendorCharges.outsideDhakaCharge }
+    : DELIVERY_CHARGE;
+  const resolvedCodVatCharge = vendorCharges?.codVatCharge ?? FALLBACK_COD_VAT_CHARGE;
+
+  // "Payment Method" on checkout — COD (default, every theme today) or
+  // ONLINE_PAYMENT (StorePal only — see themes/storepal/views/
+  // CheckoutView.tsx). Medium/Minimal never render a payment-method
+  // selector and so never call setPaymentMethod, which is what keeps
+  // their checkout behavior byte-for-byte the same as before this was
+  // added — handlePlaceOrder only takes the ONLINE_PAYMENT branch when
+  // a theme's own UI explicitly switches to it.
+  const [paymentMethod, setPaymentMethod] = useState<'COD' | 'ONLINE_PAYMENT'>('COD');
 
   // "Have Coupon?" (see reference checkout screenshot) — a coupon is
   // only ever previewed here (validateCoupon never touches usageCount,
@@ -130,7 +183,11 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
 
   const storeName = lines[0]?.storeName ?? '';
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
-  const deliveryCharge = lines.length > 0 ? DELIVERY_CHARGE[form.zone] : 0;
+  const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[form.zone] : 0;
+  // COD VAT — a flat fee added only for Cash on Delivery orders, never
+  // Online Payment (see OrdersService.create's own comment on why). Zero
+  // whenever the cart is empty, same as deliveryCharge above.
+  const vatAmount = lines.length > 0 && paymentMethod === 'COD' ? resolvedCodVatCharge : 0;
   // FREE_SHIPPING waives the delivery charge instead of discounting the
   // subtotal — same split OrdersService.create's own coupon handling
   // makes server-side, so the number shown here always matches what
@@ -138,7 +195,7 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   const couponFreeShipping = appliedCoupon?.discountType === 'FREE_SHIPPING';
   const couponDiscount = couponFreeShipping ? 0 : (appliedCoupon?.discountAmount ?? 0);
   const effectiveDeliveryCharge = couponFreeShipping ? 0 : deliveryCharge;
-  const grandTotal = Math.max(0, subtotal + effectiveDeliveryCharge - couponDiscount);
+  const grandTotal = Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount - couponDiscount);
 
   // Same limits enforced server-side by CreateOrderDto — kept here too so
   // a shopper is stopped from typing past them in the first place, on
@@ -223,6 +280,7 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
         deliveryZone: form.zone,
         sessionKey: sessionKey || undefined,
         couponCode: appliedCoupon?.code,
+        paymentMethod,
         items: lines.map((l) => ({
           productSlug: l.productSlug,
           productName: l.name,
@@ -233,8 +291,25 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
           quantity: l.quantity,
         })),
       });
+
+      // ONLINE_PAYMENT: the order now exists (PAYMENT_INITIATED, stock
+      // already decremented — see OrdersService.create), but it isn't
+      // "placed" from the shopper's point of view until PayStation
+      // confirms payment. Cart is cleared either way (the order is real
+      // either way — re-adding the same items and checking out again
+      // would double the stock decrement), but the redirect goes to
+      // PayStation's hosted checkout instead of the thank-you/orders
+      // page; that page is only reached once payment-callback confirms
+      // success (see themes/storepal/views/PaymentCallbackView.tsx).
       clearStore(subdomain);
       sessionStorage.removeItem(`regantify-checkout-session:${subdomain}`);
+
+      if (paymentMethod === 'ONLINE_PAYMENT') {
+        const payment = await initiateOrderPayment(result.orderId);
+        window.location.href = payment.paymentUrl;
+        return;
+      }
+
       sessionStorage.setItem(
         HANDOFF_KEY,
         JSON.stringify({ subdomain, invoiceNumber: result.invoiceNumber, phone: form.phone.trim() }),
@@ -258,6 +333,18 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
     storeName,
     subtotal,
     deliveryCharge: effectiveDeliveryCharge,
+    // Per-zone map (Inside/Outside Dhaka) — the vendor's real saved
+    // charges once loaded, same frozen 70/130 fallback otherwise. Lets
+    // a theme show both options' prices before one is actually chosen
+    // (see StorePal's own Shipping Option <select>); Medium/Minimal
+    // still use their own imported DELIVERY_CHARGE constant for this,
+    // unchanged.
+    deliveryChargeByZone: resolvedDeliveryCharge,
+    // COD-only flat fee (see comment above) — StorePal's CheckoutView/
+    // ThankYouView show this as "VAT"; Medium/Minimal don't render it as
+    // its own line (their JSX is unchanged), it's only folded silently
+    // into grandTotal below, same as it already was for MANUAL orders.
+    vatAmount,
     grandTotal,
     updateField,
     handlePlaceOrder,
@@ -268,5 +355,7 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
     couponError,
     applyCoupon,
     removeCoupon,
+    paymentMethod,
+    setPaymentMethod,
   };
 }

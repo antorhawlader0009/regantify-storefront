@@ -29,6 +29,12 @@ export interface StorefrontInfo {
   tiktokUrl?: string | null;
   linkedinUrl?: string | null;
   whatsappUrl?: string | null;
+  // Settings > Courier Integration > Delivery Charge — see
+  // StorefrontController's select on the backend. Read by useCheckout
+  // (shared by every theme) instead of a hardcoded constant.
+  insideDhakaCharge: string;
+  outsideDhakaCharge: string;
+  codVatCharge: string;
 }
 
 export interface StorefrontVariationOption {

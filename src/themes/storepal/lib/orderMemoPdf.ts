@@ -157,6 +157,9 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   };
   totalsRow('Subtotal', formatPrice(order.subtotal));
   totalsRow('Delivery Charge', formatPrice(order.deliveryCharge));
+  if (Number(order.vatAmount) > 0) {
+    totalsRow('VAT', formatPrice(order.vatAmount));
+  }
   if (Number(order.discountAmount) > 0) {
     totalsRow('Discount', `-${formatPrice(order.discountAmount)}`);
   }
