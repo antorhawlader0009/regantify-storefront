@@ -26,7 +26,7 @@ export const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
   DHAKA: 70,
   OUTSIDE_DHAKA: 130,
 };
-const FALLBACK_COD_VAT_CHARGE = 5;
+const FALLBACK_COD_VAT_CHARGE = 10;
 
 const HANDOFF_KEY = 'regantify-last-order';
 
@@ -184,9 +184,9 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   const storeName = lines[0]?.storeName ?? '';
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
   const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[form.zone] : 0;
-  // COD VAT — a flat fee added only for Cash on Delivery orders, never
-  // Online Payment (see OrdersService.create's own comment on why). Zero
-  // whenever the cart is empty, same as deliveryCharge above.
+  // COD Charge — a flat fee added only for Cash on Delivery orders,
+  // never Online Payment (see OrdersService.create's own comment on
+  // why). Zero whenever the cart is empty, same as deliveryCharge above.
   const vatAmount = lines.length > 0 && paymentMethod === 'COD' ? resolvedCodVatCharge : 0;
   // FREE_SHIPPING waives the delivery charge instead of discounting the
   // subtotal — same split OrdersService.create's own coupon handling
@@ -341,9 +341,10 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
     // unchanged.
     deliveryChargeByZone: resolvedDeliveryCharge,
     // COD-only flat fee (see comment above) — StorePal's CheckoutView/
-    // ThankYouView show this as "VAT"; Medium/Minimal don't render it as
-    // its own line (their JSX is unchanged), it's only folded silently
-    // into grandTotal below, same as it already was for MANUAL orders.
+    // ThankYouView show this as "COD Charge"; Medium/Minimal don't render
+    // it as its own line (their JSX is unchanged), it's only folded
+    // silently into grandTotal below, same as it already was for MANUAL
+    // orders.
     vatAmount,
     grandTotal,
     updateField,

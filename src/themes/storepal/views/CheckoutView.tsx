@@ -328,7 +328,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               </div>
               {vatAmount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-ink">VAT</span>
+                  <span className="text-ink">COD Charge</span>
                   <span className="font-semibold text-accent">{formatPrice(vatAmount)}</span>
                 </div>
               )}

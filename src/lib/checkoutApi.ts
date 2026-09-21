@@ -211,9 +211,8 @@ export interface TrackedOrder {
   subtotal: string;
   deliveryCharge: string;
   // Flat COD fee — only ever non-zero when paymentMethod is "COD".
-  // Shown by StorePal's ThankYouView/orderMemoPdf as "VAT", never a
-  // separate "COD Charge" line. See Vendor.codVatCharge/Order.vatAmount
-  // in schema.prisma.
+  // Shown by StorePal's ThankYouView/orderMemoPdf as "COD Charge". See
+  // Vendor.codVatCharge/Order.vatAmount in schema.prisma.
   vatAmount: string;
   discountAmount: string;
   total: string;

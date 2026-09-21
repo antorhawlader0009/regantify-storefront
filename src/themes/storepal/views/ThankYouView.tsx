@@ -169,7 +169,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             </div>
             {Number(order.vatAmount) > 0 && (
               <div className="flex justify-between text-muted">
-                <span>VAT</span>
+                <span>COD Charge</span>
                 <span>{formatPrice(order.vatAmount)}</span>
               </div>
             )}
