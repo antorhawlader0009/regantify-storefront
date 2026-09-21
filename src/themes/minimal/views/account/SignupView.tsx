@@ -21,6 +21,12 @@ export function SignupView({ subdomain }: { subdomain: string }) {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
+  // Guards against a double-click/double-tap firing two resend requests
+  // before React re-renders the button as disabled — the server has its
+  // own per-phone cooldown (CustomerAuthService.issueOtpLocked) but this
+  // is what stops a real double-SMS in practice; see that method's own
+  // comment for the full reasoning.
+  const [resending, setResending] = useState(false);
 
   const handleSendOtp = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -41,6 +47,8 @@ export function SignupView({ subdomain }: { subdomain: string }) {
   };
 
   const handleResend = async () => {
+    if (resending) return;
+    setResending(true);
     setError(null);
     setResent(false);
     try {
@@ -48,6 +56,8 @@ export function SignupView({ subdomain }: { subdomain: string }) {
       setResent(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not resend the OTP.');
+    } finally {
+      setResending(false);
     }
   };
 
@@ -151,8 +161,13 @@ export function SignupView({ subdomain }: { subdomain: string }) {
               <button type="button" onClick={() => setStep('details')} className="text-muted hover:text-ink transition-colors">
                 Change details
               </button>
-              <button type="button" onClick={handleResend} className="text-ink border-b border-ink pb-0.5">
-                Resend code
+              <button
+                type="button"
+                onClick={handleResend}
+                disabled={resending}
+                className="text-ink border-b border-ink pb-0.5 disabled:opacity-60 disabled:cursor-not-allowed"
+              >
+                {resending ? 'Sending…' : 'Resend code'}
               </button>
             </div>
           </form>
