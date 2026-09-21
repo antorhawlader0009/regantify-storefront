@@ -10,6 +10,31 @@ const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
 export type StoreTheme = 'MEDIUM' | 'MINIMAL' | 'STOREPAL';
 
+// Store > Footer — kept in lockstep by hand with
+// server/src/vendor/footer-templates.ts (the canonical registry) and its
+// mirrored copy at storefront/src/lib/footerTemplates.ts. See
+// FooterConfig in the server's schema.prisma for the field-by-field
+// reasoning.
+export interface StorefrontFooterLink {
+  label: string;
+  url: string;
+}
+
+export interface StorefrontFooterConfig {
+  template: string;
+  menuTitle: string;
+  menuLinks: StorefrontFooterLink[];
+  infoTitle: string;
+  infoLinks: StorefrontFooterLink[];
+  aboutBlurb: string | null;
+  showSocialIcons: boolean;
+  showSubscribeBlock: boolean;
+  subscribeHeading: string;
+  subscribeSubheading: string;
+  showPaymentIcons: boolean;
+  paymentIcons: string[];
+}
+
 export interface StorefrontInfo {
   id: string;
   storeName: string;
@@ -29,6 +54,26 @@ export interface StorefrontInfo {
   tiktokUrl?: string | null;
   linkedinUrl?: string | null;
   whatsappUrl?: string | null;
+  // Store > Branding — surfaced on every storefront response, same
+  // reasoning as the social fields above. Applied at the store/[subdomain]
+  // layout (colors/favicon/fonts) and as the homepage's default meta
+  // fallback (see page.tsx's generateMetadata) — every field
+  // independently nullable, falling back to each theme's own built-in
+  // default when unset.
+  faviconUrl?: string | null;
+  accentColor?: string | null;
+  bodyBackgroundColor?: string | null;
+  brandHeadingFont?: string | null;
+  brandBodyFont?: string | null;
+  brandCoverImageUrl?: string | null;
+  brandMetaTitle?: string | null;
+  brandMetaDescription?: string | null;
+  // Store > Footer — null when the vendor has never saved one (see
+  // FooterConfig's own "singleton, optional" schema comment); each
+  // theme's StoreFooter falls back to its own current hardcoded content
+  // in that case, so an unconfigured store looks exactly as it did
+  // before this feature shipped.
+  footerConfig?: StorefrontFooterConfig | null;
   // Settings > Courier Integration > Delivery Charge — see
   // StorefrontController's select on the backend. Read by useCheckout
   // (shared by every theme) instead of a hardcoded constant.
@@ -174,7 +219,20 @@ class StorePageNotFoundError extends Error {
   }
 }
 
-export { StoreNotFoundError, ProductNotFoundError, CampaignNotFoundError, StorePageNotFoundError };
+class LandingPageNotFoundError extends Error {
+  constructor(slug: string) {
+    super(`No landing page found for slug "${slug}"`);
+    this.name = 'LandingPageNotFoundError';
+  }
+}
+
+export {
+  StoreNotFoundError,
+  ProductNotFoundError,
+  CampaignNotFoundError,
+  StorePageNotFoundError,
+  LandingPageNotFoundError,
+};
 
 // Canonical absolute URL for a storefront path — used in generateMetadata
 // (alternates.canonical, Open Graph og:url) and JSON-LD. A relative or
@@ -300,6 +358,82 @@ export async function getStoreCampaigns(subdomain: string): Promise<StorefrontCa
   } catch {
     return [];
   }
+}
+
+// -- Landing Pages (landing-plan.md §6, §8) ------------------------------
+// Kept in lockstep by hand with client/src/lib/landingPagesApi.ts's own
+// LandingPageSection shape and landing-page-sections.md's registry — same
+// convention this file's own header comment already documents for every
+// other type here.
+
+export interface StorefrontLandingPageSection {
+  id: string;
+  type: string;
+  props: Record<string, unknown>;
+  visibility: { desktop: boolean; mobile: boolean };
+}
+
+export type StorefrontLandingPageDisplayMode = 'FULL_PAGE' | 'WITH_STORE_CHROME';
+
+export interface StorefrontLandingPage {
+  id: string;
+  title: string;
+  slug: string;
+  sections: StorefrontLandingPageSection[];
+  displayMode: StorefrontLandingPageDisplayMode;
+  chatButtonEnabled: boolean;
+  chatButtonLink?: string | null;
+  chatButtonImageUrl?: string | null;
+  headingFont?: string | null;
+  bodyFont?: string | null;
+  customCss?: string | null;
+  metaTitle?: string | null;
+  metaDescription?: string | null;
+  metaKeywords?: string | null;
+  coverImageUrl?: string | null;
+  metaPixelId?: string | null;
+  tiktokPixelId?: string | null;
+}
+
+// Resolved product data for every productId/productIds referenced
+// anywhere in this page's sections (Select Products, Price Offer, Sticky
+// Order Bar) — see StorefrontService.getStoreLandingPage's own comment on
+// the backend for why this is batched server-side rather than the render
+// tree fetching product-by-product. A productId with no matching entry
+// here (deleted, or since made non-PUBLIC) should render as "not
+// selected", not an error — see landing-page-sections.md §3.1's render note.
+export interface StorefrontLandingPageProduct {
+  id: string;
+  name: string;
+  slug: string;
+  photoUrl: string | null;
+  price: string;
+  discountPrice: string | null;
+  stockQuantity: number | null;
+  isPreOrder: boolean;
+  inStock: boolean;
+}
+
+export interface StorefrontLandingPageData {
+  store: StorefrontInfo;
+  landingPage: StorefrontLandingPage;
+  products: StorefrontLandingPageProduct[];
+}
+
+/**
+ * Store > Landing Pages' public rendering (landing-plan.md §6, §8). Only
+ * ever returns a PUBLISHED page — see StorefrontService.getStoreLandingPage
+ * on the backend. Tagged separately from the product-list tag (`:landing:`
+ * not `:product:`) so StorefrontRevalidateService's 'landing-page' kind
+ * revalidates exactly this cache entry.
+ */
+export async function getStoreLandingPage(subdomain: string, slug: string): Promise<StorefrontLandingPageData> {
+  const data = await fetchJson<StorefrontLandingPageData>(
+    `/v1/store/${subdomain}/landing-pages/${encodeURIComponent(slug)}`,
+    [`store:${subdomain}`, `store:${subdomain}:landing:${slug}`],
+  );
+  if (!data) throw new LandingPageNotFoundError(slug);
+  return data;
 }
 
 // Category strip + related products for the product detail page's

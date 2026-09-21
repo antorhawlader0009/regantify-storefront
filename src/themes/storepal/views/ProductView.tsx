@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import type { StorefrontProduct, StorefrontCardProduct, StorefrontCategoryDetail } from '@/lib/storefrontApi';
-import type { SocialLinks } from '@/lib/socialLinksApi';
+import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
@@ -27,9 +27,21 @@ interface ProductViewProps {
   related: StorefrontCardProduct[];
   socialLinks?: SocialLinks;
   logoUrl?: string | null;
+  /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
+  footerConfig?: StoreFooterConfig | null;
 }
 
-export function ProductView({ subdomain, storeName, product, categories, categoryDetails, related, socialLinks, logoUrl }: ProductViewProps) {
+export function ProductView({
+  subdomain,
+  storeName,
+  product,
+  categories,
+  categoryDetails,
+  related,
+  socialLinks,
+  logoUrl,
+  footerConfig,
+}: ProductViewProps) {
   return (
     <div className="min-h-screen bg-canvas text-ink pb-[70px] sm:pb-0">
       <StoreHeader
@@ -84,7 +96,7 @@ export function ProductView({ subdomain, storeName, product, categories, categor
       </div>
 
       <div className="hidden sm:block">
-        <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
+        <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
       </div>
     </div>
   );

@@ -5,22 +5,25 @@ import { revalidateTag } from 'next/cache';
  * On-demand revalidation endpoint — called by the backend (see
  * server/src/storefront/storefront-revalidate.service.ts) right after
  * any change that affects storefront data: a product created/updated/
- * deleted, or its visibility toggled. Without this, the storefront only
- * picks up changes after the fetch cache's time-based revalidate window
- * (see REVALIDATE_SECONDS in storefrontApi.ts) expires — which reads as
- * "I have to wait or reload" to a vendor who just saved a product. This
- * makes it instant instead.
+ * deleted, its visibility toggled, or (landing-plan.md §6, §8) a landing
+ * page published/updated/unpublished/deleted. Without this, the
+ * storefront only picks up changes after the fetch cache's time-based
+ * revalidate window (see REVALIDATE_SECONDS in storefrontApi.ts) expires
+ * — which reads as "I have to wait or reload" to a vendor who just saved
+ * something. This makes it instant instead.
  *
  * POST /api/revalidate
- * Body: { secret: string, subdomain: string, slug?: string }
+ * Body: { secret: string, subdomain: string, slug?: string, kind?: 'product' | 'landing-page' }
  *
  * Always revalidates the store's product list/store-info tag. When a
- * `slug` is given, also revalidates that one product's detail tag —
- * every call from the backend passes a slug except a category-list
- * change, which doesn't affect any single product's detail page.
+ * `slug` is given, also revalidates that one item's own detail tag —
+ * `kind` (default 'product', backward compatible with every existing
+ * caller that never sent it) picks which tag family `slug` belongs to,
+ * so revalidating one landing page never needs to also claim to be a
+ * product-detail change or vice versa.
  */
 export async function POST(request: NextRequest) {
-  let body: { secret?: string; subdomain?: string; slug?: string };
+  let body: { secret?: string; subdomain?: string; slug?: string; kind?: 'product' | 'landing-page' };
   try {
     body = await request.json();
   } catch {
@@ -50,7 +53,10 @@ export async function POST(request: NextRequest) {
   revalidateTag(`store:${subdomain}`);
 
   if (body.slug?.trim()) {
-    const tag = `store:${subdomain}:product:${body.slug.trim()}`;
+    const tag =
+      body.kind === 'landing-page'
+        ? `store:${subdomain}:landing:${body.slug.trim()}`
+        : `store:${subdomain}:product:${body.slug.trim()}`;
     revalidateTag(tag);
     revalidated.push(tag);
   }

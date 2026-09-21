@@ -144,7 +144,13 @@ export default async function ProductPage({ params }: PageProps) {
       {resolveTheme(store.theme) === 'MINIMAL' ? (
         <MinimalProductView {...viewProps} />
       ) : resolveTheme(store.theme) === 'STOREPAL' ? (
-        <StorepalProductView {...viewProps} categoryDetails={categoryDetails} logoUrl={store.logoUrl} socialLinks={socialLinks} />
+        <StorepalProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+        />
       ) : (
         <MediumProductView {...viewProps} />
       )}

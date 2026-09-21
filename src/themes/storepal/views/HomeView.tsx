@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail } from '@/lib/storefrontApi';
-import type { SocialLinks } from '@/lib/socialLinksApi';
+import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { resolveCouponLink } from '@/lib/checkoutApi';
 import { setPendingCoupon } from '../lib/pendingCoupon';
 import { StoreHeader } from '../components/StoreHeader';
@@ -41,6 +41,8 @@ interface HomeViewProps {
   /** Accepted for callers that still fetch it (e.g. for Marketing > Campaigns pages elsewhere) — the homepage hero itself now uses categoryDetails instead, see HeroBanner. */
   campaigns?: StorefrontCampaignSummary[];
   logoUrl?: string | null;
+  /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
+  footerConfig?: StoreFooterConfig | null;
   /** "Create custom link for this coupon" — the `?coupon=` query param a shopper lands on from a vendor-shared link (see lib/pendingCoupon.ts). StorePal-only prop; Medium/Minimal's HomeView has no equivalent. */
   couponLink?: string;
 }
@@ -95,6 +97,7 @@ export function HomeView({
   socialLinks,
   campaigns = [],
   logoUrl,
+  footerConfig,
   couponLink,
 }: HomeViewProps) {
   const router = useRouter();
@@ -445,7 +448,7 @@ export function HomeView({
         </>
       )}
 
-      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
+      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
     </div>
   );
 }

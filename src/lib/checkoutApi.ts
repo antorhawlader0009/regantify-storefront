@@ -301,3 +301,69 @@ export async function trackOrder(subdomain: string, invoiceNumber: number, phone
 
   return res.json();
 }
+
+// -- Landing Page sections (landing-plan.md §6, §8, §9) -------------------
+// Both of these are called from Client Components inside the landing/
+// render tree (storefront/src/landing/sections/CheckoutForm.tsx,
+// LeadForm.tsx) — same reasoning as placeOrder/trackOrder above: a
+// landing page's Checkout Form / Lead Form are filled in the browser, so
+// they need this file's client-side apiOrigin(), not storefrontApi.ts's
+// server-only API_URL.
+
+export interface SubmitLeadPayload {
+  name: string;
+  phone: string;
+  email?: string;
+}
+
+/**
+ * Lead/Contact Form section, `destination: "vendor-dashboard"`
+ * (landing-page-sections.md §6.2). See StorefrontService.submitLandingPageLead
+ * on the backend — this is intentionally NOT placeOrder/CreateOrderDto,
+ * since a lead never has a cart or a price.
+ */
+export async function submitLandingPageLead(
+  subdomain: string,
+  slug: string,
+  payload: SubmitLeadPayload,
+): Promise<{ success: true }> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/landing-pages/${encodeURIComponent(slug)}/leads`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
+    throw new Error(message || 'Could not submit your information. Please try again.');
+  }
+
+  return res.json();
+}
+
+export interface RecordLandingPageVisitPayload {
+  sessionKey: string;
+  referrer?: string;
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+}
+
+/**
+ * Landing page visit beacon (landing-plan.md §6, §8) — fire-and-forget,
+ * same contract as VisitBeacon.tsx's store-wide beacon (never throws,
+ * never blocks/delays the page). See
+ * StorefrontService.recordLandingPageVisit on the backend.
+ */
+export function recordLandingPageVisit(subdomain: string, slug: string, payload: RecordLandingPageVisitPayload): void {
+  fetch(`${apiOrigin()}/v1/store/${subdomain}/landing-pages/${encodeURIComponent(slug)}/visit`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  }).catch(() => {
+    // Silently ignored — see VisitBeacon.tsx's own comment on why a
+    // dropped beacon must never surface to the shopper.
+  });
+}

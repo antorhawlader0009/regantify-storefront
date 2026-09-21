@@ -1,49 +1,202 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
+import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
+import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplates';
 
 interface StoreFooterProps {
   subdomain: string;
   storeName: string;
+  // Same prop-or-fetch convention as Medium/StorePal's StoreFooter.
+  logoUrl?: string | null;
+  socialLinks?: SocialLinks;
+  footerConfig?: StoreFooterConfig | null;
 }
 
+const PLATFORMS: { key: keyof SocialLinks; label: string; Icon: typeof Facebook }[] = [
+  { key: 'facebookUrl', label: 'Facebook', Icon: Facebook },
+  { key: 'instagramUrl', label: 'Instagram', Icon: Instagram },
+  { key: 'twitterUrl', label: 'X (Twitter)', Icon: Twitter },
+  { key: 'youtubeUrl', label: 'YouTube', Icon: Youtube },
+  { key: 'linkedinUrl', label: 'LinkedIn', Icon: Linkedin },
+  { key: 'whatsappUrl', label: 'WhatsApp', Icon: MessageCircle },
+];
+
 /**
- * Light, quiet footer — the opposite of Medium's solid dark block.
- * Understated rule lines instead of card borders, generous vertical
- * space, no bold uppercase section labels.
+ * Store > Footer's configurable, template-driven footer for the Minimal
+ * theme — same design as Medium/StorePal's StoreFooter (see StorePal's
+ * own doc comment for the full reasoning); this copy keeps Minimal's
+ * quiet, understated visual chrome (light background, rule lines instead
+ * of card borders, no bold uppercase labels).
+ *
+ * BACKWARD COMPATIBILITY: no FooterConfig saved yet (the `!footerConfig`
+ * branch below) renders the exact original hardcoded 3-column footer
+ * this component always rendered before this feature existed.
  */
-export function StoreFooter({ subdomain, storeName }: StoreFooterProps) {
+export function StoreFooter({ subdomain, storeName, logoUrl: logoUrlProp, socialLinks: socialLinksProp, footerConfig: footerConfigProp }: StoreFooterProps) {
+  const [fetched, setFetched] = useState<{ logoUrl?: string | null; socialLinks: SocialLinks; footerConfig: StoreFooterConfig | null } | null>(null);
+  const haveAllProps = socialLinksProp && logoUrlProp !== undefined && footerConfigProp !== undefined;
+
+  useEffect(() => {
+    if (haveAllProps) return;
+    getStoreSocialLinks(subdomain).then((data) =>
+      setFetched({ logoUrl: data.logoUrl, socialLinks: data, footerConfig: data.footerConfig ?? null }),
+    );
+  }, [subdomain, haveAllProps]);
+
+  const socialLinks = socialLinksProp ?? fetched?.socialLinks ?? {};
+  const logoUrl = logoUrlProp ?? fetched?.logoUrl ?? null;
+  const footerConfig = footerConfigProp !== undefined ? footerConfigProp : fetched?.footerConfig;
+  const activePlatforms = PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
+
+  if (!footerConfig) {
+    return (
+      <footer className="border-t border-line mt-16">
+        <div className="max-w-5xl mx-auto px-5 sm:px-8 py-14 grid gap-10 sm:grid-cols-3">
+          <div>
+            <p className="font-display italic text-xl text-ink mb-3">{storeName}</p>
+            <p className="text-[12.5px] text-muted leading-relaxed max-w-xs">
+              Cash on delivery available nationwide. Considered, careful shipping on every order.
+            </p>
+          </div>
+
+          <div>
+            <p className="text-[11px] font-medium text-muted mb-3.5 tracking-[0.08em] uppercase">Shop</p>
+            <div className="flex flex-col gap-2.5 text-[13px] text-ink">
+              <Link href={`/store/${subdomain}`} className="hover:text-accent transition-colors w-fit">
+                All products
+              </Link>
+              <Link href={`/store/${subdomain}/cart`} className="hover:text-accent transition-colors w-fit">
+                Your cart
+              </Link>
+              <Link href={`/store/${subdomain}/orders`} className="hover:text-accent transition-colors w-fit">
+                Track an order
+              </Link>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[11px] font-medium text-muted mb-3.5 tracking-[0.08em] uppercase">Delivery</p>
+            <div className="flex flex-col gap-2.5 text-[13px] text-ink">
+              <span>Inside Dhaka — ৳70</span>
+              <span>Outside Dhaka — ৳130</span>
+              <span>Cash on delivery</span>
+            </div>
+          </div>
+        </div>
+
+        <div className="border-t border-line">
+          <div className="max-w-5xl mx-auto px-5 sm:px-8 py-5 text-[11.5px] text-muted">
+            © {new Date().getFullYear()} {storeName}
+          </div>
+        </div>
+      </footer>
+    );
+  }
+
+  const def = resolveFooterTemplate(footerConfig.template);
+  const blurbHtml = footerConfig.aboutBlurb?.trim();
+
+  const LogoColumn = (
+    <div>
+      {logoUrl ? (
+        <span className="relative block h-9 w-36 mb-3">
+          <Image src={logoUrl} alt={storeName} fill sizes="144px" className="object-contain object-left" />
+        </span>
+      ) : (
+        <p className="font-display italic text-xl text-ink mb-3">{storeName}</p>
+      )}
+      {def.logoCarriesAbout && (
+        <div
+          className="text-[12.5px] text-muted leading-relaxed max-w-xs [&_p]:mb-2"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{
+            __html: blurbHtml ?? 'Cash on delivery available nationwide. Considered, careful shipping on every order.',
+          }}
+        />
+      )}
+      {footerConfig.showSocialIcons && activePlatforms.length > 0 && (
+        <div className="flex gap-2 mt-4">
+          {activePlatforms.map(({ key, label, Icon }) => (
+            <a
+              key={key}
+              href={socialLinks[key]!}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={label}
+              className="w-8 h-8 rounded flex items-center justify-center bg-ink/5 text-ink hover:bg-accent hover:text-white transition-colors"
+            >
+              <Icon size={14} />
+            </a>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const MenuColumn = footerConfig.menuLinks.length > 0 && (
+    <div>
+      <p className="text-[11px] font-medium text-muted mb-3.5 tracking-[0.08em] uppercase">{footerConfig.menuTitle}</p>
+      <div className="flex flex-col gap-2.5 text-[13px] text-ink">
+        {footerConfig.menuLinks.map((link, i) => (
+          <Link key={i} href={link.url} className="hover:text-accent transition-colors w-fit">
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+
+  const InfoColumn = footerConfig.infoLinks.length > 0 && (
+    <div>
+      <p className="text-[11px] font-medium text-muted mb-3.5 tracking-[0.08em] uppercase">{footerConfig.infoTitle}</p>
+      <div className="flex flex-col gap-2.5 text-[13px] text-ink">
+        {footerConfig.infoLinks.map((link, i) => (
+          <Link key={i} href={link.url} className="hover:text-accent transition-colors w-fit">
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </div>
+  );
+
+  const AboutColumn = !def.logoCarriesAbout && (
+    <div>
+      <div
+        className="text-[12.5px] text-muted leading-relaxed max-w-xs [&_p]:mb-2"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{
+          __html: blurbHtml ?? 'Cash on delivery available nationwide. Considered, careful shipping on every order.',
+        }}
+      />
+      {footerConfig.showPaymentIcons && footerConfig.paymentIcons.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mt-4">
+          {footerConfig.paymentIcons.map((key) => (
+            <span key={key} className="px-2 py-1 rounded border border-line-strong text-[10px] font-medium text-muted">
+              {PAYMENT_ICON_LABELS[key] ?? key}
+            </span>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+
+  const columnContent: Record<string, React.ReactNode> = { logo: LogoColumn, menu: MenuColumn, info: InfoColumn, about: AboutColumn };
+  const visibleColumns = def.columns.filter((c) => columnContent[c]);
+  const gridColsClass =
+    { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-4' }[
+      Math.min(Math.max(visibleColumns.length, 1), 4) as 1 | 2 | 3 | 4
+    ];
+
   return (
     <footer className="border-t border-line mt-16">
-      <div className="max-w-5xl mx-auto px-5 sm:px-8 py-14 grid gap-10 sm:grid-cols-3">
-        <div>
-          <p className="font-display italic text-xl text-ink mb-3">{storeName}</p>
-          <p className="text-[12.5px] text-muted leading-relaxed max-w-xs">
-            Cash on delivery available nationwide. Considered, careful shipping on every order.
-          </p>
-        </div>
-
-        <div>
-          <p className="text-[11px] font-medium text-muted mb-3.5 tracking-[0.08em] uppercase">Shop</p>
-          <div className="flex flex-col gap-2.5 text-[13px] text-ink">
-            <Link href={`/store/${subdomain}`} className="hover:text-accent transition-colors w-fit">
-              All products
-            </Link>
-            <Link href={`/store/${subdomain}/cart`} className="hover:text-accent transition-colors w-fit">
-              Your cart
-            </Link>
-            <Link href={`/store/${subdomain}/orders`} className="hover:text-accent transition-colors w-fit">
-              Track an order
-            </Link>
-          </div>
-        </div>
-
-        <div>
-          <p className="text-[11px] font-medium text-muted mb-3.5 tracking-[0.08em] uppercase">Delivery</p>
-          <div className="flex flex-col gap-2.5 text-[13px] text-ink">
-            <span>Inside Dhaka — ৳70</span>
-            <span>Outside Dhaka — ৳130</span>
-            <span>Cash on delivery</span>
-          </div>
-        </div>
+      <div className={`max-w-5xl mx-auto px-5 sm:px-8 py-14 grid gap-10 ${gridColsClass}`}>
+        {visibleColumns.map((c) => (
+          <div key={c}>{columnContent[c]}</div>
+        ))}
       </div>
 
       <div className="border-t border-line">
