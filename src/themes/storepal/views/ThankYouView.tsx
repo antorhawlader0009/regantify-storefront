@@ -169,8 +169,19 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             </div>
             {Number(order.vatAmount) > 0 && (
               <div className="flex justify-between text-muted">
-                <span>COD Charge</span>
+                <span>VAT</span>
                 <span>{formatPrice(order.vatAmount)}</span>
+              </div>
+            )}
+            {/* platformChargeHidden — snapshotted from Plan.codFeeHidden/
+                onlinePaymentFeeHidden at order time (see
+                Order.platformChargeHidden's own schema comment). Only
+                suppresses this line item; order.total below already
+                includes the real charge either way. */}
+            {!order.platformChargeHidden && Number(order.platformChargeAmount) > 0 && (
+              <div className="flex justify-between text-muted">
+                <span>Payment Gateway Charge</span>
+                <span>{formatPrice(order.platformChargeAmount)}</span>
               </div>
             )}
             {Number(order.discountAmount) > 0 && (

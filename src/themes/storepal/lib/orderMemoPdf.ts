@@ -158,7 +158,13 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   totalsRow('Subtotal', formatPrice(order.subtotal));
   totalsRow('Delivery Charge', formatPrice(order.deliveryCharge));
   if (Number(order.vatAmount) > 0) {
-    totalsRow('COD Charge', formatPrice(order.vatAmount));
+    totalsRow('VAT', formatPrice(order.vatAmount));
+  }
+  // platformChargeHidden — see Order.platformChargeHidden's own schema
+  // comment. Only suppresses this line; the printed total still
+  // includes the real charge either way.
+  if (!order.platformChargeHidden && Number(order.platformChargeAmount) > 0) {
+    totalsRow('Payment Gateway Charge', formatPrice(order.platformChargeAmount));
   }
   if (Number(order.discountAmount) > 0) {
     totalsRow('Discount', `-${formatPrice(order.discountAmount)}`);
@@ -172,7 +178,18 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(9.5);
   doc.setTextColor(107, 118, 132);
-  doc.text(`Payment Method: ${order.paymentMethod === 'COD' ? 'Cash on Delivery' : order.paymentMethod}`, margin, y);
+  // paymentMethod is "COD" / "ONLINE_PAYMENT" (the two built-ins) or
+  // CUSTOM:<gatewayId> for a vendor-connected custom gateway — see
+  // Order.paymentMethod's own schema comment. This memo has no access to
+  // that gateway's own displayLabel, so a custom gateway falls back to a
+  // generic "Online Payment" label rather than showing the raw id.
+  const paymentMethodLabel =
+    order.paymentMethod === 'COD'
+      ? 'Cash on Delivery'
+      : order.paymentMethod === 'ONLINE_PAYMENT'
+        ? 'Online Payment (Regantify)'
+        : 'Online Payment';
+  doc.text(`Payment Method: ${paymentMethodLabel}`, margin, y);
 
   // Footer
   const pageHeight = doc.internal.pageSize.getHeight();

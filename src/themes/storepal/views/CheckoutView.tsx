@@ -13,6 +13,19 @@ import { takePendingCoupon } from '../lib/pendingCoupon';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 
+// Fallback label for a gateway row with no vendor-set displayLabel — see
+// StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
+// need one here; a custom gateway (SSLCommerz etc) always carries its own
+// displayLabel (set at connect time — see PaymentGatewaysService.
+// connectSslcommerz), so those two are the only types this ever resolves.
+const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
+  COD: 'Cash on Delivery',
+  ONLINE_PAYMENT: 'Online Payment (Regantify)',
+  SSLCOMMERZ: 'SSLCommerz',
+  BKASH_MERCHANT: 'bKash Merchant',
+  VENDOR_PAYSTATION: 'PayStation',
+};
+
 export function CheckoutView({ subdomain }: { subdomain: string }) {
   const {
     hydrated,
@@ -27,7 +40,8 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     deliveryCharge,
     deliveryChargeByZone,
     vatAmount,
-    grandTotal,
+    visiblePlatformChargeAmount,
+    visibleGrandTotal,
     updateField,
     handlePlaceOrder,
     couponCode,
@@ -37,9 +51,13 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     couponError,
     applyCoupon,
     removeCoupon,
+    paymentGateways,
     paymentMethod,
     setPaymentMethod,
   } = useCheckout(subdomain, 'thank-you');
+
+  const selectedGateway = paymentGateways.find((g) => g.id === paymentMethod);
+  const isRedirectGateway = selectedGateway ? selectedGateway.type !== 'COD' : false;
 
   const [couponBoxOpen, setCouponBoxOpen] = useState(false);
   const storeName = useStoreDisplayName(subdomain);
@@ -219,25 +237,26 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
             <div className="border-t border-line mt-6 pt-6">
               <p className="text-[15px] font-semibold text-ink mb-3">Payment Method</p>
               <div className="space-y-2.5">
-                <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={paymentMethod === 'COD'}
-                    onChange={() => setPaymentMethod('COD')}
-                    className="accent-accent w-4 h-4"
-                  />
-                  Cash on Delivery
-                </label>
-                <label className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
-                  <input
-                    type="radio"
-                    checked={paymentMethod === 'ONLINE_PAYMENT'}
-                    onChange={() => setPaymentMethod('ONLINE_PAYMENT')}
-                    className="accent-accent w-4 h-4"
-                  />
-                  Online Payment
-                  <span className="text-[11px] text-muted font-normal">(bKash, Nagad, cards &amp; more via PayStation)</span>
-                </label>
+                {/* Store > Payment Gateway's enabled gateway list for this
+                    vendor — COD/Online Payment (Regantify) plus any
+                    connected custom gateway (e.g. SSLCommerz). Each
+                    gateway's own Platform Charge is deliberately NOT shown
+                    here — it only appears once selected, in the cart
+                    summary below (see the Platform Charge line). */}
+                {paymentGateways.map((gateway) => (
+                  <label key={gateway.id} className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={paymentMethod === gateway.id}
+                      onChange={() => setPaymentMethod(gateway.id)}
+                      className="accent-accent w-4 h-4"
+                    />
+                    {gateway.displayLabel ?? DEFAULT_GATEWAY_LABELS[gateway.type]}
+                    {gateway.type === 'ONLINE_PAYMENT' && (
+                      <span className="text-[11px] text-muted font-normal">(bKash, Nagad, cards &amp; more via PayStation)</span>
+                    )}
+                  </label>
+                ))}
               </div>
             </div>
 
@@ -248,7 +267,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               disabled={placing}
               className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
             >
-              {placing ? (paymentMethod === 'ONLINE_PAYMENT' ? 'Redirecting to payment…' : 'Placing order…') : 'Submit Order'}
+              {placing ? (isRedirectGateway ? 'Redirecting to payment…' : 'Placing order…') : 'Submit Order'}
             </button>
 
             <div className="flex flex-wrap gap-2 mt-4">
@@ -328,8 +347,23 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               </div>
               {vatAmount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-ink">COD Charge</span>
+                  <span className="text-ink">VAT</span>
                   <span className="font-semibold text-accent">{formatPrice(vatAmount)}</span>
+                </div>
+              )}
+              {/* Store > Payment Gateway's Platform Charge — deliberately
+                  only shown once a gateway with a nonzero, non-hidden
+                  charge is the CURRENTLY SELECTED one (never advertised
+                  on the payment method options themselves, see the radio
+                  list above). Plan.codFeeHidden/onlinePaymentFeeHidden
+                  suppresses this line entirely — visiblePlatformChargeAmount
+                  is already 0 in that case, same as visibleGrandTotal
+                  below already excludes it; the shopper is still
+                  actually charged it (see useCheckout's own comment). */}
+              {visiblePlatformChargeAmount > 0 && (
+                <div className="flex justify-between">
+                  <span className="text-ink">{(selectedGateway?.displayLabel ?? DEFAULT_GATEWAY_LABELS[selectedGateway?.type ?? 'COD']) + ' Charge'}</span>
+                  <span className="font-semibold text-accent">{formatPrice(visiblePlatformChargeAmount)}</span>
                 </div>
               )}
               {appliedCoupon && (
@@ -345,7 +379,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               )}
               <div className="flex justify-between pt-2 border-t border-line text-[15px] font-bold text-ink">
                 <span>Total</span>
-                <span>{formatPrice(grandTotal)}</span>
+                <span>{formatPrice(visibleGrandTotal)}</span>
               </div>
             </div>
 

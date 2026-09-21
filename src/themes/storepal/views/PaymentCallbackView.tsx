@@ -4,7 +4,13 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { CheckCircle2, Clock, XCircle } from 'lucide-react';
-import { reconcileOrderPayment, getOrderPaymentStatus, type OrderPaymentStatus } from '@/lib/checkoutApi';
+import {
+  reconcileOrderPayment,
+  getOrderPaymentStatus,
+  reconcileGatewayOrderPayment,
+  getGatewayOrderPaymentStatus,
+  type OrderPaymentStatus,
+} from '@/lib/checkoutApi';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
@@ -13,23 +19,38 @@ import { StoreFooter } from '../components/StoreFooter';
 
 const HANDOFF_KEY = 'regantify-last-order';
 
+// SSLCommerz's own invoice numbers are generated as `RGF-SSL-<ts>-<rand>`
+// (see VendorGatewayTransactionsService.createInvoiceNumber) — PayStation's
+// are `RGF-<ts>-<rand>` (see PaymentsService.createInvoiceNumber), with no
+// "SSL" segment. This page has only the invoice number in its URL (both
+// gateways land the shopper's browser back here — see
+// SslcommerzReturnController's redirect and PaymentsService.
+// initiateForOrder's callback_url), so the prefix is what decides which
+// pair of reconcile/status endpoints to poll.
+function isCustomGatewayInvoice(invoiceNumber: string): boolean {
+  return invoiceNumber.startsWith('RGF-SSL-');
+}
+
 /**
- * Storefront checkout's "Online Payment" landing page (StorePal only —
- * see CheckoutView.tsx's Payment Method choice) — PayStation's
- * `callback_url` (see PaymentsService.initiateForOrder) always points
- * back here with `?invoice=...`. Never trusts a query-param "it worked"
- * signal from the redirect itself — always calls the public reconcile
- * endpoint, which re-verifies with PayStation server-to-server before
- * moving the order out of PAYMENT_INITIATED (see
- * PaymentsService.reconcileInternal). On confirmed success, hands off
- * to /thank-you exactly the way a COD order does (same sessionStorage
- * key useTrackOrder already reads), so the rest of the confirmation
- * flow — memo download, "Track it anytime", etc. — is unchanged.
+ * Storefront checkout's "Online Payment" / custom-gateway landing page
+ * (StorePal only — see CheckoutView.tsx's Payment Method choice) — both
+ * PayStation's `callback_url` (see PaymentsService.initiateForOrder) and
+ * SslcommerzReturnController's redirect always point back here with
+ * `?invoice=...`. Never trusts a query-param "it worked" signal from the
+ * redirect itself — always calls the matching gateway's public reconcile
+ * endpoint, which re-verifies server-to-server before moving the order
+ * out of PAYMENT_INITIATED (see PaymentsService.reconcileInternal /
+ * VendorGatewayTransactionsService.reconcileInternal). On confirmed
+ * success, hands off to /thank-you exactly the way a COD order does (same
+ * sessionStorage key useTrackOrder already reads), so the rest of the
+ * confirmation flow — memo download, "Track it anytime", etc. — is
+ * unchanged regardless of which gateway was used.
  */
 export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const invoiceNumber = searchParams.get('invoice');
+  const isCustomGateway = invoiceNumber ? isCustomGatewayInvoice(invoiceNumber) : false;
   const storeName = useStoreDisplayName(subdomain);
   const [state, setState] = useState<'checking' | OrderPaymentStatus | 'error'>('checking');
   const attemptsRef = useRef(0);
@@ -53,14 +74,16 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
 
     let cancelled = false;
     const maxAttempts = 5;
+    const reconcile = isCustomGateway ? reconcileGatewayOrderPayment : reconcileOrderPayment;
+    const getStatus = isCustomGateway ? getGatewayOrderPaymentStatus : getOrderPaymentStatus;
 
     const check = async () => {
       try {
-        const result = await reconcileOrderPayment(invoiceNumber);
+        const result = await reconcile(invoiceNumber);
         if (cancelled) return;
 
         if (result.status === 'SUCCESS') {
-          const payment = await getOrderPaymentStatus(invoiceNumber).catch(() => null);
+          const payment = await getStatus(invoiceNumber).catch(() => null);
           if (cancelled) return;
           if (payment?.order) {
             // Same handoff sessionStorage key a COD order sets right
@@ -120,7 +143,7 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
           <>
             <Clock className="mx-auto mb-4 text-muted animate-pulse" size={40} />
             <h1 className="text-[18px] font-bold text-ink mb-1">Confirming your payment…</h1>
-            <p className="text-[13.5px] text-muted">Please wait while we verify this with PayStation.</p>
+            <p className="text-[13.5px] text-muted">Please wait while we verify this with {isCustomGateway ? 'the payment gateway' : 'PayStation'}.</p>
           </>
         )}
 
@@ -137,8 +160,8 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
             <Clock className="mx-auto mb-4 text-amber-600" size={40} />
             <h1 className="text-[18px] font-bold text-ink mb-1">Still processing</h1>
             <p className="text-[13.5px] text-muted mb-6">
-              PayStation hasn&apos;t confirmed this payment yet. If you completed checkout, your order will be confirmed
-              automatically — check Track Order in a minute.
+              {isCustomGateway ? 'The payment gateway hasn' : 'PayStation hasn'}&apos;t confirmed this payment yet. If
+              you completed checkout, your order will be confirmed automatically — check Track Order in a minute.
             </p>
             <Link href={`/store/${subdomain}/orders`} className="text-accent text-[13.5px] font-medium hover:underline">
               Track Your Order

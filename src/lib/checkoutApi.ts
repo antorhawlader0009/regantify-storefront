@@ -26,17 +26,38 @@ export interface CheckoutResponse {
   status: string;
 }
 
-// Settings > Courier Integration > Delivery Charge — read client-side
-// (same apiOrigin() reasoning as the rest of this file) by useCheckout,
-// which needs these before the shopper submits anything, to price the
-// order the same way OrdersService.create will. Only the 3 charge
-// fields are picked out of the full public /v1/store/:subdomain
-// response (StorefrontInfo in storefrontApi.ts has the rest, but that
-// fetcher is server-only).
+// Store > Payment Gateway — one entry per gateway this vendor's checkout
+// currently offers (already filtered server-side for enabled/connected
+// AND the admin's platform-wide switch — see PaymentGatewaysService.
+// listActiveForStorefront). `id` is exactly the value to send back as
+// CreateOrderDto.paymentMethod at checkout: "COD"/"ONLINE_PAYMENT" for
+// the two built-ins, or this row's own VendorPaymentGateway id for a
+// custom gateway (e.g. SSLCommerz).
+export interface StorePaymentGateway {
+  id: string;
+  type: 'COD' | 'ONLINE_PAYMENT' | 'SSLCOMMERZ' | 'BKASH_MERCHANT' | 'VENDOR_PAYSTATION';
+  displayLabel: string | null;
+  platformChargeBdt: string;
+  // Display-only — Plan.codFeeHidden/onlinePaymentFeeHidden (COD/
+  // ONLINE_PAYMENT only, always false for a custom gateway). The fee
+  // itself is still charged server-side regardless — OrdersService
+  // .create resolves it independently, never trusts anything the client
+  // sends. When true, useCheckout folds platformChargeAmount into the
+  // total silently instead of exposing it as its own line item.
+  feeHidden: boolean;
+}
+
+// Settings > Courier Integration > Delivery Charge / Settings > VAT —
+// read client-side (same apiOrigin() reasoning as the rest of this file)
+// by useCheckout, which needs these before the shopper submits anything,
+// to price the order the same way OrdersService.create will. Picked out
+// of the full public /v1/store/:subdomain response (StorefrontInfo in
+// storefrontApi.ts has the rest, but that fetcher is server-only).
 export interface StoreDeliveryCharges {
   insideDhakaCharge: string;
   outsideDhakaCharge: string;
-  codVatCharge: string;
+  vatChargeBdt: string;
+  paymentGateways: StorePaymentGateway[];
 }
 
 export async function getStoreDeliveryCharges(subdomain: string): Promise<StoreDeliveryCharges | null> {
@@ -103,6 +124,39 @@ export async function reconcileOrderPayment(invoiceNumber: string): Promise<{ st
 
 export async function getOrderPaymentStatus(invoiceNumber: string): Promise<OrderPaymentStatusResponse> {
   const res = await fetch(`${apiOrigin()}/v1/store-payments/status/${invoiceNumber}`);
+  if (!res.ok) throw new Error('Could not find this payment.');
+  return res.json();
+}
+
+// The CUSTOM:<gatewayId> analog of initiateOrderPayment/
+// reconcileOrderPayment/getOrderPaymentStatus above — called instead of
+// those three when the shopper picked a vendor-connected custom gateway
+// (e.g. SSLCommerz) rather than "Online Payment (Regantify)". Same
+// response shapes, same public/no-auth trust model — see
+// StorefrontGatewayPaymentsController on the backend.
+export async function initiateGatewayOrderPayment(orderId: string): Promise<InitiateOrderPaymentResponse> {
+  const res = await fetch(`${apiOrigin()}/v1/store-gateway-payments/orders/${orderId}/initiate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+  });
+
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
+    throw new Error(message || 'Could not start the payment. Please try again.');
+  }
+
+  return res.json();
+}
+
+export async function reconcileGatewayOrderPayment(invoiceNumber: string): Promise<{ status: OrderPaymentStatus; alreadyFulfilled: boolean }> {
+  const res = await fetch(`${apiOrigin()}/v1/store-gateway-payments/reconcile/${invoiceNumber}`, { method: 'POST' });
+  if (!res.ok) throw new Error('Could not verify this payment.');
+  return res.json();
+}
+
+export async function getGatewayOrderPaymentStatus(invoiceNumber: string): Promise<OrderPaymentStatusResponse> {
+  const res = await fetch(`${apiOrigin()}/v1/store-gateway-payments/status/${invoiceNumber}`);
   if (!res.ok) throw new Error('Could not find this payment.');
   return res.json();
 }
@@ -210,10 +264,20 @@ export interface TrackedOrder {
   shippingDistrict?: string | null;
   subtotal: string;
   deliveryCharge: string;
-  // Flat COD fee — only ever non-zero when paymentMethod is "COD".
-  // Shown by StorePal's ThankYouView/orderMemoPdf as "COD Charge". See
-  // Vendor.codVatCharge/Order.vatAmount in schema.prisma.
+  // Flat VAT fee — applied to every order regardless of paymentMethod.
+  // Shown by StorePal's ThankYouView/orderMemoPdf as "VAT". See
+  // Vendor.vatChargeBdt/Order.vatAmount in schema.prisma.
   vatAmount: string;
+  // Store > Payment Gateway's per-gateway Platform Charge — the gateway
+  // actually used for this order's own configured surcharge, independent
+  // of vatAmount above. Shown as "{gateway} Charge". Always the REAL
+  // amount the shopper was charged, regardless of platformChargeHidden.
+  platformChargeAmount: string;
+  // Snapshotted at order time from Plan.codFeeHidden/onlinePaymentFeeHidden
+  // — display-only, tells ThankYouView/order memo PDF to skip rendering
+  // the line above rather than that the shopper wasn't actually charged
+  // it (they were — see platformChargeAmount's own comment).
+  platformChargeHidden: boolean;
   discountAmount: string;
   total: string;
   paymentMethod: string;
