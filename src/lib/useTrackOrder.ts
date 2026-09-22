@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { trackOrder, type TrackedOrder } from '@/lib/checkoutApi';
+import { rememberGuestOrder, loadRememberedOrders, type RememberedOrder } from '@/lib/guestOrderMemory';
 
 // Set by the checkout page right after a successful order (see
 // HANDOFF_KEY in useCheckout.ts) so this page can look the order up
@@ -18,6 +19,15 @@ export function useTrackOrder(subdomain: string) {
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<TrackedOrder | null>(null);
   const [justPlaced, setJustPlaced] = useState(false);
+  // "Your recent orders" (see guestOrderMemory.ts) — every invoice+phone
+  // this browser has successfully looked up or just placed, most recent
+  // first, so a returning guest can re-open one without re-typing its
+  // invoice number. Loaded once on mount; re-read after each successful
+  // lookup so a newly-placed/looked-up order shows up immediately.
+  const [rememberedOrders, setRememberedOrders] = useState<RememberedOrder[]>([]);
+  useEffect(() => {
+    setRememberedOrders(loadRememberedOrders(subdomain));
+  }, [subdomain]);
 
   const lookup = async (invoice: number, phoneValue: string) => {
     setLoading(true);
@@ -25,6 +35,8 @@ export function useTrackOrder(subdomain: string) {
     try {
       const result = await trackOrder(subdomain, invoice, phoneValue);
       setOrder(result);
+      rememberGuestOrder(subdomain, invoice, phoneValue);
+      setRememberedOrders(loadRememberedOrders(subdomain));
     } catch (err) {
       setOrder(null);
       setError(err instanceof Error ? err.message : 'Could not find that order.');
@@ -61,5 +73,27 @@ export function useTrackOrder(subdomain: string) {
     await lookup(invoice, phone.trim());
   };
 
-  return { invoiceNumber, setInvoiceNumber, phone, setPhone, loading, error, order, justPlaced, handleSubmit };
+  // "Your recent orders" list item click — re-runs the exact same
+  // lookup a manual submit would, just pre-filled from what's
+  // remembered instead of typed.
+  const selectRememberedOrder = async (remembered: RememberedOrder) => {
+    setInvoiceNumber(String(remembered.invoiceNumber));
+    setPhone(remembered.phone);
+    setJustPlaced(false);
+    await lookup(remembered.invoiceNumber, remembered.phone);
+  };
+
+  return {
+    invoiceNumber,
+    setInvoiceNumber,
+    phone,
+    setPhone,
+    loading,
+    error,
+    order,
+    justPlaced,
+    handleSubmit,
+    rememberedOrders,
+    selectRememberedOrder,
+  };
 }

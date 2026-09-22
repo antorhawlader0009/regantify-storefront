@@ -8,8 +8,19 @@ import { customerOrderStatusLabel, HAPPY_PATH } from '@/lib/orderStatusDisplay';
 import { useTrackOrder } from '@/lib/useTrackOrder';
 
 export function OrdersView({ subdomain }: { subdomain: string }) {
-  const { invoiceNumber, setInvoiceNumber, phone, setPhone, loading, error, order, justPlaced, handleSubmit } =
-    useTrackOrder(subdomain);
+  const {
+    invoiceNumber,
+    setInvoiceNumber,
+    phone,
+    setPhone,
+    loading,
+    error,
+    order,
+    justPlaced,
+    handleSubmit,
+    rememberedOrders,
+    selectRememberedOrder,
+  } = useTrackOrder(subdomain);
 
   const stepIndex = order ? HAPPY_PATH.indexOf(order.status) : -1;
   const isOffPath = order && stepIndex === -1;
@@ -65,6 +76,31 @@ export function OrdersView({ subdomain }: { subdomain: string }) {
           </form>
 
           {error && <p className="text-[12.5px] text-accent">{error}</p>}
+
+          {/* "Your recent orders" (see guestOrderMemory.ts / useTrackOrder.ts)
+              — every invoice this browser has looked up or placed before,
+              remembered in localStorage so a returning guest doesn't have
+              to re-type/re-find the invoice number. Only the invoice+phone
+              pair is cached, never order data itself — clicking one
+              re-runs a real lookup the same as typing it in would. */}
+          {rememberedOrders.length > 0 && (
+            <div className="mt-4 pt-4 border-t border-line">
+              <p className="text-[12px] font-semibold text-muted uppercase tracking-wide mb-2">Your recent orders</p>
+              <div className="flex flex-wrap gap-2">
+                {rememberedOrders.map((remembered) => (
+                  <button
+                    key={remembered.invoiceNumber}
+                    type="button"
+                    onClick={() => selectRememberedOrder(remembered)}
+                    disabled={loading}
+                    className="px-3 py-1.5 rounded-md border border-line bg-canvas text-[12.5px] font-medium text-ink hover:border-accent hover:text-accent disabled:opacity-60 transition-colors"
+                  >
+                    ORDER-{remembered.invoiceNumber}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {order && (
