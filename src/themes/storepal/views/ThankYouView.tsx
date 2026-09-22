@@ -173,12 +173,14 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
                 <span>{formatPrice(order.vatAmount)}</span>
               </div>
             )}
-            {/* platformChargeHidden — snapshotted from Plan.codFeeHidden/
-                onlinePaymentFeeHidden at order time (see
-                Order.platformChargeHidden's own schema comment). Only
-                suppresses this line item; order.total below already
-                includes the real charge either way. */}
-            {!order.platformChargeHidden && Number(order.platformChargeAmount) > 0 && (
+            {/* Platform Charge — deliberately ALWAYS shown here once the
+                order exists, ignoring order.platformChargeHidden (which
+                only hides it pre-payment, on checkout's own cart summary
+                — see useCheckout/CheckoutView.tsx). After payment, the
+                shopper already paid this as part of order.total; hiding
+                it from their own receipt would just make the total look
+                unexplained/confusing, not save the vendor anything. */}
+            {Number(order.platformChargeAmount) > 0 && (
               <div className="flex justify-between text-muted">
                 <span>Platform Charge</span>
                 <span>{formatPrice(order.platformChargeAmount)}</span>

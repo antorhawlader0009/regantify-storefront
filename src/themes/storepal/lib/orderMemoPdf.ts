@@ -160,11 +160,14 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   if (Number(order.vatAmount) > 0) {
     totalsRow('VAT', formatPrice(order.vatAmount));
   }
-  // platformChargeHidden — see Order.platformChargeHidden's own schema
-  // comment. Only suppresses this line; the printed total still
-  // includes the real charge either way.
-  if (!order.platformChargeHidden && Number(order.platformChargeAmount) > 0) {
-    totalsRow('Payment Gateway Charge', formatPrice(order.platformChargeAmount));
+  // Platform Charge — deliberately ALWAYS printed once the order exists,
+  // ignoring order.platformChargeHidden (which only hides it pre-payment,
+  // on checkout's own cart summary — see ThankYouView.tsx's own comment
+  // for the same reasoning: the shopper already paid this as part of
+  // order.total, so the memo should account for it, not leave the total
+  // looking unexplained).
+  if (Number(order.platformChargeAmount) > 0) {
+    totalsRow('Platform Charge', formatPrice(order.platformChargeAmount));
   }
   if (Number(order.discountAmount) > 0) {
     totalsRow('Discount', `-${formatPrice(order.discountAmount)}`);

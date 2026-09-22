@@ -270,13 +270,16 @@ export interface TrackedOrder {
   vatAmount: string;
   // Store > Payment Gateway's per-gateway Platform Charge — the gateway
   // actually used for this order's own configured surcharge, independent
-  // of vatAmount above. Shown as "{gateway} Charge". Always the REAL
+  // of vatAmount above. Shown as "Platform Charge". Always the REAL
   // amount the shopper was charged, regardless of platformChargeHidden.
   platformChargeAmount: string;
   // Snapshotted at order time from Plan.codFeeHidden/onlinePaymentFeeHidden
-  // — display-only, tells ThankYouView/order memo PDF to skip rendering
-  // the line above rather than that the shopper wasn't actually charged
-  // it (they were — see platformChargeAmount's own comment).
+  // — only suppresses the line item on checkout's own pre-payment cart
+  // summary (CheckoutView.tsx/useCheckout). StorePal's ThankYouView and
+  // order memo PDF deliberately IGNORE this flag and always show Platform
+  // Charge once the order exists — the shopper already paid it as part
+  // of `total`, so hiding it post-payment would just make their own
+  // receipt look unexplained, not save the vendor anything.
   platformChargeHidden: boolean;
   discountAmount: string;
   total: string;

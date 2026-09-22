@@ -351,7 +351,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                 <span className="font-semibold text-accent">{formatPrice(subtotal)}</span>
               </div>
               <div className="flex justify-between">
-                <span className="text-ink">Shipping Charge</span>
+                <span className="text-ink">Delivery Charge</span>
                 <span className="font-semibold text-accent">{formatPrice(deliveryCharge)}</span>
               </div>
               {vatAmount > 0 && (
