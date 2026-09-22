@@ -35,7 +35,7 @@ const FALLBACK_VAT_CHARGE = 10;
 // safe default so paymentMethod/vatAmount have something to resolve
 // against on first render.
 const FALLBACK_GATEWAYS: StorePaymentGateway[] = [
-  { id: 'COD', type: 'COD', displayLabel: 'Cash On Delivery', platformChargeBdt: '0', feeHidden: false },
+  { id: 'COD', type: 'COD', displayLabel: 'Cash On Delivery', platformChargeBdt: '0', platformChargeType: 'FLAT', feeHidden: false },
 ];
 
 const HANDOFF_KEY = 'regantify-last-order';
@@ -213,11 +213,20 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   // selected; useCheckout always has a selection (defaults to COD), so
   // in practice this just reflects whichever gateway platformChargeBdt
   // the shopper's current radio choice carries — 0 for COD/Online
-  // Payment unless the vendor set one. This is the REAL amount — always
-  // what OrdersService.create will actually charge, regardless of
-  // feeHidden below (the server resolves this itself and never trusts
-  // anything the client sends).
-  const platformChargeAmount = lines.length > 0 ? Number(selectedGateway?.platformChargeBdt ?? 0) : 0;
+  // Payment unless the vendor set one. This is the REAL amount shown
+  // pre-payment — same resolution OrdersService.create does
+  // server-side (which is what actually gets charged; this is only a
+  // preview) — PERCENTAGE is a % of `subtotal` (product total only,
+  // delivery/VAT excluded from the base, see
+  // VendorPaymentGateway.platformChargeType's own schema comment),
+  // FLAT is used as-is. Independent of feeHidden below (the server
+  // resolves/charges this itself regardless of what the client sends).
+  const platformChargeAmount =
+    lines.length > 0 && selectedGateway
+      ? selectedGateway.platformChargeType === 'PERCENTAGE'
+        ? (subtotal * Number(selectedGateway.platformChargeBdt)) / 100
+        : Number(selectedGateway.platformChargeBdt)
+      : 0;
   // Plan.codFeeHidden/onlinePaymentFeeHidden — display-only "fold this
   // fee silently into the total instead of breaking it out" switch (see
   // StorePaymentGateway.feeHidden's own comment). Only ever hides the
