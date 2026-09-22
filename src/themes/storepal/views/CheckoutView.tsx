@@ -369,16 +369,20 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   is already 0 in that case, same as visibleGrandTotal
                   below already excludes it; the shopper is still
                   actually charged it (see useCheckout's own comment).
-                  Label is always the flat "Platform Charge" — not the
-                  selected gateway's own name (used to read "Cash on
-                  Delivery Charge" / "Online Payment (Regantify) Charge"
-                  here) — since it's the same platform fee concept either
-                  way; only the AMOUNT switches with the selected
-                  gateway, which it already does via
+                  Label is the flat "Platform Charge" for every gateway
+                  EXCEPT ONLINE_PAYMENT, which reads "Payment Gateway Fee"
+                  instead — not the selected gateway's own name (used to
+                  read "Cash on Delivery Charge" / "Online Payment
+                  (Regantify) Charge" here) since it's the same platform
+                  fee concept for every other gateway; only ONLINE_PAYMENT
+                  gets its own wording. The AMOUNT still switches with the
+                  selected gateway either way, via
                   visiblePlatformChargeAmount below. */}
               {visiblePlatformChargeAmount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-ink">Platform Charge</span>
+                  <span className="text-ink">
+                    {selectedGateway?.type === 'ONLINE_PAYMENT' ? 'Payment Gateway Fee' : 'Platform Charge'}
+                  </span>
                   <span className="font-semibold text-accent">{formatPrice(visiblePlatformChargeAmount)}</span>
                 </div>
               )}
