@@ -111,7 +111,16 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
 
   if (!hydrated) return null;
 
-  if (lines.length === 0) {
+  // `placing` guards this: handlePlaceOrder clears the cart as soon as
+  // the order is created (see useCheckout's own comment on clearStore),
+  // but for a redirect gateway (ONLINE_PAYMENT / a custom gateway) that
+  // happens BEFORE the async initiateOrderPayment/initiateGatewayOrderPayment
+  // call resolves and window.location.href actually navigates away — so
+  // without this guard, this component re-renders with an already-empty
+  // cart and flashes "Your cart is empty" for that gap instead of staying
+  // on the (correct) "Redirecting to payment…" button state until the
+  // browser leaves the page.
+  if (lines.length === 0 && !placing) {
     return (
       <div className="min-h-screen bg-canvas flex flex-col items-center justify-center gap-3">
         <p className="text-muted text-[13.5px]">Your cart is empty.</p>
@@ -359,10 +368,17 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   suppresses this line entirely — visiblePlatformChargeAmount
                   is already 0 in that case, same as visibleGrandTotal
                   below already excludes it; the shopper is still
-                  actually charged it (see useCheckout's own comment). */}
+                  actually charged it (see useCheckout's own comment).
+                  Label is always the flat "Platform Charge" — not the
+                  selected gateway's own name (used to read "Cash on
+                  Delivery Charge" / "Online Payment (Regantify) Charge"
+                  here) — since it's the same platform fee concept either
+                  way; only the AMOUNT switches with the selected
+                  gateway, which it already does via
+                  visiblePlatformChargeAmount below. */}
               {visiblePlatformChargeAmount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-ink">{(selectedGateway?.displayLabel ?? DEFAULT_GATEWAY_LABELS[selectedGateway?.type ?? 'COD']) + ' Charge'}</span>
+                  <span className="text-ink">Platform Charge</span>
                   <span className="font-semibold text-accent">{formatPrice(visiblePlatformChargeAmount)}</span>
                 </div>
               )}

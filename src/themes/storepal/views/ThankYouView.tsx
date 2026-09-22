@@ -180,7 +180,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
                 includes the real charge either way. */}
             {!order.platformChargeHidden && Number(order.platformChargeAmount) > 0 && (
               <div className="flex justify-between text-muted">
-                <span>Payment Gateway Charge</span>
+                <span>Platform Charge</span>
                 <span>{formatPrice(order.platformChargeAmount)}</span>
               </div>
             )}
