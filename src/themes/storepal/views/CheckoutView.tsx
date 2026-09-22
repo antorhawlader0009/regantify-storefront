@@ -10,6 +10,7 @@ import { useStoreDisplayName } from '../lib/useStoreDisplayName';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { takePendingCoupon } from '../lib/pendingCoupon';
+import { loadSavedCheckoutForm, saveCheckoutForm } from '../lib/checkoutFormStorage';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 
@@ -88,6 +89,33 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     applyCoupon();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.phone, couponCode, pendingConsumed]);
+
+  // Checkout form auto-save (see checkoutFormStorage.ts) — a returning
+  // guest gets their name/phone/address/etc back without retyping.
+  // Applied once, on mount only, and only into fields still at their
+  // untouched default at that point — so it can never clobber a
+  // logged-in Customer's own account prefill (useCheckout's own effect,
+  // which runs with the same "only if still all blank" guard) or
+  // anything the shopper already typed in the brief window before this
+  // effect runs. zone needs its own check since its default ('DHAKA')
+  // is non-empty, unlike every other field's default ('').
+  const formRestoredRef = useRef(false);
+  useEffect(() => {
+    if (formRestoredRef.current) return;
+    formRestoredRef.current = true;
+    const saved = loadSavedCheckoutForm(subdomain);
+    if (!saved) return;
+    (Object.keys(saved) as (keyof typeof saved)[]).forEach((field) => {
+      const value = saved[field];
+      if (!value) return;
+      const untouched = field === 'zone' ? form.zone === 'DHAKA' : !form[field];
+      if (untouched) updateField(field, value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subdomain]);
+  useEffect(() => {
+    saveCheckoutForm(subdomain, form);
+  }, [subdomain, form]);
 
   // Checkout is a Client Component (needs cart state from
   // localStorage), so it has no server-fetched StorefrontListData the
