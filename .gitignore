@@ -37,3 +37,8 @@ Thumbs.db
 # Misc
 coverage/
 .cache/
+
+
+repomix-output.xml
+
+

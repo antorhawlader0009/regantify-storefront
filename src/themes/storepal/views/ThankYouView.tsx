@@ -12,6 +12,7 @@ import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
+import { CodOrderVerification } from '../components/CodOrderVerification';
 
 export function ThankYouView({ subdomain }: { subdomain: string }) {
   const { order, loading, justPlaced } = useTrackOrder(subdomain);
@@ -19,6 +20,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [socialLinks, setSocialLinks] = useState<Awaited<ReturnType<typeof getStoreSocialLinks>>>({});
   const [downloadingMemo, setDownloadingMemo] = useState(false);
+  // Store > COD Guard "After Checkout" — flipped once the shopper enters
+  // the SMS code, so the card goes away without re-fetching the order.
+  const [codVerified, setCodVerified] = useState(false);
   // Same reasoning as CheckoutView: this is a Client Component with no
   // server-fetched StorefrontListData, so the full category nav for
   // StoreHeader is fetched here — keeps the same complete header (with
@@ -71,6 +75,8 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
     );
   }
 
+  const awaitingCodVerification = order.codVerificationStatus === 'PENDING' && !codVerified;
+
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader
@@ -101,11 +107,17 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             {justPlaced ? 'Thank you for your order!' : 'Order confirmed'}
           </h1>
           <p className="storepal-fade-up text-[13.5px] text-muted max-w-md" style={{ animationDelay: '0.08s' }}>
-            {order.paymentMethod === 'ONLINE_PAYMENT'
-              ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'
-              : 'Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.'}
+            {awaitingCodVerification
+              ? 'One more step: confirm your order with the code we just texted you.'
+              : order.paymentMethod === 'ONLINE_PAYMENT'
+                ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'
+                : 'Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.'}
           </p>
         </div>
+
+        {awaitingCodVerification && (
+          <CodOrderVerification subdomain={subdomain} orderId={order.id} onVerified={() => setCodVerified(true)} />
+        )}
 
         {/* Memo / invoice card */}
         <div className="storepal-fade-up bg-surface border border-line rounded-lg overflow-hidden shadow-card" style={{ animationDelay: '0.16s' }}>

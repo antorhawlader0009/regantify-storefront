@@ -1,5 +1,10 @@
 import Link from 'next/link';
-import type { StorefrontProduct, StorefrontCardProduct, StorefrontCategoryDetail } from '@/lib/storefrontApi';
+import type {
+  StorefrontProduct,
+  StorefrontCardProduct,
+  StorefrontCategoryDetail,
+  StorefrontStockSettings,
+} from '@/lib/storefrontApi';
 import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
@@ -12,6 +17,7 @@ import { ProductCard } from '../components/ProductCard';
 // StorePal's own.
 import { ProductPurchasePanel } from '../../medium/components/ProductPurchasePanel';
 import { ProductTabs } from '../../medium/components/ProductTabs';
+import { resolveBackorder, visibleInListings } from '../lib/backorder';
 
 interface ProductViewProps {
   subdomain: string;
@@ -29,6 +35,8 @@ interface ProductViewProps {
   logoUrl?: string | null;
   /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
   footerConfig?: StoreFooterConfig | null;
+  /** Store > Stock Settings — backorder on the purchase panel, and hiding sold-out related products. */
+  stockSettings?: StorefrontStockSettings;
 }
 
 export function ProductView({
@@ -41,7 +49,9 @@ export function ProductView({
   socialLinks,
   logoUrl,
   footerConfig,
+  stockSettings,
 }: ProductViewProps) {
+  const visibleRelated = visibleInListings(related, stockSettings);
   return (
     <div className="min-h-screen bg-canvas text-ink pb-[70px] sm:pb-0">
       <StoreHeader
@@ -74,7 +84,12 @@ export function ProductView({
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
         <div className="bg-surface border border-line rounded grid gap-8 p-4 sm:p-6 lg:[grid-template-columns:1.1fr_1fr]">
-          <ProductPurchasePanel subdomain={subdomain} storeName={storeName} product={product} />
+          <ProductPurchasePanel
+            subdomain={subdomain}
+            storeName={storeName}
+            product={product}
+            backorder={resolveBackorder(stockSettings)}
+          />
         </div>
       </main>
 
@@ -83,11 +98,11 @@ export function ProductView({
           <ProductTabs subdomain={subdomain} slug={product.slug} description={product.description} />
         </div>
 
-        {related.length > 0 && (
+        {visibleRelated.length > 0 && (
           <section className="bg-surface border border-line rounded p-4 sm:p-6 mb-8">
             <h3 className="text-[15px] font-bold text-ink mb-4">Related Products</h3>
             <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-              {related.map((p) => (
+              {visibleRelated.map((p) => (
                 <ProductCard key={p.id} product={p} subdomain={subdomain} />
               ))}
             </div>

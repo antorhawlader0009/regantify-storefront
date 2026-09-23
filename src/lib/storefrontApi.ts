@@ -80,6 +80,27 @@ export interface StorefrontInfo {
   insideDhakaCharge: string;
   outsideDhakaCharge: string;
   codVatCharge: string;
+  // Store > Stock Settings / GDPR Prompt / COD Guard — the shopper-safe
+  // slice from StoreSettingsService.toPublicStoreSettings on the backend.
+  // Only the StorePal theme reads these. Optional so an older cached
+  // response without them behaves like the defaults.
+  stockSettings?: StorefrontStockSettings;
+  gdprPrompt?: StorefrontGdprPrompt | null;
+  codSmsVerification?: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
+}
+
+export interface StorefrontStockSettings {
+  showOutOfStockProducts: boolean;
+  allowBackorder: boolean;
+  backorderPopupMessage: string | null;
+  backorderShortMessage: string | null;
+}
+
+export interface StorefrontGdprPrompt {
+  message: string | null;
+  position: 'BOTTOM' | 'TOP' | 'BOTTOM_LEFT' | 'BOTTOM_RIGHT';
+  backgroundColor: string;
+  textColor: string;
 }
 
 export interface StorefrontVariationOption {

@@ -14,6 +14,7 @@ import { safeJsonLd } from '@/lib/safeJsonLd';
 import { HomeView as MediumHomeView } from '@/themes/medium/views/HomeView';
 import { HomeView as MinimalHomeView } from '@/themes/minimal/views/HomeView';
 import { HomeView as StorepalHomeView } from '@/themes/storepal/views/HomeView';
+import { visibleInListings } from '@/themes/storepal/lib/backorder';
 import { LandingPageView } from '@/landing/LandingPageView';
 import { StoreChrome } from '@/landing/StoreChrome';
 
@@ -190,6 +191,9 @@ export default async function StorePage({ params, searchParams }: PageProps) {
           return (
             <StorepalHomeView
               {...viewProps}
+              // Store > Stock Settings' "Show out-of-stock products in
+              // shop pages" off — StorePal-only, like couponLink below.
+              products={visibleInListings(viewProps.products, store.stockSettings)}
               logoUrl={store.logoUrl}
               socialLinks={socialLinks}
               footerConfig={store.footerConfig}

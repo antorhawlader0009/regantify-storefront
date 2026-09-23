@@ -12,6 +12,8 @@ import {
   initiateOrderPayment,
   initiateGatewayOrderPayment,
   getStoreDeliveryCharges,
+  sendCodVerificationOtp,
+  CheckoutApiError,
   type ValidatedCoupon,
   type StorePaymentGateway,
 } from '@/lib/checkoutApi';
@@ -105,6 +107,7 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
     outsideDhakaCharge: number;
     vatChargeBdt: number;
     paymentGateways: StorePaymentGateway[];
+    codSmsVerification: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
   } | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -115,6 +118,7 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
         outsideDhakaCharge: Number(charges.outsideDhakaCharge),
         vatChargeBdt: Number(charges.vatChargeBdt),
         paymentGateways: charges.paymentGateways,
+        codSmsVerification: charges.codSmsVerification ?? null,
       });
     });
     return () => {
@@ -324,12 +328,73 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
     return Object.keys(next).length === 0;
   };
 
+  // Store > COD Guard "Before Checkout" (StorePal only — the server never
+  // reports codSmsVerification for other themes, so Medium/Minimal never
+  // reach this). `codOtp` is set once a code was texted to `phone`;
+  // StorePal's CheckoutView then shows the code input, and the next Place
+  // Order sends the code along. Changing the phone field afterwards
+  // invalidates it, so the next Place Order texts the new number instead.
+  const [codOtp, setCodOtp] = useState<{ phone: string } | null>(null);
+  const [codOtpCode, setCodOtpCode] = useState('');
+  const [codOtpSending, setCodOtpSending] = useState(false);
+  const [codOtpError, setCodOtpError] = useState<string | null>(null);
+
+  // Returns true when a code is now waiting to be entered, false when this
+  // phone doesn't need one (so the caller should just place the order).
+  const requestCodOtp = async (phone: string): Promise<boolean> => {
+    setCodOtpSending(true);
+    setCodOtpError(null);
+    try {
+      const { required } = await sendCodVerificationOtp(subdomain, phone);
+      if (!required) return false;
+      setCodOtp({ phone });
+      setCodOtpCode('');
+      return true;
+    } finally {
+      setCodOtpSending(false);
+    }
+  };
+
+  const resendCodOtp = async () => {
+    if (!codOtp) return;
+    try {
+      await requestCodOtp(codOtp.phone);
+    } catch (err) {
+      setCodOtpError(err instanceof Error ? err.message : 'Could not resend the code. Please try again.');
+    }
+  };
+
   const handlePlaceOrder = async () => {
     if (!validate()) return;
+    const phone = form.phone.trim();
+    const isCod = selectedGateway?.type === 'COD';
+    const otpForThisPhone = codOtp?.phone === phone ? codOtp : null;
+
     setPlacing(true);
     setPlaceError(null);
+
+    if (isCod && vendorCharges?.codSmsVerification === 'BEFORE_CHECKOUT') {
+      if (!otpForThisPhone) {
+        try {
+          if (await requestCodOtp(phone)) {
+            setPlacing(false);
+            return;
+          }
+        } catch (err) {
+          setPlaceError(err instanceof Error ? err.message : 'Could not send the verification code. Please try again.');
+          setPlacing(false);
+          return;
+        }
+      } else if (!/^\d{6}$/.test(codOtpCode.trim())) {
+        setCodOtpError('Enter the 6-digit code from the SMS.');
+        setPlacing(false);
+        return;
+      }
+    }
+
     try {
       const result = await placeOrder(subdomain, {
+        codVerificationCode: isCod && otpForThisPhone ? codOtpCode.trim() : undefined,
         customerName: form.fullName.trim(),
         customerPhone: form.phone.trim(),
         customerNote: form.note.trim() || undefined,
@@ -378,7 +443,24 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
       );
       router.push(`/store/${subdomain}/${redirectTo === 'thank-you' ? 'thank-you' : 'orders'}`);
     } catch (err) {
-      setPlaceError(err instanceof Error ? err.message : 'Could not place the order. Please try again.');
+      // The server wanted a COD Guard code this page didn't know to ask
+      // for (settings changed since the page loaded) — text one and show
+      // the code input, same as the proactive path above.
+      if (err instanceof CheckoutApiError && err.code === 'COD_VERIFICATION_REQUIRED' && !otpForThisPhone) {
+        try {
+          if (await requestCodOtp(phone)) {
+            setPlacing(false);
+            return;
+          }
+        } catch {
+          // Fall through to showing the original error.
+        }
+      }
+      if (otpForThisPhone && err instanceof Error && /verification code/i.test(err.message)) {
+        setCodOtpError(err.message);
+      } else {
+        setPlaceError(err instanceof Error ? err.message : 'Could not place the order. Please try again.');
+      }
       setPlacing(false);
     }
   };
@@ -445,5 +527,16 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
     paymentGateways,
     paymentMethod,
     setPaymentMethod,
+    // Store > COD Guard's before-checkout SMS step — only StorePal's
+    // CheckoutView renders these (see codOtp's own comment above).
+    codOtpPhone: codOtp && codOtp.phone === form.phone.trim() ? codOtp.phone : null,
+    codOtpCode,
+    setCodOtpCode: (value: string) => {
+      setCodOtpCode(value.replace(/\D/g, '').slice(0, 6));
+      setCodOtpError(null);
+    },
+    codOtpSending,
+    codOtpError,
+    resendCodOtp,
   };
 }

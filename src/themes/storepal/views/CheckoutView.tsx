@@ -55,7 +55,15 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     paymentGateways,
     paymentMethod,
     setPaymentMethod,
+    codOtpPhone,
+    codOtpCode,
+    setCodOtpCode,
+    codOtpSending,
+    codOtpError,
+    resendCodOtp,
   } = useCheckout(subdomain, 'thank-you');
+  const isCodSelected = paymentGateways.find((g) => g.id === paymentMethod)?.type === 'COD';
+  const showCodOtp = isCodSelected && codOtpPhone !== null;
 
   const selectedGateway = paymentGateways.find((g) => g.id === paymentMethod);
   const isRedirectGateway = selectedGateway ? selectedGateway.type !== 'COD' : false;
@@ -297,14 +305,51 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               </div>
             </div>
 
+            {/* Store > COD Guard "Before Checkout" — see useCheckout's codOtp. */}
+            {showCodOtp && (
+              <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
+                <p className="m-0 text-[13px] font-semibold text-ink">Verify your phone number</p>
+                <p className="m-0 mt-1 text-[12.5px] text-muted">
+                  We sent a 6-digit code to {codOtpPhone}. Enter it to place your order.
+                </p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={codOtpCode}
+                  onChange={(e) => setCodOtpCode(e.target.value)}
+                  placeholder="Enter code"
+                  aria-label="Verification code"
+                  className="mt-3 w-full sm:w-48 px-3 py-2.5 rounded-md border border-line bg-surface text-[15px] tracking-[0.3em] text-ink focus:outline-none focus:border-accent"
+                />
+                {codOtpError && <p className="m-0 mt-2 text-[12.5px] text-accent">{codOtpError}</p>}
+                <button
+                  type="button"
+                  onClick={resendCodOtp}
+                  disabled={codOtpSending}
+                  className="mt-2 block text-[12.5px] font-semibold text-accent underline underline-offset-2 disabled:opacity-60"
+                >
+                  {codOtpSending ? 'Sending…' : 'Resend code'}
+                </button>
+              </div>
+            )}
+
             {placeError && <p className="mt-4 text-[13px] text-accent">{placeError}</p>}
 
             <button
               onClick={handlePlaceOrder}
-              disabled={placing}
+              disabled={placing || codOtpSending}
               className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
             >
-              {placing ? (isRedirectGateway ? 'Redirecting to payment…' : 'Placing order…') : 'Submit Order'}
+              {codOtpSending && !showCodOtp
+                ? 'Sending verification code…'
+                : placing
+                  ? isRedirectGateway
+                    ? 'Redirecting to payment…'
+                    : 'Placing order…'
+                  : showCodOtp
+                    ? 'Verify & Submit Order'
+                    : 'Submit Order'}
             </button>
 
             <div className="flex flex-wrap gap-2 mt-4">

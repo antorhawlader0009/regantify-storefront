@@ -150,6 +150,7 @@ export default async function ProductPage({ params }: PageProps) {
           logoUrl={store.logoUrl}
           socialLinks={socialLinks}
           footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
         />
       ) : (
         <MediumProductView {...viewProps} />

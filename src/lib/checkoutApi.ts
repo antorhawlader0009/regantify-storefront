@@ -24,6 +24,29 @@ export interface CheckoutResponse {
   invoiceNumber: number;
   total: string;
   status: string;
+  // Store > COD Guard — PENDING means the order was placed On Hold and
+  // the thank-you page must collect the SMS code (StorePal only).
+  codVerificationStatus?: 'PENDING' | 'VERIFIED' | null;
+}
+
+/**
+ * A failed API call's message plus the machine-readable `code` some
+ * endpoints add (e.g. checkout's COD_VERIFICATION_REQUIRED), so a caller
+ * can branch on it without string-matching the message.
+ */
+export class CheckoutApiError extends Error {
+  constructor(
+    message: string,
+    public readonly code?: string,
+  ) {
+    super(message);
+  }
+}
+
+async function apiError(res: Response, fallback: string): Promise<CheckoutApiError> {
+  const body = await res.json().catch(() => null);
+  const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
+  return new CheckoutApiError(message || fallback, typeof body?.code === 'string' ? body.code : undefined);
 }
 
 // Store > Payment Gateway — one entry per gateway this vendor's checkout
@@ -64,6 +87,10 @@ export interface StoreDeliveryCharges {
   outsideDhakaCharge: string;
   vatChargeBdt: string;
   paymentGateways: StorePaymentGateway[];
+  // Store > COD Guard — when StorePal's checkout should ask for an SMS
+  // code on COD orders. Always null on other themes (see the backend's
+  // StorefrontService.findVendorBySubdomainOrThrow).
+  codSmsVerification?: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
 }
 
 export async function getStoreDeliveryCharges(subdomain: string): Promise<StoreDeliveryCharges | null> {
@@ -79,11 +106,7 @@ export async function placeOrder(subdomain: string, payload: unknown): Promise<C
     body: JSON.stringify(payload),
   });
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
-    throw new Error(message || 'Could not place the order. Please try again.');
-  }
+  if (!res.ok) throw await apiError(res, 'Could not place the order. Please try again.');
 
   return res.json();
 }
@@ -290,6 +313,9 @@ export interface TrackedOrder {
   discountAmount: string;
   total: string;
   paymentMethod: string;
+  // Store > COD Guard — PENDING while an after-checkout order waits On
+  // Hold for the shopper's SMS code (see StorePal's ThankYouView).
+  codVerificationStatus?: 'PENDING' | 'VERIFIED' | null;
   items: TrackedOrderItem[];
   statusHistory: TrackedOrderStatusHistoryEntry[];
   createdAt: string;
@@ -375,4 +401,44 @@ export function recordLandingPageVisit(subdomain: string, slug: string, payload:
     // Silently ignored — see VisitBeacon.tsx's own comment on why a
     // dropped beacon must never surface to the shopper.
   });
+}
+
+// Store > COD Guard — StorePal checkout's SMS verification (see
+// CodVerificationService on the backend). The "before checkout" send is
+// safe to call for every COD order: it returns required: false, and texts
+// nothing, when this phone doesn't need a code.
+export async function sendCodVerificationOtp(
+  subdomain: string,
+  phone: string,
+): Promise<{ required: boolean; expiresInSeconds?: number }> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/cod-verification/send`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone }),
+  });
+  if (!res.ok) throw await apiError(res, 'Could not send the verification code. Please try again.');
+  return res.json();
+}
+
+// "After checkout" — the thank-you page's code for an order placed On Hold.
+export async function verifyCodOrder(
+  subdomain: string,
+  orderId: string,
+  code: string,
+): Promise<{ status: string; codVerificationStatus: 'PENDING' | 'VERIFIED' | null }> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/orders/${orderId}/cod-verification/verify`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) throw await apiError(res, 'Could not verify the code. Please try again.');
+  return res.json();
+}
+
+export async function resendCodOrderOtp(subdomain: string, orderId: string): Promise<{ expiresInSeconds: number }> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/orders/${orderId}/cod-verification/resend`, {
+    method: 'POST',
+  });
+  if (!res.ok) throw await apiError(res, 'Could not resend the code. Please try again.');
+  return res.json();
 }

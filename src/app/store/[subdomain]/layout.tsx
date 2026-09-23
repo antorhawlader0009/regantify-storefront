@@ -3,6 +3,8 @@ import { getStoreInfo, StoreNotFoundError } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
+import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
+import type { StorefrontGdprPrompt } from '@/lib/storefrontApi';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -84,6 +86,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let bodyBackgroundColor: string | null | undefined;
   let headingFont: string | null | undefined;
   let bodyFont: string | null | undefined;
+  let gdprPrompt: StorefrontGdprPrompt | null = null;
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
@@ -92,6 +95,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     bodyBackgroundColor = store.bodyBackgroundColor;
     headingFont = store.brandHeadingFont;
     bodyFont = store.brandBodyFont;
+    gdprPrompt = store.gdprPrompt ?? null;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
@@ -116,6 +120,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           store that actually resolved — see storeExists above. */}
       {storeExists && <VisitBeacon subdomain={subdomain} />}
       <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      {/* Store > GDPR Prompt — StorePal only by design, same as the AI
+          chat widget; null unless the vendor turned it on. */}
+      {theme === 'STOREPAL' && gdprPrompt && <GdprPrompt subdomain={subdomain} prompt={gdprPrompt} />}
     </div>
   );
 }

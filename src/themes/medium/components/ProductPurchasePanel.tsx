@@ -13,6 +13,14 @@ interface ProductPurchasePanelProps {
   subdomain: string;
   storeName: string;
   product: StorefrontProduct;
+  /**
+   * Store > Stock Settings' backorder (see themes/storepal/lib/backorder.ts).
+   * Only StorePal passes it; without it the panel keeps its hard
+   * out-of-stock block, so Medium/Minimal behave exactly as before. With
+   * it, out-of-stock items stay purchasable: the stock line shows the
+   * short message and Add to Cart / Buy Now first confirm the popup one.
+   */
+  backorder?: { popupMessageHtml: string; shortMessage: string } | null;
 }
 
 /**
@@ -25,7 +33,7 @@ interface ProductPurchasePanelProps {
  * construction) is unchanged from the audited version — only the visual
  * treatment is refined here.
  */
-export function ProductPurchasePanel({ subdomain, storeName, product }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({ subdomain, storeName, product, backorder }: ProductPurchasePanelProps) {
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -35,6 +43,8 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
   const [quantity, setQuantity] = useState(1);
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
+  // Backorder confirm popup — holds the action (add / buy) to run on Continue.
+  const [pendingBackorderAction, setPendingBackorderAction] = useState<(() => void) | null>(null);
 
   const matchedVariant =
     product.variationOptions.length > 0 && product.variationOptions.every((opt) => selected[opt.name])
@@ -144,7 +154,14 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
   // different one (Blue, Size 30) still has stock, and Add to Cart/Buy
   // Now would stay enabled for the combination that has none.
   const selectedVariantOutOfStock = !product.isPreOrder && matchedVariant !== undefined && matchedVariant.stock <= 0;
-  const canPurchase = product.isPreOrder || (!outOfStock && !selectedVariantOutOfStock);
+  const canPurchase = product.isPreOrder || !!backorder || (!outOfStock && !selectedVariantOutOfStock);
+  // With backorder on, quantity isn't capped at stock; this is what the
+  // popup below confirms before the line goes into the cart.
+  const isBackorderSelection =
+    !!backorder &&
+    !product.isPreOrder &&
+    (outOfStock || selectedVariantOutOfStock || (availableStock !== undefined && quantity > availableStock));
+  const quantityCap = backorder ? undefined : availableStock;
 
   const buildLine = () => ({
     subdomain,
@@ -159,15 +176,28 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
     isPreOrder: product.isPreOrder,
   });
 
+  const addToCart = () => {
+    addLine(buildLine());
+    setAdded(true);
+    setTimeout(() => setAdded(false), 2500);
+  };
+
+  const buyNow = () => {
+    addLine(buildLine());
+    router.push(`/store/${subdomain}/checkout`);
+  };
+
   const handleAddToCart = () => {
     if (needsVariantSelection) {
       setVariantWarning(true);
       return;
     }
     setVariantWarning(false);
-    addLine(buildLine());
-    setAdded(true);
-    setTimeout(() => setAdded(false), 2500);
+    if (isBackorderSelection) {
+      setPendingBackorderAction(() => addToCart);
+      return;
+    }
+    addToCart();
   };
 
   const handleBuyNow = () => {
@@ -176,8 +206,11 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
       return;
     }
     if (!canPurchase) return;
-    addLine(buildLine());
-    router.push(`/store/${subdomain}/checkout`);
+    if (isBackorderSelection) {
+      setPendingBackorderAction(() => buyNow);
+      return;
+    }
+    buyNow();
   };
 
   return (
@@ -275,6 +308,11 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
             <span className="inline-block bg-ink text-white text-[11px] font-semibold px-2.5 py-1 rounded mt-3">
               Available for pre-order
             </span>
+          ) : backorder && (outOfStock || selectedVariantOutOfStock) ? (
+            <p className="flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 text-accent-dark">
+              <span className="w-1.5 h-1.5 rounded-full bg-accent" />
+              {backorder.shortMessage}
+            </p>
           ) : (
             <p className={`flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 ${outOfStock ? 'text-accent-dark' : 'text-success'}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${outOfStock ? 'bg-accent' : 'bg-success'}`} />
@@ -352,14 +390,14 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
             </button>
             <span className="w-10 text-center text-[13.5px] font-semibold bg-surface h-9 flex items-center justify-center">{quantity}</span>
             <button
-              onClick={() => setQuantity((q) => (availableStock !== undefined ? Math.min(availableStock, q + 1) : q + 1))}
-              disabled={availableStock !== undefined && quantity >= availableStock}
+              onClick={() => setQuantity((q) => (quantityCap !== undefined ? Math.min(quantityCap, q + 1) : q + 1))}
+              disabled={quantityCap !== undefined && quantity >= quantityCap}
               className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
             >
               <Plus size={13} />
             </button>
           </div>
-          {availableStock !== undefined && quantity >= availableStock && availableStock > 0 && (
+          {quantityCap !== undefined && quantity >= quantityCap && quantityCap > 0 && (
             <p className="text-[12px] text-muted mt-1.5">Max available quantity selected.</p>
           )}
         </div>
@@ -423,6 +461,47 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
           Buy Now
         </button>
       </div>
+
+      {backorder && pendingBackorderAction && (
+        <div
+          className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4"
+          onClick={() => setPendingBackorderAction(null)}
+        >
+          <div
+            role="dialog"
+            aria-modal="true"
+            aria-label="Backorder"
+            className="w-full max-w-md bg-surface rounded-lg shadow-popover p-5"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <p className="m-0 mb-2 text-[15px] font-bold text-ink">Backorder</p>
+            <div
+              className="text-[13.5px] text-ink leading-relaxed [&_p]:m-0 [&_p+p]:mt-2"
+              // Vendor's own RichTextEditor HTML — same trust level as
+              // Store > Footer's aboutBlurb (see StorePal's StoreFooter).
+              dangerouslySetInnerHTML={{ __html: backorder.popupMessageHtml }}
+            />
+            <div className="flex gap-2.5 mt-5">
+              <button
+                onClick={() => setPendingBackorderAction(null)}
+                className="flex-1 py-2.5 rounded-md border border-line text-ink text-[13px] font-semibold hover:bg-line/60 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  const action = pendingBackorderAction;
+                  setPendingBackorderAction(null);
+                  action();
+                }}
+                className="flex-1 py-2.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[13px] font-bold transition-colors"
+              >
+                Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }
