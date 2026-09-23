@@ -37,7 +37,7 @@ const FALLBACK_VAT_CHARGE = 10;
 // safe default so paymentMethod/vatAmount have something to resolve
 // against on first render.
 const FALLBACK_GATEWAYS: StorePaymentGateway[] = [
-  { id: 'COD', type: 'COD', displayLabel: 'Cash On Delivery', platformChargeBdt: '0', platformChargeType: 'FLAT', feeHidden: false },
+  { id: 'COD', type: 'COD', displayLabel: 'Cash On Delivery', platformChargeBdt: '0', platformChargePercent: '0', feeHidden: false },
 ];
 
 const HANDOFF_KEY = 'regantify-last-order';
@@ -211,6 +211,13 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   // (see Vendor.vatChargeBdt's own schema comment). Zero whenever the
   // cart is empty, same as deliveryCharge above.
   const vatAmount = lines.length > 0 ? resolvedVatCharge : 0;
+  // FREE_SHIPPING waives the delivery charge instead of discounting the
+  // subtotal — same split OrdersService.create's own coupon handling
+  // makes server-side, so the number shown here always matches what
+  // Place Order will actually charge.
+  const couponFreeShipping = appliedCoupon?.discountType === 'FREE_SHIPPING';
+  const couponDiscount = couponFreeShipping ? 0 : (appliedCoupon?.discountAmount ?? 0);
+  const effectiveDeliveryCharge = couponFreeShipping ? 0 : deliveryCharge;
   // Store > Payment Gateway's per-gateway Platform Charge — the
   // CURRENTLY SELECTED gateway's own configured surcharge, independent
   // of vatAmount above. Never shown until a gateway is actually
@@ -220,16 +227,21 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   // Payment unless the vendor set one. This is the REAL amount shown
   // pre-payment — same resolution OrdersService.create does
   // server-side (which is what actually gets charged; this is only a
-  // preview) — PERCENTAGE is a % of `subtotal` (product total only,
-  // delivery/VAT excluded from the base, see
-  // VendorPaymentGateway.platformChargeType's own schema comment),
-  // FLAT is used as-is. Independent of feeHidden below (the server
-  // resolves/charges this itself regardless of what the client sends).
+  // preview) — the flat part plus platformChargePercent % of the order's
+  // full amount INCLUDING that flat part (subtotal + delivery + VAT -
+  // coupon + flat; e.g. ৳100 + ৳50 + ৳10 flat = ৳160, 2% = ৳3.2, shopper
+  // pays ৳163.2 — see VendorPaymentGateway.platformChargePercent's own
+  // schema comment), rounded to paisa like the server. Independent of
+  // feeHidden below (the server resolves/charges this itself regardless
+  // of what the client sends).
+  const platformChargeFlat = selectedGateway ? Number(selectedGateway.platformChargeBdt) : 0;
+  const platformChargeBase =
+    Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount - couponDiscount) + platformChargeFlat;
   const platformChargeAmount =
     lines.length > 0 && selectedGateway
-      ? selectedGateway.platformChargeType === 'PERCENTAGE'
-        ? (subtotal * Number(selectedGateway.platformChargeBdt)) / 100
-        : Number(selectedGateway.platformChargeBdt)
+      ? Math.round(
+          (platformChargeFlat + (platformChargeBase * Number(selectedGateway.platformChargePercent)) / 100) * 100,
+        ) / 100
       : 0;
   // Plan.codFeeHidden/onlinePaymentFeeHidden — display-only "fold this
   // fee silently into the total instead of breaking it out" switch (see
@@ -239,13 +251,6 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
   // visibleGrandTotal, which still adds it in unseen) and by the order
   // the server creates.
   const visiblePlatformChargeAmount = selectedGateway?.feeHidden ? 0 : platformChargeAmount;
-  // FREE_SHIPPING waives the delivery charge instead of discounting the
-  // subtotal — same split OrdersService.create's own coupon handling
-  // makes server-side, so the number shown here always matches what
-  // Place Order will actually charge.
-  const couponFreeShipping = appliedCoupon?.discountType === 'FREE_SHIPPING';
-  const couponDiscount = couponFreeShipping ? 0 : (appliedCoupon?.discountAmount ?? 0);
-  const effectiveDeliveryCharge = couponFreeShipping ? 0 : deliveryCharge;
   // The real total (includes a hidden fee) — never shown to the shopper
   // as a number, only used so Place Order and any "you'll be charged X"
   // confirmation stay correct even when a fee is hidden from the

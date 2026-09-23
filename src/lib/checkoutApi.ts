@@ -60,13 +60,14 @@ export interface StorePaymentGateway {
   id: string;
   type: 'COD' | 'ONLINE_PAYMENT' | 'SSLCOMMERZ' | 'BKASH_MERCHANT' | 'VENDOR_PAYSTATION';
   displayLabel: string | null;
-  // Either a flat BDT amount or a percentage (0-100) of the cart
-  // subtotal — see platformChargeType. Raw number either way; useCheckout
-  // resolves it into an actual BDT amount the same way OrdersService
-  // .create does server-side (see VendorPaymentGateway.platformChargeType's
-  // own schema comment on the server for the full split).
+  // A flat BDT part PLUS a percentage (0-100) of the order total
+  // (subtotal + delivery + VAT - coupon + the flat part),
+  // both charged together; useCheckout resolves them into one BDT amount
+  // the same way OrdersService.create does server-side (see
+  // VendorPaymentGateway.platformChargePercent's own schema comment on
+  // the server).
   platformChargeBdt: string;
-  platformChargeType: 'FLAT' | 'PERCENTAGE';
+  platformChargePercent: string;
   // Display-only — Plan.codFeeHidden/onlinePaymentFeeHidden (COD/
   // ONLINE_PAYMENT only, always false for a custom gateway). The fee
   // itself is still charged server-side regardless — OrdersService
