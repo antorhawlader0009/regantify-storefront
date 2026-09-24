@@ -266,8 +266,30 @@ export function syncIncompleteOrder(subdomain: string, payload: unknown): void {
   });
 }
 
+/**
+ * Store > Integrations > Facebook Pixel — sends a pixel event's details
+ * to the server for its Conversions API copy (same event id, so Meta
+ * keeps one). Fire-and-forget like syncIncompleteOrder: tracking must
+ * never surface an error to the shopper. keepalive lets it finish even
+ * when the event was fired right before a navigation (Buy Now, Place Order).
+ */
+export function relayMetaEvent(subdomain: string, payload: unknown): void {
+  fetch(`${apiOrigin()}/v1/store/${subdomain}/meta-events`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+    keepalive: true,
+  }).catch(() => {
+    // Silently ignored — see comment above.
+  });
+}
+
 export interface TrackedOrderItem {
   id: string;
+  // Null once the product was deleted; variantId only for variant products.
+  // Used for the Meta pixel's Purchase content_ids.
+  productId?: string | null;
+  variantId?: string | null;
   productName: string;
   productImage?: string | null;
   selectedOptions: Record<string, string>;
@@ -289,6 +311,10 @@ export interface TrackedOrder {
   invoiceNumber: number;
   status: string;
   customerName: string;
+  // The shopper's own contact details (the lookup already required the
+  // phone). Used for the Meta pixel's advanced matching on the thank-you page.
+  customerPhone?: string;
+  customerEmail?: string | null;
   shippingAddress: string;
   shippingCity?: string | null;
   shippingDistrict?: string | null;

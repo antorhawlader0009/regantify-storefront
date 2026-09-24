@@ -8,6 +8,7 @@ import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, St
 import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { resolveCouponLink } from '@/lib/checkoutApi';
 import { setPendingCoupon } from '../lib/pendingCoupon';
+import { trackMetaSearch } from '@/lib/metaPixelEvents';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
@@ -205,6 +206,13 @@ export function HomeView({
         ? payPrice(b) - payPrice(a)
         : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
+
+  // Meta pixel Search, once per query, with the top results as content_ids.
+  const searchQuery = search?.trim() ?? '';
+  useEffect(() => {
+    if (searchQuery) trackMetaSearch(searchQuery, sorted.map((p) => p.id));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
   const grouped = !isFiltered ? groupByCategory(products) : null;

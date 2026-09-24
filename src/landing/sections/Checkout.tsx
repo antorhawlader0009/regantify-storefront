@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { StorefrontLandingPageProduct } from '@/lib/storefrontApi';
 import { formatPrice } from '@/lib/productDisplay';
 import { submitLandingPageLead } from '@/lib/checkoutApi';
@@ -8,6 +8,7 @@ import { useCheckout } from '@/lib/useCheckout';
 import { useStoreTheme } from '@/providers/theme-provider';
 import type { CartLine } from '@/stores/cart-store';
 import type { CheckoutFormProps, LeadFormProps } from '../types';
+import { trackMetaInitiateCheckout, trackMetaLead } from '@/lib/metaPixelEvents';
 
 // A handful of common Bangladeshi districts for the "quick-select" chips
 // (landing-page-sections.md §6.1 / landing-plan.md §1.2 item 6) — this is
@@ -88,6 +89,7 @@ export function CheckoutFormSection({
             quantity: quantities[p.id] ?? 1,
             selectedOptions: {},
             isPreOrder: p.isPreOrder,
+            productId: p.id,
           };
         }),
     [products, selected, quantities, subdomain],
@@ -153,8 +155,18 @@ export function CheckoutFormSection({
 
   const setQuantity = (id: string, qty: number) => setQuantities((prev) => ({ ...prev, [id]: Math.max(1, Math.min(99, qty)) }));
 
+  // Meta pixel InitiateCheckout once the shopper starts filling the form.
+  // Not on mount: the form is part of the landing page itself, so every
+  // visitor would count as a checkout.
+  const checkoutTracked = useRef(false);
+  const onFormFocus = () => {
+    if (checkoutTracked.current || lines.length === 0) return;
+    checkoutTracked.current = true;
+    trackMetaInitiateCheckout(lines);
+  };
+
   return (
-    <div id="checkout" className="px-5 py-10 sm:px-8">
+    <div id="checkout" className="px-5 py-10 sm:px-8" onFocusCapture={onFormFocus}>
       <div className="mx-auto max-w-4xl rounded-2xl border border-neutral-200 p-5 sm:p-8">
         <h2 className="mb-5 text-xl font-bold text-neutral-900 sm:text-2xl">Submit Your Order Information</h2>
 
@@ -482,6 +494,7 @@ export function LeadFormSection({
       const number = (props.whatsappNumber || '').replace(/[^0-9]/g, '');
       const message = `Name: ${name.trim()}\nPhone: ${phone.trim()}${email.trim() ? `\nEmail: ${email.trim()}` : ''}`;
       window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, '_blank', 'noreferrer');
+      trackMetaLead();
       setDone(true);
       return;
     }
@@ -494,6 +507,7 @@ export function LeadFormSection({
         phone: phone.trim(),
         email: email.trim() || undefined,
       });
+      trackMetaLead();
       setDone(true);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Could not submit your information. Please try again.');

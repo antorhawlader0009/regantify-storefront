@@ -6,7 +6,13 @@ import { VisitBeacon } from '@/components/VisitBeacon';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
-import type { StorefrontCustomCode, StorefrontDesignSettings, StorefrontGdprPrompt } from '@/lib/storefrontApi';
+import { MetaPixel } from '@/components/MetaPixel';
+import type {
+  StorefrontCustomCode,
+  StorefrontDesignSettings,
+  StorefrontGdprPrompt,
+  StorefrontMetaPixel,
+} from '@/lib/storefrontApi';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -27,8 +33,16 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
   const { subdomain } = await params;
   try {
     const store = await getStoreInfo(subdomain);
-    if (!store.faviconUrl) return {};
-    return { icons: { icon: store.faviconUrl } };
+    const metadata: Metadata = {};
+    if (store.faviconUrl) metadata.icons = { icon: store.faviconUrl };
+    // Store > Integrations > Facebook Pixel's domain verification code, as
+    // <meta name="facebook-domain-verification">. StorePal only, like the
+    // pixel itself; the server keeps it to [A-Za-z0-9_-].
+    const verification = store.metaPixel?.domainVerificationCode;
+    if (verification) {
+      metadata.other = { 'facebook-domain-verification': verification };
+    }
+    return metadata;
   } catch {
     return {};
   }
@@ -91,6 +105,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let gdprPrompt: StorefrontGdprPrompt | null = null;
   let customCode: StorefrontCustomCode | null = null;
   let designSettings: StorefrontDesignSettings | null = null;
+  let metaPixel: StorefrontMetaPixel | null = null;
   let showOutOfStockBadge = true;
   try {
     const store = await getStoreInfo(subdomain);
@@ -103,6 +118,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     gdprPrompt = store.gdprPrompt ?? null;
     customCode = store.customCode ?? null;
     designSettings = store.designSettings ?? null;
+    metaPixel = store.metaPixel ?? null;
     showOutOfStockBadge = store.stockSettings?.showOutOfStockBadge !== false;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
@@ -133,6 +149,13 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           Renders nothing; see VisitBeacon's own doc comment. Only for a
           store that actually resolved — see storeExists above. */}
       {storeExists && <VisitBeacon subdomain={subdomain} />}
+      {/* Store > Integrations > Facebook Pixel — StorePal only, like GDPR
+          Prompt below (landing pages included, since they render inside
+          this layout). Waits for GDPR consent when the prompt is on. See
+          lib/metaPixel.ts. */}
+      {storeExists && theme === 'STOREPAL' && (
+        <MetaPixel subdomain={subdomain} metaPixel={metaPixel} consentRequired={!!gdprPrompt} />
+      )}
       <ThemeProvider theme={theme}>
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}

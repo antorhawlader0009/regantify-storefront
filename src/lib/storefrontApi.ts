@@ -95,6 +95,26 @@ export interface StorefrontInfo {
   // Editor / Layout Settings — same "store-info only, StorePal only" rule
   // as customCode. Read through themes/storepal/lib/designSettings.tsx.
   designSettings?: StorefrontDesignSettings | null;
+  // Store > Integrations > Facebook Pixel — same "store-info only, StorePal
+  // only" rule as customCode. Null when the vendor has no pixel and no
+  // domain verification code. Never includes the CAPI token.
+  metaPixel?: StorefrontMetaPixel | null;
+}
+
+export interface StorefrontMetaPixel {
+  pixelId: string | null;
+  secondaryPixelId: string | null;
+  eventMode: 'AUTOMATIC' | 'STOREPAL_DEFINED';
+  // "Track without JS SDK": facebook.com/tr image requests, no fbevents.js.
+  imgTagTracking: boolean;
+  // content="" value for <meta name="facebook-domain-verification">.
+  domainVerificationCode: string | null;
+  // True only when the server will send Purchase itself at the vendor's
+  // chosen order status, so the browser must not fire it at checkout.
+  deferredPurchase: boolean;
+  // The vendor has a working Conversions API token: relay browser events
+  // to the server for a server-side copy (see lib/metaPixel.ts).
+  serverEvents?: boolean;
 }
 
 export type StorefrontMenuItemType = 'PAGE' | 'PRODUCT' | 'CATEGORY' | 'BRAND' | 'OTHER' | 'CUSTOM';

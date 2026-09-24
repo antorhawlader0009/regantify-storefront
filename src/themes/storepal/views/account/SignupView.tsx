@@ -7,6 +7,7 @@ import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { StoreHeader } from '../../components/StoreHeader';
 import { StoreFooter } from '../../components/StoreFooter';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
+import { trackMetaCompleteRegistration } from '@/lib/metaPixelEvents';
 
 export function SignupView({ subdomain }: { subdomain: string }) {
   const router = useRouter();
@@ -51,6 +52,7 @@ export function SignupView({ subdomain }: { subdomain: string }) {
     try {
       const result = await verifyCustomerSignup(phone.trim(), code.trim());
       setSession(result.customer, result.accessToken);
+      trackMetaCompleteRegistration();
       router.push(`/store/${subdomain}/account/orders`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not verify your code.');

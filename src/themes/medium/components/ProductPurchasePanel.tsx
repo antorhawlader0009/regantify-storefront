@@ -188,6 +188,9 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
     quantity,
     selectedOptions: selected,
     isPreOrder: product.isPreOrder,
+    // For StorePal's Meta pixel content_ids (see stores/cart-store.ts).
+    productId: product.id,
+    variantId: matchedVariant?.id,
   });
 
   const addToCart = () => {

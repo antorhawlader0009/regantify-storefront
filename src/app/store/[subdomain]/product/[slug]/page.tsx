@@ -103,6 +103,11 @@ export default async function ProductPage({ params }: PageProps) {
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
+    // The same id the Meta pixel's content_ids and the Facebook catalog
+    // feed use (facebook-pixel.md §4.1/§7), so Meta's page reader matches
+    // this page to the right catalog item. A product with variants is a
+    // group there (one feed row per variant), so it gets the group id.
+    ...(product.variants.length > 0 ? { inProductGroupWithID: product.id } : { productID: product.id }),
     name: product.name,
     description: product.metaDescription?.trim() || product.summary?.trim() || product.name,
     image: product.photoUrls,

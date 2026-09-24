@@ -17,7 +17,17 @@ export interface CartLine {
   quantity: number;
   selectedOptions: Record<string, string>;
   isPreOrder: boolean;
+  // Product.id / ProductVariant.id, for StorePal's Meta pixel content_ids
+  // (see lib/metaPixelEvents.ts). Optional: Minimal's panel doesn't set
+  // them, and carts saved before these fields existed don't have them.
+  productId?: string;
+  variantId?: string;
 }
+
+// Fired on window after every addLine, with the added line (including its
+// id) as detail — lets StorePal's Meta pixel send AddToCart without every
+// add-to-cart button knowing about tracking.
+export const CART_ADD_EVENT = 'storefront:cart-add';
 
 export interface CartState {
   lines: CartLine[];
@@ -53,19 +63,30 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
       (set, get) => ({
         ...initState,
 
-        addLine: (line) =>
+        addLine: (line) => {
+          const id = lineId(line.productSlug, line.selectedOptions);
           set((state) => {
-            const id = lineId(line.productSlug, line.selectedOptions);
             const existing = state.lines.find((l) => l.id === id);
             if (existing) {
               return {
                 lines: state.lines.map((l) =>
-                  l.id === id ? { ...l, quantity: l.quantity + line.quantity } : l,
+                  l.id === id
+                    ? {
+                        ...l,
+                        quantity: l.quantity + line.quantity,
+                        productId: l.productId ?? line.productId,
+                        variantId: l.variantId ?? line.variantId,
+                      }
+                    : l,
                 ),
               };
             }
             return { lines: [...state.lines, { ...line, id }] };
-          }),
+          });
+          if (typeof window !== 'undefined') {
+            window.dispatchEvent(new CustomEvent<CartLine>(CART_ADD_EVENT, { detail: { ...line, id } }));
+          }
+        },
 
         removeLine: (id) => set((state) => ({ lines: state.lines.filter((l) => l.id !== id) })),
 

@@ -11,6 +11,7 @@ import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice } from '../lib/formatPrice';
 import { useShowOutOfStockBadge, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
+import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 
 // Minimal shape ProductCard actually reads — satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
@@ -21,6 +22,9 @@ import { useWishlist } from '../lib/wishlist';
 // inline Add to Cart / Buy Now only works for it; lean cards send those
 // buttons to the product page instead.
 interface CardProduct {
+  // For the Meta pixel (cart line / AddToWishlist); every caller passes it,
+  // but it's optional so a lean shape without it still type-checks.
+  id?: string;
   slug: string;
   name: string;
   photoUrls: string[];
@@ -113,6 +117,8 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       quantity: 1,
       selectedOptions: selected,
       isPreOrder: product.isPreOrder,
+      productId: product.id,
+      variantId: matchedVariant?.id,
     });
     if (kind === 'buy') {
       router.push(`/store/${subdomain}/checkout`);
@@ -183,7 +189,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         {design.cardShowWishlist && (
           <button
             type="button"
-            onClick={() => wishlist.toggle(product.slug)}
+            onClick={() => {
+              if (!inWishlist && product.id) trackMetaAddToWishlist({ ...product, id: product.id });
+              wishlist.toggle(product.slug);
+            }}
             aria-pressed={inWishlist}
             aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
             className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-surface/90 shadow flex items-center justify-center text-ink hover:text-accent transition-colors"

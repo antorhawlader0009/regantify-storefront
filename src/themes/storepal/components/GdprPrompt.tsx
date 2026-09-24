@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { StorefrontGdprPrompt } from '@/lib/storefrontApi';
+import { grantGdprConsent, hasGdprConsent } from '@/lib/gdprConsent';
 
 // Shown when the vendor enabled the prompt but left the message blank —
 // keep in sync with client's pages/vendor/store/GdprPrompt.tsx placeholder.
@@ -15,13 +16,12 @@ const POSITION_CLASSES: Record<StorefrontGdprPrompt['position'], string> = {
   BOTTOM_RIGHT: 'bottom-4 right-4 left-4 sm:left-auto sm:max-w-sm rounded-lg border shadow-popover',
 };
 
-const storageKey = (subdomain: string) => `storepal:gdpr-consent:${subdomain}`;
-
 /**
  * Store > GDPR Prompt — StorePal's cookie-consent banner, mounted once in
  * store/[subdomain]/layout.tsx for StorePal stores only (like the AI chat
  * widget, other themes don't get it). The shopper's accept is remembered
- * per store in localStorage and never sent to the server. Renders nothing
+ * per store in localStorage (lib/gdprConsent.ts) and never sent to the
+ * server; the Meta pixel waits for it (lib/metaPixel.ts). Renders nothing
  * until mounted, so server HTML and first client render always match.
  *
  * `message` is the vendor's own RichTextEditor HTML, rendered raw — same
@@ -31,23 +31,15 @@ export function GdprPrompt({ subdomain, prompt }: { subdomain: string; prompt: S
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    try {
-      setVisible(localStorage.getItem(storageKey(subdomain)) !== 'accepted');
-    } catch {
-      // Storage blocked (private mode etc.) — show it; accepting then
-      // just hides it for this page view.
-      setVisible(true);
-    }
+    // Storage blocked (private mode etc.) reads as "not accepted", so the
+    // prompt shows; accepting then just hides it for this page view.
+    setVisible(!hasGdprConsent(subdomain));
   }, [subdomain]);
 
   if (!visible) return null;
 
   const accept = () => {
-    try {
-      localStorage.setItem(storageKey(subdomain), 'accepted');
-    } catch {
-      // Ignore — see above.
-    }
+    grantGdprConsent(subdomain);
     setVisible(false);
   };
 
