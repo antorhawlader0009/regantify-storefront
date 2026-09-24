@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
+import type { CartLine } from '@/stores/cart-store';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import {
   placeOrder,
@@ -72,15 +73,30 @@ export interface CheckoutFormState {
  * 'thank-you' (StorePal's own animated confirmation + memo page, see
  * themes/storepal/views/ThankYouView.tsx). Both destinations read the
  * same sessionStorage handoff (see HANDOFF_KEY) via useTrackOrder.
+ *
+ * `options.lines` replaces the shopper's cart with a caller-owned line
+ * list (a landing page's Checkout Form section, whose products are fixed
+ * by the vendor) — same pricing/coupon/payment/COD Guard flow, but the
+ * cart store is never read or cleared, and the Incomplete Orders session
+ * key is kept separate from the cart checkout's. The caller must memoize
+ * the array (it drives the debounced incomplete-order sync).
  */
-export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you' = 'orders') {
+export function useCheckout(
+  subdomain: string,
+  redirectTo: 'orders' | 'thank-you' = 'orders',
+  options?: { lines?: CartLine[] },
+) {
   const router = useRouter();
 
-  const lines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));
+  const externalLines = options?.lines;
+  const cartLines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));
+  const lines = externalLines ?? cartLines;
   const setQuantity = useCartStore((s) => s.setQuantity);
   const removeLine = useCartStore((s) => s.removeLine);
   const clearStore = useCartStore((s) => s.clearStore);
-  const hydrated = useCartHydrated();
+  const cartHydrated = useCartHydrated();
+  const hydrated = externalLines ? true : cartHydrated;
+  const sessionStorageKey = `regantify-checkout-session:${subdomain}${externalLines ? ':landing' : ''}`;
 
   const [form, setForm] = useState<CheckoutFormState>({
     fullName: '',
@@ -175,11 +191,10 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
 
   const [sessionKey] = useState(() => {
     if (typeof window === 'undefined') return '';
-    const key = `regantify-checkout-session:${subdomain}`;
-    const existing = sessionStorage.getItem(key);
+    const existing = sessionStorage.getItem(sessionStorageKey);
     if (existing) return existing;
     const generated = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-    sessionStorage.setItem(key, generated);
+    sessionStorage.setItem(sessionStorageKey, generated);
     return generated;
   });
 
@@ -430,8 +445,8 @@ export function useCheckout(subdomain: string, redirectTo: 'orders' | 'thank-you
       // to that gateway's hosted checkout instead of the thank-you/
       // orders page; that page is only reached once payment-callback
       // confirms success (see themes/storepal/views/PaymentCallbackView.tsx).
-      clearStore(subdomain);
-      sessionStorage.removeItem(`regantify-checkout-session:${subdomain}`);
+      if (!externalLines) clearStore(subdomain);
+      sessionStorage.removeItem(sessionStorageKey);
 
       if (selectedGateway && selectedGateway.type !== 'COD') {
         const payment =
