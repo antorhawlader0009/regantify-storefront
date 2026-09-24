@@ -4,7 +4,8 @@ import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
-import type { StorefrontGdprPrompt } from '@/lib/storefrontApi';
+import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
+import type { StorefrontCustomCode, StorefrontGdprPrompt } from '@/lib/storefrontApi';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -87,6 +88,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let headingFont: string | null | undefined;
   let bodyFont: string | null | undefined;
   let gdprPrompt: StorefrontGdprPrompt | null = null;
+  let customCode: StorefrontCustomCode | null = null;
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
@@ -96,6 +98,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     headingFont = store.brandHeadingFont;
     bodyFont = store.brandBodyFont;
     gdprPrompt = store.gdprPrompt ?? null;
+    customCode = store.customCode ?? null;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
@@ -123,6 +126,20 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       {/* Store > GDPR Prompt — StorePal only by design, same as the AI
           chat widget; null unless the vendor turned it on. */}
       {theme === 'STOREPAL' && gdprPrompt && <GdprPrompt subdomain={subdomain} prompt={gdprPrompt} />}
+      {/* Store > Design > Custom CSS / Head Scripts / JavaScript Code —
+          StorePal only, like GDPR above. The CSS is server-rendered after
+          the page so it wins over theme styles at equal specificity and
+          never flashes unstyled; a literal "</style" in it is escaped so
+          it can't close the tag early. Scripts go through the injector. */}
+      {theme === 'STOREPAL' && customCode?.customCss && (
+        <style
+          data-store-custom="css"
+          dangerouslySetInnerHTML={{ __html: customCode.customCss.replace(/<\/style/gi, '<\\/style') }}
+        />
+      )}
+      {theme === 'STOREPAL' && customCode && (customCode.headScripts || customCode.headJs.length > 0 || customCode.bodyJs.length > 0) && (
+        <CustomCodeInjector subdomain={subdomain} code={customCode} />
+      )}
     </div>
   );
 }

@@ -87,6 +87,19 @@ export interface StorefrontInfo {
   stockSettings?: StorefrontStockSettings;
   gdprPrompt?: StorefrontGdprPrompt | null;
   codSmsVerification?: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
+  // Store > Design > Custom CSS / Head Scripts / JavaScript Code — only on
+  // the store-info response, and null unless the theme is StorePal and the
+  // vendor has set something (see StorefrontController.getStore).
+  customCode?: StorefrontCustomCode | null;
+}
+
+export interface StorefrontCustomCode {
+  customCss: string | null;
+  // Raw HTML snippet for <head>.
+  headScripts: string | null;
+  // Plain JS, no <script> wrapper, in run order.
+  headJs: { id: string; code: string }[];
+  bodyJs: { id: string; code: string }[];
 }
 
 export interface StorefrontStockSettings {
