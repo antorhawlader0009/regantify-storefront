@@ -193,6 +193,19 @@ export function HomeView({
     );
   });
 
+  // Sort for the filtered listing (category/brand/search view). "Latest"
+  // is newest-first by createdAt; price sorts use the price a shopper
+  // actually pays (discounted when set), same as the Price Filter.
+  const [sortBy, setSortBy] = useState<'latest' | 'price-asc' | 'price-desc'>('latest');
+  const payPrice = (p: StorefrontProduct) => Number(p.discountPrice ?? p.price);
+  const sorted = [...filtered].sort((a, b) =>
+    sortBy === 'price-asc'
+      ? payPrice(a) - payPrice(b)
+      : sortBy === 'price-desc'
+        ? payPrice(b) - payPrice(a)
+        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+  );
+
   const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
   const grouped = !isFiltered ? groupByCategory(products) : null;
 
@@ -277,6 +290,16 @@ export function HomeView({
               </h1>
               <div className="flex items-center gap-3">
                 <span className="text-[12.5px] text-muted">{filtered.length} products</span>
+                <select
+                  value={sortBy}
+                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                  aria-label="Sort products"
+                  className="text-[12.5px] font-medium text-ink bg-surface border border-line-strong rounded-md px-2.5 py-1.5 outline-none focus:border-ink cursor-pointer"
+                >
+                  <option value="latest">Sort by latest</option>
+                  <option value="price-asc">Price: low to high</option>
+                  <option value="price-desc">Price: high to low</option>
+                </select>
                 <button
                   onClick={() => setMobileFiltersOpen(true)}
                   className="lg:hidden flex items-center gap-1.5 text-[12.5px] font-semibold text-ink border border-line-strong rounded-md px-2.5 py-1.5"
@@ -341,7 +364,7 @@ export function HomeView({
               </div>
             ) : (
               <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-                {filtered.map((product) => (
+                {sorted.map((product) => (
                   <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                 ))}
               </div>
