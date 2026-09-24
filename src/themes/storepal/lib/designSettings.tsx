@@ -41,14 +41,35 @@ const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
  * client-only cart/checkout/account pages) reads the same settings
  * without another fetch or prop threading.
  */
-export function StorePalDesignProvider({ settings, children }: { settings: StorefrontDesignSettings | null; children: ReactNode }) {
+export function StorePalDesignProvider({
+  settings,
+  showOutOfStockBadge = true,
+  children,
+}: {
+  settings: StorefrontDesignSettings | null;
+  showOutOfStockBadge?: boolean;
+  children: ReactNode;
+}) {
   // Spread over the defaults so an older cached response missing a newer
   // field still gets a sane value.
-  return <DesignContext.Provider value={{ ...DEFAULT_DESIGN, ...settings }}>{children}</DesignContext.Provider>;
+  return (
+    <DesignContext.Provider value={{ ...DEFAULT_DESIGN, ...settings }}>
+      <OutOfStockBadgeContext.Provider value={showOutOfStockBadge}>{children}</OutOfStockBadgeContext.Provider>
+    </DesignContext.Provider>
+  );
 }
 
 export function useStorePalDesign() {
   return useContext(DesignContext);
+}
+
+// Store > Stock Settings' "Show Out of Stock badge on product cards",
+// carried by the same provider so ProductCard needs no new prop at its
+// many call sites.
+const OutOfStockBadgeContext = createContext(true);
+
+export function useShowOutOfStockBadge() {
+  return useContext(OutOfStockBadgeContext);
 }
 
 const OTHER_PATHS: Record<string, string> = {

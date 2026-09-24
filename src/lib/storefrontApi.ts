@@ -145,6 +145,7 @@ export interface StorefrontCustomCode {
 
 export interface StorefrontStockSettings {
   showOutOfStockProducts: boolean;
+  showOutOfStockBadge: boolean;
   allowBackorder: boolean;
   backorderPopupMessage: string | null;
   backorderShortMessage: string | null;

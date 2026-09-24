@@ -9,7 +9,7 @@ import type { StorefrontVariant, StorefrontVariationOption } from '@/lib/storefr
 import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice } from '../lib/formatPrice';
-import { useStorePalDesign } from '../lib/designSettings';
+import { useShowOutOfStockBadge, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 
 // Minimal shape ProductCard actually reads — satisfied by both the full
@@ -51,6 +51,7 @@ interface ProductCardProps {
  */
 export function ProductCard({ product, subdomain, storeName }: ProductCardProps) {
   const design = useStorePalDesign();
+  const showOutOfStockBadge = useShowOutOfStockBadge();
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const wishlist = useWishlist(subdomain);
@@ -173,7 +174,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
               )}
             </div>
           )}
-          {outOfStock && (
+          {outOfStock && showOutOfStockBadge && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
               <span className="bg-ink text-white text-[11px] font-semibold px-2.5 py-1.5 rounded">Out of Stock</span>
             </div>

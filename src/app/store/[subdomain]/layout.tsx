@@ -91,6 +91,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let gdprPrompt: StorefrontGdprPrompt | null = null;
   let customCode: StorefrontCustomCode | null = null;
   let designSettings: StorefrontDesignSettings | null = null;
+  let showOutOfStockBadge = true;
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
@@ -102,6 +103,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     gdprPrompt = store.gdprPrompt ?? null;
     customCode = store.customCode ?? null;
     designSettings = store.designSettings ?? null;
+    showOutOfStockBadge = store.stockSettings?.showOutOfStockBadge !== false;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
@@ -135,7 +137,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (
-          <StorePalDesignProvider settings={designSettings}>{children}</StorePalDesignProvider>
+          <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge}>{children}</StorePalDesignProvider>
         ) : (
           children
         )}
