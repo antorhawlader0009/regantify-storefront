@@ -36,6 +36,8 @@ interface HomeViewProps {
   categoryDetails?: StorefrontCategoryDetail[];
   reviews: StorefrontReview[];
   activeCategory?: string;
+  /** `?brand=` — Store > Design menu items of type Brand link here. StorePal-only. */
+  activeBrand?: string;
   search?: string;
   socialLinks?: SocialLinks;
   /** Accepted for callers that still fetch it (e.g. for Marketing > Campaigns pages elsewhere) — the homepage hero itself now uses categoryDetails instead, see HeroBanner. */
@@ -93,6 +95,7 @@ export function HomeView({
   categoryDetails = [],
   reviews,
   activeCategory,
+  activeBrand,
   search,
   socialLinks,
   campaigns = [],
@@ -162,6 +165,7 @@ export function HomeView({
     const matchesCategory = activeCategory
       ? p.category === activeCategory || p.secondaryCategories.includes(activeCategory)
       : true;
+    const matchesBrandParam = activeBrand ? p.brand === activeBrand : true;
     const price = Number(p.discountPrice ?? p.price);
     const matchesPrice = price >= effectiveFilters.minPrice && price <= effectiveFilters.maxPrice;
     const matchesFilterCategory =
@@ -178,10 +182,18 @@ export function HomeView({
         selectedValues.length === 0 ||
         p.variants.some((v) => v.stock > 0 && selectedValues.includes(v.optionValues[optionName])),
     );
-    return matchesSearch && matchesCategory && matchesPrice && matchesFilterCategory && matchesBrand && matchesVariantOptions;
+    return (
+      matchesSearch &&
+      matchesCategory &&
+      matchesBrandParam &&
+      matchesPrice &&
+      matchesFilterCategory &&
+      matchesBrand &&
+      matchesVariantOptions
+    );
   });
 
-  const isFiltered = Boolean(search?.trim() || activeCategory);
+  const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
   const grouped = !isFiltered ? groupByCategory(products) : null;
 
   const topSelling = [...products]
@@ -261,7 +273,7 @@ export function HomeView({
             )}
             <div className="flex items-center justify-between">
               <h1 className="text-[16px] font-bold text-ink">
-                {search?.trim() ? `Results for "${search}"` : activeCategory}
+                {search?.trim() ? `Results for "${search}"` : (activeCategory ?? activeBrand)}
               </h1>
               <div className="flex items-center gap-3">
                 <span className="text-[12.5px] text-muted">{filtered.length} products</span>
@@ -330,7 +342,7 @@ export function HomeView({
             ) : (
               <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                 {filtered.map((product) => (
-                  <ProductCard key={product.id} product={product} subdomain={subdomain} />
+                  <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                 ))}
               </div>
             )}
@@ -342,7 +354,7 @@ export function HomeView({
                 <h2 className="text-[18px] font-bold text-ink mb-4 text-center">🔥 Top Selling 🔥</h2>
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                   {topSelling.map((product) => (
-                    <ProductCard key={product.id} product={product} subdomain={subdomain} />
+                    <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                   ))}
                 </div>
               </section>
@@ -386,7 +398,7 @@ export function HomeView({
                 </div>
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                   {section.items.slice(0, 8).map((product) => (
-                    <ProductCard key={product.id} product={product} subdomain={subdomain} />
+                    <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                   ))}
                 </div>
               </section>

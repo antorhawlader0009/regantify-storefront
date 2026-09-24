@@ -14,11 +14,13 @@ const injectedStores = new Set<string>();
  * once per full page load, after hydration, so vendor code that touches
  * the DOM sees the rendered page and can't trip React's hydration.
  *
- * Order: the head HTML snippet, then HEAD scripts (both into <head>),
- * then BODY scripts (end of <body>). Scripts parsed out of HTML never run
- * when inserted via innerHTML, so each one is rebuilt as a fresh element.
- * An external <script src> without async/defer is awaited before the next
- * node, so e.g. a library tag followed by inline code using it still works.
+ * Order: the head snippet, then HEAD scripts (both into <head>), then
+ * BODY scripts (end of <body>). The head snippet is HTML when it starts
+ * with a tag, otherwise plain JavaScript (vendors paste both). Scripts
+ * parsed out of HTML never run when inserted via innerHTML, so each one is
+ * rebuilt as a fresh element. An external <script src> without
+ * async/defer is awaited before the next node, so e.g. a library tag
+ * followed by inline code using it still works.
  */
 export function CustomCodeInjector({ subdomain, code }: { subdomain: string; code: StorefrontCustomCode }) {
   useEffect(() => {
@@ -26,7 +28,11 @@ export function CustomCodeInjector({ subdomain, code }: { subdomain: string; cod
     injectedStores.add(subdomain);
 
     void (async () => {
-      if (code.headScripts) await injectHtml(code.headScripts, document.head);
+      const head = code.headScripts?.trim();
+      if (head) {
+        if (head.startsWith('<')) await injectHtml(head, document.head);
+        else injectInlineScript(head, document.head, 'head');
+      }
       for (const s of code.headJs) injectInlineScript(s.code, document.head, s.id);
       for (const s of code.bodyJs) injectInlineScript(s.code, document.body, s.id);
     })();
@@ -44,7 +50,7 @@ async function injectHtml(html: string, target: HTMLElement) {
     if (node instanceof HTMLScriptElement) {
       await injectScriptElement(node, target);
     } else if (node.nodeType === Node.ELEMENT_NODE) {
-      target.appendChild(document.importNode(node, true));
+      safeAppend(target, document.importNode(node, true));
     }
     // Whitespace/text/comment nodes between tags are dropped.
   }
@@ -57,22 +63,33 @@ function injectScriptElement(source: HTMLScriptElement, target: HTMLElement): Pr
   const blocking = !!script.src && !source.hasAttribute('async') && !source.hasAttribute('defer');
   if (!script.src) script.text = source.text;
   if (!blocking) {
-    target.appendChild(script);
+    safeAppend(target, script);
     return Promise.resolve();
   }
   // Dynamic scripts are async by default; wait so the next tag runs in order.
   return new Promise((resolve) => {
     script.onload = () => resolve();
     script.onerror = () => resolve();
-    target.appendChild(script);
+    if (!safeAppend(target, script)) resolve();
   });
 }
 
-// A throw inside the snippet is reported to the console like any page
-// script error and never stops the next one from running.
 function injectInlineScript(code: string, target: HTMLElement, id: string) {
   const script = document.createElement('script');
   script.setAttribute('data-store-custom', id);
   script.text = code;
-  target.appendChild(script);
+  safeAppend(target, script);
+}
+
+// A vendor snippet with a syntax error can make appendChild throw (seen
+// in Chrome). Log it and carry on, so one broken snippet never stops the
+// ones after it. Returns false when the append threw.
+function safeAppend(target: HTMLElement, node: Node): boolean {
+  try {
+    target.appendChild(node);
+    return true;
+  } catch (err) {
+    console.error('[Store custom code] A custom script failed to run:', err);
+    return false;
+  }
 }

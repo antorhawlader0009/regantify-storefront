@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useQueryState } from 'nuqs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, User, ChevronDown, X } from 'lucide-react';
+import { Search, ShoppingBag, User, ChevronDown, X, Menu, Heart } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
@@ -13,7 +13,9 @@ import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi
 import { formatPrice } from '../lib/formatPrice';
 import { WhatsAppBubble } from './WhatsAppBubble';
 import { AiAssistantWidget } from './AiAssistantWidget';
-import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
+import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefrontApi';
+import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
+import { useWishlist } from '../lib/wishlist';
 
 interface StoreHeaderProps {
   subdomain: string;
@@ -41,8 +43,9 @@ interface StoreHeaderProps {
   categoryDetails?: StorefrontCategoryDetail[];
 }
 
-// The reference site's top bar scrolls a repeating set of delivery
-// promises left-to-right, forever — see storepal.com.bd's header. Built
+// Store > Design > Site Banner. With nothing saved it's the reference
+// site's top bar: a repeating set of delivery promises scrolling
+// left-to-right, forever — see storepal.com.bd's header. Built
 // as a duplicated-content marquee (the content is rendered three times
 // back to back, and the whole strip is animated left by exactly
 // one-third of its width — see globals.css's .storepal-marquee
@@ -50,18 +53,67 @@ interface StoreHeaderProps {
 // marquee technique.
 const ANNOUNCEMENTS = ['Cash On Delivery All Over Bangladesh', 'Guaranteed Pre-order Delivery in 20-25 Days'];
 
-function AnnouncementBar() {
-  const items = [...ANNOUNCEMENTS, ...ANNOUNCEMENTS, ...ANNOUNCEMENTS];
+// The vendor's banner is their own RichTextEditor HTML, same trust
+// level as Store > Footer's aboutBlurb. "Delete" on the dashboard hides
+// the strip entirely.
+function SiteBanner() {
+  const design = useStorePalDesign();
+  if (!design.bannerEnabled) return null;
+  const marquee = design.bannerStyle === 'MARQUEE';
+  const html = design.bannerContent;
+  const items: { key: string; node: React.ReactNode }[] = html
+    ? [{ key: 'vendor', node: <span className="[&_p]:m-0 [&_p]:inline [&_p+p]:ml-16" dangerouslySetInnerHTML={{ __html: html }} /> }]
+    : ANNOUNCEMENTS.map((text) => ({ key: text, node: text }));
+  const repeated = marquee ? [0, 1, 2].flatMap((copy) => items.map((item) => ({ ...item, key: `${copy}-${item.key}` }))) : items;
   return (
-    <div className="bg-canvas overflow-hidden border-b border-line">
-      <div className="storepal-marquee flex items-center gap-16 py-2.5 whitespace-nowrap">
-        {items.map((text, i) => (
-          <span key={i} className="text-[13px] font-semibold text-ink shrink-0">
-            {text}
+    <div
+      className="bg-canvas overflow-hidden border-b border-line"
+      style={design.bannerBackgroundColor ? { backgroundColor: design.bannerBackgroundColor } : undefined}
+    >
+      <div
+        className={
+          marquee
+            ? 'storepal-marquee flex items-center gap-16 py-2.5 whitespace-nowrap'
+            : 'max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-center gap-x-10 gap-y-1 text-center'
+        }
+      >
+        {repeated.map((item) => (
+          <span key={item.key} className="text-[13px] font-semibold text-ink shrink-0">
+            {item.node}
           </span>
         ))}
       </div>
     </div>
+  );
+}
+
+/** One Store > Design menu link (header left/right, site menu, mobile menu). */
+function MenuLink({
+  item,
+  subdomain,
+  loggedIn,
+  className,
+  onClick,
+}: {
+  item: StorefrontMenuItem;
+  subdomain: string;
+  loggedIn: boolean;
+  className: string;
+  onClick?: () => void;
+}) {
+  const href = menuItemHref(item, subdomain, loggedIn);
+  if (!href) return null;
+  if (isExternalHref(href)) {
+    return (
+      <a href={href} target="_blank" rel="noopener noreferrer" className={className} onClick={onClick}>
+        {item.label}
+      </a>
+    );
+  }
+  return (
+    <Link href={href} className={className} onClick={onClick}>
+      {item.label}
+    </Link>
   );
 }
 
@@ -131,6 +183,16 @@ export function StoreHeader({
   );
   const authHydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
+  const loggedIn = authHydrated && !!customer;
+
+  // Store > Design > Header Editor / Layout Settings menus, and the
+  // wishlist from Product Card Display Options.
+  const design = useStorePalDesign();
+  const wishlist = useWishlist(subdomain);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const hasTopMenu = design.headerLeftMenu.length > 0 || design.headerRightMenu.length > 0;
+  const hasSiteMenu = design.siteMenu.length > 0;
+  const hasMobileMenu = design.mobileMenu.length > 0;
 
   // Live "type to see matches" dropdown (reference site: typing "shoe"
   // shows matching Categories + a handful of products with thumb/price
@@ -198,9 +260,37 @@ export function StoreHeader({
 
   return (
     <header className="sticky top-0 z-20 bg-surface">
-      <AnnouncementBar />
+      <SiteBanner />
+
+      {hasTopMenu && (
+        <div className="hidden sm:flex max-w-6xl mx-auto px-4 sm:px-6 pt-2.5 items-center justify-between gap-6">
+          {[design.headerLeftMenu, design.headerRightMenu].map((menu, side) => (
+            <nav key={side} className="flex items-center gap-5 flex-wrap">
+              {menu.map((item) => (
+                <MenuLink
+                  key={item.id}
+                  item={item}
+                  subdomain={subdomain}
+                  loggedIn={loggedIn}
+                  className="text-[12px] text-muted hover:text-accent transition-colors"
+                />
+              ))}
+            </nav>
+          ))}
+        </div>
+      )}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
+        {hasMobileMenu && (
+          <button
+            type="button"
+            onClick={() => setMobileMenuOpen(true)}
+            className="sm:hidden -ml-1 p-1 text-ink"
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+        )}
         <Link href={`/store/${subdomain}`} className="shrink-0">
           {logoUrl ? (
             <span className="relative block h-9 w-32">
@@ -283,6 +373,20 @@ export function StoreHeader({
         </div>
 
         <div className="flex items-center gap-4 ml-auto shrink-0">
+          {design.cardShowWishlist && (
+            <Link
+              href={`/store/${subdomain}/wishlist`}
+              className="relative text-ink hover:text-accent transition-colors"
+              aria-label="Wishlist"
+            >
+              <Heart size={21} strokeWidth={1.75} />
+              {wishlist.slugs.length > 0 && (
+                <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-ink text-white text-[10px] font-bold">
+                  {wishlist.slugs.length}
+                </span>
+              )}
+            </Link>
+          )}
           <Link
             href={authHydrated && customer ? `/store/${subdomain}/account/orders` : `/store/${subdomain}/account/login`}
             className="text-ink hover:text-accent transition-colors"
@@ -369,8 +473,26 @@ export function StoreHeader({
         )}
       </div>
 
+      {/* Layout Settings > Site Menu replaces the category strip on
+          larger screens; phones keep the strip. */}
+      {hasSiteMenu && (
+        <div className="hidden sm:block border-t border-line">
+          <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
+            {design.siteMenu.map((item) => (
+              <MenuLink
+                key={item.id}
+                item={item}
+                subdomain={subdomain}
+                loggedIn={loggedIn}
+                className="text-[13px] font-medium whitespace-nowrap text-ink hover:text-accent transition-colors"
+              />
+            ))}
+          </nav>
+        </div>
+      )}
+
       {categories.length > 0 && (
-        <div className="border-t border-line">
+        <div className={`border-t border-line ${hasSiteMenu ? 'sm:hidden' : ''}`}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
             {visibleCategories.map((cat) => {
               const children = childrenByCategory.get(cat) ?? [];
@@ -437,6 +559,30 @@ export function StoreHeader({
           them — StoreHeader is the one component every StorePal view
           already renders (home, product, cart, checkout, thank-you,
           pages, account/*). */}
+      {hasMobileMenu && mobileMenuOpen && (
+        <div className="fixed inset-0 z-50 sm:hidden">
+          <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileMenuOpen(false)} />
+          <nav className="absolute inset-y-0 left-0 w-[80%] max-w-[300px] bg-surface overflow-y-auto shadow-popover">
+            <div className="flex items-center justify-between px-4 py-3.5 border-b border-line">
+              <span className="text-[15px] font-bold text-ink">Menu</span>
+              <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="text-ink">
+                <X size={20} />
+              </button>
+            </div>
+            {design.mobileMenu.map((item) => (
+              <MenuLink
+                key={item.id}
+                item={item}
+                subdomain={subdomain}
+                loggedIn={loggedIn}
+                onClick={() => setMobileMenuOpen(false)}
+                className="block px-4 py-3 text-[14px] font-medium text-ink border-b border-line hover:bg-canvas hover:text-accent"
+              />
+            ))}
+          </nav>
+        </div>
+      )}
+
       <WhatsAppBubble socialLinks={socialLinks} />
       <AiAssistantWidget subdomain={subdomain} />
     </header>

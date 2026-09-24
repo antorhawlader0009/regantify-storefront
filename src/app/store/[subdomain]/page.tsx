@@ -32,7 +32,7 @@ const HOMEPAGE_LANDING_SLUG = '/';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
-  searchParams: Promise<{ category?: string; q?: string; coupon?: string }>;
+  searchParams: Promise<{ category?: string; q?: string; coupon?: string; brand?: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -100,7 +100,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function StorePage({ params, searchParams }: PageProps) {
   const { subdomain } = await params;
-  const { category: activeCategory, q: search, coupon: couponLink } = await searchParams;
+  const { category: activeCategory, q: search, coupon: couponLink, brand: activeBrand } = await searchParams;
 
   // Homepage-override check — same resolution-order reasoning as
   // generateMetadata above. A PUBLISHED LandingPage at slug "/" takes
@@ -205,6 +205,8 @@ export default async function StorePage({ params, searchParams }: PageProps) {
               // it, so a shared /store/:subdomain?coupon=... link is a
               // no-op there.
               couponLink={couponLink}
+              // Store > Design menu items of type Brand — StorePal-only, like couponLink.
+              activeBrand={activeBrand}
             />
           );
         }

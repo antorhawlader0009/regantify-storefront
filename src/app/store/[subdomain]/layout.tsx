@@ -5,7 +5,8 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
-import type { StorefrontCustomCode, StorefrontGdprPrompt } from '@/lib/storefrontApi';
+import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
+import type { StorefrontCustomCode, StorefrontDesignSettings, StorefrontGdprPrompt } from '@/lib/storefrontApi';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -89,6 +90,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let bodyFont: string | null | undefined;
   let gdprPrompt: StorefrontGdprPrompt | null = null;
   let customCode: StorefrontCustomCode | null = null;
+  let designSettings: StorefrontDesignSettings | null = null;
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
@@ -99,6 +101,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     bodyFont = store.brandBodyFont;
     gdprPrompt = store.gdprPrompt ?? null;
     customCode = store.customCode ?? null;
+    designSettings = store.designSettings ?? null;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
@@ -115,14 +118,28 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   const fontHref = googleFontsHref([headingFont, bodyFont]);
 
   return (
-    <div data-theme={theme.toLowerCase()} style={brandStyle}>
+    // data-layout: Store > Design > Layout Settings (StorePal only) — see
+    // globals.css for what EXTENDED widens.
+    <div
+      data-theme={theme.toLowerCase()}
+      data-layout={theme === 'STOREPAL' && designSettings?.layoutType === 'EXTENDED' ? 'extended' : undefined}
+      style={brandStyle}
+    >
       {fontHref && <link rel="stylesheet" href={fontHref} />}
       {/* Monthly Visit tracking (PLAN.md Step 5) — mounted here, not
           inside any theme's own tree, so every theme is counted equally.
           Renders nothing; see VisitBeacon's own doc comment. Only for a
           store that actually resolved — see storeExists above. */}
       {storeExists && <VisitBeacon subdomain={subdomain} />}
-      <ThemeProvider theme={theme}>{children}</ThemeProvider>
+      <ThemeProvider theme={theme}>
+        {/* Store > Design settings for every StorePal component; see
+            themes/storepal/lib/designSettings.tsx. */}
+        {theme === 'STOREPAL' ? (
+          <StorePalDesignProvider settings={designSettings}>{children}</StorePalDesignProvider>
+        ) : (
+          children
+        )}
+      </ThemeProvider>
       {/* Store > GDPR Prompt — StorePal only by design, same as the AI
           chat widget; null unless the vendor turned it on. */}
       {theme === 'STOREPAL' && gdprPrompt && <GdprPrompt subdomain={subdomain} prompt={gdprPrompt} />}

@@ -9,14 +9,15 @@ import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
-// The purchase panel and tabs are theme-agnostic (built entirely from
+// The purchase panel (wrapped in StorePalPurchasePanel for Store > Design
+// > Product Display Options) and tabs are theme-agnostic (built entirely from
 // the shared CSS-variable design tokens — bg-surface, text-ink, etc —
 // see globals.css's [data-theme='storepal'] block), so StorePal reuses
 // Medium's own components rather than a near-duplicate rebuild. Only
 // the surrounding page chrome (header/footer/breadcrumb/layout) is
 // StorePal's own.
-import { ProductPurchasePanel } from '../../medium/components/ProductPurchasePanel';
 import { ProductTabs } from '../../medium/components/ProductTabs';
+import { StorePalPurchasePanel } from '../components/StorePalPurchasePanel';
 import { resolveBackorder, visibleInListings } from '../lib/backorder';
 
 interface ProductViewProps {
@@ -84,7 +85,7 @@ export function ProductView({
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
         <div className="bg-surface border border-line rounded grid gap-8 p-4 sm:p-6 lg:[grid-template-columns:1.1fr_1fr]">
-          <ProductPurchasePanel
+          <StorePalPurchasePanel
             subdomain={subdomain}
             storeName={storeName}
             product={product}
@@ -103,7 +104,7 @@ export function ProductView({
             <h3 className="text-[15px] font-bold text-ink mb-4">Related Products</h3>
             <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
               {visibleRelated.map((p) => (
-                <ProductCard key={p.id} product={p} subdomain={subdomain} />
+                <ProductCard key={p.id} product={p} subdomain={subdomain} storeName={storeName} />
               ))}
             </div>
           </section>

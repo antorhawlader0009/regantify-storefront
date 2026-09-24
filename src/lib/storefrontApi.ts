@@ -91,6 +91,47 @@ export interface StorefrontInfo {
   // the store-info response, and null unless the theme is StorePal and the
   // vendor has set something (see StorefrontController.getStore).
   customCode?: StorefrontCustomCode | null;
+  // Store > Design > Product Display / Product Card / Site Banner / Header
+  // Editor / Layout Settings — same "store-info only, StorePal only" rule
+  // as customCode. Read through themes/storepal/lib/designSettings.tsx.
+  designSettings?: StorefrontDesignSettings | null;
+}
+
+export type StorefrontMenuItemType = 'PAGE' | 'PRODUCT' | 'CATEGORY' | 'BRAND' | 'OTHER' | 'CUSTOM';
+
+export interface StorefrontMenuItem {
+  id: string;
+  label: string;
+  type: StorefrontMenuItemType;
+  // Page/product slug, category/brand name, ACCOUNT|SHOP|TRACK_ORDER, or a URL.
+  value: string;
+}
+
+export interface StorefrontDesignSettings {
+  productImageShape: 'SQUARE' | 'PORTRAIT';
+  galleryStyle: 'LEFT' | 'BOTTOM' | 'RIGHT';
+  inStockMessage: string | null;
+  outOfStockMessage: string | null;
+  preOrderMessage: string | null;
+  cardShowSummary: boolean;
+  cardShowDefaultButton: boolean;
+  cardShowViewButton: boolean;
+  cardShowBuyNow: boolean;
+  cardShowAddToCart: boolean;
+  cardOptionsAsButtons: boolean;
+  cardOptionsAsSelect: boolean;
+  cardDisplayAsCard: boolean;
+  cardShowVideo: boolean;
+  cardShowWishlist: boolean;
+  bannerEnabled: boolean;
+  bannerContent: string | null;
+  bannerStyle: 'STATIC' | 'MARQUEE';
+  bannerBackgroundColor: string | null;
+  layoutType: 'COMPACT' | 'EXTENDED';
+  siteMenu: StorefrontMenuItem[];
+  headerLeftMenu: StorefrontMenuItem[];
+  headerRightMenu: StorefrontMenuItem[];
+  mobileMenu: StorefrontMenuItem[];
 }
 
 export interface StorefrontCustomCode {
@@ -204,6 +245,9 @@ export interface StorefrontCardProduct {
   brand?: string | null;
   photoSize: string;
   photoUrls: string[];
+  // For StorePal's Product Card Display Options (summary / hover video).
+  summary?: string | null;
+  videoUrl?: string | null;
   price: string;
   discountPrice?: string | null;
   isPreOrder: boolean;

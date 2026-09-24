@@ -21,6 +21,20 @@ interface ProductPurchasePanelProps {
    * short message and Add to Cart / Buy Now first confirm the popup one.
    */
   backorder?: { popupMessageHtml: string; shortMessage: string } | null;
+  /**
+   * Store > Design > Product Display Options (see themes/storepal/
+   * components/StorePalPurchasePanel.tsx). Only StorePal passes it; without
+   * it the gallery and stock wording are exactly as before, so
+   * Medium/Minimal are unaffected.
+   */
+  display?: {
+    // PORTRAIT forces 3:4 photos; SQUARE still honors product.photoSize.
+    imageShape: 'SQUARE' | 'PORTRAIT';
+    galleryStyle: 'LEFT' | 'BOTTOM' | 'RIGHT';
+    inStock: (stock: number | undefined) => string;
+    outOfStock: string;
+    preOrder: string;
+  };
 }
 
 /**
@@ -33,7 +47,7 @@ interface ProductPurchasePanelProps {
  * construction) is unchanged from the audited version — only the visual
  * treatment is refined here.
  */
-export function ProductPurchasePanel({ subdomain, storeName, product, backorder }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({ subdomain, storeName, product, backorder, display }: ProductPurchasePanelProps) {
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -213,11 +227,19 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder 
     buyNow();
   };
 
+  const portrait = display?.imageShape === 'PORTRAIT' || product.photoSize === 'PORTRAIT';
+  // Thumbnails beside the photo instead of under it (StorePal's Gallery
+  // Style). Only when there's more than one photo to pick from.
+  const sideGallery = !!display && display.galleryStyle !== 'BOTTOM' && allPhotos.length > 1;
+  const inStockText = (stock: number | undefined) =>
+    display ? display.inStock(stock) : stock === undefined ? 'In stock' : `${stock} units in stock`;
+
   return (
     <>
       {/* Gallery */}
       <div>
-        <div className={`relative bg-canvas border border-line rounded-lg overflow-hidden mb-3 ${product.photoSize === 'PORTRAIT' ? 'aspect-[3/4]' : 'aspect-square'}`}>
+        <div className={sideGallery ? `flex gap-3 items-start ${display.galleryStyle === 'LEFT' ? 'flex-row-reverse' : ''}` : ''}>
+        <div className={`relative bg-canvas border border-line rounded-lg overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : 'aspect-square'}`}>
           {activePhotoUrl ? (
             <Image
               key={activePhotoUrl}
@@ -240,12 +262,12 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder 
           )}
         </div>
         {allPhotos.length > 1 && (
-          <div className="flex gap-2 flex-wrap">
+          <div className={sideGallery ? 'flex flex-col gap-2 shrink-0 max-h-[520px] overflow-y-auto p-0.5' : 'flex gap-2 flex-wrap'}>
             {allPhotos.map((url, i) => (
               <button
                 key={url + i}
                 onClick={() => setActivePhoto(i)}
-                className={`relative w-14 h-14 overflow-hidden p-0 cursor-pointer bg-canvas rounded-md transition-all ${
+                className={`relative w-14 h-14 shrink-0 overflow-hidden p-0 cursor-pointer bg-canvas rounded-md transition-all ${
                   i === activePhoto ? 'ring-2 ring-accent' : 'ring-1 ring-line hover:ring-line-strong opacity-75 hover:opacity-100'
                 }`}
               >
@@ -254,6 +276,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder 
             ))}
           </div>
         )}
+        </div>
         {product.videoUrl && (
           <a
             href={product.videoUrl}
@@ -306,7 +329,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder 
 
           {product.isPreOrder ? (
             <span className="inline-block bg-ink text-white text-[11px] font-semibold px-2.5 py-1 rounded mt-3">
-              Available for pre-order
+              {display ? display.preOrder : 'Available for pre-order'}
             </span>
           ) : backorder && (outOfStock || selectedVariantOutOfStock) ? (
             <p className="flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 text-accent-dark">
@@ -316,7 +339,9 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder 
           ) : (
             <p className={`flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 ${outOfStock ? 'text-accent-dark' : 'text-success'}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${outOfStock ? 'bg-accent' : 'bg-success'}`} />
-              {availableStock === undefined ? 'In stock' : availableStock > 0 ? `${availableStock} units in stock` : 'Out of stock'}
+              {availableStock !== undefined && availableStock <= 0
+                ? (display?.outOfStock ?? 'Out of stock')
+                : inStockText(availableStock)}
             </p>
           )}
         </div>

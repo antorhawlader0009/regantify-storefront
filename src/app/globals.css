@@ -153,6 +153,13 @@ body {
 .storepal-marquee:hover {
   animation-play-state: paused;
 }
+/* Store > Design > Layout Settings' "Extended / Full-width" (StorePal
+   only, see the store layout's data-layout). Every StorePal page centers
+   its content in max-w-6xl containers; this lets them span the window
+   while keeping their side padding. */
+[data-theme='storepal'][data-layout='extended'] .max-w-6xl {
+  max-width: none;
+}
 @keyframes storepal-marquee-scroll {
   from {
     transform: translateX(0);
