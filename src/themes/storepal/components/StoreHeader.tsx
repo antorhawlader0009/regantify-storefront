@@ -61,8 +61,22 @@ function SiteBanner() {
   if (!design.bannerEnabled) return null;
   const marquee = design.bannerStyle === 'MARQUEE';
   const html = design.bannerContent;
+  // TipTap saves runs of spaces as plain spaces (its editor shows them via
+  // white-space: pre-wrap), so the banner must preserve whitespace too or
+  // the vendor's spacing collapses to one space. `pre` keeps the marquee
+  // on one line; the static strip can still wrap.
   const items: { key: string; node: React.ReactNode }[] = html
-    ? [{ key: 'vendor', node: <span className="[&_p]:m-0 [&_p]:inline [&_p+p]:ml-16" dangerouslySetInnerHTML={{ __html: html }} /> }]
+    ? [
+        {
+          key: 'vendor',
+          node: (
+            <span
+              className={`${marquee ? 'whitespace-pre' : 'whitespace-pre-wrap'} [&_p]:m-0 [&_p]:inline [&_p+p]:ml-16`}
+              dangerouslySetInnerHTML={{ __html: html }}
+            />
+          ),
+        },
+      ]
     : ANNOUNCEMENTS.map((text) => ({ key: text, node: text }));
   const repeated = marquee ? [0, 1, 2].flatMap((copy) => items.map((item) => ({ ...item, key: `${copy}-${item.key}` }))) : items;
   return (
