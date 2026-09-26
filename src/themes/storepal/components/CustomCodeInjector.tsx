@@ -61,7 +61,10 @@ function injectScriptElement(source: HTMLScriptElement, target: HTMLElement): Pr
   for (const attr of Array.from(source.attributes)) script.setAttribute(attr.name, attr.value);
   script.setAttribute('data-store-custom', 'head');
   const blocking = !!script.src && !source.hasAttribute('async') && !source.hasAttribute('defer');
-  if (!script.src) script.text = source.text;
+  if (!script.src) {
+    if (!isValidJs(source.text, 'head')) return Promise.resolve();
+    script.text = source.text;
+  }
   if (!blocking) {
     safeAppend(target, script);
     return Promise.resolve();
@@ -75,21 +78,39 @@ function injectScriptElement(source: HTMLScriptElement, target: HTMLElement): Pr
 }
 
 function injectInlineScript(code: string, target: HTMLElement, id: string) {
+  if (!isValidJs(code, id)) return;
   const script = document.createElement('script');
   script.setAttribute('data-store-custom', id);
   script.text = code;
   safeAppend(target, script);
 }
 
-// A vendor snippet with a syntax error can make appendChild throw (seen
-// in Chrome). Log it and carry on, so one broken snippet never stops the
-// ones after it. Returns false when the append threw.
+// An inline script with a syntax error isn't thrown by appendChild — the
+// browser reports it as a global error (Next's dev overlay then shows it
+// as a crash). Parsing it first with `new Function` (which parses without
+// running) turns that into a catchable SyntaxError, so a broken vendor
+// snippet is skipped with a warning and never stops the ones after it.
+// Any other failure (e.g. a CSP that blocks eval) just lets it through.
+function isValidJs(code: string, id: string): boolean {
+  try {
+    new Function(code);
+    return true;
+  } catch (err) {
+    if (!(err instanceof SyntaxError)) return true;
+    console.warn(`[Store custom code] Skipped a custom script with a syntax error (${id}):`, err.message);
+    return false;
+  }
+}
+
+// Last-resort guard around the append itself. Returns false when it threw.
+// console.warn, not console.error: it's the vendor's code, not an app
+// error, and Next's dev overlay treats console.error as a crash.
 function safeAppend(target: HTMLElement, node: Node): boolean {
   try {
     target.appendChild(node);
     return true;
   } catch (err) {
-    console.error('[Store custom code] A custom script failed to run:', err);
+    console.warn('[Store custom code] A custom script failed to run:', err);
     return false;
   }
 }
