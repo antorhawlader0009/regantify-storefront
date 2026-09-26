@@ -1,3 +1,5 @@
+import type { CourierTracking } from './courierTracking';
+
 // Client-side (browser) fetch helper for the storefront's customer
 // account system (signup/login/OTP/refresh/logout) — see
 // server/src/customer-auth/. Same host-detection pattern as
@@ -232,6 +234,8 @@ export interface CustomerOrder {
   total: string;
   createdAt: string;
   items: CustomerOrderItem[];
+  // See TrackedOrder.courierTracking (pathao-plan.md Step 13).
+  courierTracking?: CourierTracking | null;
 }
 
 export async function listCustomerOrders(subdomain: string, accessToken: string): Promise<CustomerOrder[]> {

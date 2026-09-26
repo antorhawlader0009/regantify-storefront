@@ -1,13 +1,18 @@
 'use client';
 
+import type { ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Package, ArrowLeft, CheckCircle2 } from 'lucide-react';
 import { formatPrice } from '@/lib/productDisplay';
 import { customerOrderStatusLabel, HAPPY_PATH } from '@/lib/orderStatusDisplay';
 import { useTrackOrder } from '@/lib/useTrackOrder';
+import type { TrackedOrder } from '@/lib/checkoutApi';
 
-export function OrdersView({ subdomain }: { subdomain: string }) {
+// `renderCourierTracking` lets a theme that reuses this view add its own
+// courier block under the status (StorePal, pathao-plan.md Step 13);
+// Medium itself passes nothing and is unchanged.
+export function OrdersView({ subdomain, renderCourierTracking }: { subdomain: string; renderCourierTracking?: (order: TrackedOrder) => ReactNode }) {
   const {
     invoiceNumber,
     setInvoiceNumber,
@@ -136,6 +141,8 @@ export function OrdersView({ subdomain }: { subdomain: string }) {
                 <span className="text-[13px] text-ink font-medium">{customerOrderStatusLabel(order.status)}</span>
               </div>
             )}
+
+            {renderCourierTracking?.(order)}
 
             <div className="space-y-3 mb-5">
               {order.items.map((item) => (

@@ -1,3 +1,5 @@
+import type { CourierTracking } from './courierTracking';
+
 // Client-side (browser) fetch helper — used only by the checkout page,
 // which is a Client Component (needs cart state from localStorage) and
 // so can't use the server-only API_URL from storefrontApi.ts (that one
@@ -346,6 +348,9 @@ export interface TrackedOrder {
   items: TrackedOrderItem[];
   statusHistory: TrackedOrderStatusHistoryEntry[];
   createdAt: string;
+  // Courier name + tracking ID + stage once the parcel is booked with a
+  // courier (pathao-plan.md Step 13); null before that.
+  courierTracking?: CourierTracking | null;
 }
 
 export async function trackOrder(subdomain: string, invoiceNumber: number, phone: string): Promise<TrackedOrder> {

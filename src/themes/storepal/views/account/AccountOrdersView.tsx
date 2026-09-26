@@ -8,6 +8,7 @@ import { formatPrice } from '../../lib/formatPrice';
 import { customerOrderStatusLabel } from '@/lib/orderStatusDisplay';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
+import { CourierTrackingLine } from '../../components/CourierTrackingCard';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 
 /** Account > Orders — matches the reference "Your Orders" (Invoice/Status/Amount) screenshot. Also used as "Dashboard" (see reference "Hi, Name" screenshot), which is the same list with a greeting on top. */
@@ -83,7 +84,10 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
               {orders.map((order) => (
                 <tr key={order.id} className="border-t border-line">
                   <td className="px-5 py-3 text-ink font-medium">ORDER-{order.invoiceNumber}</td>
-                  <td className="px-5 py-3 text-muted">{customerOrderStatusLabel(order.status)}</td>
+                  <td className="px-5 py-3 text-muted">
+                    {customerOrderStatusLabel(order.status)}
+                    {order.courierTracking && <CourierTrackingLine tracking={order.courierTracking} />}
+                  </td>
                   <td className="px-5 py-3 text-right font-semibold text-ink">{formatPrice(order.total)}</td>
                 </tr>
               ))}
