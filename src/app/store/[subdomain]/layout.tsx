@@ -7,11 +7,17 @@ import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import { MetaPixel } from '@/components/MetaPixel';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import { GoogleTagManager } from '@/components/GoogleTagManager';
+import { TiktokPixel } from '@/components/TiktokPixel';
 import type {
   StorefrontCustomCode,
   StorefrontDesignSettings,
   StorefrontGdprPrompt,
+  StorefrontGoogleAnalytics,
+  StorefrontGoogleTagManager,
   StorefrontMetaPixel,
+  StorefrontTiktokPixel,
 } from '@/lib/storefrontApi';
 
 interface LayoutProps {
@@ -106,6 +112,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let customCode: StorefrontCustomCode | null = null;
   let designSettings: StorefrontDesignSettings | null = null;
   let metaPixel: StorefrontMetaPixel | null = null;
+  let googleAnalytics: StorefrontGoogleAnalytics | null = null;
+  let googleTagManager: StorefrontGoogleTagManager | null = null;
+  let tiktokPixel: StorefrontTiktokPixel | null = null;
   let showOutOfStockBadge = true;
   try {
     const store = await getStoreInfo(subdomain);
@@ -119,6 +128,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     customCode = store.customCode ?? null;
     designSettings = store.designSettings ?? null;
     metaPixel = store.metaPixel ?? null;
+    googleAnalytics = store.googleAnalytics ?? null;
+    googleTagManager = store.googleTagManager ?? null;
+    tiktokPixel = store.tiktokPixel ?? null;
     showOutOfStockBadge = store.stockSettings?.showOutOfStockBadge !== false;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
@@ -155,6 +167,37 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           lib/metaPixel.ts. */}
       {storeExists && theme === 'STOREPAL' && (
         <MetaPixel subdomain={subdomain} metaPixel={metaPixel} consentRequired={!!gdprPrompt} />
+      )}
+      {/* Store > Integrations > TikTok Pixel — same rule as the Meta pixel,
+          and mounted even without a store pixel since a landing page can
+          have its own. See lib/tiktokPixel.ts. */}
+      {storeExists && theme === 'STOREPAL' && (
+        <TiktokPixel subdomain={subdomain} tiktokPixel={tiktokPixel} consentRequired={!!gdprPrompt} />
+      )}
+      {/* Store > Integrations > Google Analytics 4 — same StorePal-only,
+          consent-aware rule as the pixel above. Only mounted when the
+          vendor set a Measurement ID. See lib/googleAnalytics.ts. */}
+      {storeExists && theme === 'STOREPAL' && googleAnalytics && (
+        <GoogleAnalytics subdomain={subdomain} googleAnalytics={googleAnalytics} consentRequired={!!gdprPrompt} />
+      )}
+      {/* Store > Integrations > Google Tag Manager — same StorePal-only,
+          consent-aware rule. See lib/googleTagManager.ts. Google's
+          <noscript> fallback only when the GDPR Prompt is off: a visitor
+          without JavaScript can't be asked for consent. */}
+      {storeExists && theme === 'STOREPAL' && googleTagManager && (
+        <>
+          <GoogleTagManager subdomain={subdomain} googleTagManager={googleTagManager} consentRequired={!!gdprPrompt} />
+          {!gdprPrompt && (
+            <noscript>
+              <iframe
+                src={`${googleTagManager.serverContainerUrl || 'https://www.googletagmanager.com'}/ns.html?id=${encodeURIComponent(googleTagManager.containerId)}`}
+                height="0"
+                width="0"
+                style={{ display: 'none', visibility: 'hidden' }}
+              />
+            </noscript>
+          )}
+        </>
       )}
       <ThemeProvider theme={theme}>
         {/* Store > Design settings for every StorePal component; see

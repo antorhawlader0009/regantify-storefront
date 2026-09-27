@@ -8,6 +8,7 @@ import { StoreHeader } from '../../components/StoreHeader';
 import { StoreFooter } from '../../components/StoreFooter';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 import { trackMetaCompleteRegistration } from '@/lib/metaPixelEvents';
+import { trackSignUp } from '@/lib/ecommerceEvents';
 
 export function SignupView({ subdomain }: { subdomain: string }) {
   const router = useRouter();
@@ -53,6 +54,7 @@ export function SignupView({ subdomain }: { subdomain: string }) {
       const result = await verifyCustomerSignup(phone.trim(), code.trim());
       setSession(result.customer, result.accessToken);
       trackMetaCompleteRegistration();
+      trackSignUp();
       router.push(`/store/${subdomain}/account/orders`);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not verify your code.');

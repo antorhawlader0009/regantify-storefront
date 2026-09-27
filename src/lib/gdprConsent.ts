@@ -1,7 +1,7 @@
 // Store > GDPR Prompt's consent flag — the Accept click in StorePal's
-// GdprPrompt writes it, and anything that tracks shoppers (the Meta pixel,
-// see lib/metaPixel.ts) reads it. Per store, in localStorage only; never
-// sent to the server.
+// GdprPrompt writes it, and anything that tracks shoppers (lib/metaPixel.ts,
+// lib/googleAnalytics.ts, lib/googleTagManager.ts, lib/tiktokPixel.ts)
+// reads it. Per store, in localStorage only; never sent to the server.
 
 export const GDPR_CONSENT_EVENT = 'storepal:gdpr-consent';
 

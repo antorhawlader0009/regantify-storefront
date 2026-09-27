@@ -12,6 +12,7 @@ import { formatPrice } from '../lib/formatPrice';
 import { useShowOutOfStockBadge, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
+import { trackAddToWishlist } from '@/lib/ecommerceEvents';
 
 // Minimal shape ProductCard actually reads — satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
@@ -190,7 +191,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
           <button
             type="button"
             onClick={() => {
-              if (!inWishlist && product.id) trackMetaAddToWishlist({ ...product, id: product.id });
+              if (!inWishlist && product.id) {
+                trackMetaAddToWishlist({ ...product, id: product.id });
+                trackAddToWishlist({ ...product, id: product.id });
+              }
               wishlist.toggle(product.slug);
             }}
             aria-pressed={inWishlist}

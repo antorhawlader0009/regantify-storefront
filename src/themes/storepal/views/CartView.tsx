@@ -3,6 +3,7 @@ import { StoreFooter } from '../components/StoreFooter';
 // Theme-agnostic (see ProductView.tsx's own comment on why) — reused
 // as-is from Medium rather than a near-duplicate rebuild.
 import { CartList } from '../../medium/components/CartList';
+import { CartViewTracker } from '../components/CartViewTracker';
 
 interface CartViewProps {
   subdomain: string;
@@ -19,6 +20,7 @@ export function CartView({ subdomain, storeName, categories }: CartViewProps) {
         <div className="bg-surface border border-line rounded-lg p-4 sm:p-6">
           <CartList subdomain={subdomain} storeName={storeName} />
         </div>
+        <CartViewTracker subdomain={subdomain} />
       </main>
       <StoreFooter subdomain={subdomain} storeName={storeName} />
     </div>

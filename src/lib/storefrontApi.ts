@@ -99,6 +99,54 @@ export interface StorefrontInfo {
   // only" rule as customCode. Null when the vendor has no pixel and no
   // domain verification code. Never includes the CAPI token.
   metaPixel?: StorefrontMetaPixel | null;
+  // Store > Integrations > Google Analytics 4 — same "store-info only,
+  // StorePal only" rule. Null when the vendor has no Measurement ID.
+  // Never includes the Measurement Protocol API secret.
+  googleAnalytics?: StorefrontGoogleAnalytics | null;
+  // Store > Integrations > Google Tag Manager — same "store-info only,
+  // StorePal only" rule. Null when the vendor has no container ID.
+  googleTagManager?: StorefrontGoogleTagManager | null;
+  // Store > Integrations > TikTok Pixel — same "store-info only, StorePal
+  // only" rule. Null when the vendor has no pixel. Never includes the
+  // Events API token.
+  tiktokPixel?: StorefrontTiktokPixel | null;
+}
+
+export interface StorefrontTiktokPixel {
+  pixelId: string;
+  // Fire TikTok's standard ecommerce events; false = page views only.
+  ecommerceEvents: boolean;
+  // ttq.identify with the buyer's hashed email/phone at purchase.
+  advancedMatching: boolean;
+  // True only when the server will send Purchase itself at the vendor's
+  // chosen order status, so the browser must not fire it at checkout.
+  deferredPurchase: boolean;
+}
+
+export interface StorefrontGoogleTagManager {
+  containerId: string;
+  // Push StorePal's GA4-format ecommerce events to the dataLayer.
+  ecommerceEvents: boolean;
+  // Add the shopper's hashed email/phone/name to the purchase event.
+  customerData: boolean;
+  // Only used while the GDPR Prompt is on (see StorefrontGoogleAnalytics).
+  consentMode: 'BASIC' | 'ADVANCED';
+  // Server-side GTM origin to load gtm.js from, instead of Google's.
+  serverContainerUrl: string | null;
+}
+
+export interface StorefrontGoogleAnalytics {
+  measurementId: string;
+  secondaryMeasurementId: string | null;
+  // Send StorePal's GA4 ecommerce events; false = page views only.
+  ecommerceEvents: boolean;
+  // Only used while the GDPR Prompt is on: BASIC loads nothing before
+  // consent, ADVANCED loads the tag with every consent type denied.
+  consentMode: 'BASIC' | 'ADVANCED';
+  debugMode: boolean;
+  // The server sends purchase itself (Measurement Protocol), so the
+  // browser must not also send it.
+  serverPurchase: boolean;
 }
 
 export interface StorefrontMetaPixel {

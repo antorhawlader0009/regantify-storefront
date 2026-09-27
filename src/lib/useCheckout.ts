@@ -8,6 +8,9 @@ import type { CartLine } from '@/stores/cart-store';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { trackMetaAddPaymentInfo } from '@/lib/metaPixelEvents';
 import { metaAdContext } from '@/lib/metaPixel';
+import { trackAddPaymentInfo } from '@/lib/ecommerceEvents';
+import { gaAdContext } from '@/lib/googleAnalytics';
+import { tiktokAdContext } from '@/lib/tiktokPixel';
 import {
   placeOrder,
   syncIncompleteOrder,
@@ -414,15 +417,21 @@ export function useCheckout(
       }
     }
 
-    // Meta pixel AddPaymentInfo: validation passed and a payment method is
-    // chosen. A no-op on non-StorePal stores (no pixel mounted there).
+    // Meta pixel AddPaymentInfo / GA4 add_payment_info: validation passed
+    // and a payment method is chosen. No-ops on non-StorePal stores
+    // (neither is mounted there).
     trackMetaAddPaymentInfo(lines);
+    trackAddPaymentInfo(lines, selectedGateway?.type ?? paymentMethod, appliedCoupon?.code);
 
     try {
       const result = await placeOrder(subdomain, {
         // Meta pixel cookies / page URL / consent, for the server's
-        // Conversions API Purchase (StorePal only; empty otherwise).
+        // Conversions API Purchase, the GA4 client/session ids for a
+        // server-sent GA4 purchase, and TikTok's _ttp / ttclid for its
+        // Events API Purchase (StorePal only; empty otherwise).
         ...metaAdContext(),
+        ...(await gaAdContext()),
+        ...tiktokAdContext(),
         codVerificationCode: isCod && otpForThisPhone ? codOtpCode.trim() : undefined,
         customerName: form.fullName.trim(),
         customerPhone: form.phone.trim(),

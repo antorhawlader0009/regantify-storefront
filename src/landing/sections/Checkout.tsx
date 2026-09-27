@@ -9,6 +9,7 @@ import { useStoreTheme } from '@/providers/theme-provider';
 import type { CartLine } from '@/stores/cart-store';
 import type { CheckoutFormProps, LeadFormProps } from '../types';
 import { trackMetaInitiateCheckout, trackMetaLead } from '@/lib/metaPixelEvents';
+import { trackBeginCheckout, trackGenerateLead } from '@/lib/ecommerceEvents';
 
 // A handful of common Bangladeshi districts for the "quick-select" chips
 // (landing-page-sections.md §6.1 / landing-plan.md §1.2 item 6) — this is
@@ -163,6 +164,7 @@ export function CheckoutFormSection({
     if (checkoutTracked.current || lines.length === 0) return;
     checkoutTracked.current = true;
     trackMetaInitiateCheckout(lines);
+    trackBeginCheckout(lines);
   };
 
   return (
@@ -495,6 +497,7 @@ export function LeadFormSection({
       const message = `Name: ${name.trim()}\nPhone: ${phone.trim()}${email.trim() ? `\nEmail: ${email.trim()}` : ''}`;
       window.open(`https://wa.me/${number}?text=${encodeURIComponent(message)}`, '_blank', 'noreferrer');
       trackMetaLead();
+      trackGenerateLead();
       setDone(true);
       return;
     }
@@ -508,6 +511,7 @@ export function LeadFormSection({
         email: email.trim() || undefined,
       });
       trackMetaLead();
+      trackGenerateLead();
       setDone(true);
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Could not submit your information. Please try again.');

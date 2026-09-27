@@ -9,6 +9,7 @@ import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { resolveCouponLink } from '@/lib/checkoutApi';
 import { setPendingCoupon } from '../lib/pendingCoupon';
 import { trackMetaSearch } from '@/lib/metaPixelEvents';
+import { trackSearch } from '@/lib/ecommerceEvents';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
@@ -207,10 +208,13 @@ export function HomeView({
         : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
   );
 
-  // Meta pixel Search, once per query, with the top results as content_ids.
+  // Meta pixel Search / GA4 search, once per query, with the top results
+  // as the pixel's content_ids.
   const searchQuery = search?.trim() ?? '';
   useEffect(() => {
-    if (searchQuery) trackMetaSearch(searchQuery, sorted.map((p) => p.id));
+    if (!searchQuery) return;
+    trackMetaSearch(searchQuery, sorted.map((p) => p.id));
+    trackSearch(searchQuery);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 

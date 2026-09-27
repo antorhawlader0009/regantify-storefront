@@ -14,18 +14,21 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { CodOrderVerification } from '../components/CodOrderVerification';
 import { trackMetaPurchase } from '@/lib/metaPixelEvents';
+import { trackPurchase } from '@/lib/ecommerceEvents';
 
 export function ThankYouView({ subdomain }: { subdomain: string }) {
   const { order, loading, justPlaced } = useTrackOrder(subdomain);
   const storeName = useStoreDisplayName(subdomain);
 
-  // Meta pixel Purchase: only for the order checkout just handed off
-  // (justPlaced), never for a refresh or a manual order lookup, since the
-  // handoff key is consumed once. trackMetaPurchase also skips it when the
-  // vendor defers Purchase to the server.
+  // Meta pixel Purchase / GA4 purchase: only for the order checkout just
+  // handed off (justPlaced), never for a refresh or a manual order lookup,
+  // since the handoff key is consumed once. Each also skips it when the
+  // vendor has the server send purchases instead.
   const placedOrderId = justPlaced && order ? order.id : null;
   useEffect(() => {
-    if (placedOrderId && order) void trackMetaPurchase(order);
+    if (!placedOrderId || !order) return;
+    void trackMetaPurchase(order);
+    void trackPurchase(order);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [placedOrderId]);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);

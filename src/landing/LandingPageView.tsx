@@ -3,6 +3,7 @@ import { SectionRenderer } from './SectionRenderer';
 import { LandingPageVisitBeacon } from './LandingPageVisitBeacon';
 import { ChatButton } from './ChatButton';
 import { MetaPixelLanding } from '@/components/MetaPixel';
+import { TiktokPixelLanding } from '@/components/TiktokPixel';
 
 /** Turns a free-text font-family name (LandingPage.headingFont/bodyFont — landing-page-sections.md's own note: "plain free-text ... handed to a CSS font-family/Google Fonts lookup at render time, not a constrained internal choice") into a Google Fonts URL, best-effort. A vendor who types a name Google Fonts doesn't have just gets the browser's own fallback chain below, never a broken page. */
 function googleFontsHref(fontNames: string[]): string | null {
@@ -67,6 +68,8 @@ export function LandingPageView({ subdomain, data }: { subdomain: string; data: 
       {/* Landing Page > Tracking's Meta Pixel ID, else the store's pixel
           (Store > Integrations). StorePal stores only; see lib/metaPixel.ts. */}
       <MetaPixelLanding pixelId={landingPage.metaPixelId} />
+      {/* Same for Landing Page > Tracking's TikTok Pixel ID; see lib/tiktokPixel.ts. */}
+      <TiktokPixelLanding pixelId={landingPage.tiktokPixelId} />
     </div>
   );
 }

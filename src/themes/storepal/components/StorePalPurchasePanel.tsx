@@ -4,6 +4,7 @@ import { useEffect, type ComponentProps } from 'react';
 import { ProductPurchasePanel } from '../../medium/components/ProductPurchasePanel';
 import { stockMessages, useStorePalDesign } from '../lib/designSettings';
 import { trackMetaViewContent } from '@/lib/metaPixelEvents';
+import { trackViewItem } from '@/lib/ecommerceEvents';
 
 /**
  * Medium's shared ProductPurchasePanel plus Store > Design > Product
@@ -17,6 +18,7 @@ export function StorePalPurchasePanel(props: Omit<ComponentProps<typeof ProductP
 
   useEffect(() => {
     trackMetaViewContent(product);
+    trackViewItem(product);
     // Once per product, not on every re-render.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [product.id]);

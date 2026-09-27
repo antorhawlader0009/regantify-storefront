@@ -29,6 +29,21 @@ export interface CartLine {
 // add-to-cart button knowing about tracking.
 export const CART_ADD_EVENT = 'storefront:cart-add';
 
+// Fired on window when a line is removed or its quantity lowered, with
+// the line (as it was) and how many were taken out — StorePal's Google
+// Analytics remove_from_cart, same idea as CART_ADD_EVENT.
+export const CART_REMOVE_EVENT = 'storefront:cart-remove';
+
+export interface CartRemoveDetail {
+  line: CartLine;
+  quantity: number;
+}
+
+function dispatchRemove(line: CartLine | undefined, quantity: number) {
+  if (typeof window === 'undefined' || !line || quantity <= 0) return;
+  window.dispatchEvent(new CustomEvent<CartRemoveDetail>(CART_REMOVE_EVENT, { detail: { line, quantity } }));
+}
+
 export interface CartState {
   lines: CartLine[];
 }
@@ -88,14 +103,21 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
           }
         },
 
-        removeLine: (id) => set((state) => ({ lines: state.lines.filter((l) => l.id !== id) })),
+        removeLine: (id) => {
+          const removed = get().lines.find((l) => l.id === id);
+          set((state) => ({ lines: state.lines.filter((l) => l.id !== id) }));
+          dispatchRemove(removed, removed?.quantity ?? 0);
+        },
 
-        setQuantity: (id, quantity) =>
+        setQuantity: (id, quantity) => {
+          const before = get().lines.find((l) => l.id === id);
           set((state) => ({
             lines: quantity <= 0
               ? state.lines.filter((l) => l.id !== id)
               : state.lines.map((l) => (l.id === id ? { ...l, quantity } : l)),
-          })),
+          }));
+          if (before) dispatchRemove(before, before.quantity - Math.max(quantity, 0));
+        },
 
         // Each vendor's storefront is a separate shop — clearing after an
         // order should only clear that vendor's lines, not a shopper's

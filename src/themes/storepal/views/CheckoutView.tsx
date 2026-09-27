@@ -14,6 +14,7 @@ import { loadSavedCheckoutForm, saveCheckoutForm } from '../lib/checkoutFormStor
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
+import { trackBeginCheckout } from '@/lib/ecommerceEvents';
 
 // Fallback label for a gateway row with no vendor-set displayLabel — see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
@@ -72,13 +73,14 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   const [couponBoxOpen, setCouponBoxOpen] = useState(false);
   const storeName = useStoreDisplayName(subdomain);
 
-  // Meta pixel InitiateCheckout, once, as soon as the saved cart has loaded
-  // and isn't empty.
+  // Meta pixel InitiateCheckout / GA4 begin_checkout, once, as soon as the
+  // saved cart has loaded and isn't empty.
   const checkoutTracked = useRef(false);
   useEffect(() => {
     if (!hydrated || checkoutTracked.current || lines.length === 0) return;
     checkoutTracked.current = true;
     trackMetaInitiateCheckout(lines);
+    trackBeginCheckout(lines);
   }, [hydrated, lines]);
 
   // "Create custom link for this coupon" hand-off from HomeView (see
