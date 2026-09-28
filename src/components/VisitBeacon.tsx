@@ -1,29 +1,9 @@
 'use client';
 
 import { useEffect } from 'react';
-
-// Same host-detection pattern as checkoutApi.ts/chatApi.ts (see their
-// own comments for why): this runs in the browser, so it can't use the
-// server-only API_URL storefrontApi.ts relies on.
-function apiOrigin(): string {
-  const configured = process.env.NEXT_PUBLIC_API_URL;
-  if (configured) return configured.replace(/\/$/, '');
-  return `${window.location.protocol}//${window.location.hostname}:4000`;
-}
-
-// One sessionStorage key per store per browser tab-group, same
-// generated-once-and-reused convention as useCheckout.ts's own
-// sessionKey (see its comment) — NOT shared across different vendors'
-// stores in the same browser, so browsing 3 different stores in one
-// session correctly counts as a visit to each.
-function getOrCreateSessionKey(subdomain: string): string {
-  const key = `regantify-visit-session:${subdomain}`;
-  const existing = sessionStorage.getItem(key);
-  if (existing) return existing;
-  const generated = `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
-  sessionStorage.setItem(key, generated);
-  return generated;
-}
+import { captureTrafficSource } from '@/lib/trafficSource';
+import { apiOrigin, getOrCreateSessionKey } from '@/lib/visitSession';
+import { listenForStoreCartAdds } from '@/lib/storeEvents';
 
 /**
  * Monthly Visit tracking (PLAN.md Step 5) — fires one fire-and-forget
@@ -48,6 +28,8 @@ function getOrCreateSessionKey(subdomain: string): string {
  */
 export function VisitBeacon({ subdomain }: { subdomain: string }) {
   useEffect(() => {
+    // Add-to-cart funnel step for Analytics, in every theme (analytics-plan.md Step 4).
+    listenForStoreCartAdds(subdomain);
     try {
       const sessionKey = getOrCreateSessionKey(subdomain);
       // Fire-and-forget — no loading state, no retry, nothing in this
@@ -55,7 +37,8 @@ export function VisitBeacon({ subdomain }: { subdomain: string }) {
       void fetch(`${apiOrigin()}/v1/store/${subdomain}/visit`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ sessionKey }),
+        // traffic: where the shopper came from, for Analytics > Marketing.
+        body: JSON.stringify({ sessionKey, traffic: captureTrafficSource(subdomain) }),
         keepalive: true,
       }).catch(() => {});
     } catch {

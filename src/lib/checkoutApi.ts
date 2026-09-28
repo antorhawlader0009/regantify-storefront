@@ -163,7 +163,7 @@ export async function getOrderPaymentStatus(invoiceNumber: string): Promise<Orde
 // The CUSTOM:<gatewayId> analog of initiateOrderPayment/
 // reconcileOrderPayment/getOrderPaymentStatus above — called instead of
 // those three when the shopper picked a vendor-connected custom gateway
-// (e.g. SSLCommerz) rather than "Online Payment (Regantify)". Same
+// (e.g. SSLCommerz) rather than "Online Payment". Same
 // response shapes, same public/no-auth trust model — see
 // StorefrontGatewayPaymentsController on the backend.
 export async function initiateGatewayOrderPayment(orderId: string): Promise<InitiateOrderPaymentResponse> {
@@ -197,6 +197,9 @@ export interface ValidatedCoupon {
   code: string;
   discountType: 'FIXED' | 'PERCENT' | 'FREE_SHIPPING';
   discountAmount: number;
+  // When true, this coupon replaces the automatic discount instead of
+  // stacking with it (see OrdersService.create).
+  resetOtherDiscounts: boolean;
 }
 
 export interface CouponPreviewLine {
@@ -228,6 +231,34 @@ export async function validateCoupon(
   }
 
   return res.json();
+}
+
+/** Marketing > Discounts — what an automatic-discount preview returns. */
+export interface AutomaticDiscounts {
+  discount: { id: string; name: string; discountType: 'FIXED' | 'PERCENT'; discountAmount: number } | null;
+  freeShipping: { id: string; name: string } | null;
+}
+
+/**
+ * Checkout's automatic-discount preview (StorefrontService.previewDiscounts
+ * on the backend). Display only; the order is priced again server-side.
+ * Returns null on any error so checkout just shows no discount.
+ */
+export async function previewDiscounts(
+  subdomain: string,
+  items: CouponPreviewLine[],
+): Promise<AutomaticDiscounts | null> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/discounts/preview`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ items }),
+    });
+    if (!res.ok) return null;
+    return res.json();
+  } catch {
+    return null;
+  }
 }
 
 /**

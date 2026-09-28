@@ -11,16 +11,19 @@ import { metaAdContext } from '@/lib/metaPixel';
 import { trackAddPaymentInfo } from '@/lib/ecommerceEvents';
 import { gaAdContext } from '@/lib/googleAnalytics';
 import { tiktokAdContext } from '@/lib/tiktokPixel';
+import { captureTrafficSource } from '@/lib/trafficSource';
 import {
   placeOrder,
   syncIncompleteOrder,
   validateCoupon,
+  previewDiscounts,
   initiateOrderPayment,
   initiateGatewayOrderPayment,
   getStoreDeliveryCharges,
   sendCodVerificationOtp,
   CheckoutApiError,
   type ValidatedCoupon,
+  type AutomaticDiscounts,
   type StorePaymentGateway,
 } from '@/lib/checkoutApi';
 
@@ -224,6 +227,32 @@ export function useCheckout(
     return () => clearTimeout(timer);
   }, [hydrated, sessionKey, subdomain, form.fullName, form.phone, form.note, form.address, lines]);
 
+  // Marketing > Discounts — the automatic discount this cart qualifies
+  // for, re-previewed whenever the cart changes (short debounce so a
+  // quantity stepper doesn't fire one request per click).
+  const [automaticDiscounts, setAutomaticDiscounts] = useState<AutomaticDiscounts | null>(null);
+  const discountCartKey = lines.map((l) => `${l.productSlug}:${l.quantity}`).join(',');
+  useEffect(() => {
+    if (!hydrated || lines.length === 0) {
+      setAutomaticDiscounts(null);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      previewDiscounts(
+        subdomain,
+        lines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity })),
+      ).then((result) => {
+        if (!cancelled) setAutomaticDiscounts(result);
+      });
+    }, 300);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hydrated, subdomain, discountCartKey]);
+
   const storeName = lines[0]?.storeName ?? '';
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
   const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[form.zone] : 0;
@@ -237,7 +266,15 @@ export function useCheckout(
   // Place Order will actually charge.
   const couponFreeShipping = appliedCoupon?.discountType === 'FREE_SHIPPING';
   const couponDiscount = couponFreeShipping ? 0 : (appliedCoupon?.discountAmount ?? 0);
-  const effectiveDeliveryCharge = couponFreeShipping ? 0 : deliveryCharge;
+  // Marketing > Discounts — dropped while a coupon with "Reset other
+  // conditional discounts" is applied, and capped so coupon + discount
+  // never exceed the subtotal; same rules as OrdersService.create.
+  const discountsReset = Boolean(appliedCoupon?.resetOtherDiscounts);
+  const autoDiscount = discountsReset ? null : (automaticDiscounts?.discount ?? null);
+  const autoFreeShipping = discountsReset ? null : (automaticDiscounts?.freeShipping ?? null);
+  const automaticDiscountAmount = Math.max(0, Math.min(autoDiscount?.discountAmount ?? 0, subtotal - couponDiscount));
+  const totalDiscount = couponDiscount + automaticDiscountAmount;
+  const effectiveDeliveryCharge = couponFreeShipping || autoFreeShipping ? 0 : deliveryCharge;
   // Store > Payment Gateway's per-gateway Platform Charge — the
   // CURRENTLY SELECTED gateway's own configured surcharge, independent
   // of vatAmount above. Never shown until a gateway is actually
@@ -256,7 +293,7 @@ export function useCheckout(
   // of what the client sends).
   const platformChargeFlat = selectedGateway ? Number(selectedGateway.platformChargeBdt) : 0;
   const platformChargeBase =
-    Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount - couponDiscount) + platformChargeFlat;
+    Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount - totalDiscount) + platformChargeFlat;
   const platformChargeAmount =
     lines.length > 0 && selectedGateway
       ? Math.round(
@@ -270,19 +307,23 @@ export function useCheckout(
   // always actually charged platformChargeAmount above, both here (via
   // visibleGrandTotal, which still adds it in unseen) and by the order
   // the server creates.
-  const visiblePlatformChargeAmount = selectedGateway?.feeHidden ? 0 : platformChargeAmount;
+  // ONLINE_PAYMENT's fee (Payment Gateway Fee) is always hidden from the
+  // shopper. The server already reports it as feeHidden; checked here too
+  // so a cached gateway list can't bring it back.
+  const visiblePlatformChargeAmount =
+    selectedGateway?.feeHidden || selectedGateway?.type === 'ONLINE_PAYMENT' ? 0 : platformChargeAmount;
   // The real total (includes a hidden fee) — never shown to the shopper
   // as a number, only used so Place Order and any "you'll be charged X"
   // confirmation stay correct even when a fee is hidden from the
   // itemized breakdown. What's actually rendered is visibleGrandTotal.
-  const grandTotal = Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount + platformChargeAmount - couponDiscount);
+  const grandTotal = Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount + platformChargeAmount - totalDiscount);
   // What checkout actually displays as "Total" — silently excludes a
   // hidden fee, per Plan.codFeeHidden/onlinePaymentFeeHidden's design:
   // the shopper never sees it broken out, but they ARE still charged it
   // (the order the server creates always uses the real amount above).
   const visibleGrandTotal = Math.max(
     0,
-    subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - couponDiscount,
+    subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - totalDiscount,
   );
 
   // Same limits enforced server-side by CreateOrderDto — kept here too so
@@ -432,6 +473,8 @@ export function useCheckout(
         ...metaAdContext(),
         ...(await gaAdContext()),
         ...tiktokAdContext(),
+        // Where this shopper came from, for the vendor's Analytics > Marketing.
+        traffic: captureTrafficSource(subdomain),
         codVerificationCode: isCod && otpForThisPhone ? codOtpCode.trim() : undefined,
         customerName: form.fullName.trim(),
         customerPhone: form.phone.trim(),
@@ -554,6 +597,11 @@ export function useCheckout(
     couponCode,
     setCouponCode,
     appliedCoupon,
+    // Marketing > Discounts, already folded into the totals above: the
+    // money discount's name + capped amount, and the free-shipping
+    // discount's name (delivery is already 0 when set).
+    automaticDiscount: autoDiscount && automaticDiscountAmount > 0 ? { name: autoDiscount.name, amount: automaticDiscountAmount } : null,
+    automaticFreeShipping: autoFreeShipping && !couponFreeShipping ? { name: autoFreeShipping.name } : null,
     couponChecking,
     couponError,
     applyCoupon,

@@ -10,6 +10,7 @@ import type { CartLine } from '@/stores/cart-store';
 import type { CheckoutFormProps, LeadFormProps } from '../types';
 import { trackMetaInitiateCheckout, trackMetaLead } from '@/lib/metaPixelEvents';
 import { trackBeginCheckout, trackGenerateLead } from '@/lib/ecommerceEvents';
+import { sendStoreEvent } from '@/lib/storeEvents';
 
 // A handful of common Bangladeshi districts for the "quick-select" chips
 // (landing-page-sections.md §6.1 / landing-plan.md §1.2 item 6) — this is
@@ -112,6 +113,8 @@ export function CheckoutFormSection({
     couponCode,
     setCouponCode,
     appliedCoupon,
+    automaticDiscount,
+    automaticFreeShipping,
     couponChecking,
     couponError,
     applyCoupon,
@@ -165,6 +168,7 @@ export function CheckoutFormSection({
     checkoutTracked.current = true;
     trackMetaInitiateCheckout(lines);
     trackBeginCheckout(lines);
+    sendStoreEvent(subdomain, 'BEGIN_CHECKOUT');
   };
 
   return (
@@ -312,10 +316,7 @@ export function CheckoutFormSection({
               <Row label="Delivery Charge" value={formatPrice(deliveryCharge)} />
               {vatAmount > 0 && <Row label="VAT" value={formatPrice(vatAmount)} />}
               {visiblePlatformChargeAmount > 0 && (
-                <Row
-                  label={selectedGateway?.type === 'ONLINE_PAYMENT' ? 'Payment Gateway Fee' : 'Platform Charge'}
-                  value={formatPrice(visiblePlatformChargeAmount)}
-                />
+                <Row label="Platform Charge" value={formatPrice(visiblePlatformChargeAmount)} />
               )}
               {appliedCoupon && (
                 <div className="flex justify-between text-green-700">
@@ -323,6 +324,18 @@ export function CheckoutFormSection({
                   <span className="font-medium">
                     {appliedCoupon.discountType === 'FREE_SHIPPING' ? '—' : `-${formatPrice(couponDiscountAmount)}`}
                   </span>
+                </div>
+              )}
+              {automaticDiscount && (
+                <div className="flex justify-between text-green-700">
+                  <span>{automaticDiscount.name}</span>
+                  <span className="font-medium">-{formatPrice(automaticDiscount.amount)}</span>
+                </div>
+              )}
+              {automaticFreeShipping && (
+                <div className="flex justify-between text-green-700">
+                  <span>{automaticFreeShipping.name}</span>
+                  <span className="font-medium">Free shipping</span>
                 </div>
               )}
               <div className="mt-1 flex justify-between border-t border-neutral-200 pt-2 text-[15px] font-bold text-neutral-900">

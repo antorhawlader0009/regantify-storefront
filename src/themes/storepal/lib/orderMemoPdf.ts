@@ -165,11 +165,10 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   // on checkout's own cart summary — see ThankYouView.tsx's own comment
   // for the same reasoning: the shopper already paid this as part of
   // order.total, so the memo should account for it, not leave the total
-  // looking unexplained). Labeled "Payment Gateway Fee" specifically for
-  // ONLINE_PAYMENT orders — see ThankYouView.tsx's own comment.
-  if (Number(order.platformChargeAmount) > 0) {
-    const feeLabel = order.paymentMethod === 'ONLINE_PAYMENT' ? 'Payment Gateway Fee' : 'Platform Charge';
-    totalsRow(feeLabel, formatPrice(order.platformChargeAmount));
+  // looking unexplained). Never for ONLINE_PAYMENT, whose fee is hidden
+  // from shoppers — see ThankYouView.tsx's own comment.
+  if (order.paymentMethod !== 'ONLINE_PAYMENT' && Number(order.platformChargeAmount) > 0) {
+    totalsRow('Platform Charge', formatPrice(order.platformChargeAmount));
   }
   if (Number(order.discountAmount) > 0) {
     totalsRow('Discount', `-${formatPrice(order.discountAmount)}`);
@@ -192,7 +191,7 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
     order.paymentMethod === 'COD'
       ? 'Cash on Delivery'
       : order.paymentMethod === 'ONLINE_PAYMENT'
-        ? 'Online Payment (Regantify)'
+        ? 'Online Payment'
         : 'Online Payment';
   doc.text(`Payment Method: ${paymentMethodLabel}`, margin, y);
 

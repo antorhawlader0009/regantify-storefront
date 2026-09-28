@@ -15,6 +15,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
 import { trackBeginCheckout } from '@/lib/ecommerceEvents';
+import { sendStoreEvent } from '@/lib/storeEvents';
 
 // Fallback label for a gateway row with no vendor-set displayLabel — see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
@@ -23,7 +24,7 @@ import { trackBeginCheckout } from '@/lib/ecommerceEvents';
 // connectSslcommerz), so those two are the only types this ever resolves.
 const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   COD: 'Cash on Delivery',
-  ONLINE_PAYMENT: 'Online Payment (Regantify)',
+  ONLINE_PAYMENT: 'Online Payment',
   SSLCOMMERZ: 'SSLCommerz',
   BKASH_MERCHANT: 'bKash Merchant',
   VENDOR_PAYSTATION: 'PayStation',
@@ -50,6 +51,8 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     couponCode,
     setCouponCode,
     appliedCoupon,
+    automaticDiscount,
+    automaticFreeShipping,
     couponChecking,
     couponError,
     applyCoupon,
@@ -81,6 +84,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     checkoutTracked.current = true;
     trackMetaInitiateCheckout(lines);
     trackBeginCheckout(lines);
+    sendStoreEvent(subdomain, 'BEGIN_CHECKOUT');
   }, [hydrated, lines]);
 
   // "Create custom link for this coupon" hand-off from HomeView (see
@@ -295,7 +299,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               <p className="text-[15px] font-semibold text-ink mb-3">Payment Method</p>
               <div className="space-y-2.5">
                 {/* Store > Payment Gateway's enabled gateway list for this
-                    vendor — COD/Online Payment (Regantify) plus any
+                    vendor — COD/Online Payment plus any
                     connected custom gateway (e.g. SSLCommerz). Each
                     gateway's own Platform Charge is deliberately NOT shown
                     here — it only appears once selected, in the cart
@@ -454,20 +458,14 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   is already 0 in that case, same as visibleGrandTotal
                   below already excludes it; the shopper is still
                   actually charged it (see useCheckout's own comment).
-                  Label is the flat "Platform Charge" for every gateway
-                  EXCEPT ONLINE_PAYMENT, which reads "Payment Gateway Fee"
-                  instead — not the selected gateway's own name (used to
-                  read "Cash on Delivery Charge" / "Online Payment
-                  (Regantify) Charge" here) since it's the same platform
-                  fee concept for every other gateway; only ONLINE_PAYMENT
-                  gets its own wording. The AMOUNT still switches with the
-                  selected gateway either way, via
-                  visiblePlatformChargeAmount below. */}
+                  ONLINE_PAYMENT's fee (Payment Gateway Fee) is always
+                  hidden (useCheckout), so this line never shows for it.
+                  Label is the flat "Platform Charge" for every gateway,
+                  not the selected gateway's own name; the AMOUNT still
+                  switches with the selected gateway. */}
               {visiblePlatformChargeAmount > 0 && (
                 <div className="flex justify-between">
-                  <span className="text-ink">
-                    {selectedGateway?.type === 'ONLINE_PAYMENT' ? 'Payment Gateway Fee' : 'Platform Charge'}
-                  </span>
+                  <span className="text-ink">Platform Charge</span>
                   <span className="font-semibold text-accent">{formatPrice(visiblePlatformChargeAmount)}</span>
                 </div>
               )}
@@ -480,6 +478,25 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   <span className="font-semibold">
                     {appliedCoupon.discountType === 'FREE_SHIPPING' ? '—' : `-${formatPrice(couponDiscountAmount)}`}
                   </span>
+                </div>
+              )}
+              {/* Marketing > Discounts — applied automatically, no code. */}
+              {automaticDiscount && (
+                <div className="flex justify-between text-success">
+                  <span className="flex items-center gap-1">
+                    <Tag size={12} />
+                    {automaticDiscount.name}
+                  </span>
+                  <span className="font-semibold">-{formatPrice(automaticDiscount.amount)}</span>
+                </div>
+              )}
+              {automaticFreeShipping && (
+                <div className="flex justify-between text-success">
+                  <span className="flex items-center gap-1">
+                    <Tag size={12} />
+                    {automaticFreeShipping.name}
+                  </span>
+                  <span className="font-semibold">Free shipping</span>
                 </div>
               )}
               <div className="flex justify-between pt-2 border-t border-line text-[15px] font-bold text-ink">

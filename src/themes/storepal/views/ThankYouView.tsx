@@ -206,13 +206,12 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
                 shopper already paid this as part of order.total; hiding
                 it from their own receipt would just make the total look
                 unexplained/confusing, not save the vendor anything.
-                Labeled "Payment Gateway Fee" specifically for
-                ONLINE_PAYMENT orders — same "Platform Charge" wording as
-                every other gateway otherwise, see CheckoutView.tsx's own
-                comment. */}
-            {Number(order.platformChargeAmount) > 0 && (
+                Never for ONLINE_PAYMENT: its fee (Payment Gateway Fee) is
+                hidden from shoppers, and the server already sends it as 0
+                with `total` excluding it (OrdersService.toCustomerOrder). */}
+            {order.paymentMethod !== 'ONLINE_PAYMENT' && Number(order.platformChargeAmount) > 0 && (
               <div className="flex justify-between text-muted">
-                <span>{order.paymentMethod === 'ONLINE_PAYMENT' ? 'Payment Gateway Fee' : 'Platform Charge'}</span>
+                <span>Platform Charge</span>
                 <span>{formatPrice(order.platformChargeAmount)}</span>
               </div>
             )}
