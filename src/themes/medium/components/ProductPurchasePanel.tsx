@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -35,6 +35,19 @@ interface ProductPurchasePanelProps {
     outOfStock: string;
     preOrder: string;
   };
+  /**
+   * LMS store forms (LMS-plan.md Step 9; see themes/storepal/components/
+   * StorePalPurchasePanel.tsx). Only StorePal passes them; without them the
+   * panel is exactly as before, so Medium/Minimal are unaffected.
+   */
+  leadSlots?: {
+    /** Replaces the price box (a price-on-request product). */
+    price?: ReactNode;
+    /** Replaces quantity, Add to Cart / Buy Now and the sticky mobile bar ("Notify me", "Request a price"). */
+    purchase?: ReactNode;
+    /** Under the buttons ("Call me back"). */
+    after?: ReactNode;
+  };
 }
 
 /**
@@ -47,7 +60,7 @@ interface ProductPurchasePanelProps {
  * construction) is unchanged from the audited version — only the visual
  * treatment is refined here.
  */
-export function ProductPurchasePanel({ subdomain, storeName, product, backorder, display }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({ subdomain, storeName, product, backorder, display, leadSlots }: ProductPurchasePanelProps) {
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -316,6 +329,8 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
           </div>
         )}
 
+        {leadSlots?.price ?? (
+          <>
         {/* Boxed price panel — a soft accent-tinted background makes this
             the clear visual anchor of the page, matching how established
             BD e-commerce product pages foreground the price block. */}
@@ -348,6 +363,8 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
             </p>
           )}
         </div>
+          </>
+        )}
 
         <div className="flex flex-wrap gap-2 mb-4">
           <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
@@ -410,6 +427,8 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
           </p>
         )}
 
+        {leadSlots?.purchase ?? (
+          <>
         <div className="mb-5">
           <p className="m-0 mb-2 text-[12px] font-semibold text-ink">Quantity</p>
           <div className="inline-flex items-center border border-line rounded-md overflow-hidden bg-canvas">
@@ -462,6 +481,9 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
             </Link>
           </div>
         )}
+          </>
+        )}
+        {leadSlots?.after}
 
         {product.summary && <p className="text-[13px] text-muted leading-relaxed mt-5">{product.summary}</p>}
 
@@ -472,7 +494,8 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
         )}
       </div>
 
-      {/* Sticky mobile bar */}
+      {/* Sticky mobile bar (not when a store form replaces Buy) */}
+      {!leadSlots?.purchase && (
       <div className="storefront-sticky-bar fixed bottom-0 left-0 right-0 bg-surface border-t border-line px-4 py-2.5 hidden gap-2.5 shadow-popover">
         <button
           disabled={!canPurchase}
@@ -489,6 +512,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
           Buy Now
         </button>
       </div>
+      )}
 
       {backorder && pendingBackorderAction && (
         <div

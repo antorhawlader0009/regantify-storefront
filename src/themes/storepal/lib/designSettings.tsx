@@ -1,7 +1,7 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import type { StorefrontDesignSettings, StorefrontMenuItem } from '@/lib/storefrontApi';
+import type { StorefrontDesignSettings, StorefrontLmsForms, StorefrontMenuItem } from '@/lib/storefrontApi';
 
 // Store > Design settings the vendor never saved. Must render StorePal
 // exactly as it looked before those pages existed — keep in sync with the
@@ -44,19 +44,32 @@ const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
 export function StorePalDesignProvider({
   settings,
   showOutOfStockBadge = true,
+  lmsForms = null,
   children,
 }: {
   settings: StorefrontDesignSettings | null;
   showOutOfStockBadge?: boolean;
+  lmsForms?: StorefrontLmsForms | null;
   children: ReactNode;
 }) {
   // Spread over the defaults so an older cached response missing a newer
   // field still gets a sane value.
   return (
     <DesignContext.Provider value={{ ...DEFAULT_DESIGN, ...settings }}>
-      <OutOfStockBadgeContext.Provider value={showOutOfStockBadge}>{children}</OutOfStockBadgeContext.Provider>
+      <OutOfStockBadgeContext.Provider value={showOutOfStockBadge}>
+        <LmsFormsContext.Provider value={lmsForms}>{children}</LmsFormsContext.Provider>
+      </OutOfStockBadgeContext.Provider>
     </DesignContext.Provider>
   );
+}
+
+// The store's LMS forms (LMS-plan.md Step 9), for product cards: a
+// price-on-request product hides its price only while requests can reach
+// the store, the same rule as the product page.
+const LmsFormsContext = createContext<StorefrontLmsForms | null>(null);
+
+export function useStorePalLmsForms() {
+  return useContext(LmsFormsContext);
 }
 
 export function useStorePalDesign() {

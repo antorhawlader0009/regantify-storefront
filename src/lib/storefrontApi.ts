@@ -35,6 +35,12 @@ export interface StorefrontFooterConfig {
   paymentIcons: string[];
 }
 
+/** Which LMS store forms a StorePal product page shows. */
+export interface StorefrontLmsForms {
+  notifyMe: boolean;
+  callMeBack: boolean;
+}
+
 export interface StorefrontInfo {
   id: string;
   storeName: string;
@@ -110,6 +116,8 @@ export interface StorefrontInfo {
   // only" rule. Null when the vendor has no pixel. Never includes the
   // Events API token.
   tiktokPixel?: StorefrontTiktokPixel | null;
+  /** LMS store forms on product pages (LMS-plan.md Step 9), StorePal only; null when off. */
+  lmsForms?: StorefrontLmsForms | null;
 }
 
 export interface StorefrontTiktokPixel {
@@ -268,6 +276,8 @@ export interface StorefrontProduct {
   price: string;
   discountPrice?: string | null;
   isPreOrder: boolean;
+  /** Price on request (StorePal hides the price and Buy). Absent from older API responses. */
+  quoteOnly?: boolean;
   stockQuantity?: number | null;
   weight?: string | null;
   weightUnit: string;
@@ -320,6 +330,8 @@ export interface StorefrontCardProduct {
   price: string;
   discountPrice?: string | null;
   isPreOrder: boolean;
+  /** Price on request (StorePal hides the price and Buy). Absent from older API responses. */
+  quoteOnly?: boolean;
   stockQuantity?: number | null;
   variants: { stock: number }[];
   createdAt: string;

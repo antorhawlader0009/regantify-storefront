@@ -14,7 +14,7 @@ import type { CourierTracking } from './courierTracking';
 // lets the SAME build work from http://localhost:3000,
 // http://192.168.x.x:3000 (a tester's LAN PC), or a real deployed
 // domain without per-environment config.
-function apiOrigin(): string {
+export function apiOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
   if (typeof window === 'undefined') return 'http://localhost:4000';

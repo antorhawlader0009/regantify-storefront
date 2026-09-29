@@ -112,7 +112,8 @@ export default async function ProductPage({ params }: PageProps) {
     description: product.metaDescription?.trim() || product.summary?.trim() || product.name,
     image: product.photoUrls,
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
-    offers: {
+    // A price-on-request product publishes no price anywhere, search results included.
+    offers: product.quoteOnly ? undefined : {
       '@type': 'Offer',
       url: await siteUrl(`/store/${subdomain}/product/${product.slug}`),
       priceCurrency: 'BDT',

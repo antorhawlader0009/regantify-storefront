@@ -9,7 +9,7 @@ import type { StorefrontVariant, StorefrontVariationOption } from '@/lib/storefr
 import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice } from '../lib/formatPrice';
-import { useShowOutOfStockBadge, useStorePalDesign } from '../lib/designSettings';
+import { useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
@@ -32,6 +32,8 @@ interface CardProduct {
   price: string;
   discountPrice?: string | null;
   isPreOrder: boolean;
+  /** Price on request (LMS-plan.md Step 9). */
+  quoteOnly?: boolean;
   variants: ({ stock: number } & Partial<Omit<StorefrontVariant, 'stock'>>)[];
   variationOptions?: StorefrontVariationOption[];
   stockQuantity?: number | null;
@@ -56,6 +58,9 @@ interface ProductCardProps {
  */
 export function ProductCard({ product, subdomain, storeName }: ProductCardProps) {
   const design = useStorePalDesign();
+  // A price-on-request product hides its price only while requests can reach the store (the product page's rule).
+  const lmsForms = useStorePalLmsForms();
+  const quoteOnly = !!product.quoteOnly && !!lmsForms;
   const showOutOfStockBadge = useShowOutOfStockBadge();
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
@@ -132,9 +137,9 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   // "Show Button (Default)": Add to Cart for a simple product, View
   // Product for one with variations. Merged with the explicit toggles so
   // the same button never shows twice.
-  const showView = design.cardShowViewButton || (design.cardShowDefaultButton && hasVariations);
-  const showAddToCart = design.cardShowAddToCart || (design.cardShowDefaultButton && !hasVariations);
-  const showBuyNow = design.cardShowBuyNow;
+  const showView = !quoteOnly && (design.cardShowViewButton || (design.cardShowDefaultButton && hasVariations));
+  const showAddToCart = !quoteOnly && (design.cardShowAddToCart || (design.cardShowDefaultButton && !hasVariations));
+  const showBuyNow = !quoteOnly && design.cardShowBuyNow;
 
   const video = design.cardShowVideo && product.videoUrl ? videoEmbed(product.videoUrl) : null;
   const inWishlist = wishlist.has(product.slug);
@@ -218,10 +223,14 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
           <p className="text-[12px] text-muted leading-snug line-clamp-2">{product.summary}</p>
         )}
 
-        <div className="flex gap-2 items-baseline flex-wrap">
-          {originalPrice && <span className="text-muted line-through text-[12.5px]">{formatPrice(originalPrice)}</span>}
-          <span className="font-bold text-[15px] text-accent">{formatPrice(displayPrice)}</span>
-        </div>
+        {quoteOnly ? (
+          <p className="text-[13.5px] font-bold text-ink">Price on request</p>
+        ) : (
+          <div className="flex gap-2 items-baseline flex-wrap">
+            {originalPrice && <span className="text-muted line-through text-[12.5px]">{formatPrice(originalPrice)}</span>}
+            <span className="font-bold text-[15px] text-accent">{formatPrice(displayPrice)}</span>
+          </div>
+        )}
 
         {showOptions &&
           options.map((opt) =>
@@ -298,6 +307,14 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
                 </button>
               )}
             </div>
+          )}
+          {quoteOnly && (
+            <Link
+              href={href}
+              className="text-center py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-semibold transition-colors"
+            >
+              Request a price
+            </Link>
           )}
           {showView && (
             <Link
