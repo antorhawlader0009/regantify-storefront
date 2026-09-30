@@ -233,6 +233,27 @@ export async function validateCoupon(
   return res.json();
 }
 
+/** Marketing > Gift Cards — a code the shopper can use, and what is left on it. */
+export interface ValidatedGiftCard {
+  code: string;
+  balance: number;
+}
+
+/**
+ * Checkout's "Have a gift card?" preview (StorefrontService.validateGiftCard).
+ * Never redeems: the server takes the balance when the order is placed and
+ * works out how much of the total the card pays.
+ */
+export async function validateGiftCard(subdomain: string, code: string): Promise<ValidatedGiftCard> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/gift-cards/validate`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ code }),
+  });
+  if (!res.ok) throw await apiError(res, 'This gift card code is not valid.');
+  return res.json();
+}
+
 /** Marketing > Discounts — what an automatic-discount preview returns. */
 export interface AutomaticDiscounts {
   discount: { id: string; name: string; discountType: 'FIXED' | 'PERCENT'; discountAmount: number } | null;

@@ -278,6 +278,8 @@ export interface StorefrontProduct {
   isPreOrder: boolean;
   /** Price on request (StorePal hides the price and Buy). Absent from older API responses. */
   quoteOnly?: boolean;
+  /** When a running Flash Sale that is lowering this product's price ends (ISO); null/absent = no sale. */
+  flashSaleEndsAt?: string | null;
   stockQuantity?: number | null;
   weight?: string | null;
   weightUnit: string;

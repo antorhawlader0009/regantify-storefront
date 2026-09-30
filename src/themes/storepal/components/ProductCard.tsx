@@ -11,6 +11,7 @@ import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice } from '../lib/formatPrice';
 import { useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
+import { FlashSaleTimer } from './FlashSaleTimer';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
 
@@ -34,6 +35,8 @@ interface CardProduct {
   isPreOrder: boolean;
   /** Price on request (LMS-plan.md Step 9). */
   quoteOnly?: boolean;
+  /** Running Flash Sale end (ISO) — shows the sale badge with a countdown. */
+  flashSaleEndsAt?: string | null;
   variants: ({ stock: number } & Partial<Omit<StorefrontVariant, 'stock'>>)[];
   variationOptions?: StorefrontVariationOption[];
   stockQuantity?: number | null;
@@ -192,6 +195,9 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
             </div>
           )}
         </Link>
+        {!quoteOnly && product.flashSaleEndsAt && (
+          <FlashSaleTimer endsAt={product.flashSaleEndsAt} className="absolute top-2 left-2 z-10 pointer-events-none" />
+        )}
         {design.cardShowWishlist && (
           <button
             type="button"

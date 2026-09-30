@@ -16,6 +16,7 @@ import {
   placeOrder,
   syncIncompleteOrder,
   validateCoupon,
+  validateGiftCard,
   previewDiscounts,
   initiateOrderPayment,
   initiateGatewayOrderPayment,
@@ -23,6 +24,7 @@ import {
   sendCodVerificationOtp,
   CheckoutApiError,
   type ValidatedCoupon,
+  type ValidatedGiftCard,
   type AutomaticDiscounts,
   type StorePaymentGateway,
 } from '@/lib/checkoutApi';
@@ -180,6 +182,15 @@ export function useCheckout(
   const [couponChecking, setCouponChecking] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
+  // Marketing > Gift Cards — checked here only to show its balance, then
+  // redeemed server-side by placeOrder (which works out how much of the total
+  // it pays). Unlike a coupon it doesn't depend on the cart or phone, so
+  // changing those doesn't clear it.
+  const [giftCardCode, setGiftCardCode] = useState('');
+  const [appliedGiftCard, setAppliedGiftCard] = useState<ValidatedGiftCard | null>(null);
+  const [giftCardChecking, setGiftCardChecking] = useState(false);
+  const [giftCardError, setGiftCardError] = useState<string | null>(null);
+
   const authHydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
   useEffect(() => {
@@ -316,14 +327,27 @@ export function useCheckout(
   // as a number, only used so Place Order and any "you'll be charged X"
   // confirmation stay correct even when a fee is hidden from the
   // itemized breakdown. What's actually rendered is visibleGrandTotal.
-  const grandTotal = Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount + platformChargeAmount - totalDiscount);
+  const grandTotalBeforeGiftCard = Math.max(
+    0,
+    subtotal + effectiveDeliveryCharge + vatAmount + platformChargeAmount - totalDiscount,
+  );
+  // Marketing > Gift Cards — takes as much of the real total as the card
+  // holds, same rule as OrdersService.create. Zero unless a card is applied,
+  // so Medium/Minimal (which never show one) are unchanged.
+  const giftCardAmount = appliedGiftCard
+    ? Math.round(Math.max(0, Math.min(appliedGiftCard.balance, grandTotalBeforeGiftCard)) * 100) / 100
+    : 0;
+  const grandTotal = grandTotalBeforeGiftCard - giftCardAmount;
+  // The server won't put a card that pays the whole order on an online gateway
+  // (it can't take a payment of nothing), so checkout warns about it.
+  const giftCardCoversOrder = giftCardAmount > 0 && giftCardAmount >= grandTotalBeforeGiftCard;
   // What checkout actually displays as "Total" — silently excludes a
   // hidden fee, per Plan.codFeeHidden/onlinePaymentFeeHidden's design:
   // the shopper never sees it broken out, but they ARE still charged it
   // (the order the server creates always uses the real amount above).
   const visibleGrandTotal = Math.max(
     0,
-    subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - totalDiscount,
+    subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - totalDiscount - giftCardAmount,
   );
 
   // Same limits enforced server-side by CreateOrderDto — kept here too so
@@ -383,6 +407,27 @@ export function useCheckout(
     setAppliedCoupon(null);
     setCouponCode('');
     setCouponError(null);
+  };
+
+  const applyGiftCard = async () => {
+    const code = giftCardCode.trim();
+    if (!code) return;
+    setGiftCardChecking(true);
+    setGiftCardError(null);
+    try {
+      setAppliedGiftCard(await validateGiftCard(subdomain, code));
+    } catch (err) {
+      setAppliedGiftCard(null);
+      setGiftCardError(err instanceof Error ? err.message : 'This gift card code is not valid.');
+    } finally {
+      setGiftCardChecking(false);
+    }
+  };
+
+  const removeGiftCard = () => {
+    setAppliedGiftCard(null);
+    setGiftCardCode('');
+    setGiftCardError(null);
   };
 
   const validate = (): boolean => {
@@ -485,6 +530,7 @@ export function useCheckout(
         deliveryZone: form.zone,
         sessionKey: sessionKey || undefined,
         couponCode: appliedCoupon?.code,
+        giftCardCode: appliedGiftCard?.code,
         paymentMethod,
         items: lines.map((l) => ({
           productSlug: l.productSlug,
@@ -606,6 +652,17 @@ export function useCheckout(
     couponError,
     applyCoupon,
     removeCoupon,
+    // Marketing > Gift Cards, already folded into grandTotal/visibleGrandTotal:
+    // giftCardAmount is what the card pays of this order (0 with none applied).
+    giftCardCode,
+    setGiftCardCode,
+    appliedGiftCard,
+    giftCardAmount,
+    giftCardCoversOrder,
+    giftCardChecking,
+    giftCardError,
+    applyGiftCard,
+    removeGiftCard,
     // Store > Payment Gateway's enabled gateway list for this vendor —
     // StorePal's CheckoutView renders one radio per entry; Medium/Minimal
     // ignore this entirely (unchanged JSX), same as paymentMethod/

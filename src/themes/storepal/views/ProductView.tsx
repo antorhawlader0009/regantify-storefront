@@ -9,6 +9,7 @@ import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
+import { FlashSaleTimer } from '../components/FlashSaleTimer';
 // The purchase panel (wrapped in StorePalPurchasePanel for Store > Design
 // > Product Display Options) and tabs are theme-agnostic (built entirely from
 // the shared CSS-variable design tokens — bg-surface, text-ink, etc —
@@ -84,6 +85,9 @@ export function ProductView({
       </div>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
+        {!product.quoteOnly && product.flashSaleEndsAt && (
+          <FlashSaleTimer variant="bar" endsAt={product.flashSaleEndsAt} className="mb-3" />
+        )}
         <div className="bg-surface border border-line rounded grid gap-8 p-4 sm:p-6 lg:[grid-template-columns:1.1fr_1fr]">
           <StorePalPurchasePanel
             subdomain={subdomain}

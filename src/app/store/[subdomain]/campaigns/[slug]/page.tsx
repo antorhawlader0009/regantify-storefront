@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getStoreCampaign, StoreNotFoundError, CampaignNotFoundError, siteUrl } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { CampaignView as MediumCampaignView } from '@/themes/medium/views/CampaignView';
+import { CampaignView as StorepalCampaignView } from '@/themes/storepal/views/CampaignView';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -32,10 +33,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// Campaigns are a Medium-theme-only feature (see CampaignView.tsx's own
-// comment) — a store on Minimal theme genuinely 404s here rather than
-// falling back to some improvised Minimal rendering, since this was
-// deliberately never built for Minimal at all.
+// Campaigns are built for the Medium and StorePal themes — a store on
+// Minimal genuinely 404s here rather than falling back to some improvised
+// Minimal rendering, since this was deliberately never built for Minimal.
 export default async function CampaignPage({ params }: PageProps) {
   const { subdomain, slug } = await params;
 
@@ -49,12 +49,14 @@ export default async function CampaignPage({ params }: PageProps) {
 
   const { store, campaign, products, categories } = data;
 
-  if (resolveTheme(store.theme) !== 'MEDIUM') {
+  const theme = resolveTheme(store.theme);
+  if (theme !== 'MEDIUM' && theme !== 'STOREPAL') {
     notFound();
   }
 
+  const View = theme === 'STOREPAL' ? StorepalCampaignView : MediumCampaignView;
   return (
-    <MediumCampaignView
+    <View
       subdomain={subdomain}
       storeName={store.storeName}
       categories={categories}

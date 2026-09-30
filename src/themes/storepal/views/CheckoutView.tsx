@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Minus, Plus, X, Tag, ShieldCheck, Truck } from 'lucide-react';
+import { Minus, Plus, X, Tag, ShieldCheck, Truck, Gift } from 'lucide-react';
 import { formatPrice } from '../lib/formatPrice';
 import { useCheckout } from '@/lib/useCheckout';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
@@ -57,6 +57,15 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     couponError,
     applyCoupon,
     removeCoupon,
+    giftCardCode,
+    setGiftCardCode,
+    appliedGiftCard,
+    giftCardAmount,
+    giftCardCoversOrder,
+    giftCardChecking,
+    giftCardError,
+    applyGiftCard,
+    removeGiftCard,
     paymentGateways,
     paymentMethod,
     setPaymentMethod,
@@ -74,6 +83,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   const isRedirectGateway = selectedGateway ? selectedGateway.type !== 'COD' : false;
 
   const [couponBoxOpen, setCouponBoxOpen] = useState(false);
+  const [giftCardBoxOpen, setGiftCardBoxOpen] = useState(false);
   const storeName = useStoreDisplayName(subdomain);
 
   // Meta pixel InitiateCheckout / GA4 begin_checkout, once, as soon as the
@@ -499,19 +509,37 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                   <span className="font-semibold">Free shipping</span>
                 </div>
               )}
+              {/* Marketing > Gift Cards — what the card pays of this order. */}
+              {appliedGiftCard && giftCardAmount > 0 && (
+                <div className="flex justify-between text-success">
+                  <span className="flex items-center gap-1">
+                    <Gift size={12} />
+                    Gift card {appliedGiftCard.code}
+                  </span>
+                  <span className="font-semibold">-{formatPrice(giftCardAmount)}</span>
+                </div>
+              )}
               <div className="flex justify-between pt-2 border-t border-line text-[15px] font-bold text-ink">
                 <span>Total</span>
                 <span>{formatPrice(visibleGrandTotal)}</span>
               </div>
             </div>
 
-            <div className="text-right mt-3">
+            <div className="flex justify-end gap-4 mt-3">
               {!couponBoxOpen && !appliedCoupon && (
                 <button
                   onClick={() => setCouponBoxOpen(true)}
                   className="text-[13px] font-medium text-accent hover:text-accent-dark transition-colors"
                 >
                   Have Coupon?
+                </button>
+              )}
+              {!giftCardBoxOpen && !appliedGiftCard && (
+                <button
+                  onClick={() => setGiftCardBoxOpen(true)}
+                  className="text-[13px] font-medium text-accent hover:text-accent-dark transition-colors"
+                >
+                  Have a gift card?
                 </button>
               )}
             </div>
@@ -547,6 +575,51 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                       </button>
                     </div>
                     {couponError && <p className="mt-1.5 text-[12px] text-accent">{couponError}</p>}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {(giftCardBoxOpen || appliedGiftCard) && (
+              <div className="mt-3 pt-3 border-t border-line">
+                {appliedGiftCard ? (
+                  <div>
+                    <div className="flex items-center justify-between bg-success-bg text-success text-[12.5px] font-semibold px-3 py-2 rounded-md">
+                      <span className="flex items-center gap-1.5">
+                        <Gift size={13} />
+                        {appliedGiftCard.code} applied
+                      </span>
+                      <button onClick={removeGiftCard} aria-label="Remove gift card" className="text-success hover:opacity-70">
+                        <X size={14} />
+                      </button>
+                    </div>
+                    <p className="mt-1.5 text-[12px] text-muted">Balance: {formatPrice(appliedGiftCard.balance)}</p>
+                    {/* The server refuses this too; saying it here saves a failed Place Order. */}
+                    {isRedirectGateway && giftCardCoversOrder && (
+                      <p className="mt-1 text-[12px] text-accent">
+                        This card covers your whole order. Choose Cash on Delivery to use it, or add more items.
+                      </p>
+                    )}
+                  </div>
+                ) : (
+                  <div>
+                    <div className="flex gap-2">
+                      <input
+                        value={giftCardCode}
+                        onChange={(e) => setGiftCardCode(e.target.value.slice(0, 40))}
+                        placeholder="Enter gift card code"
+                        maxLength={40}
+                        className="flex-1 px-3 py-2 rounded-md text-[13px] bg-canvas border border-line-strong outline-none focus:border-ink transition-colors uppercase"
+                      />
+                      <button
+                        onClick={applyGiftCard}
+                        disabled={giftCardChecking || !giftCardCode.trim()}
+                        className="px-4 py-2 rounded-md bg-ink hover:bg-ink/90 text-white text-[12.5px] font-bold disabled:opacity-60 transition-colors"
+                      >
+                        {giftCardChecking ? 'Checking…' : 'Apply'}
+                      </button>
+                    </div>
+                    {giftCardError && <p className="mt-1.5 text-[12px] text-accent">{giftCardError}</p>}
                   </div>
                 )}
               </div>
