@@ -17,7 +17,7 @@ import { HeroBanner } from '../components/HeroBanner';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { TRUST_BADGES } from '@/lib/placeholderContent';
 import { Stars } from '../../medium/components/Stars';
-import { Truck, ShieldCheck, HandCoins, SlidersHorizontal, X, Tag } from 'lucide-react';
+import { Truck, ShieldCheck, HandCoins, SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -386,7 +386,11 @@ export function HomeView({
           <>
             {topSelling.length > 0 && (
               <section className="mb-6">
-                <h2 className="text-[18px] font-bold text-ink mb-4 text-center">🔥 Top Selling 🔥</h2>
+                <h2 className="text-[18px] font-bold text-ink mb-4 flex items-center justify-center gap-2">
+                  <Flame size={18} className="text-orange-500" aria-hidden />
+                  Top Selling
+                  <Flame size={18} className="text-orange-500" aria-hidden />
+                </h2>
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                   {topSelling.map((product) => (
                     <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
