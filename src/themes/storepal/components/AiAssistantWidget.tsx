@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Bot, Send, X, Loader2 } from 'lucide-react';
-import { sendChatMessage, type ChatTurn, type ChatProductRef } from '@/lib/chatApi';
+import { ChatUnavailableError, getChatAvailable, sendChatMessage, type ChatTurn, type ChatProductRef } from '@/lib/chatApi';
 import { formatPrice } from '../lib/formatPrice';
 
 interface Message {
@@ -24,16 +24,30 @@ const GREETING: Message = {
  * stacked directly above the WhatsApp bubble at the same corner, same
  * convention as a typical storefront's "help" widgets clustering in one
  * spot rather than spreading floating buttons across the screen.
- * Renders unconditionally (unlike WhatsAppBubble, which needs a vendor-
- * set link) since the chat endpoint works for every store — see
- * StorefrontController.chat.
+ * Shows only while the store's AI token wallet can pay for a reply
+ * (ai-token-plan.md Step 5): it asks /chat/status on load and renders
+ * nothing until that says yes. If the wallet runs out mid-chat, the open
+ * panel says so politely and the bubble goes away once it's closed.
+ * Shoppers are never told the store ran out of tokens.
  */
 export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
   const [open, setOpen] = useState(false);
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [draft, setDraft] = useState('');
   const [sending, setSending] = useState(false);
+  // null while the status call is in flight; false hides the widget.
+  const [available, setAvailable] = useState<boolean | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    getChatAvailable(subdomain).then((ok) => {
+      if (!cancelled) setAvailable(ok);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [subdomain]);
 
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' });
@@ -55,6 +69,7 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
       const res = await sendChatMessage(subdomain, text, history);
       setMessages((prev) => [...prev, { role: 'assistant', content: res.reply, products: res.products }]);
     } catch (err) {
+      if (err instanceof ChatUnavailableError) setAvailable(false);
       setMessages((prev) => [
         ...prev,
         { role: 'assistant', content: err instanceof Error ? err.message : 'Something went wrong. Please try again.' },
@@ -63,6 +78,10 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
       setSending(false);
     }
   };
+
+  // Ran out mid-chat: keep the open panel (with its polite note) until the
+  // shopper closes it, then hide the bubble too.
+  if (available !== true && !open) return null;
 
   return (
     <>
@@ -127,12 +146,12 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
               value={draft}
               onChange={(e) => setDraft(e.target.value)}
               placeholder="Ask about a product…"
-              disabled={sending}
+              disabled={sending || available === false}
               className="flex-1 px-3 py-2 rounded-lg border border-line-strong text-[13px] text-ink bg-surface outline-none focus:border-accent transition-colors disabled:opacity-60"
             />
             <button
               type="submit"
-              disabled={sending || !draft.trim()}
+              disabled={sending || available === false || !draft.trim()}
               aria-label="Send"
               className="w-9 h-9 shrink-0 rounded-lg bg-ink text-white flex items-center justify-center disabled:opacity-40 hover:bg-ink/90 transition-colors"
             >

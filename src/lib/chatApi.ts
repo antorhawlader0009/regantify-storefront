@@ -27,6 +27,25 @@ export interface ChatReply {
   products: ChatProductRef[];
 }
 
+/** Thrown when the store's AI token wallet is empty (HTTP 402, code AI_TOKENS_EMPTY). */
+export class ChatUnavailableError extends Error {}
+
+/**
+ * Whether the store can pay for a chat reply right now (ai-token-plan.md
+ * Step 5). Any failure reads as "not available", so a broken status call
+ * never shows a widget that can't answer.
+ */
+export async function getChatAvailable(subdomain: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat/status`, { cache: 'no-store' });
+    if (!res.ok) return false;
+    const body = (await res.json()) as { available?: boolean };
+    return body.available === true;
+  } catch {
+    return false;
+  }
+}
+
 export async function sendChatMessage(subdomain: string, message: string, history: ChatTurn[]): Promise<ChatReply> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat`, {
     method: 'POST',
@@ -36,6 +55,9 @@ export async function sendChatMessage(subdomain: string, message: string, histor
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
+    if (res.status === 402 && body?.code === 'AI_TOKENS_EMPTY') {
+      throw new ChatUnavailableError("The assistant isn't available right now. Please try again later.");
+    }
     const msg = Array.isArray(body?.message) ? body.message[0] : body?.message;
     throw new Error(msg || 'The assistant is temporarily unavailable. Please try again.');
   }
