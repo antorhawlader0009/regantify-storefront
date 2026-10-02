@@ -213,3 +213,15 @@ body {
 .storepal-fade-up {
   animation: storepal-fade-up 0.5s ease-out both;
 }
+
+/* Scroll still works everywhere; the scrollbar itself is just hidden, the
+   same as the vendor dashboard (client/src/index.css). Applies to every
+   scrollable element: the page, the chat panel, cart drawers, sliders. */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* old Edge/IE */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, new Edge */
+}
