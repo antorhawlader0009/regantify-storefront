@@ -436,7 +436,18 @@ async function fetchJson<T>(path: string, tags: string[]): Promise<T | null> {
  * Server-only, like the rest of this file.
  */
 export async function getTrackedOrderByLink(subdomain: string, token: string): Promise<TrackedOrder | null> {
-  const res = await fetch(`${API_URL}/v1/store/${subdomain}/track/${encodeURIComponent(token)}`, { cache: 'no-store' });
+  // This request comes from the storefront server, not the shopper's browser, so the API would see
+  // one address for every visitor and its per-IP guard on wrong tokens (5 in 10 minutes) would lock
+  // everyone out after a few mistyped links. Pass the visitor's address along (the reverse proxy
+  // put it in X-Forwarded-For) so each visitor is judged on their own.
+  const { headers } = await import('next/headers');
+  const forwarded = (await headers()).get('x-forwarded-for');
+  // open=1: this is the page's own first load, which the vendor's "opened" count includes (the
+  // page's once-a-minute refresh from the browser does not send it).
+  const res = await fetch(`${API_URL}/v1/store/${subdomain}/track/${encodeURIComponent(token)}?open=1`, {
+    cache: 'no-store',
+    headers: forwarded ? { 'x-forwarded-for': forwarded } : undefined,
+  });
   if (res.status === 404 || res.status === 429) return null;
   if (!res.ok) throw new Error(`Storefront API request failed: ${res.status} ${res.statusText}`);
   return res.json() as Promise<TrackedOrder>;
