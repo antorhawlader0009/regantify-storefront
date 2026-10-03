@@ -18,12 +18,14 @@
 export interface RememberedOrder {
   invoiceNumber: number;
   phone: string;
+  /** The public order number, when the order has one (tracking-plan.md Step 2). */
+  code?: string;
 }
 
 const KEY_PREFIX = 'regantify-guest-orders:';
 const MAX_REMEMBERED = 20; // generous cap — this is a convenience list, not meant to grow unbounded forever
 
-export function rememberGuestOrder(subdomain: string, invoiceNumber: number, phone: string): void {
+export function rememberGuestOrder(subdomain: string, invoiceNumber: number, phone: string, code?: string | null): void {
   try {
     const key = `${KEY_PREFIX}${subdomain}`;
     const existing = loadRememberedOrders(subdomain);
@@ -31,7 +33,7 @@ export function rememberGuestOrder(subdomain: string, invoiceNumber: number, pho
     // shouldn't create a second entry) and move it to the front — most
     // recently looked-up/placed first, same ordering a shopper expects.
     const next = [
-      { invoiceNumber, phone },
+      { invoiceNumber, phone, ...(code ? { code } : {}) },
       ...existing.filter((o) => o.invoiceNumber !== invoiceNumber),
     ].slice(0, MAX_REMEMBERED);
     localStorage.setItem(key, JSON.stringify(next));

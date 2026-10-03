@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Minus, Plus, X, Tag, ShieldCheck, Truck, Gift } from 'lucide-react';
+import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatPrice } from '../lib/formatPrice';
 import { useCheckout } from '@/lib/useCheckout';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
@@ -43,6 +44,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
     subtotal,
     deliveryCharge,
     deliveryChargeByZone,
+    expectedDeliveryDate,
     vatAmount,
     visiblePlatformChargeAmount,
     visibleGrandTotal,
@@ -453,6 +455,12 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                 <span className="text-ink">Delivery Charge</span>
                 <span className="font-semibold text-accent">{formatPrice(deliveryCharge)}</span>
               </div>
+              {expectedDeliveryDate && (
+                <div className="flex justify-between">
+                  <span className="text-ink">Expected by</span>
+                  <span className="font-semibold text-ink">{formatExpectedDate(expectedDeliveryDate)}</span>
+                </div>
+              )}
               {vatAmount > 0 && (
                 <div className="flex justify-between">
                   <span className="text-ink">VAT</span>

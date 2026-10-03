@@ -48,7 +48,7 @@ export function CourierTrackingCard({ tracking }: { tracking: CourierTracking })
         </div>
         <div className="text-right">
           <p className="text-[11px] text-muted">Tracking ID</p>
-          <TrackingId id={tracking.trackingId} />
+          {tracking.trackingId ? <TrackingId id={tracking.trackingId} /> : null}
         </div>
       </div>
 
@@ -79,7 +79,7 @@ export function CourierTrackingCard({ tracking }: { tracking: CourierTracking })
 export function CourierTrackingLine({ tracking }: { tracking: CourierTracking }) {
   return (
     <p className="mt-0.5 text-[11.5px] text-muted">
-      {tracking.providerName} · <span className="font-mono">{tracking.trackingId}</span> · {courierStageLabel(tracking.stage)}
+      {tracking.providerName} · {tracking.trackingId ? <><span className="font-mono">{tracking.trackingId}</span> · </> : null}{courierStageLabel(tracking.stage)}
     </p>
   );
 }

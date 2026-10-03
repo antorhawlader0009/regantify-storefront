@@ -4,6 +4,8 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Download, Package, MapPin, Phone, ArrowRight } from 'lucide-react';
 import { useTrackOrder } from '@/lib/useTrackOrder';
+import { orderLabel } from '@/lib/orderLabel';
+import { formatExpectedDate } from '@/lib/expectedDate';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
 import { formatPrice } from '../lib/formatPrice';
 import { downloadOrderMemoPdf } from '../lib/orderMemoPdf';
@@ -138,7 +140,12 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
           <div className="flex items-center justify-between gap-3 flex-wrap px-5 py-4 border-b border-line bg-canvas">
             <div>
               <p className="text-[11px] text-muted uppercase tracking-wide">Order Memo</p>
-              <p className="text-[17px] font-bold text-ink">ORDER-{order.invoiceNumber}</p>
+              <p className="text-[17px] font-bold text-ink">{orderLabel(order)}</p>
+              {order.estimatedDeliveryDate && (
+                <p className="mt-0.5 text-[12.5px] text-muted">
+                  Expected by <span className="font-semibold text-ink">{formatExpectedDate(order.estimatedDeliveryDate)}</span>
+                </p>
+              )}
             </div>
             <div className="text-right">
               <p className="text-[11px] text-muted uppercase tracking-wide">Placed On</p>
@@ -262,7 +269,10 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
 
         <p className="storepal-fade-up text-center text-[12px] text-muted mt-5" style={{ animationDelay: '0.3s' }}>
           Need help with your order?{' '}
-          <Link href={`/store/${subdomain}/orders`} className="text-accent font-medium hover:text-accent-dark">
+          <Link
+            href={order.trackingToken ? `/store/${subdomain}/t/${order.trackingToken}` : `/store/${subdomain}/orders`}
+            className="text-accent font-medium hover:text-accent-dark"
+          >
             Track it anytime
           </Link>
           .

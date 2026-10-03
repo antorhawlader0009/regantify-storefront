@@ -24,6 +24,8 @@ export function apiOrigin(): string {
 export interface CheckoutResponse {
   orderId: string;
   invoiceNumber: number;
+  // Public order number ("FAS-261003-7K3M9QD") the shopper sees; null only on a server that predates it.
+  publicCode?: string | null;
   total: string;
   status: string;
   // Store > COD Guard — PENDING means the order was placed On Hold and
@@ -94,6 +96,10 @@ export interface StoreDeliveryCharges {
   // code on COD orders. Always null on other themes (see the backend's
   // StorefrontService.findVendorBySubdomainOrThrow).
   codSmsVerification?: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
+  // Store > Delivery Charge > Delivery time (tracking-plan.md Step 7): the date a parcel ordered now
+  // is expected, per zone, as YYYY-MM-DD; null for a zone the store set no days for. Worked out by the
+  // server, so the storefront never repeats the rule.
+  deliveryEstimate?: { DHAKA: string | null; OUTSIDE_DHAKA: string | null } | null;
 }
 
 export async function getStoreDeliveryCharges(subdomain: string): Promise<StoreDeliveryCharges | null> {
@@ -356,13 +362,34 @@ export interface TrackedOrderStatusHistoryEntry {
   id: string;
   fromStatus: string | null;
   toStatus: string;
+  // No longer sent (staff notes stay private); kept optional so older readers still type-check.
   note?: string | null;
   createdAt: string;
+}
+
+/**
+ * One line of the shopper's order timeline (tracking-plan.md Step 3), built by the server in fixed
+ * wording from our status moves and the courier's events. Newest first, at most 30.
+ */
+export interface TrackedTimelineEntry {
+  at: string;
+  title: string;
+  detail: string | null;
+  kind: 'progress' | 'done' | 'problem';
 }
 
 export interface TrackedOrder {
   id: string;
   invoiceNumber: number;
+  // Public order number (tracking-plan.md Step 2); null on an order the backfill has not reached.
+  publicCode?: string | null;
+  // Private tracking link token (tracking-plan.md Step 1): /store/{sub}/t/{token}. Null on
+  // an order older than the link until the one-off backfill has run.
+  trackingToken?: string | null;
+  // The date promised when the order was placed (ISO, midnight UTC of the Bangladesh date); null when the store had no estimate.
+  estimatedDeliveryDate?: string | null;
+  // True once that date has passed and the order is still on its way.
+  deliveryLate?: boolean;
   status: string;
   customerName: string;
   // The shopper's own contact details (the lookup already required the
@@ -399,17 +426,30 @@ export interface TrackedOrder {
   codVerificationStatus?: 'PENDING' | 'VERIFIED' | null;
   items: TrackedOrderItem[];
   statusHistory: TrackedOrderStatusHistoryEntry[];
+  // Only on the track-order and tracking-link answers, not on the "My orders" list.
+  timeline?: TrackedTimelineEntry[];
   createdAt: string;
   // Courier name + tracking ID + stage once the parcel is booked with a
   // courier (pathao-plan.md Step 13); null before that.
   courierTracking?: CourierTracking | null;
 }
 
-export async function trackOrder(subdomain: string, invoiceNumber: number, phone: string): Promise<TrackedOrder> {
+/**
+ * The same order by its private tracking-link token, from the browser: the tracking page uses it
+ * to refresh itself (the first paint is fetched on the server, see storefrontApi.getTrackedOrderByLink).
+ */
+export async function fetchTrackedOrderByLink(subdomain: string, token: string): Promise<TrackedOrder> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}`, { cache: 'no-store' });
+  if (!res.ok) throw new Error('Could not refresh the order.');
+  return res.json() as Promise<TrackedOrder>;
+}
+
+/** `reference` is the public order number (a string) or the old numeric serial. */
+export async function trackOrder(subdomain: string, reference: number | string, phone: string): Promise<TrackedOrder> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track-order`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ invoiceNumber, phone }),
+    body: JSON.stringify(typeof reference === 'number' ? { invoiceNumber: reference, phone } : { orderCode: reference, phone }),
   });
 
   if (!res.ok) {

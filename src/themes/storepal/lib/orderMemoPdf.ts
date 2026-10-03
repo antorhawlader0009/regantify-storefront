@@ -1,6 +1,7 @@
 import { jsPDF } from 'jspdf';
 import type { TrackedOrder } from '@/lib/checkoutApi';
 import { formatPrice } from './formatPrice';
+import { orderLabel } from '@/lib/orderLabel';
 
 /**
  * Loads an image URL into a data URL jsPDF can embed, along with its
@@ -92,7 +93,7 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   doc.setFont('helvetica', 'bold');
   doc.setFontSize(12);
   doc.setTextColor(26, 43, 60);
-  doc.text(`ORDER-${order.invoiceNumber}`, margin, y);
+  doc.text(orderLabel(order), margin, y);
   doc.text(new Date(order.createdAt).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }), pageWidth / 2, y);
   y += 28;
 
@@ -201,5 +202,5 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   doc.setTextColor(150, 158, 168);
   doc.text(`Thank you for shopping with ${storeName}.`, pageWidth / 2, pageHeight - 40, { align: 'center' });
 
-  doc.save(`ORDER-${order.invoiceNumber}-memo.pdf`);
+  doc.save(`${orderLabel(order)}-memo.pdf`);
 }

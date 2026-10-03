@@ -6,6 +6,8 @@
 // app's copy of the same public endpoints) since both read the same
 // backend response.
 
+import type { TrackedOrder } from '@/lib/checkoutApi';
+
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
 export type StoreTheme = 'MEDIUM' | 'MINIMAL' | 'STOREPAL';
@@ -424,6 +426,20 @@ async function fetchJson<T>(path: string, tags: string[]): Promise<T | null> {
     throw new Error(`Storefront API request failed: ${res.status} ${res.statusText} (${path})`);
   }
   return res.json() as Promise<T>;
+}
+
+/**
+ * One order by its private tracking-link token (tracking-plan.md Step 1), for
+ * the /t/[token] page. Never cached: it is a single shopper's live order, and
+ * the token must not end up in a shared cache key. Null for any miss (the API
+ * answers every miss with the same 404) and for a blocked caller (429).
+ * Server-only, like the rest of this file.
+ */
+export async function getTrackedOrderByLink(subdomain: string, token: string): Promise<TrackedOrder | null> {
+  const res = await fetch(`${API_URL}/v1/store/${subdomain}/track/${encodeURIComponent(token)}`, { cache: 'no-store' });
+  if (res.status === 404 || res.status === 429) return null;
+  if (!res.ok) throw new Error(`Storefront API request failed: ${res.status} ${res.statusText}`);
+  return res.json() as Promise<TrackedOrder>;
 }
 
 export async function getStoreProducts(subdomain: string): Promise<StorefrontListData> {

@@ -134,6 +134,7 @@ export function useCheckout(
     vatChargeBdt: number;
     paymentGateways: StorePaymentGateway[];
     codSmsVerification: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
+    deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null } | null;
   } | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -145,6 +146,7 @@ export function useCheckout(
         vatChargeBdt: Number(charges.vatChargeBdt),
         paymentGateways: charges.paymentGateways,
         codSmsVerification: charges.codSmsVerification ?? null,
+        deliveryEstimate: charges.deliveryEstimate ?? null,
       });
     });
     return () => {
@@ -566,7 +568,7 @@ export function useCheckout(
 
       sessionStorage.setItem(
         HANDOFF_KEY,
-        JSON.stringify({ subdomain, invoiceNumber: result.invoiceNumber, phone: form.phone.trim() }),
+        JSON.stringify({ subdomain, invoiceNumber: result.invoiceNumber, orderCode: result.publicCode ?? null, phone: form.phone.trim() }),
       );
       router.push(`/store/${subdomain}/${redirectTo === 'thank-you' ? 'thank-you' : 'orders'}`);
     } catch (err) {
@@ -611,6 +613,8 @@ export function useCheckout(
     // still use their own imported DELIVERY_CHARGE constant for this,
     // unchanged.
     deliveryChargeByZone: resolvedDeliveryCharge,
+    // "Expected by" date (YYYY-MM-DD) for the chosen zone, or null when the store set no delivery time.
+    expectedDeliveryDate: vendorCharges?.deliveryEstimate?.[form.zone] ?? null,
     // Applies regardless of payment method now (see comment above) —
     // StorePal's CheckoutView/ThankYouView show this as "VAT";
     // Medium/Minimal don't render it as its own line (their JSX is

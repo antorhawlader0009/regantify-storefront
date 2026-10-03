@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { trackOrder, type TrackedOrder } from '@/lib/checkoutApi';
+import { parseOrderReference } from '@/lib/orderLabel';
 import { rememberGuestOrder, loadRememberedOrders, type RememberedOrder } from '@/lib/guestOrderMemory';
 
 // Set by the checkout page right after a successful order (see
@@ -29,13 +30,14 @@ export function useTrackOrder(subdomain: string) {
     setRememberedOrders(loadRememberedOrders(subdomain));
   }, [subdomain]);
 
-  const lookup = async (invoice: number, phoneValue: string) => {
+  const lookup = async (reference: number | string, phoneValue: string) => {
     setLoading(true);
     setError(null);
     try {
-      const result = await trackOrder(subdomain, invoice, phoneValue);
+      const result = await trackOrder(subdomain, reference, phoneValue);
       setOrder(result);
-      rememberGuestOrder(subdomain, invoice, phoneValue);
+      // Remembered by the serial, which every order has, whichever way it was looked up.
+      rememberGuestOrder(subdomain, result.invoiceNumber, phoneValue, result.publicCode);
       setRememberedOrders(loadRememberedOrders(subdomain));
     } catch (err) {
       setOrder(null);
@@ -50,12 +52,14 @@ export function useTrackOrder(subdomain: string) {
     if (!raw) return;
     sessionStorage.removeItem(HANDOFF_KEY);
     try {
-      const handoff = JSON.parse(raw) as { subdomain: string; invoiceNumber: number; phone: string };
+      const handoff = JSON.parse(raw) as { subdomain: string; invoiceNumber: number; orderCode?: string | null; phone: string };
       if (handoff.subdomain !== subdomain) return;
-      setInvoiceNumber(String(handoff.invoiceNumber));
+      // The public order number when the order has one, else the old serial.
+      const reference = handoff.orderCode || handoff.invoiceNumber;
+      setInvoiceNumber(String(reference));
       setPhone(handoff.phone);
       setJustPlaced(true);
-      lookup(handoff.invoiceNumber, handoff.phone);
+      lookup(reference, handoff.phone);
     } catch {
       // malformed handoff data — ignore, just show the empty lookup form
     }
@@ -64,23 +68,24 @@ export function useTrackOrder(subdomain: string) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const invoice = Number(invoiceNumber.replace(/^ORDER-/i, '').trim());
-    if (!invoice || !phone.trim()) {
+    const reference = parseOrderReference(invoiceNumber);
+    if (!reference || !phone.trim()) {
       setError('Enter both your order number and phone number.');
       return;
     }
     setJustPlaced(false);
-    await lookup(invoice, phone.trim());
+    await lookup(reference, phone.trim());
   };
 
   // "Your recent orders" list item click — re-runs the exact same
   // lookup a manual submit would, just pre-filled from what's
   // remembered instead of typed.
   const selectRememberedOrder = async (remembered: RememberedOrder) => {
-    setInvoiceNumber(String(remembered.invoiceNumber));
+    const reference = remembered.code ?? remembered.invoiceNumber;
+    setInvoiceNumber(String(reference));
     setPhone(remembered.phone);
     setJustPlaced(false);
-    await lookup(remembered.invoiceNumber, remembered.phone);
+    await lookup(reference, remembered.phone);
   };
 
   return {
