@@ -108,10 +108,15 @@ export async function getStoreDeliveryCharges(subdomain: string): Promise<StoreD
   return res.json();
 }
 
-export async function placeOrder(subdomain: string, payload: unknown): Promise<CheckoutResponse> {
+// `accessToken` is the logged-in shopper's token, if any: the server then saves the order to that
+// account. Without it the order is a guest order, whatever phone number was typed.
+export async function placeOrder(subdomain: string, payload: unknown, accessToken?: string): Promise<CheckoutResponse> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/checkout`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: {
+      'Content-Type': 'application/json',
+      ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}),
+    },
     body: JSON.stringify(payload),
   });
 

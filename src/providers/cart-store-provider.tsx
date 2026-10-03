@@ -3,6 +3,7 @@
 import { type ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { type CartStore, createCartStore } from '@/stores/cart-store';
+import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 
 export type CartStoreApi = ReturnType<typeof createCartStore>;
 
@@ -32,6 +33,22 @@ export function CartStoreProvider({ children }: { children: ReactNode }) {
     storeRef.current?.persist.rehydrate();
     return unsub;
   }, []);
+
+  // A cart belongs to whoever was logged in when it was filled (see CartState.ownerId). When the
+  // account changes — logout, or someone else logs in on this browser — the old cart is emptied, so
+  // the next shopper never inherits it. A guest cart simply becomes the account's on login.
+  const authHydrated = useCustomerAuthHydrated();
+  const customerId = useCustomerAuthStore((s) => s.customer?.id ?? null);
+  useEffect(() => {
+    const store = storeRef.current;
+    if (!store || !hydrated || !authHydrated) return;
+    const { ownerId, resetFor, claimFor } = store.getState();
+    const owner = ownerId ?? null;
+    if (owner === customerId) return;
+    if (customerId === null) resetFor(null);
+    else if (owner === null) claimFor(customerId);
+    else resetFor(customerId);
+  }, [hydrated, authHydrated, customerId]);
 
   return (
     <CartStoreContext.Provider value={storeRef.current}>

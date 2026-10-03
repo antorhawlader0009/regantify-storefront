@@ -7,6 +7,7 @@ import { Minus, Plus, X, Tag, ShieldCheck, Truck, Gift } from 'lucide-react';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatPrice } from '../lib/formatPrice';
 import { useCheckout } from '@/lib/useCheckout';
+import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
@@ -135,10 +136,16 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   // anything the shopper already typed in the brief window before this
   // effect runs. zone needs its own check since its default ('DHAKA')
   // is non-empty, unlike every other field's default ('').
+  // Guests only: a logged-in shopper gets their own account's details (useCheckout), and their form is
+  // never saved here, so the next person on this browser can't inherit it. Waits for the login check
+  // to finish first, since the store reads as logged out until then.
+  const authHydrated = useCustomerAuthHydrated();
+  const loggedIn = useCustomerAuthStore((s) => s.customer !== null);
   const formRestoredRef = useRef(false);
   useEffect(() => {
-    if (formRestoredRef.current) return;
+    if (formRestoredRef.current || !authHydrated) return;
     formRestoredRef.current = true;
+    if (loggedIn) return;
     const saved = loadSavedCheckoutForm(subdomain);
     if (!saved) return;
     (Object.keys(saved) as (keyof typeof saved)[]).forEach((field) => {
@@ -148,10 +155,12 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
       if (untouched) updateField(field, value);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subdomain]);
+  }, [subdomain, authHydrated]);
   useEffect(() => {
+    // Not before the restore above has run, or the blank form would overwrite what was saved.
+    if (!authHydrated || loggedIn || !formRestoredRef.current) return;
     saveCheckoutForm(subdomain, form);
-  }, [subdomain, form]);
+  }, [subdomain, form, authHydrated, loggedIn]);
 
   // Checkout is a Client Component (needs cart state from
   // localStorage), so it has no server-fetched StorefrontListData the

@@ -46,6 +46,10 @@ function dispatchRemove(line: CartLine | undefined, quantity: number) {
 
 export interface CartState {
   lines: CartLine[];
+  // The Customer account this cart belongs to, or null for a guest cart. Lets the cart be emptied when
+  // the account changes (logout, someone else logs in) instead of being handed on to the next shopper
+  // on the same browser. Carts saved before this field existed read as a guest cart.
+  ownerId?: string | null;
 }
 
 export interface CartActions {
@@ -53,11 +57,15 @@ export interface CartActions {
   removeLine: (id: string) => void;
   setQuantity: (id: string, quantity: number) => void;
   clearStore: (subdomain: string) => void;
+  // Empties the cart (every store) and gives it a new owner.
+  resetFor: (ownerId: string | null) => void;
+  // Marks the cart as belonging to an account, keeping its lines (a guest cart becomes theirs on login).
+  claimFor: (ownerId: string) => void;
 }
 
 export type CartStore = CartState & CartActions;
 
-export const defaultInitState: CartState = { lines: [] };
+export const defaultInitState: CartState = { lines: [], ownerId: null };
 
 function lineId(productSlug: string, selectedOptions: Record<string, string>): string {
   const optionsKey = Object.entries(selectedOptions)
@@ -124,6 +132,9 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
         // cart for a different store they also have open.
         clearStore: (subdomain) =>
           set(() => ({ lines: get().lines.filter((l) => l.subdomain !== subdomain) })),
+
+        resetFor: (ownerId) => set({ lines: [], ownerId }),
+        claimFor: (ownerId) => set({ ownerId }),
       }),
       {
         name: 'regantify-cart',

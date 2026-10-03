@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import type { CartLine } from '@/stores/cart-store';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
+import { refreshCustomerSession } from '@/lib/customerAuthApi';
 import { trackMetaAddPaymentInfo } from '@/lib/metaPixelEvents';
 import { metaAdContext } from '@/lib/metaPixel';
 import { trackAddPaymentInfo } from '@/lib/ecommerceEvents';
@@ -195,6 +196,21 @@ export function useCheckout(
 
   const authHydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
+  const setSession = useCustomerAuthStore((s) => s.setSession);
+
+  // A logged-in shopper's order must be saved to their account, which the server only does for a valid
+  // token. The 15-minute access token may have run out by the time they press Place Order, so take a
+  // fresh one first. If that fails the order goes through as a guest order.
+  const freshAccessToken = async (): Promise<string | undefined> => {
+    if (!customer) return undefined;
+    try {
+      const session = await refreshCustomerSession();
+      setSession(session.customer, session.accessToken);
+      return session.accessToken;
+    } catch {
+      return undefined;
+    }
+  };
   useEffect(() => {
     if (!authHydrated || !customer) return;
     setForm((prev) =>
@@ -512,6 +528,7 @@ export function useCheckout(
     trackAddPaymentInfo(lines, selectedGateway?.type ?? paymentMethod, appliedCoupon?.code);
 
     try {
+      const authToken = await freshAccessToken();
       const result = await placeOrder(subdomain, {
         // Meta pixel cookies / page URL / consent, for the server's
         // Conversions API Purchase, the GA4 client/session ids for a
@@ -543,7 +560,7 @@ export function useCheckout(
           unitPrice: l.unitPrice,
           quantity: l.quantity,
         })),
-      });
+      }, authToken);
 
       // Any non-COD gateway: the order now exists (PAYMENT_INITIATED,
       // stock already decremented — see OrdersService.create), but it

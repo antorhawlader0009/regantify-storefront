@@ -4,6 +4,7 @@ import { type ReactNode, createContext, useContext, useEffect, useRef, useState 
 import { useStore } from 'zustand';
 import { type CustomerAuthStore, createCustomerAuthStore } from '@/stores/customer-auth-store';
 import { refreshCustomerSession, customerLogout as apiLogout } from '@/lib/customerAuthApi';
+import { clearShopperData } from '@/lib/clearShopperData';
 
 export type CustomerAuthStoreApi = ReturnType<typeof createCustomerAuthStore>;
 
@@ -43,7 +44,10 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       }
       refreshCustomerSession()
         .then((result) => store.getState().setSession(result.customer, result.accessToken))
-        .catch(() => store.getState().clearSession())
+        .catch(() => {
+          store.getState().clearSession();
+          clearShopperData();
+        })
         .finally(() => setHydrated(true));
     });
     store.persist.rehydrate();
@@ -78,7 +82,11 @@ export function useCustomerLogout() {
   }
   return async () => {
     const { accessToken, clearSession } = context.getState();
-    if (accessToken) await apiLogout(accessToken);
-    clearSession();
+    try {
+      if (accessToken) await apiLogout(accessToken);
+    } finally {
+      clearSession();
+      clearShopperData();
+    }
   };
 }
