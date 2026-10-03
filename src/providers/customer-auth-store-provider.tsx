@@ -69,6 +69,15 @@ export function useCustomerAuthStore<T>(selector: (store: CustomerAuthStore) => 
   return useStore(context, selector);
 }
 
+/** The auth store itself, for code that has to read the latest token inside a callback rather than render with it. */
+export function useCustomerAuthStoreApi(): CustomerAuthStoreApi {
+  const context = useContext(CustomerAuthStoreContext);
+  if (!context) {
+    throw new Error('useCustomerAuthStoreApi must be used within CustomerAuthProvider');
+  }
+  return context;
+}
+
 /** True once the initial session check (persisted profile + silent refresh) has finished, either way. */
 export function useCustomerAuthHydrated(): boolean {
   return useContext(CustomerAuthHydratedContext);

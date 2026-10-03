@@ -61,6 +61,8 @@ export interface CartActions {
   resetFor: (ownerId: string | null) => void;
   // Marks the cart as belonging to an account, keeping its lines (a guest cart becomes theirs on login).
   claimFor: (ownerId: string) => void;
+  // Replaces the lines, e.g. with the account's cart merged in from the server.
+  setLines: (lines: CartLine[]) => void;
 }
 
 export type CartStore = CartState & CartActions;
@@ -135,6 +137,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
 
         resetFor: (ownerId) => set({ lines: [], ownerId }),
         claimFor: (ownerId) => set({ ownerId }),
+        setLines: (lines) => set({ lines }),
       }),
       {
         name: 'regantify-cart',

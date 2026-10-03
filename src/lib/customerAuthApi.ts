@@ -1,4 +1,5 @@
 import type { CourierTracking } from './courierTracking';
+import type { CartLine } from '@/stores/cart-store';
 
 // Client-side (browser) fetch helper for the storefront's customer
 // account system (signup/login/OTP/refresh/logout) — see
@@ -72,6 +73,16 @@ async function authFetch<T>(path: string, accessToken: string, init?: { method?:
   }
 
   return res.json();
+}
+
+/** The account's saved cart (see CustomerCart on the server) — lines are the storefront's CartLine shape. */
+export async function getMyCart(accessToken: string): Promise<CartLine[]> {
+  const result = await authFetch<{ lines: CartLine[] }>('/v1/customer-auth/me/cart', accessToken);
+  return result.lines;
+}
+
+export function saveMyCart(accessToken: string, lines: CartLine[]): Promise<unknown> {
+  return authFetch('/v1/customer-auth/me/cart', accessToken, { method: 'PUT', body: { lines } });
 }
 
 /** Step 1 of signup — sends an OTP to the given phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
