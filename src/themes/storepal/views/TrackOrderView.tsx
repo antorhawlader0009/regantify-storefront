@@ -7,6 +7,7 @@ import { fetchTrackedOrderByLink } from '@/lib/checkoutApi';
 import { useLiveOrder } from '@/lib/useLiveOrder';
 import { ui, useTrackLang, type TrackLang } from '@/lib/trackingI18n';
 import { TrackOrderBody } from '../components/TrackOrderBody';
+import { InStoreReceipt } from '../components/InStoreReceipt';
 
 export function LangToggle({ lang, onChange }: { lang: TrackLang; onChange: (lang: TrackLang) => void }) {
   const base = 'px-3 min-h-[32px] text-[12px] font-semibold transition-colors';
@@ -62,8 +63,18 @@ export function TrackOrderView({
       </header>
 
       <main className="max-w-2xl mx-auto px-4 sm:px-6 py-5 sm:py-8">
-        <h1 className="text-[18px] sm:text-[20px] font-bold text-ink mb-4">{ui(lang, 'orderTracking')}</h1>
-        <TrackOrderBody order={order} lang={lang} whatsappUrl={whatsappUrl} checkedAt={checkedAt} live={!finished} />
+        {order.source === 'POS' ? (
+          // A counter sale: the page is its receipt (POS-system-plan.md Step 5).
+          <>
+            <h1 className="text-[18px] sm:text-[20px] font-bold text-ink mb-4">{ui(lang, 'receipt')}</h1>
+            <InStoreReceipt order={order} lang={lang} />
+          </>
+        ) : (
+          <>
+            <h1 className="text-[18px] sm:text-[20px] font-bold text-ink mb-4">{ui(lang, 'orderTracking')}</h1>
+            <TrackOrderBody order={order} lang={lang} whatsappUrl={whatsappUrl} checkedAt={checkedAt} live={!finished} />
+          </>
+        )}
       </main>
     </div>
   );

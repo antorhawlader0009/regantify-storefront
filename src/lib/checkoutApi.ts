@@ -437,6 +437,14 @@ export interface TrackedOrder {
   // Courier name + tracking ID + stage once the parcel is booked with a
   // courier (pathao-plan.md Step 13); null before that.
   courierTracking?: CourierTracking | null;
+  // What the discount was (coupon, gift card, a counter discount); null when none.
+  discountLabel?: string | null;
+  // POS-system-plan.md Step 5: POS = sold at the shop counter; its page is an in-store receipt.
+  source?: 'STOREFRONT' | 'MANUAL' | 'POS';
+  // true on a counter sale whose prices already include vatAmount (shown, never added).
+  vatIncluded?: boolean;
+  // Counter sales on the tracking-link answer only: how it was paid (CASH, CARD, BKASH...).
+  paidWith?: string[];
 }
 
 /**

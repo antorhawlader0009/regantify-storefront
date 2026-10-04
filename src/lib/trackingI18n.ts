@@ -70,7 +70,14 @@ type UiKey =
   | 'looking'
   | 'recentOrders'
   | 'thanks'
-  | 'returnedNote';
+  | 'returnedNote'
+  // A POS sale's page is an in-store receipt (POS-system-plan.md Step 5).
+  | 'receipt'
+  | 'boughtInStore'
+  | 'subtotal'
+  | 'vatIncluded'
+  | 'vat'
+  | 'paidWith';
 
 const UI: Record<TrackLang, Record<UiKey, string>> = {
   en: {
@@ -108,6 +115,12 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     recentOrders: 'Your recent orders',
     thanks: 'Thank you! Your order is placed.',
     returnedNote: 'This parcel was returned to the store.',
+    receipt: 'Your receipt',
+    boughtInStore: 'Bought in store on',
+    subtotal: 'Subtotal',
+    vatIncluded: 'Includes VAT',
+    vat: 'VAT',
+    paidWith: 'Paid with',
   },
   bn: {
     orderTracking: 'অর্ডার ট্র্যাকিং',
@@ -144,6 +157,12 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     recentOrders: 'আপনার সাম্প্রতিক অর্ডার',
     thanks: 'ধন্যবাদ! আপনার অর্ডার গ্রহণ করা হয়েছে।',
     returnedNote: 'এই পার্সেলটি দোকানে ফেরত এসেছে।',
+    receipt: 'আপনার রসিদ',
+    boughtInStore: 'দোকান থেকে কেনা হয়েছে',
+    subtotal: 'উপমোট',
+    vatIncluded: 'ভ্যাট সহ',
+    vat: 'ভ্যাট',
+    paidWith: 'পরিশোধ',
   },
 };
 
