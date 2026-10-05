@@ -120,6 +120,8 @@ export interface StorefrontInfo {
   tiktokPixel?: StorefrontTiktokPixel | null;
   /** LMS store forms on product pages (LMS-plan.md Step 9), StorePal only; null when off. */
   lmsForms?: StorefrontLmsForms | null;
+  /** Marketing > Campaigns > Popup, StorePal only (empty on other themes). Newest first. */
+  popupCampaigns?: StorefrontPopupCampaign[];
 }
 
 export interface StorefrontTiktokPixel {
@@ -227,6 +229,53 @@ export interface StorefrontStockSettings {
   allowBackorder: boolean;
   backorderPopupMessage: string | null;
   backorderShortMessage: string | null;
+}
+
+/**
+ * Marketing > Campaigns > Popup: one published popup, as the server sends it
+ * (PopupCampaign minus the vendor's own fields and counters). The browser
+ * works out whether to show it (themes/storepal/components/PopupCampaigns.tsx).
+ * Mirrored by hand in client/src/lib/popupCampaignsApi.ts.
+ */
+export interface StorefrontPopupCampaign {
+  id: string;
+  format: 'DIALOG' | 'TOAST';
+  imageUrl: string | null;
+  imageAlt: string | null;
+  imageShape: 'WIDE' | 'BANNER' | 'PHOTO' | 'STANDARD' | 'SQUARE' | 'PORTRAIT';
+  /** The part of the picture to show, as 0..1 fractions of the whole picture. */
+  imageCrop: { x: number; y: number; w: number; h: number } | null;
+  headline: string;
+  message: string;
+  textPlacement: 'BELOW_IMAGE' | 'ON_IMAGE';
+  align: 'LEFT' | 'CENTER' | 'RIGHT';
+  headlineAlign: 'LEFT' | 'CENTER' | 'RIGHT' | null;
+  messageAlign: 'LEFT' | 'CENTER' | 'RIGHT' | null;
+  buttonAlign: 'LEFT' | 'CENTER' | 'RIGHT' | null;
+  width: number;
+  couponEnabled: boolean;
+  couponCode: string | null;
+  buttonEnabled: boolean;
+  buttonText: string | null;
+  buttonLink: string | null;
+  buttonColor: string | null;
+  buttonStyle: 'SOLID' | 'OUTLINE' | 'TEXT';
+  backgroundColor: string | null;
+  textColor: string | null;
+  cornerRadius: number;
+  overlayOpacity: number;
+  toastCorner: 'BOTTOM_LEFT' | 'BOTTOM_RIGHT';
+  autoCloseSeconds: number | null;
+  trigger: 'IMMEDIATE' | 'DELAY' | 'SCROLL' | 'EXIT_INTENT';
+  triggerSeconds: number;
+  triggerScrollPercent: number;
+  pageScope: 'ALL' | 'HOME' | 'PRODUCT' | 'CART' | 'SPECIFIC';
+  pagePaths: string[];
+  audience: 'EVERYONE' | 'NEW' | 'RETURNING';
+  devices: 'ALL' | 'DESKTOP' | 'MOBILE';
+  frequency: 'ONCE_EVER' | 'ONCE_PER_SESSION' | 'ONCE_PER_DAY' | 'ONCE_PER_WEEK' | 'EVERY_PAGE';
+  startsAt: string | null;
+  endsAt: string | null;
 }
 
 export interface StorefrontGdprPrompt {

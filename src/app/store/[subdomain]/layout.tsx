@@ -4,6 +4,7 @@ import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
+import { PopupCampaigns } from '@/themes/storepal/components/PopupCampaigns';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import { MetaPixel } from '@/components/MetaPixel';
@@ -17,6 +18,7 @@ import type {
   StorefrontGoogleAnalytics,
   StorefrontGoogleTagManager,
   StorefrontMetaPixel,
+  StorefrontPopupCampaign,
   StorefrontTiktokPixel,
 } from '@/lib/storefrontApi';
 
@@ -117,6 +119,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let tiktokPixel: StorefrontTiktokPixel | null = null;
   let showOutOfStockBadge = true;
   let lmsForms: StorefrontLmsForms | null = null;
+  let popupCampaigns: StorefrontPopupCampaign[] = [];
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
@@ -134,6 +137,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     tiktokPixel = store.tiktokPixel ?? null;
     showOutOfStockBadge = store.stockSettings?.showOutOfStockBadge !== false;
     lmsForms = store.lmsForms ?? null;
+    popupCampaigns = store.popupCampaigns ?? [];
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
@@ -215,6 +219,11 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       {/* Store > GDPR Prompt — StorePal only by design, same as the AI
           chat widget; null unless the vendor turned it on. */}
       {theme === 'STOREPAL' && gdprPrompt && <GdprPrompt subdomain={subdomain} prompt={gdprPrompt} />}
+      {/* Marketing > Campaigns > Popup — StorePal only, like the GDPR Prompt. Which popup shows where, when
+          and to whom is worked out in the browser; see PopupCampaigns.tsx. */}
+      {storeExists && theme === 'STOREPAL' && popupCampaigns.length > 0 && (
+        <PopupCampaigns subdomain={subdomain} popups={popupCampaigns} accentColor={accentColor ?? null} />
+      )}
       {/* Store > Design > Custom CSS / Head Scripts / JavaScript Code —
           StorePal only, like GDPR above. The CSS is server-rendered after
           the page so it wins over theme styles at equal specificity and
