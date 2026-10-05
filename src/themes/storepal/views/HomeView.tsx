@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -14,10 +14,14 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
 import { HeroBanner } from '../components/HeroBanner';
+import { FlashSaleSection } from '../components/FlashSaleSection';
+import { CampaignsStrip } from '../components/CampaignsStrip';
+import { HomeHighlights } from '../components/HomeHighlights';
+import { useStorePalDesign } from '../lib/designSettings';
+import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
-import { TRUST_BADGES } from '@/lib/placeholderContent';
 import { Stars } from '../../medium/components/Stars';
-import { Truck, ShieldCheck, HandCoins, SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
+import { SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -42,7 +46,7 @@ interface HomeViewProps {
   activeBrand?: string;
   search?: string;
   socialLinks?: SocialLinks;
-  /** Accepted for callers that still fetch it (e.g. for Marketing > Campaigns pages elsewhere) — the homepage hero itself now uses categoryDetails instead, see HeroBanner. */
+  /** Marketing > Campaigns pages, listed on the homepage by CampaignsStrip (the hero itself uses categoryDetails, see HeroBanner). */
   campaigns?: StorefrontCampaignSummary[];
   logoUrl?: string | null;
   /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
@@ -51,7 +55,11 @@ interface HomeViewProps {
   couponLink?: string;
 }
 
-const TRUST_ICONS = [Truck, ShieldCheck, HandCoins];
+// Store > Design > Customize decides which home sections show and in what
+// order (see lib/homeSections.ts). Each section outside the full-width bands
+// gets this wrapper; `empty:hidden` drops it (and its padding) when the
+// section has nothing to show, such as a Flash Sale that isn't running.
+const HOME_WRAP = 'max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-4 empty:hidden';
 
 // Below "Top Selling", the reference site shows a row of small
 // image-backed shortcuts into a handful of its own top-level
@@ -66,28 +74,6 @@ const TRUST_ICONS = [Truck, ShieldCheck, HandCoins];
 // plain-text field on Product, see CategoryCombobox's doc comment, so a
 // typed-in name with no matching row is possible).
 const MAX_SHORTCUTS = 4;
-
-// Matches the reference site's second info block — plain three-column
-// text (no icons), sitting between the category sections and "Why we
-// are best?" (see storepal.com.bd: "HASSLE FREE SHIPPING", "100%
-// GENUINE PRODUCTS", "PLACE YOUR INQUIRY"). Generic assurance copy,
-// same "decorative until a real feature exists" status as TRUST_BADGES
-// below it — there's no shipping-policy or inquiry-routing feature
-// backing these lines yet.
-const SERVICE_BLOCKS = [
-  {
-    title: 'HASSLE FREE SHIPPING',
-    text: 'Get hassle free quickest shipping near your doorstep. We deliver nationwide with cash on delivery — no pre-payment required.',
-  },
-  {
-    title: '100% GENUINE PRODUCTS',
-    text: 'Every item is quality-checked before it ships, so what you see is exactly what arrives.',
-  },
-  {
-    title: 'PLACE YOUR INQUIRY',
-    text: "Get hassle free customer support. Track your order anytime — don't hesitate to reach out.",
-  },
-];
 
 export function HomeView({
   subdomain,
@@ -106,6 +92,8 @@ export function HomeView({
   couponLink,
 }: HomeViewProps) {
   const router = useRouter();
+  const design = useStorePalDesign();
+  const homeSections = resolveHomeSections(design.homeSections);
 
   // "Create custom link for this coupon" — resolve the shared link to a
   // real coupon code once, stash it for checkout to pick up (see
@@ -279,224 +267,233 @@ export function HomeView({
         </div>
       )}
 
-      {!isFiltered && <HeroBanner subdomain={subdomain} categoryDetails={categoryDetails} />}
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
-        {isFiltered && (
-          <div className="mb-4">
-            {activeCategoryDetail?.coverPhotoUrl && (
-              <div className="relative w-full aspect-[21/9] rounded-lg overflow-hidden mb-4 bg-surface">
-                <Image
-                  src={activeCategoryDetail.coverPhotoUrl}
-                  alt={activeCategory ?? ''}
-                  fill
-                  sizes="100vw"
-                  className="object-cover"
-                  priority
-                />
-              </div>
-            )}
-            <div className="flex items-center justify-between">
-              <h1 className="text-[16px] font-bold text-ink">
-                {search?.trim() ? `Results for "${search}"` : (activeCategory ?? activeBrand)}
-              </h1>
-              <div className="flex items-center gap-3">
-                <span className="text-[12.5px] text-muted">{filtered.length} products</span>
-                <select
-                  value={sortBy}
-                  onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                  aria-label="Sort products"
-                  className="text-[12.5px] font-medium text-ink bg-surface border border-line-strong rounded-md px-2.5 py-1.5 outline-none focus:border-ink cursor-pointer"
-                >
-                  <option value="latest">Sort by latest</option>
-                  <option value="price-asc">Price: low to high</option>
-                  <option value="price-desc">Price: high to low</option>
-                </select>
-                <button
-                  onClick={() => setMobileFiltersOpen(true)}
-                  className="lg:hidden flex items-center gap-1.5 text-[12.5px] font-semibold text-ink border border-line-strong rounded-md px-2.5 py-1.5"
-                >
-                  <SlidersHorizontal size={13} />
-                  Filters
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {products.length === 0 ? (
-          <div className="text-center py-20 bg-surface border border-line rounded-lg">
-            <p className="text-lg font-semibold text-ink mb-1.5">Nothing here yet</p>
-            <p className="text-[13.5px] text-muted">This store hasn&apos;t added any products. Check back soon.</p>
-          </div>
-        ) : isFiltered ? (
-          <div className="grid gap-6 lg:[grid-template-columns:240px_1fr] items-start">
-            {/* Filter sidebar — desktop: static column; mobile: slide-over panel opened via the "Filters" button above. */}
-            <aside className="hidden lg:block lg:sticky lg:top-24">
-              <ProductFilters
-                products={categoryScopedProducts}
-                value={effectiveFilters}
-                onChange={setFilters}
-                bounds={priceBounds}
-                categoryOptions={activeCategorySubcategories}
-              />
-            </aside>
-
-            {mobileFiltersOpen && (
-              <div className="fixed inset-0 z-40 lg:hidden">
-                <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileFiltersOpen(false)} />
-                <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-canvas overflow-y-auto p-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <span className="text-[15px] font-bold text-ink">Filters</span>
-                    <button onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters">
-                      <X size={18} />
-                    </button>
-                  </div>
-                  <ProductFilters
-                    products={categoryScopedProducts}
-                    value={effectiveFilters}
-                    onChange={setFilters}
-                    bounds={priceBounds}
-                    categoryOptions={activeCategorySubcategories}
+      {(isFiltered || products.length === 0) && (
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+          {isFiltered && (
+            <div className="mb-4">
+              {activeCategoryDetail?.coverPhotoUrl && (
+                <div className="relative w-full aspect-[21/9] rounded-lg overflow-hidden mb-4 bg-surface">
+                  <Image
+                    src={activeCategoryDetail.coverPhotoUrl}
+                    alt={activeCategory ?? ''}
+                    fill
+                    sizes="100vw"
+                    className="object-cover"
+                    priority
                   />
-                  <button
-                    onClick={() => setMobileFiltersOpen(false)}
-                    className="w-full mt-4 py-2.5 rounded-md bg-ink text-white text-[13px] font-bold"
+                </div>
+              )}
+              <div className="flex items-center justify-between">
+                <h1 className="text-[16px] font-bold text-ink">
+                  {search?.trim() ? `Results for "${search}"` : (activeCategory ?? activeBrand)}
+                </h1>
+                <div className="flex items-center gap-3">
+                  <span className="text-[12.5px] text-muted">{filtered.length} products</span>
+                  <select
+                    value={sortBy}
+                    onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
+                    aria-label="Sort products"
+                    className="text-[12.5px] font-medium text-ink bg-surface border border-line-strong rounded-md px-2.5 py-1.5 outline-none focus:border-ink cursor-pointer"
                   >
-                    Show {filtered.length} results
+                    <option value="latest">Sort by latest</option>
+                    <option value="price-asc">Price: low to high</option>
+                    <option value="price-desc">Price: high to low</option>
+                  </select>
+                  <button
+                    onClick={() => setMobileFiltersOpen(true)}
+                    className="lg:hidden flex items-center gap-1.5 text-[12.5px] font-semibold text-ink border border-line-strong rounded-md px-2.5 py-1.5"
+                  >
+                    <SlidersHorizontal size={13} />
+                    Filters
                   </button>
                 </div>
               </div>
-            )}
+            </div>
+          )}
 
-            {filtered.length === 0 ? (
-              <div className="text-center py-20 bg-surface border border-line rounded-lg">
-                <p className="text-lg font-semibold text-ink mb-1.5">No matches</p>
-                <p className="text-[13.5px] text-muted">Try adjusting your filters or browsing another category.</p>
-              </div>
-            ) : (
-              <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-                {sorted.map((product) => (
-                  <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
-                ))}
-              </div>
-            )}
-          </div>
-        ) : (
-          <>
-            {topSelling.length > 0 && (
-              <section className="mb-6">
-                <h2 className="text-[18px] font-bold text-ink mb-4 flex items-center justify-center gap-2">
-                  <Flame size={18} className="text-orange-500" aria-hidden />
-                  Top Selling
-                  <Flame size={18} className="text-orange-500" aria-hidden />
-                </h2>
-                <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-                  {topSelling.map((product) => (
-                    <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
-                  ))}
-                </div>
-              </section>
-            )}
+          {products.length === 0 ? (
+            <div className="text-center py-20 bg-surface border border-line rounded-lg">
+              <p className="text-lg font-semibold text-ink mb-1.5">Nothing here yet</p>
+              <p className="text-[13.5px] text-muted">This store hasn&apos;t added any products. Check back soon.</p>
+            </div>
+          ) : isFiltered ? (
+            <div className="grid gap-6 lg:[grid-template-columns:240px_1fr] items-start">
+              {/* Filter sidebar — desktop: static column; mobile: slide-over panel opened via the "Filters" button above. */}
+              <aside className="hidden lg:block lg:sticky lg:top-24">
+                <ProductFilters
+                  products={categoryScopedProducts}
+                  value={effectiveFilters}
+                  onChange={setFilters}
+                  bounds={priceBounds}
+                  categoryOptions={activeCategorySubcategories}
+                />
+              </aside>
 
-            {shortcutCategories.length > 0 && (
-              <div className="flex flex-wrap items-start justify-center gap-4 sm:gap-6 mb-10">
-                {shortcutCategories.map((cat) => (
-                  <Link
-                    key={cat.name}
-                    href={`/store/${subdomain}?category=${encodeURIComponent(cat.name)}`}
-                    className="flex flex-col items-center gap-2 w-24"
-                  >
-                    <div className="relative w-20 h-20 rounded-md overflow-hidden bg-surface border border-line">
-                      {cat.image ? (
-                        <Image src={cat.image} alt={cat.name} fill sizes="80px" className="object-cover" />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-muted text-[10px]">
-                          {cat.name.slice(0, 1)}
-                        </div>
-                      )}
+              {mobileFiltersOpen && (
+                <div className="fixed inset-0 z-40 lg:hidden">
+                  <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileFiltersOpen(false)} />
+                  <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-canvas overflow-y-auto p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[15px] font-bold text-ink">Filters</span>
+                      <button onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters">
+                        <X size={18} />
+                      </button>
                     </div>
-                    <span className="text-[12.5px] font-medium text-ink text-center leading-tight lowercase">
-                      {cat.name}
-                    </span>
-                  </Link>
-                ))}
-              </div>
-            )}
-
-            {grouped?.map((section) => (
-              <section key={section.name} className="mb-10">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-[16px] font-bold text-ink uppercase">{section.name}</h2>
-                  <Link
-                    href={`/store/${subdomain}?category=${encodeURIComponent(section.name)}`}
-                    className="text-[12.5px] font-medium text-accent hover:text-accent-dark"
-                  >
-                    View all →
-                  </Link>
+                    <ProductFilters
+                      products={categoryScopedProducts}
+                      value={effectiveFilters}
+                      onChange={setFilters}
+                      bounds={priceBounds}
+                      categoryOptions={activeCategorySubcategories}
+                    />
+                    <button
+                      onClick={() => setMobileFiltersOpen(false)}
+                      className="w-full mt-4 py-2.5 rounded-md bg-ink text-white text-[13px] font-bold"
+                    >
+                      Show {filtered.length} results
+                    </button>
+                  </div>
                 </div>
+              )}
+
+              {filtered.length === 0 ? (
+                <div className="text-center py-20 bg-surface border border-line rounded-lg">
+                  <p className="text-lg font-semibold text-ink mb-1.5">No matches</p>
+                  <p className="text-[13.5px] text-muted">Try adjusting your filters or browsing another category.</p>
+                </div>
+              ) : (
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-                  {section.items.slice(0, 8).map((product) => (
+                  {sorted.map((product) => (
                     <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                   ))}
                 </div>
-              </section>
-            ))}
-          </>
-        )}
-      </main>
+              )}
+            </div>
+          ) : (
+            null
+          )}
+        </main>
+      )}
 
       {!isFiltered && (
-        <>
-          <section className="border-t border-line">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8 grid gap-7 sm:grid-cols-3">
-              {SERVICE_BLOCKS.map((block) => (
-                <div key={block.title}>
-                  <p className="text-[13.5px] font-bold text-ink uppercase mb-2">{block.title}</p>
-                  <p className="text-[12.5px] text-muted leading-relaxed">{block.text}</p>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          <section className="bg-surface border-y border-line">
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-center">
-              <p className="text-[15px] font-bold text-ink">Why we are best?</p>
-            </div>
-            <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-8 grid gap-7 sm:grid-cols-3">
-              {TRUST_BADGES.map((badge, i) => {
-                const Icon = TRUST_ICONS[i] ?? Truck;
+        <div>
+          {homeSections.map((id) => {
+            switch (id) {
+              case 'HERO':
+                return <HeroBanner key={id} subdomain={subdomain} categoryDetails={categoryDetails} />;
+              case 'FLASH_SALE':
                 return (
-                  <div key={badge.title} className="flex flex-col items-center text-center gap-2">
-                    <div className="w-12 h-12 rounded-full bg-accent-light flex items-center justify-center">
-                      <Icon size={22} className="text-accent" />
-                    </div>
-                    <p className="font-bold text-[13.5px] text-ink">{badge.title}</p>
-                    <p className="text-[12.5px] text-muted leading-relaxed max-w-[220px]">{badge.text}</p>
+                  <div key={id} className={HOME_WRAP}>
+                    <FlashSaleSection subdomain={subdomain} storeName={storeName} products={products} />
                   </div>
                 );
-              })}
-            </div>
-          </section>
-
-          {reviews.length > 0 && (
-            <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-              <h2 className="text-[16px] font-bold text-ink mb-4 text-center">Our Customer Review</h2>
-              <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
-                {reviews.map((r) => (
-                  <div key={r.id} className="bg-surface border border-line rounded-lg p-3.5">
-                    <div className="flex items-center gap-2 mb-1.5">
-                      <span className="font-semibold text-[13px] text-ink">{r.customerName ?? 'Anonymous'}</span>
-                      <Stars count={r.rating} />
-                    </div>
-                    <p className="m-0 text-[13px] font-semibold text-ink mb-0.5">{r.title}</p>
-                    {r.content && <p className="m-0 text-[12.5px] text-muted leading-relaxed">{r.content}</p>}
+              case 'CAMPAIGNS':
+                return (
+                  <div key={id} className={HOME_WRAP}>
+                    <CampaignsStrip subdomain={subdomain} campaigns={campaigns} />
                   </div>
-                ))}
-              </div>
-            </section>
-          )}
-        </>
+                );
+              case 'TOP_SELLING':
+                return (
+                  <div key={id} className={HOME_WRAP}>
+                    {topSelling.length > 0 && (
+                      <section>
+                        <h2 className="text-[18px] font-bold text-ink mb-4 flex items-center justify-center gap-2">
+                          <Flame size={18} className="text-orange-500" aria-hidden />
+                          Top Selling
+                          <Flame size={18} className="text-orange-500" aria-hidden />
+                        </h2>
+                        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                          {topSelling.map((product) => (
+                            <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
+                          ))}
+                        </div>
+                      </section>
+                    )}
+                  </div>
+                );
+              case 'CATEGORY_SHORTCUTS':
+                return (
+                  <div key={id} className={HOME_WRAP}>
+                    {shortcutCategories.length > 0 && (
+                      <div className="flex flex-wrap items-start justify-center gap-4 sm:gap-6">
+                        {shortcutCategories.map((cat) => (
+                          <Link
+                            key={cat.name}
+                            href={`/store/${subdomain}?category=${encodeURIComponent(cat.name)}`}
+                            className="flex flex-col items-center gap-2 w-24"
+                          >
+                            <div className="relative w-20 h-20 rounded-md overflow-hidden bg-surface border border-line">
+                              {cat.image ? (
+                                <Image src={cat.image} alt={cat.name} fill sizes="80px" className="object-cover" />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center text-muted text-[10px]">
+                                  {cat.name.slice(0, 1)}
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[12.5px] font-medium text-ink text-center leading-tight lowercase">
+                              {cat.name}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                );
+              case 'CATEGORY_SECTIONS':
+                return (
+                  <div key={id} className={`${HOME_WRAP} space-y-10`}>
+                    {grouped?.map((section) => (
+                      <section key={section.name}>
+                        <div className="flex items-center justify-between mb-4">
+                          <h2 className="text-[16px] font-bold text-ink uppercase">{section.name}</h2>
+                          <Link
+                            href={`/store/${subdomain}?category=${encodeURIComponent(section.name)}`}
+                            className="text-[12.5px] font-medium text-accent hover:text-accent-dark"
+                          >
+                            View all →
+                          </Link>
+                        </div>
+                        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                          {section.items.slice(0, 8).map((product) => (
+                            <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
+                          ))}
+                        </div>
+                      </section>
+                    ))}
+                  </div>
+                );
+              case 'HIGHLIGHTS':
+                return <HomeHighlights key={id} />;
+              case 'REVIEWS':
+                return (
+                  <Fragment key={id}>
+                  {reviews.length > 0 && (
+                    <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+                      <h2 className="text-[16px] font-bold text-ink mb-4 text-center">Our Customer Review</h2>
+                      <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
+                        {reviews.map((r) => (
+                          <div key={r.id} className="bg-surface border border-line rounded-lg p-3.5">
+                            <div className="flex items-center gap-2 mb-1.5">
+                              <span className="font-semibold text-[13px] text-ink">{r.customerName ?? 'Anonymous'}</span>
+                              <Stars count={r.rating} />
+                            </div>
+                            <p className="m-0 text-[13px] font-semibold text-ink mb-0.5">{r.title}</p>
+                            {r.content && <p className="m-0 text-[12.5px] text-muted leading-relaxed">{r.content}</p>}
+                          </div>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+                  </Fragment>
+                );
+              default:
+                return null;
+            }
+          })}
+        </div>
       )}
 
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />

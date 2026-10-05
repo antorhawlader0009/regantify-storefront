@@ -13,6 +13,11 @@ import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi
 import { formatPrice } from '../lib/formatPrice';
 import { WhatsAppBubble } from './WhatsAppBubble';
 import { AiAssistantWidget } from './AiAssistantWidget';
+import { CartDrawer } from './CartDrawer';
+import { AuthDialog } from './AuthDialog';
+import { MarqueeTrack } from './MarqueeTrack';
+import { useCartDrawer } from '../lib/cartDrawer';
+import { useAuthDialog } from '../lib/authDialog';
 import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefrontApi';
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
@@ -44,13 +49,9 @@ interface StoreHeaderProps {
 }
 
 // Store > Design > Site Banner. With nothing saved it's the reference
-// site's top bar: a repeating set of delivery promises scrolling
-// left-to-right, forever — see storepal.com.bd's header. Built
-// as a duplicated-content marquee (the content is rendered three times
-// back to back, and the whole strip is animated left by exactly
-// one-third of its width — see globals.css's .storepal-marquee
-// keyframes) so the loop has no visible seam, a standard CSS-only
-// marquee technique.
+// site's top bar: a set of delivery promises scrolling right to left,
+// forever, leaving on the left as the same text comes in on the right (see
+// MarqueeTrack.tsx for how the loop has no seam).
 const ANNOUNCEMENTS = ['Cash On Delivery All Over Bangladesh', 'Guaranteed Pre-order Delivery in 20-25 Days'];
 
 // The vendor's banner is their own RichTextEditor HTML, same trust
@@ -78,25 +79,22 @@ function SiteBanner() {
         },
       ]
     : ANNOUNCEMENTS.map((text) => ({ key: text, node: text }));
-  const repeated = marquee ? [0, 1, 2].flatMap((copy) => items.map((item) => ({ ...item, key: `${copy}-${item.key}` }))) : items;
   return (
     <div
       className="bg-canvas overflow-hidden border-b border-line"
       style={design.bannerBackgroundColor ? { backgroundColor: design.bannerBackgroundColor } : undefined}
     >
-      <div
-        className={
-          marquee
-            ? 'storepal-marquee flex items-center gap-16 py-2.5 whitespace-nowrap'
-            : 'max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-center gap-x-10 gap-y-1 text-center'
-        }
-      >
-        {repeated.map((item) => (
-          <span key={item.key} className="text-[13px] font-semibold text-ink shrink-0">
-            {item.node}
-          </span>
-        ))}
-      </div>
+      {marquee ? (
+        <MarqueeTrack items={items.map((item) => item.node)} />
+      ) : (
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-center gap-x-10 gap-y-1 text-center">
+          {items.map((item) => (
+            <span key={item.key} className="text-[13px] font-semibold text-ink shrink-0">
+              {item.node}
+            </span>
+          ))}
+        </div>
+      )}
     </div>
   );
 }
@@ -192,6 +190,8 @@ export function StoreHeader({
   const socialLinks = socialLinksProp !== undefined ? socialLinksProp : fetchedSocialLinks;
 
   const hydrated = useCartHydrated();
+  const openCartDrawer = useCartDrawer((s) => s.openDrawer);
+  const openLogin = useAuthDialog((s) => s.openLogin);
   const cartCount = useCartStore((s) =>
     s.lines.filter((l) => l.subdomain === subdomain).reduce((sum, l) => sum + l.quantity, 0),
   );
@@ -403,13 +403,28 @@ export function StoreHeader({
           )}
           <Link
             href={authHydrated && customer ? `/store/${subdomain}/account/orders` : `/store/${subdomain}/account/login`}
+            onClick={(e) => {
+              // Signed out: the login dialog instead of a login page (the href is only a fallback).
+              if (authHydrated && customer) return;
+              e.preventDefault();
+              openLogin();
+            }}
             className="text-ink hover:text-accent transition-colors"
             aria-label="Account"
           >
             <User size={21} strokeWidth={1.75} />
           </Link>
 
-          <Link href={`/store/${subdomain}/cart`} className="relative text-ink hover:text-accent transition-colors" aria-label="Cart">
+          {/* Opens the slide-in cart (the href is only a fallback for open-in-new-tab / no JS). */}
+          <Link
+            href={`/store/${subdomain}/cart`}
+            onClick={(e) => {
+              e.preventDefault();
+              openCartDrawer();
+            }}
+            className="relative text-ink hover:text-accent transition-colors"
+            aria-label="Cart"
+          >
             <ShoppingBag size={21} strokeWidth={1.75} />
             {hydrated && cartCount > 0 && (
               <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-ink text-white text-[10px] font-bold">
@@ -599,6 +614,8 @@ export function StoreHeader({
 
       <WhatsAppBubble socialLinks={socialLinks} />
       <AiAssistantWidget subdomain={subdomain} />
+      <CartDrawer subdomain={subdomain} />
+      <AuthDialog subdomain={subdomain} />
     </header>
   );
 }

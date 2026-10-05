@@ -212,6 +212,10 @@ export interface StorefrontDesignSettings {
   headerLeftMenu: StorefrontMenuItem[];
   headerRightMenu: StorefrontMenuItem[];
   mobileMenu: StorefrontMenuItem[];
+  // Store > Design > Customize (the home page). Empty = StorePal's own order and its three built-in highlights.
+  homeSections: { id: string; enabled: boolean }[];
+  homeHighlights: { id: string; icon: string; title: string; text: string }[];
+  homeHighlightsHeading: string | null;
 }
 
 export interface StorefrontCustomCode {

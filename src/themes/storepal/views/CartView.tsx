@@ -4,6 +4,7 @@ import { StoreFooter } from '../components/StoreFooter';
 // as-is from Medium rather than a near-duplicate rebuild.
 import { CartList } from '../../medium/components/CartList';
 import { CartViewTracker } from '../components/CartViewTracker';
+import { CartOffers } from '../components/CartOffers';
 
 interface CartViewProps {
   subdomain: string;
@@ -20,6 +21,7 @@ export function CartView({ subdomain, storeName, categories }: CartViewProps) {
         <div className="bg-surface border border-line rounded-lg p-4 sm:p-6">
           <CartList subdomain={subdomain} storeName={storeName} />
         </div>
+        <CartOffers subdomain={subdomain} />
         <CartViewTracker subdomain={subdomain} />
       </main>
       <StoreFooter subdomain={subdomain} storeName={storeName} />

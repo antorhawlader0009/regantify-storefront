@@ -48,6 +48,12 @@ interface ProductPurchasePanelProps {
     /** Under the buttons ("Call me back"). */
     after?: ReactNode;
   };
+  /**
+   * Called after "Add to Cart" (not "Buy Now", which goes straight to checkout).
+   * Only StorePal passes it, to open its slide-in cart; without it nothing
+   * changes, so Medium/Minimal are unaffected.
+   */
+  onAddedToCart?: () => void;
 }
 
 /**
@@ -60,7 +66,7 @@ interface ProductPurchasePanelProps {
  * construction) is unchanged from the audited version — only the visual
  * treatment is refined here.
  */
-export function ProductPurchasePanel({ subdomain, storeName, product, backorder, display, leadSlots }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({ subdomain, storeName, product, backorder, display, leadSlots, onAddedToCart }: ProductPurchasePanelProps) {
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -208,6 +214,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
 
   const addToCart = () => {
     addLine(buildLine());
+    onAddedToCart?.();
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
   };

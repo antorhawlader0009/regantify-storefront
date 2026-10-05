@@ -31,6 +31,9 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   headerLeftMenu: [],
   headerRightMenu: [],
   mobileMenu: [],
+  homeSections: [],
+  homeHighlights: [],
+  homeHighlightsHeading: null,
 };
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);

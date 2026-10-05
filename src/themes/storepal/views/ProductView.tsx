@@ -10,6 +10,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
 import { FlashSaleTimer } from '../components/FlashSaleTimer';
+import { ProductOffers } from '../components/ProductOffers';
 // The purchase panel (wrapped in StorePalPurchasePanel for Store > Design
 // > Product Display Options) and tabs are theme-agnostic (built entirely from
 // the shared CSS-variable design tokens — bg-surface, text-ink, etc —
@@ -96,6 +97,7 @@ export function ProductView({
             backorder={resolveBackorder(stockSettings)}
           />
         </div>
+        {!product.quoteOnly && <ProductOffers subdomain={subdomain} product={product} />}
       </main>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">

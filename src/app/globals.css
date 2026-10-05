@@ -141,17 +141,20 @@ body {
 }
 
 /* StorePal theme's scrolling top announcement bar — see
-   themes/storepal/components/StoreHeader.tsx's own comment on why the
-   content is tripled: translating by exactly one-third of the total
-   width moves the strip by one full copy, so the loop point is
-   invisible. Paused on hover so a shopper can actually read one before
-   it scrolls away. */
+   themes/storepal/components/MarqueeTrack.tsx. It sets --marquee-shift (minus
+   the width of one repeated set) and the duration itself, so the loop point is an
+   identical frame. Paused on hover so a shopper can read a line before it moves
+   on, and still for people who ask for reduced motion. */
 .storepal-marquee {
-  width: max-content;
-  animation: storepal-marquee-scroll 22s linear infinite;
+  animation: storepal-marquee-scroll linear infinite;
 }
 .storepal-marquee:hover {
   animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  .storepal-marquee {
+    animation: none;
+  }
 }
 /* Store > Design > Layout Settings' "Extended / Full-width" (StorePal
    only, see the store layout's data-layout). Every StorePal page centers
@@ -165,7 +168,7 @@ body {
     transform: translateX(0);
   }
   to {
-    transform: translateX(-33.3333%);
+    transform: translateX(var(--marquee-shift, -33.3333%));
   }
 }
 

@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Bot, Send, X, Loader2 } from 'lucide-react';
 import { ChatUnavailableError, getChatAvailable, sendChatMessage, type ChatTurn, type ChatProductRef } from '@/lib/chatApi';
 import { formatPrice } from '../lib/formatPrice';
+import { useCartDrawer } from '../lib/cartDrawer';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -79,6 +80,9 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
     }
   };
 
+  // Both the bubble and the open panel step over to the left edge while the slide-in cart is open.
+  const cartOpen = useCartDrawer((s) => s.open);
+
   // Ran out mid-chat: keep the open panel (with its polite note) until the
   // shopper closes it, then hide the bubble too.
   if (available !== true && !open) return null;
@@ -88,13 +92,17 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
       <button
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Close assistant' : 'Chat with our assistant'}
-        className="fixed bottom-[76px] right-5 z-30 w-12 h-12 rounded-full bg-accent hover:bg-accent-dark shadow-lg flex items-center justify-center transition-colors"
+        className="fixed bottom-[76px] right-5 z-30 w-12 h-12 rounded-full bg-accent hover:bg-accent-dark shadow-lg flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none"
+        style={{ transform: cartOpen ? 'translateX(calc(-100vw + 5.5rem))' : undefined }}
       >
         {open ? <X size={22} className="text-white" /> : <Bot size={24} className="text-white" />}
       </button>
 
       {open && (
-        <div className="fixed bottom-[136px] right-5 z-30 w-[min(360px,calc(100vw-2.5rem))] h-[min(480px,calc(100vh-180px))] bg-surface rounded-xl border border-line shadow-xl flex flex-col overflow-hidden">
+        <div
+          className="fixed bottom-[136px] right-5 z-30 w-[min(360px,calc(100vw-2.5rem))] h-[min(480px,calc(100vh-180px))] bg-surface rounded-xl border border-line shadow-xl flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none"
+          style={{ transform: cartOpen ? 'translateX(calc(-100vw + 2.5rem + min(360px, 100vw - 2.5rem)))' : undefined }}
+        >
           <div className="flex items-center gap-2 px-4 py-3 border-b border-line bg-ink text-white shrink-0">
             <Bot size={18} />
             <span className="text-[13.5px] font-semibold">Store Assistant</span>

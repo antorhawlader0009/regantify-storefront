@@ -293,6 +293,32 @@ export async function previewDiscounts(
   }
 }
 
+/** One running automatic discount (Marketing > Discounts), as listed for the product page "Offers" box and the cart nudge. */
+export interface DiscountOffer {
+  id: string;
+  name: string;
+  discountType: 'FIXED' | 'PERCENT' | 'FREE_SHIPPING';
+  amount: number | null;
+  maxDiscount: number | null;
+  minCartAmount: number | null;
+  minQuantity: number | null;
+  /** Empty productIds and categoryNames = the offer covers the whole store. */
+  productIds: string[];
+  categoryNames: string[];
+  endsAt: string | null;
+}
+
+/** The running automatic discounts (StorefrontService.listDiscountOffers). Returns [] on any error so the page just shows no offers. */
+export async function fetchDiscountOffers(subdomain: string): Promise<DiscountOffer[]> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/discounts`);
+    if (!res.ok) return [];
+    return res.json();
+  } catch {
+    return [];
+  }
+}
+
 /**
  * "Create custom link for this coupon" — resolves the `?coupon=` link a
  * shopper landed on back to the coupon's real code (see

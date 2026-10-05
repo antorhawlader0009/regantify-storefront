@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ComponentProps } from 'react';
 import { ProductPurchasePanel } from '../../medium/components/ProductPurchasePanel';
+import { useCartDrawer } from '../lib/cartDrawer';
 import { stockMessages, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { trackMetaViewContent } from '@/lib/metaPixelEvents';
 import { trackViewItem } from '@/lib/ecommerceEvents';
@@ -9,7 +10,7 @@ import { sendStoreEvent } from '@/lib/storeEvents';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { CallMeBackLink, LeadFormButton, PriceOnRequest, StoreLeadFormDialog, type StoreFormType } from './StoreLeadForms';
 
-type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 'leadSlots'>;
+type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 'leadSlots' | 'onAddedToCart'>;
 
 /**
  * Medium's shared ProductPurchasePanel plus Store > Design > Product
@@ -23,6 +24,7 @@ type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 
  */
 export function StorePalPurchasePanel(props: PanelProps) {
   const design = useStorePalDesign();
+  const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   // The store's LMS forms (LMS-plan.md Step 9), from the StorePal layout's store info.
   const lmsForms = useStorePalLmsForms();
   const { product } = props;
@@ -59,6 +61,7 @@ export function StorePalPurchasePanel(props: PanelProps) {
         {...props}
         display={{ imageShape: design.productImageShape, galleryStyle: design.galleryStyle, ...stockMessages(design) }}
         leadSlots={leadSlots}
+        onAddedToCart={openCartDrawer}
       />
       {form && (
         <StoreLeadFormDialog type={form} subdomain={props.subdomain} productId={product.id} productName={product.name} onClose={() => setForm(null)} />

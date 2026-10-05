@@ -12,6 +12,7 @@ import { formatPrice } from '../lib/formatPrice';
 import { useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { FlashSaleTimer } from './FlashSaleTimer';
+import { useCartDrawer } from '../lib/cartDrawer';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
 
@@ -67,6 +68,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   const showOutOfStockBadge = useShowOutOfStockBadge();
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
+  const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   const wishlist = useWishlist(subdomain);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [added, setAdded] = useState(false);
@@ -135,6 +137,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
     }
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);
+    openCartDrawer();
   };
 
   // "Show Button (Default)": Add to Cart for a simple product, View
