@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { Ticket, ShoppingCart } from 'lucide-react';
 import { listCustomerCoupons, type CustomerCoupon } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
@@ -10,6 +9,7 @@ import { useCartStore } from '@/providers/cart-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 import { setPendingCoupon } from '../../lib/pendingCoupon';
+import { useCheckoutDialog } from '../../lib/checkoutDialog';
 
 function discountLabel(coupon: CustomerCoupon): string {
   if (coupon.discountType === 'FREE_SHIPPING') return 'Free Shipping';
@@ -21,7 +21,7 @@ function discountLabel(coupon: CustomerCoupon): string {
 
 /** Account > Coupons — matches the reference "Your Coupons" (Code/Discount) screenshot. */
 export function CouponsView({ subdomain }: { subdomain: string }) {
-  const router = useRouter();
+  const openCheckout = useCheckoutDialog((s) => s.openDialog);
   const storeName = useStoreDisplayName(subdomain);
   const hydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
@@ -34,7 +34,7 @@ export function CouponsView({ subdomain }: { subdomain: string }) {
   // of having to re-type it there.
   const useThisCoupon = (code: string) => {
     setPendingCoupon(subdomain, code);
-    router.push(`/store/${subdomain}/checkout`);
+    openCheckout();
   };
 
   const [coupons, setCoupons] = useState<CustomerCoupon[] | null>(null);

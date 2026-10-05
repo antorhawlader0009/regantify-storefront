@@ -13,6 +13,7 @@ import { useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '
 import { useWishlist } from '../lib/wishlist';
 import { FlashSaleTimer } from './FlashSaleTimer';
 import { useCartDrawer } from '../lib/cartDrawer';
+import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
 
@@ -69,6 +70,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const openCartDrawer = useCartDrawer((s) => s.openDrawer);
+  const openCheckout = useCheckoutDialog((s) => s.openDialog);
   const wishlist = useWishlist(subdomain);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [added, setAdded] = useState(false);
@@ -132,7 +134,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       variantId: matchedVariant?.id,
     });
     if (kind === 'buy') {
-      router.push(`/store/${subdomain}/checkout`);
+      openCheckout();
       return;
     }
     setAdded(true);

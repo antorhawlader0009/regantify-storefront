@@ -3,6 +3,7 @@
 import { useEffect, useState, type ComponentProps } from 'react';
 import { ProductPurchasePanel } from '../../medium/components/ProductPurchasePanel';
 import { useCartDrawer } from '../lib/cartDrawer';
+import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { stockMessages, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { trackMetaViewContent } from '@/lib/metaPixelEvents';
 import { trackViewItem } from '@/lib/ecommerceEvents';
@@ -25,6 +26,7 @@ type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 
 export function StorePalPurchasePanel(props: PanelProps) {
   const design = useStorePalDesign();
   const openCartDrawer = useCartDrawer((s) => s.openDrawer);
+  const openCheckout = useCheckoutDialog((s) => s.openDialog);
   // The store's LMS forms (LMS-plan.md Step 9), from the StorePal layout's store info.
   const lmsForms = useStorePalLmsForms();
   const { product } = props;
@@ -62,6 +64,7 @@ export function StorePalPurchasePanel(props: PanelProps) {
         display={{ imageShape: design.productImageShape, galleryStyle: design.galleryStyle, ...stockMessages(design) }}
         leadSlots={leadSlots}
         onAddedToCart={openCartDrawer}
+        onBuyNow={openCheckout}
       />
       {form && (
         <StoreLeadFormDialog type={form} subdomain={props.subdomain} productId={product.id} productName={product.name} onClose={() => setForm(null)} />

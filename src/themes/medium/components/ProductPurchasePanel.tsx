@@ -54,6 +54,11 @@ interface ProductPurchasePanelProps {
    * changes, so Medium/Minimal are unaffected.
    */
   onAddedToCart?: () => void;
+  /**
+   * Called after "Buy Now" has added the line, instead of going to /checkout.
+   * Only StorePal passes it, to open its checkout dialog.
+   */
+  onBuyNow?: () => void;
 }
 
 /**
@@ -66,7 +71,7 @@ interface ProductPurchasePanelProps {
  * construction) is unchanged from the audited version — only the visual
  * treatment is refined here.
  */
-export function ProductPurchasePanel({ subdomain, storeName, product, backorder, display, leadSlots, onAddedToCart }: ProductPurchasePanelProps) {
+export function ProductPurchasePanel({ subdomain, storeName, product, backorder, display, leadSlots, onAddedToCart, onBuyNow }: ProductPurchasePanelProps) {
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -221,6 +226,10 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
 
   const buyNow = () => {
     addLine(buildLine());
+    if (onBuyNow) {
+      onBuyNow();
+      return;
+    }
     router.push(`/store/${subdomain}/checkout`);
   };
 

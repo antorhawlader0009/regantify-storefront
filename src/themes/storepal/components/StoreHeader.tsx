@@ -14,6 +14,7 @@ import { formatPrice } from '../lib/formatPrice';
 import { WhatsAppBubble } from './WhatsAppBubble';
 import { AiAssistantWidget } from './AiAssistantWidget';
 import { CartDrawer } from './CartDrawer';
+import { CheckoutDialog } from './CheckoutDialog';
 import { AuthDialog } from './AuthDialog';
 import { MarqueeTrack } from './MarqueeTrack';
 import { useCartDrawer } from '../lib/cartDrawer';
@@ -615,6 +616,7 @@ export function StoreHeader({
       <WhatsAppBubble socialLinks={socialLinks} />
       <AiAssistantWidget subdomain={subdomain} />
       <CartDrawer subdomain={subdomain} />
+      <CheckoutDialog subdomain={subdomain} />
       <AuthDialog subdomain={subdomain} />
     </header>
   );

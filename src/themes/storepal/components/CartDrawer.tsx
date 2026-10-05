@@ -9,6 +9,7 @@ import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { formatPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
+import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { CartOffers } from './CartOffers';
 
 const SLIDE_MS = 300;
@@ -24,6 +25,7 @@ const SLIDE_MS = 300;
 export function CartDrawer({ subdomain }: { subdomain: string }) {
   const open = useCartDrawer((s) => s.open);
   const closeDrawer = useCartDrawer((s) => s.closeDrawer);
+  const openCheckout = useCheckoutDialog((s) => s.openDialog);
   const pathname = usePathname();
   const hydrated = useCartHydrated();
   const lines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));
@@ -204,12 +206,16 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                 <span className="text-[22px] font-bold tabular-nums text-ink">{formatPrice(subtotal)}</span>
               </p>
               <p className="mb-4 mt-1 text-[12px] leading-snug text-muted">Delivery, coupons and gift cards are applied at checkout.</p>
-              <Link
-                href={`/store/${subdomain}/checkout`}
+              <button
+                type="button"
+                onClick={() => {
+                  closeDrawer();
+                  openCheckout();
+                }}
                 className="flex h-12 w-full items-center justify-center rounded-lg bg-accent text-[14.5px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 Checkout
-              </Link>
+              </button>
             </div>
           </>
         )}
