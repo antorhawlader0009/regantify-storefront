@@ -238,6 +238,18 @@ export function TrackOrderBody({
           <span>{formatPrice(order.total)}</span>
         </div>
         <p className="mt-1 text-[12px] text-muted">{order.paymentMethod === 'ONLINE_PAYMENT' ? ui(lang, 'paidOnline') : ui(lang, 'cod')}</p>
+        {order.paymentMethod === 'COD' && order.advancePaidAt && Number(order.advanceAmount) > 0 && (
+          <div className="mt-2 space-y-1 text-[13px] text-ink">
+            <p className="flex items-center justify-between">
+              <span>{ui(lang, 'paidInAdvance')}</span>
+              <span className="font-medium">{formatPrice(order.advanceAmount ?? 0)}</span>
+            </p>
+            <p className="flex items-center justify-between font-semibold">
+              <span>{ui(lang, 'dueOnDelivery')}</span>
+              <span>{formatPrice(Math.max(0, Number(order.total) - Number(order.advanceAmount)))}</span>
+            </p>
+          </div>
+        )}
       </section>
 
       <section className="rounded-lg border border-line bg-canvas p-4 sm:p-5 space-y-2 text-[13px] text-ink">

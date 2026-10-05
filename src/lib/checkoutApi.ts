@@ -31,6 +31,9 @@ export interface CheckoutResponse {
   // Store > COD Guard — PENDING means the order was placed On Hold and
   // the thank-you page must collect the SMS code (StorePal only).
   codVerificationStatus?: 'PENDING' | 'VERIFIED' | null;
+  // Store > COD Guard > "Delivery charge in advance": a COD order whose delivery charge still has to be
+  // paid online. The checkout then calls initiateOrderPayment for it (the server charges just this amount).
+  advanceDue?: number | null;
 }
 
 /**
@@ -96,6 +99,10 @@ export interface StoreDeliveryCharges {
   // code on COD orders. Always null on other themes (see the backend's
   // StorefrontService.findVendorBySubdomainOrThrow).
   codSmsVerification?: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
+  // Store > COD Guard > "Delivery charge in advance" — set only when StorePal's checkout should make a COD
+  // shopper pay the delivery charge online first (the server also needs Online Payment on).
+  // minOrder: only for carts of at least this much; null = every order.
+  codAdvance?: { minOrder: number | null } | null;
   // Store > Delivery Charge > Delivery time (tracking-plan.md Step 7): the date a parcel ordered now
   // is expected, per zone, as YYYY-MM-DD; null for a zone the store set no days for. Worked out by the
   // server, so the storefront never repeats the rule.
@@ -421,6 +428,11 @@ export interface TrackedOrder {
   estimatedDeliveryDate?: string | null;
   // True once that date has passed and the order is still on its way.
   deliveryLate?: boolean;
+  // Delivery charge (or any part) paid before delivery on a COD order: the courier collects only
+  // total - advanceAmount. advancePaidAt null means it is still awaiting the shopper's online payment.
+  advanceAmount?: string;
+  advanceMethod?: 'ONLINE' | 'MANUAL' | null;
+  advancePaidAt?: string | null;
   status: string;
   customerName: string;
   // The shopper's own contact details (the lookup already required the

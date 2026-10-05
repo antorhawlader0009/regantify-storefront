@@ -58,6 +58,12 @@ const EN = {
   placing: 'Placing order…',
   verifySubmit: 'Verify & Submit Order',
   submit: 'Submit Order',
+  advanceTitle: 'Pay the delivery charge now',
+  advanceBody: (advance: string, rest: string) =>
+    `Pay ${advance} online (bKash, Nagad, cards) to confirm your order. You pay the remaining ${rest} in cash when it arrives.`,
+  advanceNow: 'Pay now (delivery charge)',
+  advanceRest: 'Pay on delivery',
+  submitAdvance: (advance: string) => `Pay ${advance} & Place Order`,
   codBadge: 'Cash On Delivery All Over Bangladesh',
   genuineBadge: '100% genuine products',
   yourCart: 'Your cart',
@@ -116,6 +122,12 @@ const BN: Copy = {
   placing: 'অর্ডার হচ্ছে…',
   verifySubmit: 'যাচাই করে অর্ডার করুন',
   submit: 'অর্ডার কনফার্ম করুন',
+  advanceTitle: 'এখন ডেলিভারি চার্জ পরিশোধ করুন',
+  advanceBody: (advance, rest) =>
+    `অর্ডার নিশ্চিত করতে ${advance} অনলাইনে (বিকাশ, নগদ, কার্ড) দিন। বাকি ${rest} পণ্য হাতে পেয়ে ক্যাশে দেবেন।`,
+  advanceNow: 'এখন পরিশোধ (ডেলিভারি চার্জ)',
+  advanceRest: 'ডেলিভারির সময় পরিশোধ',
+  submitAdvance: (advance) => `${advance} দিয়ে অর্ডার করুন`,
   codBadge: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি',
   genuineBadge: '১০০% আসল পণ্য',
   yourCart: 'আপনার কার্ট',
@@ -193,6 +205,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     paymentGateways,
     paymentMethod,
     setPaymentMethod,
+    codAdvance,
     codOtpPhone,
     codOtpCode,
     setCodOtpCode,
@@ -204,7 +217,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   const showCodOtp = isCodSelected && codOtpPhone !== null;
 
   const selectedGateway = paymentGateways.find((g) => g.id === paymentMethod);
-  const isRedirectGateway = selectedGateway ? selectedGateway.type !== 'COD' : false;
+  // A COD order that must pay its delivery charge first also ends in PayStation's hosted page.
+  const isRedirectGateway = (selectedGateway ? selectedGateway.type !== 'COD' : false) || codAdvance !== null;
 
   const [couponBoxOpen, setCouponBoxOpen] = useState(false);
   const [giftCardBoxOpen, setGiftCardBoxOpen] = useState(false);
@@ -431,6 +445,16 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               </div>
             </div>
 
+            {/* Store > COD Guard > "Delivery charge in advance" — see useCheckout's codAdvance. */}
+            {codAdvance && (
+              <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
+                <p className="m-0 text-[13px] font-semibold text-ink">{t.advanceTitle}</p>
+                <p className="m-0 mt-1 text-[12.5px] text-muted">
+                  {t.advanceBody(formatPrice(codAdvance.amount), formatPrice(codAdvance.restOnDelivery))}
+                </p>
+              </div>
+            )}
+
             {/* Store > COD Guard "Before Checkout" — see useCheckout's codOtp. */}
             {showCodOtp && (
               <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
@@ -475,7 +499,9 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     : t.placing
                   : showCodOtp
                     ? t.verifySubmit
-                    : t.submit}
+                    : codAdvance
+                      ? t.submitAdvance(formatPrice(codAdvance.amount))
+                      : t.submit}
             </button>
 
             <div className="flex flex-wrap gap-2 mt-4">
@@ -629,6 +655,18 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 <span>{t.total}</span>
                 <span>{formatPrice(visibleGrandTotal)}</span>
               </div>
+              {codAdvance && (
+                <>
+                  <div className="flex justify-between text-ink">
+                    <span>{t.advanceNow}</span>
+                    <span className="font-semibold text-accent">{formatPrice(codAdvance.amount)}</span>
+                  </div>
+                  <div className="flex justify-between text-ink">
+                    <span>{t.advanceRest}</span>
+                    <span className="font-semibold text-accent">{formatPrice(codAdvance.restOnDelivery)}</span>
+                  </div>
+                </>
+              )}
             </div>
 
             <div className="flex justify-end gap-4 mt-3">

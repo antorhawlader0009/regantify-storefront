@@ -135,6 +135,7 @@ export function useCheckout(
     vatChargeBdt: number;
     paymentGateways: StorePaymentGateway[];
     codSmsVerification: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
+    codAdvance: { minOrder: number | null } | null;
     deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null } | null;
   } | null>(null);
   useEffect(() => {
@@ -147,6 +148,7 @@ export function useCheckout(
         vatChargeBdt: Number(charges.vatChargeBdt),
         paymentGateways: charges.paymentGateways,
         codSmsVerification: charges.codSmsVerification ?? null,
+        codAdvance: charges.codAdvance ?? null,
         deliveryEstimate: charges.deliveryEstimate ?? null,
       });
     });
@@ -368,6 +370,19 @@ export function useCheckout(
     subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - totalDiscount - giftCardAmount,
   );
 
+  // Store > COD Guard > "Delivery charge in advance" — a preview of what OrdersService.resolveCodAdvance
+  // will charge, so StorePal's checkout can say "pay ৳60 now, ৳X on delivery". The server decides: this
+  // only mirrors it (COD selected, vendor minimum met, delivery charge above 0, never more than the total).
+  // Null on every other payment method and on Medium/Minimal (the server never reports codAdvance there).
+  const codAdvanceAmount =
+    selectedGateway?.type === 'COD' &&
+    vendorCharges?.codAdvance &&
+    (vendorCharges.codAdvance.minOrder === null || subtotal >= vendorCharges.codAdvance.minOrder)
+      ? Math.round(Math.min(effectiveDeliveryCharge, grandTotal) * 100) / 100
+      : 0;
+  const codAdvance =
+    codAdvanceAmount > 0 ? { amount: codAdvanceAmount, restOnDelivery: Math.max(0, visibleGrandTotal - codAdvanceAmount) } : null;
+
   // Same limits enforced server-side by CreateOrderDto — kept here too so
   // a shopper is stopped from typing past them in the first place, on
   // every theme (Medium, Minimal, StorePal all share this hook).
@@ -574,6 +589,14 @@ export function useCheckout(
       if (!externalLines) clearStore(subdomain);
       sessionStorage.removeItem(sessionStorageKey);
 
+      // A COD order whose delivery charge must be paid first (Store > COD Guard): the server created it
+      // PAYMENT_INITIATED and charges just that amount through the same PayStation session.
+      if (isCod && result.advanceDue) {
+        const payment = await initiateOrderPayment(result.orderId);
+        window.location.href = payment.paymentUrl;
+        return;
+      }
+
       if (selectedGateway && selectedGateway.type !== 'COD') {
         const payment =
           selectedGateway.type === 'ONLINE_PAYMENT'
@@ -691,6 +714,9 @@ export function useCheckout(
     paymentGateways,
     paymentMethod,
     setPaymentMethod,
+    // Delivery charge to pay online before a COD order is placed, with what's left for the courier;
+    // null when none applies. Only StorePal's CheckoutDialog renders it.
+    codAdvance,
     // Store > COD Guard's before-checkout SMS step — only StorePal's
     // CheckoutView renders these (see codOtp's own comment above).
     codOtpPhone: codOtp && codOtp.phone === form.phone.trim() ? codOtp.phone : null,

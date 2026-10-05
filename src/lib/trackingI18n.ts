@@ -56,6 +56,8 @@ type UiKey =
   | 'total'
   | 'paidOnline'
   | 'cod'
+  | 'paidInAdvance'
+  | 'dueOnDelivery'
   | 'deliveryTo'
   | 'needHelp'
   | 'helpText'
@@ -100,6 +102,8 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     total: 'Total',
     paidOnline: 'Paid online',
     cod: 'Cash on delivery',
+    paidInAdvance: 'Paid in advance',
+    dueOnDelivery: 'Pay on delivery',
     deliveryTo: 'Delivering to',
     needHelp: 'Need help?',
     helpText: 'Questions about this order? Message the store and quote your order number.',
@@ -142,6 +146,8 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     total: 'মোট',
     paidOnline: 'অনলাইনে পরিশোধিত',
     cod: 'ক্যাশ অন ডেলিভারি',
+    paidInAdvance: 'আগেই পরিশোধিত',
+    dueOnDelivery: 'ডেলিভারির সময় পরিশোধ',
     deliveryTo: 'ডেলিভারি ঠিকানা',
     needHelp: 'সাহায্য লাগবে?',
     helpText: 'এই অর্ডার নিয়ে প্রশ্ন থাকলে দোকানে মেসেজ করুন এবং অর্ডার নম্বরটি জানান।',

@@ -178,6 +178,11 @@ export async function downloadOrderMemoPdf(order: TrackedOrder, storeName: strin
   doc.setDrawColor(203, 213, 225); // --color-line-strong
   doc.line(col.price - 80, y - 12, pageWidth - margin, y - 12);
   totalsRow('Total', formatPrice(order.total), true);
+  // A COD order whose delivery charge (or part) was paid in advance: what the courier still collects.
+  if (order.paymentMethod === 'COD' && order.advancePaidAt && Number(order.advanceAmount) > 0) {
+    totalsRow('Paid in advance', `-${formatPrice(order.advanceAmount ?? 0)}`);
+    totalsRow('Pay on delivery', formatPrice(Math.max(0, Number(order.total) - Number(order.advanceAmount))), true);
+  }
 
   y += 20;
   doc.setFont('helvetica', 'normal');

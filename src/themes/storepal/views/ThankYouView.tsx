@@ -92,6 +92,8 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
   }
 
   const awaitingCodVerification = order.codVerificationStatus === 'PENDING' && !codVerified;
+  // The delivery charge (or part) a COD shopper already paid, so the page shows what is still due in cash.
+  const advancePaid = order.advancePaidAt && Number(order.advanceAmount) > 0 ? Number(order.advanceAmount) : 0;
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
@@ -127,6 +129,8 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
               ? 'One more step: confirm your order with the code we just texted you.'
               : order.paymentMethod === 'ONLINE_PAYMENT'
                 ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'
+                : advancePaid > 0
+                  ? 'Your delivery charge was received and your order is confirmed. You pay the rest in cash on delivery. A confirmation call may follow shortly.'
                 : 'Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.'}
           </p>
         </div>
@@ -232,6 +236,18 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
               <span>Total</span>
               <span>{formatPrice(order.total)}</span>
             </div>
+            {advancePaid > 0 && (
+              <>
+                <div className="flex justify-between text-success">
+                  <span>Paid in advance</span>
+                  <span>-{formatPrice(advancePaid)}</span>
+                </div>
+                <div className="flex justify-between font-bold text-ink">
+                  <span>Pay on delivery</span>
+                  <span>{formatPrice(Math.max(0, Number(order.total) - advancePaid))}</span>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="px-5 py-4 border-t border-line bg-canvas flex items-center gap-2 text-[12.5px] text-ink">
