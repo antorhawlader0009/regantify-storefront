@@ -27,7 +27,7 @@ export interface ChatReply {
   products: ChatProductRef[];
 }
 
-/** Thrown when the store's AI token wallet is empty (HTTP 402, code AI_TOKENS_EMPTY). */
+/** Thrown when the store's AI Credit wallet is empty (HTTP 402, code AI_CREDITS_EMPTY; AI_TOKENS_EMPTY from an API older than credits). */
 export class ChatUnavailableError extends Error {}
 
 /**
@@ -55,7 +55,7 @@ export async function sendChatMessage(subdomain: string, message: string, histor
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
-    if (res.status === 402 && body?.code === 'AI_TOKENS_EMPTY') {
+    if (res.status === 402 && (body?.code === 'AI_CREDITS_EMPTY' || body?.code === 'AI_TOKENS_EMPTY')) {
       throw new ChatUnavailableError("The assistant isn't available right now. Please try again later.");
     }
     const msg = Array.isArray(body?.message) ? body.message[0] : body?.message;

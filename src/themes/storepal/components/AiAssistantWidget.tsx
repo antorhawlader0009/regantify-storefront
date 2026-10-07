@@ -25,11 +25,11 @@ const GREETING: Message = {
  * stacked directly above the WhatsApp bubble at the same corner, same
  * convention as a typical storefront's "help" widgets clustering in one
  * spot rather than spreading floating buttons across the screen.
- * Shows only while the store's AI token wallet can pay for a reply
+ * Shows only while the store's AI Credit wallet can pay for a reply
  * (ai-token-plan.md Step 5): it asks /chat/status on load and renders
  * nothing until that says yes. If the wallet runs out mid-chat, the open
  * panel says so politely and the bubble goes away once it's closed.
- * Shoppers are never told the store ran out of tokens.
+ * Shoppers are never told the store ran out of AI Credits.
  */
 export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
   const [open, setOpen] = useState(false);
