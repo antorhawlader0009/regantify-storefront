@@ -21,7 +21,7 @@ import { ProductOffers } from '../components/ProductOffers';
 import { ProductTabs } from '../../medium/components/ProductTabs';
 import { StorePalPurchasePanel } from '../components/StorePalPurchasePanel';
 import { resolveBackorder, visibleInListings } from '../lib/backorder';
-import { useStoreText } from '../lib/storeText';
+import { StoreLabel } from '../components/StoreLabel';
 
 interface ProductViewProps {
   subdomain: string;
@@ -55,7 +55,6 @@ export function ProductView({
   footerConfig,
   stockSettings,
 }: ProductViewProps) {
-  const t = useStoreText();
   const visibleRelated = visibleInListings(related, stockSettings);
   return (
     <div className="min-h-screen bg-canvas text-ink pb-[70px] sm:pb-0">
@@ -70,7 +69,7 @@ export function ProductView({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 text-[12px] text-muted">
         <Link href={`/store/${subdomain}`} className="hover:text-accent transition-colors">
-          {t('Shop')}
+          <StoreLabel text="Shop" />
         </Link>
         {product.category && (
           <>
@@ -109,7 +108,7 @@ export function ProductView({
 
         {visibleRelated.length > 0 && (
           <section className="bg-surface border border-line rounded p-4 sm:p-6 mb-8">
-            <h3 className="text-[15px] font-bold text-ink mb-4">{t('Related Products')}</h3>
+            <h3 className="text-[15px] font-bold text-ink mb-4"><StoreLabel text="Related Products" /></h3>
             <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
               {visibleRelated.map((p) => (
                 <ProductCard key={p.id} product={p} subdomain={subdomain} storeName={storeName} />

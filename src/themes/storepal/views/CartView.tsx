@@ -5,7 +5,7 @@ import { StoreFooter } from '../components/StoreFooter';
 import { CartList } from '../../medium/components/CartList';
 import { CartViewTracker } from '../components/CartViewTracker';
 import { CartOffers } from '../components/CartOffers';
-import { useStoreText } from '../lib/storeText';
+import { StoreLabel } from '../components/StoreLabel';
 
 interface CartViewProps {
   subdomain: string;
@@ -14,12 +14,11 @@ interface CartViewProps {
 }
 
 export function CartView({ subdomain, storeName, categories }: CartViewProps) {
-  const t = useStoreText();
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
-        <h1 className="text-[24px] font-bold text-ink mb-5">{t('Cart')}</h1>
+        <h1 className="text-[24px] font-bold text-ink mb-5"><StoreLabel text="Cart" /></h1>
         <div className="bg-surface border border-line rounded-lg p-4 sm:p-6">
           <CartList subdomain={subdomain} storeName={storeName} />
         </div>
