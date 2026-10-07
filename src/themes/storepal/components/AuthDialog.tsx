@@ -310,14 +310,14 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
   );
 }
 
-type ForgotStep = 'email' | 'otp' | 'reset' | 'done';
+type ForgotStep = 'phone' | 'otp' | 'reset' | 'done';
 
-/** Forgot password: email a code, check it, set a new password, then back to Log in (CustomerAuthService.forgotPassword*). */
-function ForgotForm() {
+/** Forgot password: text a code to the account's phone, check it, set a new password, then back to Log in (CustomerAuthService.forgotPassword*). */
+function ForgotForm({ subdomain }: { subdomain: string }) {
   const uid = useId();
   const setMode = useAuthDialog((s) => s.setMode);
-  const [step, setStep] = useState<ForgotStep>('email');
-  const [email, setEmail] = useState('');
+  const [step, setStep] = useState<ForgotStep>('phone');
+  const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -334,13 +334,13 @@ function ForgotForm() {
   const sendCode = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.trim()) {
-      setError('Enter your email address.');
+    if (!phone.trim()) {
+      setError('Enter your phone number.');
       return;
     }
     setLoading(true);
     try {
-      await forgotPasswordSendOtp(email.trim());
+      await forgotPasswordSendOtp(phone.trim(), subdomain);
       setStep('otp');
       setCooldown(RESEND_SECONDS);
     } catch (err) {
@@ -353,7 +353,7 @@ function ForgotForm() {
   const resend = async () => {
     setError(null);
     try {
-      await forgotPasswordSendOtp(email.trim());
+      await forgotPasswordSendOtp(phone.trim(), subdomain);
       setCooldown(RESEND_SECONDS);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send a new code.');
@@ -369,7 +369,7 @@ function ForgotForm() {
     }
     setLoading(true);
     try {
-      const result = await forgotPasswordVerifyOtp(email.trim(), code.trim());
+      const result = await forgotPasswordVerifyOtp(phone.trim(), code.trim());
       setResetToken(result.resetToken);
       setStep('reset');
     } catch (err) {
@@ -427,7 +427,7 @@ function ForgotForm() {
   if (step === 'otp') {
     return (
       <form onSubmit={verify} className="space-y-4">
-        <p className="text-[13px] text-muted">If an account exists for {email.trim()}, we sent a 6-digit code to it.</p>
+        <p className="text-[13px] text-muted">We sent a 6-digit code by SMS to {phone.trim()}.</p>
         <Field label="6-digit code" id={`${uid}-code`}>
           <input
             id={`${uid}-code`}
@@ -445,8 +445,8 @@ function ForgotForm() {
           {loading ? 'Verifying…' : 'Verify code'}
         </button>
         <div className="flex items-center justify-between text-[13px]">
-          <button type="button" onClick={() => { setStep('email'); setCode(''); setError(null); }} className="font-medium text-muted hover:text-ink">
-            Change email
+          <button type="button" onClick={() => { setStep('phone'); setCode(''); setError(null); }} className="font-medium text-muted hover:text-ink">
+            Change number
           </button>
           <button
             type="button"
@@ -463,15 +463,16 @@ function ForgotForm() {
 
   return (
     <form onSubmit={sendCode} className="space-y-4">
-      <Field label="Email" id={`${uid}-email`}>
+      <Field label="Phone number" id={`${uid}-phone`}>
         <input
-          id={`${uid}-email`}
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value.slice(0, 150))}
+          id={`${uid}-phone`}
+          value={phone}
+          onChange={(e) => setPhone(e.target.value.slice(0, 30))}
+          placeholder="01XXXXXXXXX"
           autoFocus
-          maxLength={150}
-          autoComplete="email"
+          inputMode="tel"
+          autoComplete="tel"
+          maxLength={30}
           className={INPUT_CLASS}
         />
       </Field>
@@ -492,7 +493,7 @@ function ForgotForm() {
 const COPY: Record<AuthDialogMode, { title: string; subtitle: string }> = {
   login: { title: 'Log in', subtitle: 'See your orders and check out faster.' },
   signup: { title: 'Create your account', subtitle: 'Track orders and save your address for next time.' },
-  forgot: { title: 'Reset your password', subtitle: 'We will email you a code so you can set a new one.' },
+  forgot: { title: 'Reset your password', subtitle: 'We will text a code to your phone so you can set a new one.' },
 };
 
 function AuthDialogPanel({ subdomain }: { subdomain: string }) {
@@ -569,7 +570,7 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
         <p className="mb-5 mt-1 text-[13.5px] text-muted">{copy.subtitle}</p>
         {mode === 'login' && <LoginForm onDone={close} />}
         {mode === 'signup' && <SignupForm subdomain={subdomain} onDone={close} />}
-        {mode === 'forgot' && <ForgotForm />}
+        {mode === 'forgot' && <ForgotForm subdomain={subdomain} />}
       </div>
     </div>
   );

@@ -7,11 +7,11 @@ import { StoreHeader } from '../../components/StoreHeader';
 import { StoreFooter } from '../../components/StoreFooter';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 
-type Step = 'email' | 'otp' | 'reset' | 'done';
+type Step = 'phone' | 'otp' | 'reset' | 'done';
 
 /**
  * Matches the reference "Change Password" screenshot (the logged-out,
- * forgot-password version — email only) — 3 steps: send code to email,
+ * forgot-password version) — 3 steps: text a code to the account's phone,
  * verify it, then set a new password. See
  * CustomerAuthService.forgotPasswordSendOtp/verifyOtp/resetPassword.
  */
@@ -19,8 +19,8 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
   const router = useRouter();
   const storeName = useStoreDisplayName(subdomain);
 
-  const [step, setStep] = useState<Step>('email');
-  const [email, setEmail] = useState('');
+  const [step, setStep] = useState<Step>('phone');
+  const [phone, setPhone] = useState('');
   const [code, setCode] = useState('');
   const [resetToken, setResetToken] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -30,13 +30,13 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!email.trim()) {
-      setError('Enter your email address.');
+    if (!phone.trim()) {
+      setError('Enter your phone number.');
       return;
     }
     setLoading(true);
     try {
-      await forgotPasswordSendOtp(email.trim());
+      await forgotPasswordSendOtp(phone.trim(), subdomain);
       setStep('otp');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not send the code.');
@@ -49,12 +49,12 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     setError(null);
     if (!code.trim()) {
-      setError('Enter the code sent to your email.');
+      setError('Enter the code sent to your phone.');
       return;
     }
     setLoading(true);
     try {
-      const result = await forgotPasswordVerifyOtp(email.trim(), code.trim());
+      const result = await forgotPasswordVerifyOtp(phone.trim(), code.trim());
       setResetToken(result.resetToken);
       setStep('reset');
     } catch (err) {
@@ -90,16 +90,18 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
         <div className="bg-surface border border-line rounded-lg p-6 sm:p-7">
           <h1 className="text-[24px] font-bold text-ink mb-5">Change Password</h1>
 
-          {step === 'email' && (
+          {step === 'phone' && (
             <form onSubmit={handleSend} className="space-y-3.5">
               <div>
-                <label className="block text-[13px] font-medium text-ink mb-1.5">Email</label>
+                <label className="block text-[13px] font-medium text-ink mb-1.5">Phone number</label>
                 <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value.slice(0, 150))}
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value.slice(0, 30))}
+                  placeholder="01XXXXXXXXX"
+                  inputMode="tel"
+                  autoComplete="tel"
                   autoFocus
-                  maxLength={150}
+                  maxLength={30}
                   className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-surface text-[13.5px] outline-none focus:border-ink transition-colors"
                 />
               </div>
@@ -116,7 +118,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
 
           {step === 'otp' && (
             <form onSubmit={handleVerify} className="space-y-3.5">
-              <p className="text-[13px] text-muted">If an account exists for {email}, a code has been sent.</p>
+              <p className="text-[13px] text-muted">We sent a 6-digit code by SMS to {phone}.</p>
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value.slice(0, 6))}

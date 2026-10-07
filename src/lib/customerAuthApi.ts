@@ -141,18 +141,19 @@ export function otpLoginVerify(phone: string, code: string) {
   return post<AuthResult>('/v1/customer-auth/otp-login/verify', { phone, code });
 }
 
-/** "Change Password" (forgot-password) — step 1: sends a reset code to the given email. */
-export function forgotPasswordSendOtp(email: string) {
+/** "Change Password" (forgot-password) — step 1: texts a reset code to the account's phone. */
+export function forgotPasswordSendOtp(phone: string, subdomain?: string) {
   return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/forgot-password/send-otp', {
-    email,
+    phone,
+    subdomain,
   });
 }
 
 /** Step 2: verifies the code, returning a short-lived resetToken. */
-export function forgotPasswordVerifyOtp(email: string, code: string) {
+export function forgotPasswordVerifyOtp(phone: string, code: string) {
   return post<{ resetToken: string; expiresInSeconds: number }>(
     '/v1/customer-auth/forgot-password/verify-otp',
-    { email, code },
+    { phone, code },
   );
 }
 
