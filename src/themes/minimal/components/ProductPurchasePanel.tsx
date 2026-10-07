@@ -32,7 +32,8 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
 
   const [activePhoto, setActivePhoto] = useState(0);
   const [selected, setSelected] = useState<Record<string, string>>({});
-  const [quantity, setQuantity] = useState(1);
+  const minQty = product.minOrderQuantity ?? 1;
+  const [quantity, setQuantity] = useState(minQty);
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
 
@@ -112,6 +113,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
     quantity,
     selectedOptions: selected,
     isPreOrder: product.isPreOrder,
+    minOrderQuantity: product.minOrderQuantity,
   });
 
   const handleAddToCart = () => {
@@ -288,7 +290,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
         <div className="mb-6">
           <p className="m-0 mb-2.5 text-[11px] tracking-[0.06em] uppercase text-muted">Quantity</p>
           <div className="inline-flex items-center border border-line">
-            <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-9 h-9 flex items-center justify-center hover:bg-canvas transition-colors">
+            <button onClick={() => setQuantity((q) => Math.max(minQty, q - 1))} className="w-9 h-9 flex items-center justify-center hover:bg-canvas transition-colors">
               <Minus size={13} strokeWidth={1.5} />
             </button>
             <span className="w-10 text-center text-[13px]">{quantity}</span>
@@ -303,6 +305,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
           {availableStock !== undefined && quantity >= availableStock && availableStock > 0 && (
             <p className="text-[11px] text-muted mt-1.5">Max available quantity selected.</p>
           )}
+          {minQty > 1 && <p className="text-[11px] text-muted mt-1.5">Minimum order: {minQty}</p>}
         </div>
 
         <div className="flex gap-2.5">

@@ -78,7 +78,9 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
 
   const [activePhoto, setActivePhoto] = useState(0);
   const [selected, setSelected] = useState<Record<string, string>>({});
-  const [quantity, setQuantity] = useState(1);
+  // Product.minOrderQuantity: the picker starts there and never goes below it.
+  const minQty = product.minOrderQuantity ?? 1;
+  const [quantity, setQuantity] = useState(minQty);
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
   // Backorder confirm popup — holds the action (add / buy) to run on Continue.
@@ -212,6 +214,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
     quantity,
     selectedOptions: selected,
     isPreOrder: product.isPreOrder,
+    minOrderQuantity: product.minOrderQuantity,
     // For StorePal's Meta pixel content_ids (see stores/cart-store.ts).
     productId: product.id,
     variantId: matchedVariant?.id,
@@ -448,7 +451,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
         <div className="mb-5">
           <p className="m-0 mb-2 text-[12px] font-semibold text-ink">Quantity</p>
           <div className="inline-flex items-center border border-line rounded-md overflow-hidden bg-canvas">
-            <button onClick={() => setQuantity((q) => Math.max(1, q - 1))} className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors">
+            <button onClick={() => setQuantity((q) => Math.max(minQty, q - 1))} className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors">
               <Minus size={13} />
             </button>
             <span className="w-10 text-center text-[13.5px] font-semibold bg-surface h-9 flex items-center justify-center">{quantity}</span>
@@ -463,6 +466,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product, backorder,
           {quantityCap !== undefined && quantity >= quantityCap && quantityCap > 0 && (
             <p className="text-[12px] text-muted mt-1.5">Max available quantity selected.</p>
           )}
+          {minQty > 1 && <p className="text-[12px] text-muted mt-1.5">Minimum order: {minQty}</p>}
         </div>
 
         <div className="flex gap-2.5">

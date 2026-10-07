@@ -333,6 +333,8 @@ export interface StorefrontProduct {
   isPreOrder: boolean;
   /** Price on request (StorePal hides the price and Buy). Absent from older API responses. */
   quoteOnly?: boolean;
+  /** Fewest a shopper may order in one cart line; null = no minimum. */
+  minOrderQuantity?: number | null;
   /** When a running Flash Sale that is lowering this product's price ends (ISO); null/absent = no sale. */
   flashSaleEndsAt?: string | null;
   stockQuantity?: number | null;
@@ -389,6 +391,8 @@ export interface StorefrontCardProduct {
   isPreOrder: boolean;
   /** Price on request (StorePal hides the price and Buy). Absent from older API responses. */
   quoteOnly?: boolean;
+  /** Fewest a shopper may order in one cart line; null = no minimum. */
+  minOrderQuantity?: number | null;
   stockQuantity?: number | null;
   variants: { stock: number }[];
   createdAt: string;
@@ -653,6 +657,7 @@ export interface StorefrontLandingPageProduct {
   stockQuantity: number | null;
   isPreOrder: boolean;
   inStock: boolean;
+  minOrderQuantity?: number | null;
 }
 
 export interface StorefrontLandingPageData {

@@ -88,7 +88,8 @@ export function CheckoutFormSection({
             image: p.photoUrl ?? undefined,
             unitPrice: discount ?? price,
             originalUnitPrice: discount != null && discount < price ? price : undefined,
-            quantity: quantities[p.id] ?? 1,
+            quantity: quantities[p.id] ?? p.minOrderQuantity ?? 1,
+            minOrderQuantity: p.minOrderQuantity,
             selectedOptions: {},
             isPreOrder: p.isPreOrder,
             productId: p.id,
@@ -157,7 +158,11 @@ export function CheckoutFormSection({
     handlePlaceOrder();
   };
 
-  const setQuantity = (id: string, qty: number) => setQuantities((prev) => ({ ...prev, [id]: Math.max(1, Math.min(99, qty)) }));
+  // Never below the product's minimum order; at least 99 above it.
+  const setQuantity = (id: string, qty: number) => {
+    const min = products.find((p) => p.id === id)?.minOrderQuantity ?? 1;
+    setQuantities((prev) => ({ ...prev, [id]: Math.max(min, Math.min(Math.max(99, min), qty)) }));
+  };
 
   // Meta pixel InitiateCheckout once the shopper starts filling the form.
   // Not on mount: the form is part of the landing page itself, so every
@@ -260,7 +265,7 @@ export function CheckoutFormSection({
               {products.map((p) => {
                 const canOrder = orderable(p);
                 const isOn = canOrder && selected[p.id];
-                const qty = quantities[p.id] ?? 1;
+                const qty = quantities[p.id] ?? p.minOrderQuantity ?? 1;
                 const unit = Number(p.discountPrice ?? p.price);
                 return (
                   <div key={p.id} className={`flex items-center gap-2.5 ${isOn ? '' : 'opacity-50'}`}>

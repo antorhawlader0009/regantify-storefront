@@ -17,6 +17,9 @@ export interface CartLine {
   quantity: number;
   selectedOptions: Record<string, string>;
   isPreOrder: boolean;
+  // Product.minOrderQuantity: the line never goes below it (the server
+  // refuses a smaller one at checkout). Missing = no minimum.
+  minOrderQuantity?: number | null;
   // Product.id / ProductVariant.id, for StorePal's Meta pixel content_ids
   // (see lib/metaPixelEvents.ts). Optional: Minimal's panel doesn't set
   // them, and carts saved before these fields existed don't have them.
@@ -88,7 +91,8 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
       (set, get) => ({
         ...initState,
 
-        addLine: (line) => {
+        addLine: (input) => {
+          const line = { ...input, quantity: Math.max(input.quantity, input.minOrderQuantity ?? 1) };
           const id = lineId(line.productSlug, line.selectedOptions);
           set((state) => {
             const existing = state.lines.find((l) => l.id === id);
@@ -101,6 +105,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
                         quantity: l.quantity + line.quantity,
                         productId: l.productId ?? line.productId,
                         variantId: l.variantId ?? line.variantId,
+                        minOrderQuantity: line.minOrderQuantity ?? l.minOrderQuantity,
                       }
                     : l,
                 ),
@@ -119,8 +124,10 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
           dispatchRemove(removed, removed?.quantity ?? 0);
         },
 
-        setQuantity: (id, quantity) => {
+        setQuantity: (id, requested) => {
           const before = get().lines.find((l) => l.id === id);
+          // Above 0 never goes below the product's minimum; 0 still removes the line.
+          const quantity = requested > 0 ? Math.max(requested, before?.minOrderQuantity ?? 1) : requested;
           set((state) => ({
             lines: quantity <= 0
               ? state.lines.filter((l) => l.id !== id)

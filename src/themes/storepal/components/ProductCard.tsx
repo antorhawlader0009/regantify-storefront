@@ -37,6 +37,8 @@ interface CardProduct {
   isPreOrder: boolean;
   /** Price on request (LMS-plan.md Step 9). */
   quoteOnly?: boolean;
+  /** Fewest a shopper may order; Add to cart starts there. */
+  minOrderQuantity?: number | null;
   /** Running Flash Sale end (ISO) — shows the sale badge with a countdown. */
   flashSaleEndsAt?: string | null;
   variants: ({ stock: number } & Partial<Omit<StorefrontVariant, 'stock'>>)[];
@@ -127,9 +129,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       image: product.photoUrls[0],
       unitPrice: Number(displayPrice),
       originalUnitPrice: originalPrice ? Number(originalPrice) : undefined,
-      quantity: 1,
+      quantity: product.minOrderQuantity ?? 1,
       selectedOptions: selected,
       isPreOrder: product.isPreOrder,
+      minOrderQuantity: product.minOrderQuantity,
       productId: product.id,
       variantId: matchedVariant?.id,
     });
