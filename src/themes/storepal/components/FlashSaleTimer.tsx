@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Zap } from 'lucide-react';
+import { useStoreText } from '../lib/storeText';
 
 /** "2d 04h", or "03:12:45" once under a day. */
 function formatRemaining(ms: number): string {
@@ -29,6 +30,7 @@ interface FlashSaleTimerProps {
  * never causes a hydration mismatch; hides itself when the time runs out.
  */
 export function FlashSaleTimer({ endsAt, variant = 'badge', className = '' }: FlashSaleTimerProps) {
+  const t = useStoreText();
   const [remaining, setRemaining] = useState<number | null>(null);
 
   useEffect(() => {
@@ -49,7 +51,7 @@ export function FlashSaleTimer({ endsAt, variant = 'badge', className = '' }: Fl
         className={`inline-flex items-center gap-2 bg-accent text-white px-3 py-1.5 rounded-md text-[12.5px] font-semibold ${className}`}
       >
         <Zap size={14} className="fill-white" />
-        <span>Flash Sale</span>
+        <span>{t('Flash Sale')}</span>
         <span className="opacity-90 font-mono tabular-nums">ends in {formatRemaining(remaining)}</span>
       </div>
     );

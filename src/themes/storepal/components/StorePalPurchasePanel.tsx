@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState, type ComponentProps } from 'react';
-import { ProductPurchasePanel } from '../../medium/components/ProductPurchasePanel';
+import { StorePalProductPanel as ProductPurchasePanel } from './StorePalProductPanel';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { stockMessages, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';

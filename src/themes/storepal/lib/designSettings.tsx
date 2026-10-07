@@ -1,6 +1,7 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
+import { storeText } from './storeText';
 import type { StorefrontDesignSettings, StorefrontLmsForms, StorefrontMenuItem } from '@/lib/storefrontApi';
 
 // Store > Design settings the vendor never saved. Must render StorePal
@@ -34,6 +35,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   homeSections: [],
   homeHighlights: [],
   homeHighlightsHeading: null,
+  storeLanguage: 'en',
 };
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
@@ -134,10 +136,10 @@ export function isExternalHref(href: string) {
 export function stockMessages(design: StorefrontDesignSettings) {
   return {
     inStock: (stock: number | undefined) => {
-      if (!design.inStockMessage) return stock === undefined ? 'In stock' : `${stock} units in stock`;
+      if (!design.inStockMessage) return stock === undefined ? storeText(design.storeLanguage, 'In stock') : `${stock} ${storeText(design.storeLanguage, 'units in stock')}`;
       return design.inStockMessage.replace(/##stock/g, stock === undefined ? '' : String(stock)).replace(/\s+/g, ' ').trim();
     },
-    outOfStock: design.outOfStockMessage || 'Out of stock',
-    preOrder: design.preOrderMessage || 'Available for pre-order',
+    outOfStock: design.outOfStockMessage || storeText(design.storeLanguage, 'Out of stock'),
+    preOrder: design.preOrderMessage || storeText(design.storeLanguage, 'Available for pre-order'),
   };
 }

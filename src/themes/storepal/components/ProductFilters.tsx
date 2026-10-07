@@ -4,6 +4,7 @@ import { useMemo, useState } from 'react';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
 import { formatPrice } from '../lib/formatPrice';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
+import { useStoreText } from '../lib/storeText';
 
 export interface ProductFilterState {
   minPrice: number;
@@ -60,6 +61,7 @@ function FilterSection({ title, defaultOpen = true, children }: { title: string;
  * in-memory list rather than round-tripping to the API.
  */
 export function ProductFilters({ products, value, onChange, bounds, categoryOptions }: ProductFiltersProps) {
+  const t = useStoreText();
   const derivedCategories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))).sort(),
     [products],
@@ -68,7 +70,7 @@ export function ProductFilters({ products, value, onChange, bounds, categoryOpti
   // Only a real "Category" list (the store-wide fallback, no activeCategory)
   // when categoryOptions wasn't passed — once HomeView scopes this to one
   // category's own subcategories, the heading should say so.
-  const categoryFilterLabel = categoryOptions ? 'Sub Category' : 'Category';
+  const categoryFilterLabel = categoryOptions ? t('Sub Category') : t('Category');
   const brands = useMemo(
     () => Array.from(new Set(products.map((p) => p.brand).filter((b): b is string => Boolean(b)))).sort(),
     [products],
@@ -123,17 +125,17 @@ export function ProductFilters({ products, value, onChange, bounds, categoryOpti
       <div className="flex items-center justify-between mb-1">
         <h3 className="flex items-center gap-1.5 text-[15px] font-bold text-ink">
           <SlidersHorizontal size={15} />
-          Filters
+          {t('Filters')}
         </h3>
         {activeCount > 0 && (
           <button onClick={reset} className="flex items-center gap-1 text-[12px] font-medium text-accent hover:text-accent-dark">
             <X size={12} />
-            Clear
+            {t('Clear')}
           </button>
         )}
       </div>
 
-      <FilterSection title="Price Filter">
+      <FilterSection title={t('Price Filter')}>
         <div className="px-0.5">
           <input
             type="range"
@@ -196,7 +198,7 @@ export function ProductFilters({ products, value, onChange, bounds, categoryOpti
       )}
 
       {brands.length > 0 && (
-        <FilterSection title="Brand">
+        <FilterSection title={t('Brand')}>
           <div className="flex flex-col gap-2 max-h-48 overflow-y-auto pr-1">
             {brands.map((brand) => (
               <label key={brand} className="flex items-center gap-2 text-[13px] text-ink cursor-pointer">

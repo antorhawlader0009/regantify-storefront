@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Tag } from 'lucide-react';
 import { fetchDiscountOffers, type DiscountOffer } from '@/lib/checkoutApi';
 import { offerBenefit, offerConditions, offerCoversProduct } from '../lib/offers';
+import { useStoreText } from '../lib/storeText';
 
 /**
  * Marketing > Discounts on the StorePal product page: the automatic discounts
@@ -18,6 +19,7 @@ export function ProductOffers({
   subdomain: string;
   product: { id: string; category?: string | null; secondaryCategories?: string[] };
 }) {
+  const t = useStoreText();
   const [offers, setOffers] = useState<DiscountOffer[]>([]);
   useEffect(() => {
     let cancelled = false;
@@ -35,7 +37,7 @@ export function ProductOffers({
     <div className="mt-4 rounded-lg border border-line bg-surface p-4">
       <p className="mb-2 flex items-center gap-1.5 text-[13.5px] font-bold text-ink">
         <Tag size={14} className="text-accent" aria-hidden />
-        Available offers
+        {t('Available offers')}
       </p>
       <ul className="space-y-1.5">
         {offers.map((o) => {
@@ -49,7 +51,7 @@ export function ProductOffers({
           );
         })}
       </ul>
-      <p className="mt-2 text-[12px] text-muted">Applied automatically at checkout.</p>
+      <p className="mt-2 text-[12px] text-muted">{t('Applied automatically at checkout.')}</p>
     </div>
   );
 }

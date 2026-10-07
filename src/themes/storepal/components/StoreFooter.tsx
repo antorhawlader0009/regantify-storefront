@@ -7,6 +7,7 @@ import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from '
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
 import { getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplates';
+import { useStoreText } from '../lib/storeText';
 
 interface StoreFooterProps {
   subdomain: string;
@@ -79,6 +80,7 @@ export function StoreFooter({
   socialLinks: socialLinksProp,
   footerConfig: footerConfigProp,
 }: StoreFooterProps) {
+  const t = useStoreText();
   const [email, setEmail] = useState('');
   const [subscribed, setSubscribed] = useState(false);
   const [fetched, setFetched] = useState<{
@@ -130,7 +132,7 @@ export function StoreFooter({
 
   const SocialIcons = activePlatforms.length > 0 && (
     <>
-      <p className="text-[13px] font-semibold text-ink mt-6 mb-2">Social Link</p>
+      <p className="text-[13px] font-semibold text-ink mt-6 mb-2">{t('Social Link')}</p>
       <div className="flex gap-2.5">
         {activePlatforms.map(({ key, label, Icon }) => (
           <a
@@ -162,7 +164,7 @@ export function StoreFooter({
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Your Email"
+                placeholder={t('Your Email')}
                 className="flex-1 px-3.5 py-2.5 text-[13px] bg-surface border border-line-strong rounded-l-md outline-none"
               />
               <button
@@ -172,13 +174,13 @@ export function StoreFooter({
                 subscribe
               </button>
             </form>
-            {subscribed && <p className="mt-2 text-[12px] text-success">Thanks for subscribing!</p>}
+            {subscribed && <p className="mt-2 text-[12px] text-success">{t('Thanks for subscribing!')}</p>}
             {SocialIcons}
           </div>
 
           {pages.length > 0 && (
             <div>
-              <p className="text-[15px] font-semibold text-ink mb-3">INFORMATION</p>
+              <p className="text-[15px] font-semibold text-ink mb-3">{t('INFORMATION')}</p>
               <div className="flex flex-col gap-2.5 text-[13px]">
                 {pages.map((page) => (
                   <Link
@@ -233,7 +235,7 @@ export function StoreFooter({
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="Your Email"
+              placeholder={t('Your Email')}
               className="flex-1 px-3.5 py-2.5 text-[13px] bg-surface border border-line-strong rounded-l-md outline-none"
             />
             <button
@@ -243,7 +245,7 @@ export function StoreFooter({
               subscribe
             </button>
           </form>
-          {subscribed && <p className="mt-2 text-[12px] text-success">Thanks for subscribing!</p>}
+          {subscribed && <p className="mt-2 text-[12px] text-success">{t('Thanks for subscribing!')}</p>}
         </>
       )}
       {footerConfig.showSocialIcons && SocialIcons}

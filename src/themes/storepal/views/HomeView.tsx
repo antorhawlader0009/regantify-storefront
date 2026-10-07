@@ -22,6 +22,7 @@ import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
+import { useStoreText } from '../lib/storeText';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -91,6 +92,7 @@ export function HomeView({
   footerConfig,
   couponLink,
 }: HomeViewProps) {
+  const t = useStoreText();
   const router = useRouter();
   const design = useStorePalDesign();
   const homeSections = resolveHomeSections(design.homeSections);
@@ -296,16 +298,16 @@ export function HomeView({
                     aria-label="Sort products"
                     className="text-[12.5px] font-medium text-ink bg-surface border border-line-strong rounded-md px-2.5 py-1.5 outline-none focus:border-ink cursor-pointer"
                   >
-                    <option value="latest">Sort by latest</option>
-                    <option value="price-asc">Price: low to high</option>
-                    <option value="price-desc">Price: high to low</option>
+                    <option value="latest">{t('Sort by latest')}</option>
+                    <option value="price-asc">{t('Price: low to high')}</option>
+                    <option value="price-desc">{t('Price: high to low')}</option>
                   </select>
                   <button
                     onClick={() => setMobileFiltersOpen(true)}
                     className="lg:hidden flex items-center gap-1.5 text-[12.5px] font-semibold text-ink border border-line-strong rounded-md px-2.5 py-1.5"
                   >
                     <SlidersHorizontal size={13} />
-                    Filters
+                    {t('Filters')}
                   </button>
                 </div>
               </div>
@@ -314,7 +316,7 @@ export function HomeView({
 
           {products.length === 0 ? (
             <div className="text-center py-20 bg-surface border border-line rounded-lg">
-              <p className="text-lg font-semibold text-ink mb-1.5">Nothing here yet</p>
+              <p className="text-lg font-semibold text-ink mb-1.5">{t('Nothing here yet')}</p>
               <p className="text-[13.5px] text-muted">This store hasn&apos;t added any products. Check back soon.</p>
             </div>
           ) : isFiltered ? (
@@ -335,7 +337,7 @@ export function HomeView({
                   <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileFiltersOpen(false)} />
                   <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-canvas overflow-y-auto p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-[15px] font-bold text-ink">Filters</span>
+                      <span className="text-[15px] font-bold text-ink">{t('Filters')}</span>
                       <button onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters">
                         <X size={18} />
                       </button>
@@ -359,8 +361,8 @@ export function HomeView({
 
               {filtered.length === 0 ? (
                 <div className="text-center py-20 bg-surface border border-line rounded-lg">
-                  <p className="text-lg font-semibold text-ink mb-1.5">No matches</p>
-                  <p className="text-[13.5px] text-muted">Try adjusting your filters or browsing another category.</p>
+                  <p className="text-lg font-semibold text-ink mb-1.5">{t('No matches')}</p>
+                  <p className="text-[13.5px] text-muted">{t('Try adjusting your filters or browsing another category.')}</p>
                 </div>
               ) : (
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
@@ -401,7 +403,7 @@ export function HomeView({
                       <section>
                         <h2 className="text-[18px] font-bold text-ink mb-4 flex items-center justify-center gap-2">
                           <Flame size={18} className="text-orange-500" aria-hidden />
-                          Top Selling
+                          {t('Top Selling')}
                           <Flame size={18} className="text-orange-500" aria-hidden />
                         </h2>
                         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
@@ -472,7 +474,7 @@ export function HomeView({
                   <Fragment key={id}>
                   {reviews.length > 0 && (
                     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-                      <h2 className="text-[16px] font-bold text-ink mb-4 text-center">Our Customer Review</h2>
+                      <h2 className="text-[16px] font-bold text-ink mb-4 text-center">{t('Our Customer Review')}</h2>
                       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
                         {reviews.map((r) => (
                           <div key={r.id} className="bg-surface border border-line rounded-lg p-3.5">

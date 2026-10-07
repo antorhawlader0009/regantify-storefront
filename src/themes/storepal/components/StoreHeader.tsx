@@ -22,6 +22,7 @@ import { useAuthDialog } from '../lib/authDialog';
 import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefrontApi';
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
+import { useStoreText } from '../lib/storeText';
 
 interface StoreHeaderProps {
   subdomain: string;
@@ -59,6 +60,7 @@ const ANNOUNCEMENTS = ['Cash On Delivery All Over Bangladesh', 'Guaranteed Pre-o
 // level as Store > Footer's aboutBlurb. "Delete" on the dashboard hides
 // the strip entirely.
 function SiteBanner() {
+  const t = useStoreText();
   const design = useStorePalDesign();
   if (!design.bannerEnabled) return null;
   const marquee = design.bannerStyle === 'MARQUEE';
@@ -79,7 +81,7 @@ function SiteBanner() {
           ),
         },
       ]
-    : ANNOUNCEMENTS.map((text) => ({ key: text, node: text }));
+    : ANNOUNCEMENTS.map((text) => ({ key: text, node: t(text) }));
   return (
     <div
       className="bg-canvas overflow-hidden border-b border-line"
@@ -138,6 +140,7 @@ export function StoreHeader({
   socialLinks: socialLinksProp,
   categoryDetails = [],
 }: StoreHeaderProps) {
+  const t = useStoreText();
   const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
   const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
   const [searchDraft, setSearchDraft] = useState(search);
@@ -324,7 +327,7 @@ export function StoreHeader({
                 value={searchDraft}
                 onChange={(e) => setSearchDraft(e.target.value)}
                 onFocus={() => setSuggestionsOpen(true)}
-                placeholder="Search Your Product By Product Name, Code…"
+                placeholder={t('Search Your Product By Product Name, Code…')}
                 className="flex-1 px-4 py-2.5 text-[13.5px] text-ink bg-surface outline-none"
                 autoComplete="off"
               />
@@ -362,7 +365,7 @@ export function StoreHeader({
                   className="flex w-full items-center justify-between px-4 py-2.5 text-left text-[13px] font-medium text-ink hover:bg-canvas transition-colors border-b border-line last:border-b-0"
                 >
                   <span>{cat}</span>
-                  <span className="text-[11px] text-muted">Category</span>
+                  <span className="text-[11px] text-muted">{t('Category')}</span>
                 </button>
               ))}
               {matchedProducts.map((p) => (
@@ -444,7 +447,7 @@ export function StoreHeader({
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
               onFocus={() => setSuggestionsOpen(true)}
-              placeholder="Search products"
+              placeholder={t('Search products')}
               className="flex-1 px-3.5 py-2.5 text-[13px] text-ink bg-surface outline-none"
               autoComplete="off"
             />
@@ -478,7 +481,7 @@ export function StoreHeader({
                 className="flex w-full items-center justify-between px-3.5 py-2.5 text-left text-[13px] font-medium text-ink hover:bg-canvas transition-colors border-b border-line last:border-b-0"
               >
                 <span>{cat}</span>
-                <span className="text-[11px] text-muted">Category</span>
+                <span className="text-[11px] text-muted">{t('Category')}</span>
               </button>
             ))}
             {matchedProducts.map((p) => (
@@ -594,7 +597,7 @@ export function StoreHeader({
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileMenuOpen(false)} />
           <nav className="absolute inset-y-0 left-0 w-[80%] max-w-[300px] bg-surface overflow-y-auto shadow-popover">
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-line">
-              <span className="text-[15px] font-bold text-ink">Menu</span>
+              <span className="text-[15px] font-bold text-ink">{t('Menu')}</span>
               <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="text-ink">
                 <X size={20} />
               </button>

@@ -1,6 +1,7 @@
 import { Zap } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { ProductCard } from './ProductCard';
+import { useStoreText } from '../lib/storeText';
 
 const MAX_SALE_PRODUCTS = 8;
 
@@ -19,6 +20,7 @@ export function FlashSaleSection({
   storeName: string;
   products: StorefrontProduct[];
 }) {
+  const t = useStoreText();
   const now = Date.now();
   const onSale = products
     .filter((p) => p.flashSaleEndsAt && new Date(p.flashSaleEndsAt).getTime() > now)
@@ -29,7 +31,7 @@ export function FlashSaleSection({
     <section aria-label="Flash sale">
       <h2 className="text-[18px] font-bold text-ink mb-4 flex items-center justify-center gap-2">
         <Zap size={18} className="text-orange-500" aria-hidden />
-        Flash Sale
+        {t('Flash Sale')}
         <Zap size={18} className="text-orange-500" aria-hidden />
       </h2>
       <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">

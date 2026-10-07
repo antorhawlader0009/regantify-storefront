@@ -216,6 +216,8 @@ export interface StorefrontDesignSettings {
   homeSections: { id: string; enabled: boolean }[];
   homeHighlights: { id: string; icon: string; title: string; text: string }[];
   homeHighlightsHeading: string | null;
+  /** StorePal's buttons and labels: "en" or "bn" (themes/storepal/lib/storeText.ts). */
+  storeLanguage?: 'en' | 'bn';
 }
 
 export interface StorefrontCustomCode {

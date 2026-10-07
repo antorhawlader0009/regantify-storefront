@@ -11,6 +11,7 @@ import { formatPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { CartOffers } from './CartOffers';
+import { useStoreText } from '../lib/storeText';
 
 const SLIDE_MS = 300;
 
@@ -23,6 +24,7 @@ const SLIDE_MS = 300;
  * links to; the old /cart page is just a fallback for saved links.
  */
 export function CartDrawer({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const open = useCartDrawer((s) => s.open);
   const closeDrawer = useCartDrawer((s) => s.closeDrawer);
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
@@ -90,7 +92,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
       >
         <div className="flex shrink-0 items-center justify-between px-5 pb-3 pt-5">
           <h2 className="flex items-center gap-2.5 text-[18px] font-bold leading-none text-ink">
-            Cart
+            {t('Cart')}
             {hydrated && itemCount > 0 && (
               <span className="inline-flex h-[22px] min-w-[22px] items-center justify-center rounded-full bg-ink px-1.5 text-[12px] font-bold text-white">
                 {itemCount}
@@ -112,13 +114,13 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
             <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-surface">
               <ShoppingBag size={28} className="text-muted" aria-hidden />
             </div>
-            <p className="mb-1 text-[16px] font-semibold text-ink">Your cart is empty</p>
-            <p className="mb-5 text-[13px] text-muted">Add a product and it will show up here.</p>
+            <p className="mb-1 text-[16px] font-semibold text-ink">{t('Your cart is empty')}</p>
+            <p className="mb-5 text-[13px] text-muted">{t('Add a product and it will show up here.')}</p>
             <button
               onClick={closeDrawer}
               className="rounded-lg bg-accent px-6 py-3 text-[13.5px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
-              Continue shopping
+              {t('Continue shopping')}
             </button>
           </div>
         ) : (
@@ -150,7 +152,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                                 .join(' · ')}
                             </p>
                           )}
-                          {line.isPreOrder && <p className="mt-1 text-[12px] text-muted">Pre-order</p>}
+                          {line.isPreOrder && <p className="mt-1 text-[12px] text-muted">{t('Pre-order')}</p>}
                           {line.quantity > 1 && <p className="mt-1 text-[12px] text-muted">{formatPrice(line.unitPrice)} each</p>}
                         </div>
                         <button
@@ -197,15 +199,15 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
             <div className="shrink-0 border-t border-line bg-canvas px-5 pb-5 pt-4 shadow-[0_-10px_18px_-14px_rgba(0,0,0,0.35)]">
               {saved > 0 && (
                 <p className="mb-1.5 flex items-center justify-between text-[13px] font-medium text-success">
-                  <span>You save</span>
+                  <span>{t('You save')}</span>
                   <span className="tabular-nums">{formatPrice(saved)}</span>
                 </p>
               )}
               <p className="flex items-baseline justify-between">
-                <span className="text-[14px] font-semibold text-ink">Subtotal</span>
+                <span className="text-[14px] font-semibold text-ink">{t('Subtotal')}</span>
                 <span className="text-[22px] font-bold tabular-nums text-ink">{formatPrice(subtotal)}</span>
               </p>
-              <p className="mb-4 mt-1 text-[12px] leading-snug text-muted">Delivery, coupons and gift cards are applied at checkout.</p>
+              <p className="mb-4 mt-1 text-[12px] leading-snug text-muted">{t('Delivery, coupons and gift cards are applied at checkout.')}</p>
               <button
                 type="button"
                 onClick={() => {
@@ -214,7 +216,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                 }}
                 className="flex h-12 w-full items-center justify-center rounded-lg bg-accent text-[14.5px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
-                Checkout
+                {t('Checkout')}
               </button>
             </div>
           </>

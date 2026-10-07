@@ -16,6 +16,7 @@ import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
+import { useStoreText } from '../lib/storeText';
 
 // Minimal shape ProductCard actually reads — satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
@@ -64,6 +65,7 @@ interface ProductCardProps {
  * being one click target the way Medium's ProductCard is).
  */
 export function ProductCard({ product, subdomain, storeName }: ProductCardProps) {
+  const t = useStoreText();
   const design = useStorePalDesign();
   // A price-on-request product hides its price only while requests can reach the store (the product page's rule).
   const lmsForms = useStorePalLmsForms();
@@ -180,7 +182,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
-              <span className="text-muted text-[13px]">No image</span>
+              <span className="text-muted text-[13px]">{t('No image')}</span>
             </div>
           )}
           {video && hovering && (
@@ -199,7 +201,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
           )}
           {outOfStock && showOutOfStockBadge && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-              <span className="bg-ink text-white text-[11px] font-semibold px-2.5 py-1.5 rounded">Out of Stock</span>
+              <span className="bg-ink text-white text-[11px] font-semibold px-2.5 py-1.5 rounded">{t('Out of Stock')}</span>
             </div>
           )}
         </Link>
@@ -217,7 +219,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
               wishlist.toggle(product.slug);
             }}
             aria-pressed={inWishlist}
-            aria-label={inWishlist ? 'Remove from wishlist' : 'Add to wishlist'}
+            aria-label={inWishlist ? t('Remove from wishlist') : t('Add to wishlist')}
             className="absolute top-2 right-2 z-10 w-8 h-8 rounded-full bg-surface/90 shadow flex items-center justify-center text-ink hover:text-accent transition-colors"
           >
             <Heart size={16} className={inWishlist ? 'fill-accent text-accent' : ''} />
@@ -238,7 +240,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         )}
 
         {quoteOnly ? (
-          <p className="text-[13.5px] font-bold text-ink">Price on request</p>
+          <p className="text-[13.5px] font-bold text-ink">{t('Price on request')}</p>
         ) : (
           <div className="flex gap-2 items-baseline flex-wrap">
             {originalPrice && <span className="text-muted line-through text-[12.5px]">{formatPrice(originalPrice)}</span>}
@@ -291,7 +293,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
               </select>
             ),
           )}
-        {variantWarning && <p className="text-[11.5px] text-accent-dark">Select an option first.</p>}
+        {variantWarning && <p className="text-[11.5px] text-accent-dark">{t('Select an option first.')}</p>}
 
         <div className="mt-auto flex flex-col gap-1.5 pt-1">
           {(showAddToCart || showBuyNow) && (
@@ -304,10 +306,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
                 >
                   {added ? (
                     <>
-                      <Check size={13} /> Added
+                      <Check size={13} /> {t('Added')}
                     </>
                   ) : (
-                    'Add to Cart'
+                    t('Add to Cart')
                   )}
                 </button>
               )}
@@ -317,7 +319,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
                   onClick={() => purchase('buy')}
                   className="flex-1 py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-semibold transition-colors"
                 >
-                  Buy Now
+                  {t('Buy Now')}
                 </button>
               )}
             </div>
@@ -327,7 +329,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
               href={href}
               className="text-center py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-semibold transition-colors"
             >
-              Request a price
+              {t('Request a price')}
             </Link>
           )}
           {showView && (
@@ -335,7 +337,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
               href={href}
               className="text-center py-2 rounded-md border border-line-strong text-[12.5px] font-semibold text-ink hover:bg-ink hover:text-white hover:border-ink transition-colors"
             >
-              View Product
+              {t('View Product')}
             </Link>
           )}
         </div>
