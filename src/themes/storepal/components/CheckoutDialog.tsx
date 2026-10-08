@@ -7,6 +7,7 @@ import { Minus, Plus, X, Tag, ShieldCheck, Truck, Gift } from 'lucide-react';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatReturnDay } from '@/lib/storeAway';
 import { suggestZone } from '@/lib/deliveryZone';
+import { BdAddressPicker } from '@/components/BdAddressPicker';
 import { formatPrice } from '../lib/formatPrice';
 import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
@@ -42,6 +43,11 @@ const EN = {
   thana: 'Thana / Upazila',
   district: 'District',
   districtPlaceholder: 'Please select district',
+  thanaPlaceholder: 'Select thana / upazila',
+  thanaNeedsDistrict: 'Choose a district first',
+  otherPlace: 'Other (type it)',
+  typeDistrict: 'Type your district',
+  typeThana: 'Type your thana / upazila',
   shipping: 'Shipping Option',
   insideDhaka: 'Inside Dhaka',
   outsideDhaka: 'Outside Dhaka',
@@ -115,6 +121,11 @@ const BN: Copy = {
   thana: 'থানা / উপজেলা',
   district: 'জেলা',
   districtPlaceholder: 'জেলা নির্বাচন করুন',
+  thanaPlaceholder: 'থানা / উপজেলা নির্বাচন করুন',
+  thanaNeedsDistrict: 'আগে জেলা বাছুন',
+  otherPlace: 'অন্যান্য (নিজে লিখুন)',
+  typeDistrict: 'আপনার জেলা লিখুন',
+  typeThana: 'আপনার থানা / উপজেলা লিখুন',
   shipping: 'ডেলিভারি অপশন',
   insideDhaka: 'ঢাকার ভিতরে',
   outsideDhaka: 'ঢাকার বাইরে',
@@ -404,26 +415,26 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 {errors.address && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.address)}</p>}
               </div>
 
-              <div>
-                <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.thana}</label>
-                <input
-                  value={form.city}
-                  onChange={(e) => updateField('city', e.target.value)}
-                  maxLength={100}
-                  className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
-                />
-              </div>
-
-              <div>
-                <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.district}</label>
-                <input
-                  value={form.district}
-                  onChange={(e) => updateField('district', e.target.value)}
-                  placeholder={t.districtPlaceholder}
-                  maxLength={100}
-                  className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
-                />
-              </div>
+              {/* District, then thana/upazila, picked from the list (lib/bdLocations.ts) so every order spells a place the same way. */}
+              <BdAddressPicker
+                district={form.district}
+                thana={form.city}
+                onDistrict={(value) => updateField('district', value)}
+                onThana={(value) => updateField('city', value)}
+                lang={lang}
+                labels={{
+                  district: t.district,
+                  thana: t.thana,
+                  districtPlaceholder: t.districtPlaceholder,
+                  thanaPlaceholder: t.thanaPlaceholder,
+                  thanaNeedsDistrict: t.thanaNeedsDistrict,
+                  other: t.otherPlace,
+                  typeDistrict: t.typeDistrict,
+                  typeThana: t.typeThana,
+                }}
+                labelClassName="block text-[13.5px] font-medium text-ink mb-1.5"
+                controlClassName="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
+              />
 
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.shipping}</label>

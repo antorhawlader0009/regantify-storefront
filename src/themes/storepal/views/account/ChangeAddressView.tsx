@@ -7,6 +7,7 @@ import { updateMyAddress } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
+import { BdAddressPicker } from '@/components/BdAddressPicker';
 
 /** Account > Change Address — matches the reference Street Address / City / District / ZIP Code form. */
 export function ChangeAddressView({ subdomain }: { subdomain: string }) {
@@ -81,24 +82,26 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
               className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
             />
           </div>
-          <div>
-            <label className="block text-[13px] font-medium text-ink mb-1.5">City</label>
-            <input
-              value={city}
-              onChange={(e) => setCity(e.target.value.slice(0, 100))}
-              maxLength={100}
-              className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
-            />
-          </div>
-          <div>
-            <label className="block text-[13px] font-medium text-ink mb-1.5">District</label>
-            <input
-              value={district}
-              onChange={(e) => setDistrict(e.target.value.slice(0, 100))}
-              maxLength={100}
-              className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
-            />
-          </div>
+          {/* District, then city (thana / upazila): picked from the list so the saved address is spelled one way. */}
+          <BdAddressPicker
+            district={district}
+            thana={city}
+            onDistrict={(value) => setDistrict(value.slice(0, 100))}
+            onThana={(value) => setCity(value.slice(0, 100))}
+            lang="en"
+            labels={{
+              district: 'District',
+              thana: 'City / Thana / Upazila',
+              districtPlaceholder: 'Select district',
+              thanaPlaceholder: 'Select thana / upazila',
+              thanaNeedsDistrict: 'Choose a district first',
+              other: 'Other (type it)',
+              typeDistrict: 'Type your district',
+              typeThana: 'Type your city or thana',
+            }}
+            labelClassName="block text-[13px] font-medium text-ink mb-1.5"
+            controlClassName="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors"
+          />
           <div>
             <label className="block text-[13px] font-medium text-ink mb-1.5">ZIP Code</label>
             <input
