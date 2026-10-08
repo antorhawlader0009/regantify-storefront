@@ -10,6 +10,7 @@ import { resolveCouponLink } from '@/lib/checkoutApi';
 import { setPendingCoupon } from '../lib/pendingCoupon';
 import { trackMetaSearch } from '@/lib/metaPixelEvents';
 import { trackSearch } from '@/lib/ecommerceEvents';
+import { logSearch } from '@/lib/searchLog';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
@@ -205,6 +206,8 @@ export function HomeView({
     if (!searchQuery) return;
     trackMetaSearch(searchQuery, sorted.map((p) => p.id));
     trackSearch(searchQuery);
+    // The vendor’s own Analytics: the word and how many products it found (StorePal only, like this view).
+    logSearch(subdomain, searchQuery, sorted.length);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
