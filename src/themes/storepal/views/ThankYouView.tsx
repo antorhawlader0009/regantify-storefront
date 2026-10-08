@@ -92,6 +92,8 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
   }
 
   const awaitingCodVerification = order.codVerificationStatus === 'PENDING' && !codVerified;
+  // The time to enter the SMS code ran out: the store cancelled the order, or kept it to call the shopper.
+  const codVerificationExpired = order.codVerificationStatus === 'EXPIRED';
   // The delivery charge (or part) a COD shopper already paid, so the page shows what is still due in cash.
   const advancePaid = order.advancePaidAt && Number(order.advanceAmount) > 0 ? Number(order.advanceAmount) : 0;
 
@@ -122,10 +124,14 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             </svg>
           </div>
           <h1 className="storepal-fade-up text-[24px] sm:text-[28px] font-bold text-ink mb-2">
-            {justPlaced ? 'Thank you for your order!' : 'Order confirmed'}
+            {codVerificationExpired ? 'Order not confirmed' : justPlaced ? 'Thank you for your order!' : 'Order confirmed'}
           </h1>
           <p className="storepal-fade-up text-[13.5px] text-muted max-w-md" style={{ animationDelay: '0.08s' }}>
-            {awaitingCodVerification
+            {codVerificationExpired
+              ? order.status === 'CANCELLED'
+                ? 'The SMS code was not entered in time, so this order was cancelled. You are welcome to place it again.'
+                : 'The SMS code was not entered in time. The store will contact you to confirm this order.'
+              : awaitingCodVerification
               ? 'One more step: confirm your order with the code we just texted you.'
               : order.paymentMethod === 'ONLINE_PAYMENT'
                 ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'

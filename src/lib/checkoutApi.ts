@@ -31,7 +31,7 @@ export interface CheckoutResponse {
   status: string;
   // Store > COD Guard — PENDING means the order was placed On Hold and
   // the thank-you page must collect the SMS code (StorePal only).
-  codVerificationStatus?: 'PENDING' | 'VERIFIED' | null;
+  codVerificationStatus?: 'PENDING' | 'VERIFIED' | 'EXPIRED' | null;
   // Store > COD Guard > "Delivery charge in advance": a COD order whose delivery charge still has to be
   // paid online. The checkout then calls initiateOrderPayment for it (the server charges just this amount).
   advanceDue?: number | null;
@@ -474,7 +474,7 @@ export interface TrackedOrder {
   paymentMethod: string;
   // Store > COD Guard — PENDING while an after-checkout order waits On
   // Hold for the shopper's SMS code (see StorePal's ThankYouView).
-  codVerificationStatus?: 'PENDING' | 'VERIFIED' | null;
+  codVerificationStatus?: 'PENDING' | 'VERIFIED' | 'EXPIRED' | null;
   items: TrackedOrderItem[];
   statusHistory: TrackedOrderStatusHistoryEntry[];
   // Only on the track-order and tracking-link answers, not on the "My orders" list.
@@ -608,7 +608,7 @@ export async function verifyCodOrder(
   subdomain: string,
   orderId: string,
   code: string,
-): Promise<{ status: string; codVerificationStatus: 'PENDING' | 'VERIFIED' | null }> {
+): Promise<{ status: string; codVerificationStatus: 'PENDING' | 'VERIFIED' | 'EXPIRED' | null }> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/orders/${orderId}/cod-verification/verify`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
