@@ -77,8 +77,8 @@ const EN = {
   freeShipping: 'Free shipping',
   giftCard: (code: string) => `Gift card ${code}`,
   total: 'Total',
-  haveCoupon: 'Have Coupon?',
-  haveGift: 'Have a gift card?',
+  haveCoupon: 'Coupon code',
+  haveGift: 'Gift card',
   applied: 'applied',
   couponPlaceholder: 'Enter coupon code',
   giftPlaceholder: 'Enter gift card code',
@@ -141,8 +141,8 @@ const BN: Copy = {
   freeShipping: 'ফ্রি ডেলিভারি',
   giftCard: (code) => `গিফট কার্ড ${code}`,
   total: 'সর্বমোট',
-  haveCoupon: 'কুপন আছে?',
-  haveGift: 'গিফট কার্ড আছে?',
+  haveCoupon: 'কুপন কোড',
+  haveGift: 'গিফট কার্ড',
   applied: 'প্রয়োগ হয়েছে',
   couponPlaceholder: 'কুপন কোড দিন',
   giftPlaceholder: 'গিফট কার্ড কোড দিন',
@@ -220,9 +220,6 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   // A COD order that must pay its delivery charge first also ends in PayStation's hosted page.
   const isRedirectGateway = (selectedGateway ? selectedGateway.type !== 'COD' : false) || codAdvance !== null;
 
-  const [couponBoxOpen, setCouponBoxOpen] = useState(false);
-  const [giftCardBoxOpen, setGiftCardBoxOpen] = useState(false);
-
   // Meta pixel InitiateCheckout / GA4 begin_checkout, once, as soon as the
   // saved cart has loaded and isn't empty.
   const checkoutTracked = useRef(false);
@@ -235,7 +232,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   }, [hydrated, lines]);
 
   // "Create custom link for this coupon" hand-off from HomeView (see
-  // lib/pendingCoupon.ts) — a code stashed there pre-fills the box open
+  // lib/pendingCoupon.ts) — a code stashed there pre-fills the coupon box
   // here, then auto-applies itself the moment a valid phone number is
   // on hand (validateCoupon requires one — see useCheckout.applyCoupon).
   // pendingRef both survives the one-time sessionStorage read (so a
@@ -248,7 +245,6 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     if (code) {
       pendingRef.current = code;
       setCouponCode(code);
-      setCouponBoxOpen(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain]);
@@ -418,104 +414,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 />
               </div>
             </div>
-
-            <div className="border-t border-line mt-6 pt-6">
-              <p className="text-[15px] font-semibold text-ink mb-3">{t.paymentMethod}</p>
-              <div className="space-y-2.5">
-                {/* Store > Payment Gateway's enabled gateway list for this
-                    vendor — COD/Online Payment plus any
-                    connected custom gateway (e.g. SSLCommerz). Each
-                    gateway's own Platform Charge is deliberately NOT shown
-                    here — it only appears once selected, in the cart
-                    summary below (see the Platform Charge line). */}
-                {paymentGateways.map((gateway) => (
-                  <label key={gateway.id} className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
-                    <input
-                      type="radio"
-                      checked={paymentMethod === gateway.id}
-                      onChange={() => setPaymentMethod(gateway.id)}
-                      className="accent-accent w-4 h-4"
-                    />
-                    {gateway.displayLabel ?? t.gatewayLabels[gateway.type] ?? DEFAULT_GATEWAY_LABELS[gateway.type]}
-                    {gateway.type === 'ONLINE_PAYMENT' && (
-                      <span className="text-[11px] text-muted font-normal">{t.onlineHint}</span>
-                    )}
-                  </label>
-                ))}
-              </div>
-            </div>
-
-            {/* Store > COD Guard > "Delivery charge in advance" — see useCheckout's codAdvance. */}
-            {codAdvance && (
-              <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
-                <p className="m-0 text-[13px] font-semibold text-ink">{t.advanceTitle}</p>
-                <p className="m-0 mt-1 text-[12.5px] text-muted">
-                  {t.advanceBody(formatPrice(codAdvance.amount), formatPrice(codAdvance.restOnDelivery))}
-                </p>
-              </div>
-            )}
-
-            {/* Store > COD Guard "Before Checkout" — see useCheckout's codOtp. */}
-            {showCodOtp && (
-              <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
-                <p className="m-0 text-[13px] font-semibold text-ink">{t.verifyTitle}</p>
-                <p className="m-0 mt-1 text-[12.5px] text-muted">
-                  {t.verifyBody(codOtpPhone ?? '')}
-                </p>
-                <input
-                  type="text"
-                  inputMode="numeric"
-                  autoComplete="one-time-code"
-                  value={codOtpCode}
-                  onChange={(e) => setCodOtpCode(e.target.value)}
-                  placeholder={t.enterCode}
-                  aria-label={t.codeAria}
-                  className="mt-3 w-full sm:w-48 px-3 py-2.5 rounded-md border border-line bg-surface text-[15px] tracking-[0.3em] text-ink focus:outline-none focus:border-accent"
-                />
-                {codOtpError && <p className="m-0 mt-2 text-[12.5px] text-accent">{codOtpError}</p>}
-                <button
-                  type="button"
-                  onClick={resendCodOtp}
-                  disabled={codOtpSending}
-                  className="mt-2 block text-[12.5px] font-semibold text-accent underline underline-offset-2 disabled:opacity-60"
-                >
-                  {codOtpSending ? t.sending : t.resend}
-                </button>
-              </div>
-            )}
-
-            {placeError && <p className="mt-4 text-[13px] text-accent">{placeError}</p>}
-
-            <button
-              onClick={handlePlaceOrder}
-              disabled={placing || codOtpSending}
-              className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
-            >
-              {codOtpSending && !showCodOtp
-                ? t.sendingCode
-                : placing
-                  ? isRedirectGateway
-                    ? t.redirecting
-                    : t.placing
-                  : showCodOtp
-                    ? t.verifySubmit
-                    : codAdvance
-                      ? t.submitAdvance(formatPrice(codAdvance.amount))
-                      : t.submit}
-            </button>
-
-            <div className="flex flex-wrap gap-2 mt-4">
-              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
-                <Truck size={13} className="text-accent shrink-0" />
-                {t.codBadge}
-              </div>
-              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
-                <ShieldCheck size={13} className="text-accent shrink-0" />
-                {t.genuineBadge}
-              </div>
-            </div>
           </div>
 
+          {/* Right column: cart summary, then payment and Submit under it */}
+          <div>
           {/* Your cart summary */}
           <div className="bg-surface border border-line rounded-lg p-4 sm:p-5 ">
             <div className="flex items-center gap-2 mb-4 pb-3 border-b border-line">
@@ -669,27 +571,9 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               )}
             </div>
 
-            <div className="flex justify-end gap-4 mt-3">
-              {!couponBoxOpen && !appliedCoupon && (
-                <button
-                  onClick={() => setCouponBoxOpen(true)}
-                  className="text-[13px] font-medium text-accent hover:text-accent-dark transition-colors"
-                >
-                  {t.haveCoupon}
-                </button>
-              )}
-              {!giftCardBoxOpen && !appliedGiftCard && (
-                <button
-                  onClick={() => setGiftCardBoxOpen(true)}
-                  className="text-[13px] font-medium text-accent hover:text-accent-dark transition-colors"
-                >
-                  {t.haveGift}
-                </button>
-              )}
-            </div>
-
-            {(couponBoxOpen || appliedCoupon) && (
-              <div className="mt-3 pt-3 border-t border-line">
+            {/* Coupon and gift card boxes are always open (no "Have Coupon?" toggle). */}
+            <div className="mt-3 pt-3 border-t border-line">
+                <p className="mb-1.5 text-[12.5px] font-medium text-ink">{t.haveCoupon}</p>
                 {appliedCoupon ? (
                   <div className="flex items-center justify-between bg-success-bg text-success text-[12.5px] font-semibold px-3 py-2 rounded-md">
                     <span className="flex items-center gap-1.5">
@@ -721,11 +605,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     {couponError && <p className="mt-1.5 text-[12px] text-accent">{couponError}</p>}
                   </div>
                 )}
-              </div>
-            )}
+            </div>
 
-            {(giftCardBoxOpen || appliedGiftCard) && (
-              <div className="mt-3 pt-3 border-t border-line">
+            <div className="mt-3">
+                <p className="mb-1.5 text-[12.5px] font-medium text-ink">{t.haveGift}</p>
                 {appliedGiftCard ? (
                   <div>
                     <div className="flex items-center justify-between bg-success-bg text-success text-[12.5px] font-semibold px-3 py-2 rounded-md">
@@ -766,8 +649,104 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     {giftCardError && <p className="mt-1.5 text-[12px] text-accent">{giftCardError}</p>}
                   </div>
                 )}
+            </div>
+          </div>
+
+            <div className="mt-5 bg-surface border border-line rounded-lg p-4 sm:p-5">
+              <p className="text-[15px] font-semibold text-ink mb-3">{t.paymentMethod}</p>
+              <div className="space-y-2.5">
+                {/* Store > Payment Gateway's enabled gateway list for this
+                    vendor — COD/Online Payment plus any
+                    connected custom gateway (e.g. SSLCommerz). Each
+                    gateway's own Platform Charge is deliberately NOT shown
+                    here — it only appears once selected, in the cart
+                    summary below (see the Platform Charge line). */}
+                {paymentGateways.map((gateway) => (
+                  <label key={gateway.id} className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
+                    <input
+                      type="radio"
+                      checked={paymentMethod === gateway.id}
+                      onChange={() => setPaymentMethod(gateway.id)}
+                      className="accent-accent w-4 h-4"
+                    />
+                    {gateway.displayLabel ?? t.gatewayLabels[gateway.type] ?? DEFAULT_GATEWAY_LABELS[gateway.type]}
+                    {gateway.type === 'ONLINE_PAYMENT' && (
+                      <span className="text-[11px] text-muted font-normal">{t.onlineHint}</span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            </div>
+
+            {/* Store > COD Guard > "Delivery charge in advance" — see useCheckout's codAdvance. */}
+            {codAdvance && (
+              <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
+                <p className="m-0 text-[13px] font-semibold text-ink">{t.advanceTitle}</p>
+                <p className="m-0 mt-1 text-[12.5px] text-muted">
+                  {t.advanceBody(formatPrice(codAdvance.amount), formatPrice(codAdvance.restOnDelivery))}
+                </p>
               </div>
             )}
+
+            {/* Store > COD Guard "Before Checkout" — see useCheckout's codOtp. */}
+            {showCodOtp && (
+              <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
+                <p className="m-0 text-[13px] font-semibold text-ink">{t.verifyTitle}</p>
+                <p className="m-0 mt-1 text-[12.5px] text-muted">
+                  {t.verifyBody(codOtpPhone ?? '')}
+                </p>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  autoComplete="one-time-code"
+                  value={codOtpCode}
+                  onChange={(e) => setCodOtpCode(e.target.value)}
+                  placeholder={t.enterCode}
+                  aria-label={t.codeAria}
+                  className="mt-3 w-full sm:w-48 px-3 py-2.5 rounded-md border border-line bg-surface text-[15px] tracking-[0.3em] text-ink focus:outline-none focus:border-accent"
+                />
+                {codOtpError && <p className="m-0 mt-2 text-[12.5px] text-accent">{codOtpError}</p>}
+                <button
+                  type="button"
+                  onClick={resendCodOtp}
+                  disabled={codOtpSending}
+                  className="mt-2 block text-[12.5px] font-semibold text-accent underline underline-offset-2 disabled:opacity-60"
+                >
+                  {codOtpSending ? t.sending : t.resend}
+                </button>
+              </div>
+            )}
+
+            {placeError && <p className="mt-4 text-[13px] text-accent">{placeError}</p>}
+
+            <button
+              onClick={handlePlaceOrder}
+              disabled={placing || codOtpSending}
+              className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
+            >
+              {codOtpSending && !showCodOtp
+                ? t.sendingCode
+                : placing
+                  ? isRedirectGateway
+                    ? t.redirecting
+                    : t.placing
+                  : showCodOtp
+                    ? t.verifySubmit
+                    : codAdvance
+                      ? t.submitAdvance(formatPrice(codAdvance.amount))
+                      : t.submit}
+            </button>
+
+            <div className="flex flex-wrap gap-2 mt-4">
+              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
+                <Truck size={13} className="text-accent shrink-0" />
+                {t.codBadge}
+              </div>
+              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
+                <ShieldCheck size={13} className="text-accent shrink-0" />
+                {t.genuineBadge}
+              </div>
+            </div>
           </div>
         </div>
       </div>
