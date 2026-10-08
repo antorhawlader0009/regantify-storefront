@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { Minus, Plus, X, Tag, ShieldCheck, Truck, Gift } from 'lucide-react';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatReturnDay } from '@/lib/storeAway';
+import { suggestZone } from '@/lib/deliveryZone';
 import { formatPrice } from '../lib/formatPrice';
 import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
@@ -64,6 +65,11 @@ const EN = {
     `Pay ${advance} online (bKash, Nagad, cards) to confirm your order. You pay the remaining ${rest} in cash when it arrives.`,
   advanceNow: 'Pay now (delivery charge)',
   advanceRest: 'Pay on delivery',
+  advanceTitlePre: 'Pay an advance for your pre-order',
+  advanceBodyPre: (advance: string, rest: string, percent: number | null) =>
+    `Pay ${advance}${percent ? ` (${percent}% of your pre-order items)` : ''} online (bKash, Nagad, cards) to confirm your pre-order. You pay the remaining ${rest} in cash when it arrives.`,
+  advanceNowPre: 'Pay now (pre-order advance)',
+  aroundDhaka: 'Around Dhaka',
   submitAdvance: (advance: string) => `Pay ${advance} & Place Order`,
   awayTitle: 'The store is away',
   awayOpen: (day: string | null) =>
@@ -132,6 +138,11 @@ const BN: Copy = {
     `অর্ডার নিশ্চিত করতে ${advance} অনলাইনে (বিকাশ, নগদ, কার্ড) দিন। বাকি ${rest} পণ্য হাতে পেয়ে ক্যাশে দেবেন।`,
   advanceNow: 'এখন পরিশোধ (ডেলিভারি চার্জ)',
   advanceRest: 'ডেলিভারির সময় পরিশোধ',
+  advanceTitlePre: 'প্রি-অর্ডারের জন্য অগ্রিম দিন',
+  advanceBodyPre: (advance, rest, percent) =>
+    `প্রি-অর্ডার নিশ্চিত করতে ${advance}${percent ? ` (প্রি-অর্ডার পণ্যের ${percent}%)` : ''} অনলাইনে (বিকাশ, নগদ, কার্ড) দিন। বাকি ${rest} পণ্য হাতে পেয়ে ক্যাশে দেবেন।`,
+  advanceNowPre: 'এখন পরিশোধ (প্রি-অর্ডার অগ্রিম)',
+  aroundDhaka: 'ঢাকার আশেপাশে',
   submitAdvance: (advance) => `${advance} দিয়ে অর্ডার করুন`,
   awayTitle: 'দোকান এখন সাময়িক বন্ধ',
   awayOpen: (day) => (day ? `অর্ডার করতে পারবেন। ডেলিভারি শুরু হবে ${day} থেকে।` : 'অর্ডার করতে পারবেন। দোকান খুললে ডেলিভারি শুরু হবে।'),
@@ -214,6 +225,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     paymentMethod,
     setPaymentMethod,
     codAdvance,
+    aroundDhaka,
+    zone,
     storeAway,
     codOtpPhone,
     codOtpCode,
@@ -225,6 +238,15 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   // Store > Store Away: "browse only" stops the order here (the server refuses it too).
   const ordersPaused = storeAway?.mode === 'BROWSE_ONLY';
   const awayDay = storeAway?.returnDate ? formatReturnDay(storeAway.returnDate, lang) : null;
+  // Around Dhaka: while the store offers it and the shopper has not picked a shipping option themselves, the zone
+  // follows the district and thana they type (see lib/deliveryZone.ts). Stores without it behave as before.
+  const zoneChosenByShopper = useRef(false);
+  useEffect(() => {
+    if (!aroundDhaka || zoneChosenByShopper.current) return;
+    const suggested = suggestZone(form.district, form.city);
+    if (suggested && suggested !== zone) updateField('zone', suggested);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aroundDhaka, form.district, form.city]);
   const isCodSelected = paymentGateways.find((g) => g.id === paymentMethod)?.type === 'COD';
   const showCodOtp = isCodSelected && codOtpPhone !== null;
 
@@ -406,11 +428,15 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.shipping}</label>
                 <select
-                  value={form.zone}
-                  onChange={(e) => updateField('zone', e.target.value)}
+                  value={zone}
+                  onChange={(e) => {
+                    zoneChosenByShopper.current = true;
+                    updateField('zone', e.target.value);
+                  }}
                   className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
                 >
                   <option value="DHAKA">{t.insideDhaka} — {formatPrice(deliveryChargeByZone.DHAKA)}</option>
+                  {aroundDhaka && <option value="AROUND_DHAKA">{t.aroundDhaka} — {formatPrice(deliveryChargeByZone.AROUND_DHAKA)}</option>}
                   <option value="OUTSIDE_DHAKA">{t.outsideDhaka} — {formatPrice(deliveryChargeByZone.OUTSIDE_DHAKA)}</option>
                 </select>
               </div>
@@ -572,7 +598,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               {codAdvance && (
                 <>
                   <div className="flex justify-between text-ink">
-                    <span>{t.advanceNow}</span>
+                    <span>{codAdvance.kind === 'PREORDER' ? t.advanceNowPre : t.advanceNow}</span>
                     <span className="font-semibold text-accent">{formatPrice(codAdvance.amount)}</span>
                   </div>
                   <div className="flex justify-between text-ink">
@@ -693,9 +719,13 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
             {/* Store > COD Guard > "Delivery charge in advance" — see useCheckout's codAdvance. */}
             {codAdvance && (
               <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
-                <p className="m-0 text-[13px] font-semibold text-ink">{t.advanceTitle}</p>
+                <p className="m-0 text-[13px] font-semibold text-ink">
+                  {codAdvance.kind === 'PREORDER' ? t.advanceTitlePre : t.advanceTitle}
+                </p>
                 <p className="m-0 mt-1 text-[12.5px] text-muted">
-                  {t.advanceBody(formatPrice(codAdvance.amount), formatPrice(codAdvance.restOnDelivery))}
+                  {codAdvance.kind === 'PREORDER'
+                    ? t.advanceBodyPre(formatPrice(codAdvance.amount), formatPrice(codAdvance.restOnDelivery), codAdvance.preOrderPercent)
+                    : t.advanceBody(formatPrice(codAdvance.amount), formatPrice(codAdvance.restOnDelivery))}
                 </p>
               </div>
             )}

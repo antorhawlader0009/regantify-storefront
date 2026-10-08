@@ -67,7 +67,7 @@ export interface CheckoutFormState {
   // DTO), which so far only Add Order (vendor dashboard) populated.
   city: string;
   district: string;
-  zone: 'DHAKA' | 'OUTSIDE_DHAKA';
+  zone: 'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA';
   note: string;
 }
 
@@ -136,8 +136,9 @@ export function useCheckout(
     vatChargeBdt: number;
     paymentGateways: StorePaymentGateway[];
     codSmsVerification: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
-    codAdvance: { minOrder: number | null } | null;
-    deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null } | null;
+    codAdvance: { minOrder: number | null; delivery?: boolean; preOrderPercent?: number | null } | null;
+    deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null; AROUND_DHAKA?: string | null } | null;
+    aroundDhaka: { charge: number } | null;
     storeAway: StorefrontStoreAway | null;
   } | null>(null);
   useEffect(() => {
@@ -152,6 +153,7 @@ export function useCheckout(
         codSmsVerification: charges.codSmsVerification ?? null,
         codAdvance: charges.codAdvance ?? null,
         deliveryEstimate: charges.deliveryEstimate ?? null,
+        aroundDhaka: charges.aroundDhaka ?? null,
         storeAway: stillAway(charges.storeAway),
       });
     });
@@ -159,9 +161,18 @@ export function useCheckout(
       cancelled = true;
     };
   }, [subdomain]);
-  const resolvedDeliveryCharge: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = vendorCharges
-    ? { DHAKA: vendorCharges.insideDhakaCharge, OUTSIDE_DHAKA: vendorCharges.outsideDhakaCharge }
-    : DELIVERY_CHARGE;
+  // Around Dhaka is offered only while the store has it on and is on StorePal (the server reports aroundDhaka
+  // null otherwise); a zone the shopper can't be offered counts as Outside Dhaka, so a saved "around" choice
+  // from another store's checkout never prices or sends a zone this checkout doesn't show.
+  const aroundDhaka = vendorCharges?.aroundDhaka ?? null;
+  const zone: CheckoutFormState['zone'] = form.zone === 'AROUND_DHAKA' && !aroundDhaka ? 'OUTSIDE_DHAKA' : form.zone;
+  const resolvedDeliveryCharge: Record<'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA', number> = vendorCharges
+    ? {
+        DHAKA: vendorCharges.insideDhakaCharge,
+        OUTSIDE_DHAKA: vendorCharges.outsideDhakaCharge,
+        AROUND_DHAKA: vendorCharges.aroundDhaka?.charge ?? vendorCharges.outsideDhakaCharge,
+      }
+    : { ...DELIVERY_CHARGE, AROUND_DHAKA: DELIVERY_CHARGE.OUTSIDE_DHAKA };
   const resolvedVatCharge = vendorCharges?.vatChargeBdt ?? FALLBACK_VAT_CHARGE;
   const paymentGateways = vendorCharges?.paymentGateways ?? FALLBACK_GATEWAYS;
 
@@ -289,7 +300,7 @@ export function useCheckout(
 
   const storeName = lines[0]?.storeName ?? '';
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
-  const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[form.zone] : 0;
+  const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[zone] : 0;
   // VAT — a flat fee applied to every order regardless of payment method
   // (see Vendor.vatChargeBdt's own schema comment). Zero whenever the
   // cart is empty, same as deliveryCharge above.
@@ -377,14 +388,29 @@ export function useCheckout(
   // will charge, so StorePal's checkout can say "pay ৳60 now, ৳X on delivery". The server decides: this
   // only mirrors it (COD selected, vendor minimum met, delivery charge above 0, never more than the total).
   // Null on every other payment method and on Medium/Minimal (the server never reports codAdvance there).
-  const codAdvanceAmount =
-    selectedGateway?.type === 'COD' &&
-    vendorCharges?.codAdvance &&
-    (vendorCharges.codAdvance.minOrder === null || subtotal >= vendorCharges.codAdvance.minOrder)
+  // Two reasons to pay up front, sharing one payment: the delivery charge, and a share of the pre-order products.
+  // The larger of the two is taken, never both (the server does the same).
+  const codAdvanceRule = selectedGateway?.type === 'COD' ? (vendorCharges?.codAdvance ?? null) : null;
+  const deliveryAdvanceAmount =
+    codAdvanceRule && codAdvanceRule.delivery !== false && (codAdvanceRule.minOrder === null || subtotal >= codAdvanceRule.minOrder)
       ? Math.round(Math.min(effectiveDeliveryCharge, grandTotal) * 100) / 100
       : 0;
+  const preOrderSubtotal = lines.reduce((sum, l) => (l.isPreOrder ? sum + l.unitPrice * l.quantity : sum), 0);
+  const preOrderAdvanceAmount =
+    codAdvanceRule?.preOrderPercent && preOrderSubtotal > 0
+      ? Math.round(Math.min((preOrderSubtotal * Math.min(codAdvanceRule.preOrderPercent, 100)) / 100, grandTotal) * 100) / 100
+      : 0;
+  const codAdvanceAmount = Math.max(deliveryAdvanceAmount, preOrderAdvanceAmount);
   const codAdvance =
-    codAdvanceAmount > 0 ? { amount: codAdvanceAmount, restOnDelivery: Math.max(0, visibleGrandTotal - codAdvanceAmount) } : null;
+    codAdvanceAmount > 0
+      ? {
+          amount: codAdvanceAmount,
+          restOnDelivery: Math.max(0, visibleGrandTotal - codAdvanceAmount),
+          // What the advance is for, so the checkout can word it ("pay the delivery charge" / "pay 50% for your pre-order").
+          kind: preOrderAdvanceAmount > deliveryAdvanceAmount ? ('PREORDER' as const) : ('DELIVERY' as const),
+          preOrderPercent: preOrderAdvanceAmount > deliveryAdvanceAmount ? (codAdvanceRule?.preOrderPercent ?? null) : null,
+        }
+      : null;
 
   // Same limits enforced server-side by CreateOrderDto — kept here too so
   // a shopper is stopped from typing past them in the first place, on
@@ -564,7 +590,7 @@ export function useCheckout(
         shippingAddress: form.address.trim(),
         shippingCity: form.city.trim() || undefined,
         shippingDistrict: form.district.trim() || undefined,
-        deliveryZone: form.zone,
+        deliveryZone: zone,
         sessionKey: sessionKey || undefined,
         couponCode: appliedCoupon?.code,
         giftCardCode: appliedGiftCard?.code,
@@ -657,7 +683,10 @@ export function useCheckout(
     // unchanged.
     deliveryChargeByZone: resolvedDeliveryCharge,
     // "Expected by" date (YYYY-MM-DD) for the chosen zone, or null when the store set no delivery time.
-    expectedDeliveryDate: vendorCharges?.deliveryEstimate?.[form.zone] ?? null,
+    expectedDeliveryDate: vendorCharges?.deliveryEstimate?.[zone] ?? null,
+    // The optional third zone ({ charge } while the store offers it, else null) and the zone actually in use.
+    aroundDhaka,
+    zone,
     // Applies regardless of payment method now (see comment above) —
     // StorePal's CheckoutView/ThankYouView show this as "VAT";
     // Medium/Minimal don't render it as its own line (their JSX is

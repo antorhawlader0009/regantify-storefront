@@ -107,6 +107,8 @@ export function CheckoutFormSection({
     subtotal,
     deliveryCharge,
     deliveryChargeByZone,
+    aroundDhaka,
+    zone,
     vatAmount,
     visiblePlatformChargeAmount,
     visibleGrandTotal,
@@ -241,10 +243,10 @@ export function CheckoutFormSection({
             {collect.shippingOption && (
               <Field label="Shipping Option">
                 <div className="flex flex-col gap-2">
-                  {(['DHAKA', 'OUTSIDE_DHAKA'] as const).map((z) => (
+                  {(aroundDhaka ? (['DHAKA', 'AROUND_DHAKA', 'OUTSIDE_DHAKA'] as const) : (['DHAKA', 'OUTSIDE_DHAKA'] as const)).map((z) => (
                     <label key={z} className="flex items-center gap-2 text-[13.5px] text-neutral-700">
-                      <input type="radio" checked={form.zone === z} onChange={() => updateField('zone', z)} />
-                      {z === 'DHAKA' ? 'Inside Dhaka' : 'Outside Dhaka'} — {formatPrice(deliveryChargeByZone[z])}
+                      <input type="radio" checked={zone === z} onChange={() => updateField('zone', z)} />
+                      {z === 'DHAKA' ? 'Inside Dhaka' : z === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka'} — {formatPrice(deliveryChargeByZone[z])}
                     </label>
                   ))}
                 </div>

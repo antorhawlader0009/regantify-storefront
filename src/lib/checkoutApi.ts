@@ -103,11 +103,16 @@ export interface StoreDeliveryCharges {
   // Store > COD Guard > "Delivery charge in advance" — set only when StorePal's checkout should make a COD
   // shopper pay the delivery charge online first (the server also needs Online Payment on).
   // minOrder: only for carts of at least this much; null = every order.
-  codAdvance?: { minOrder: number | null } | null;
+  // delivery: the delivery-charge advance is on (minOrder applies to it); preOrderPercent: the share of pre-order
+  // products to pay up front (null = off). Older servers sent only minOrder, which meant delivery.
+  codAdvance?: { minOrder: number | null; delivery?: boolean; preOrderPercent?: number | null } | null;
   // Store > Delivery Charge > Delivery time (tracking-plan.md Step 7): the date a parcel ordered now
   // is expected, per zone, as YYYY-MM-DD; null for a zone the store set no days for. Worked out by the
   // server, so the storefront never repeats the rule.
-  deliveryEstimate?: { DHAKA: string | null; OUTSIDE_DHAKA: string | null } | null;
+  deliveryEstimate?: { DHAKA: string | null; OUTSIDE_DHAKA: string | null; AROUND_DHAKA?: string | null } | null;
+  // Store > Delivery Charge > Around Dhaka: the optional third zone with its charge; null while off (and on
+  // Medium/Minimal, which keep two zones).
+  aroundDhaka?: { charge: number } | null;
   // Store > Store Away (holiday mode), StorePal only; null while open. See lib/storeAway.ts.
   storeAway?: StorefrontStoreAway | null;
 }

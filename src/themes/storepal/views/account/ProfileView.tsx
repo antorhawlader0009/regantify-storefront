@@ -28,7 +28,9 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [address, setAddress] = useState('');
-  const [zone, setZone] = useState<'DHAKA' | 'OUTSIDE_DHAKA'>('DHAKA');
+  const [zone, setZone] = useState<'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA'>('DHAKA');
+  // Store > Delivery Charge > Around Dhaka: the third area, offered while the store has it on.
+  const [aroundCharge, setAroundCharge] = useState<number | null>(null);
 
   const [loaded, setLoaded] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -44,6 +46,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
         DHAKA: Number(charges.insideDhakaCharge),
         OUTSIDE_DHAKA: Number(charges.outsideDhakaCharge),
       });
+      setAroundCharge(charges.aroundDhaka?.charge ?? null);
     });
   }, [subdomain]);
 
@@ -54,7 +57,8 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
         setFullName(profile.fullName);
         setEmail(profile.email ?? '');
         setAddress(profile.address ?? '');
-        setZone(profile.deliveryZone ?? 'DHAKA');
+        // The saved area may be 'AROUND_DHAKA' (see Customer.deliveryZone), which the shared type leaves out.
+        setZone((profile.deliveryZone as 'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA' | null) ?? 'DHAKA');
         setLoaded(true);
       })
       .catch((err) => setLoadError(err instanceof Error ? err.message : 'Could not load your profile.'));
@@ -159,7 +163,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
             <div>
               <p className="text-[13px] font-medium text-ink mb-2">Delivery Area</p>
               <div className="flex gap-2">
-                {(['DHAKA', 'OUTSIDE_DHAKA'] as const).map((z) => (
+                {(aroundCharge !== null ? (['DHAKA', 'AROUND_DHAKA', 'OUTSIDE_DHAKA'] as const) : (['DHAKA', 'OUTSIDE_DHAKA'] as const)).map((z) => (
                   <button
                     key={z}
                     type="button"
@@ -168,7 +172,11 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
                       zone === z ? 'border-accent bg-accent text-white' : 'border-line-strong bg-canvas text-ink'
                     }`}
                   >
-                    {z === 'DHAKA' ? `Inside Dhaka — ৳${deliveryCharge.DHAKA}` : `Outside Dhaka — ৳${deliveryCharge.OUTSIDE_DHAKA}`}
+                    {z === 'DHAKA'
+                      ? `Inside Dhaka — ৳${deliveryCharge.DHAKA}`
+                      : z === 'AROUND_DHAKA'
+                        ? `Around Dhaka — ৳${aroundCharge ?? deliveryCharge.OUTSIDE_DHAKA}`
+                        : `Outside Dhaka — ৳${deliveryCharge.OUTSIDE_DHAKA}`}
                   </button>
                 ))}
               </div>

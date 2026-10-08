@@ -19,6 +19,8 @@ export interface Customer {
   fullName: string;
   email?: string | null;
   address?: string | null;
+  // Typed with the two zones every theme knows. A StorePal order can also save 'AROUND_DHAKA' here (Store > Delivery
+  // Charge > Around Dhaka), which only StorePal's checkout and profile read; the other themes' zone selects ignore it.
   deliveryZone?: 'DHAKA' | 'OUTSIDE_DHAKA' | null;
   createdAt: string;
   updatedAt: string;
@@ -192,7 +194,7 @@ export interface UpdateProfileInput {
   fullName: string;
   email?: string;
   address?: string;
-  deliveryZone?: 'DHAKA' | 'OUTSIDE_DHAKA';
+  deliveryZone?: 'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA';
 }
 
 export function getMyProfile(accessToken: string): Promise<Customer> {
