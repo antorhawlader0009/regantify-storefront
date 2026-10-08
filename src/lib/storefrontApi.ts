@@ -7,6 +7,7 @@
 // backend response.
 
 import type { TrackedOrder } from '@/lib/checkoutApi';
+import type { StorefrontStoreAway } from '@/lib/storeAway';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
@@ -122,6 +123,8 @@ export interface StorefrontInfo {
   lmsForms?: StorefrontLmsForms | null;
   /** Marketing > Campaigns > Popup, StorePal only (empty on other themes). Newest first. */
   popupCampaigns?: StorefrontPopupCampaign[];
+  /** Store > Store Away (holiday mode), StorePal only; null while the store is open. See lib/storeAway.ts. */
+  storeAway?: StorefrontStoreAway | null;
 }
 
 export interface StorefrontTiktokPixel {

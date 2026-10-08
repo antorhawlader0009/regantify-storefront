@@ -5,6 +5,7 @@ import type { StorefrontLandingPageProduct } from '@/lib/storefrontApi';
 import { formatPrice } from '@/lib/productDisplay';
 import { submitLandingPageLead } from '@/lib/checkoutApi';
 import { useCheckout } from '@/lib/useCheckout';
+import { formatReturnDay } from '@/lib/storeAway';
 import { useStoreTheme } from '@/providers/theme-provider';
 import type { CartLine } from '@/stores/cart-store';
 import type { CheckoutFormProps, LeadFormProps } from '../types';
@@ -129,7 +130,10 @@ export function CheckoutFormSection({
     codOtpSending,
     codOtpError,
     resendCodOtp,
+    storeAway,
   } = useCheckout(subdomain, 'thank-you', { lines });
+  // Store > Store Away in "browse only": the server refuses the order, so say why up front.
+  const ordersPaused = storeAway?.mode === 'BROWSE_ONLY';
 
   const onlineAllowed = theme === 'STOREPAL' && !props.codOnly;
   const gateways = onlineAllowed ? paymentGateways : paymentGateways.filter((g) => g.type === 'COD');
@@ -432,6 +436,19 @@ export function CheckoutFormSection({
               </div>
             )}
 
+            {storeAway && (
+              <p className="mt-3 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[12.5px] text-neutral-800">
+                {storeAway.message ? `${storeAway.message} ` : ''}
+                {ordersPaused
+                  ? storeAway.returnDate
+                    ? `Orders are paused until ${formatReturnDay(storeAway.returnDate)}.`
+                    : 'Orders are paused for now.'
+                  : storeAway.returnDate
+                    ? `Delivery starts from ${formatReturnDay(storeAway.returnDate)}.`
+                    : 'Delivery starts when the store is back.'}
+              </p>
+            )}
+
             {(noProductError || placeError) && (
               <p className="mt-3 text-[12.5px] text-red-600">{noProductError ?? placeError}</p>
             )}
@@ -439,7 +456,7 @@ export function CheckoutFormSection({
             <button
               type="button"
               onClick={onSubmit}
-              disabled={placing || codOtpSending}
+              disabled={placing || codOtpSending || ordersPaused}
               className="mt-3 w-full rounded-lg bg-neutral-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
             >
               {codOtpSending && !showCodOtp

@@ -5,6 +5,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Minus, Plus, X, Tag, ShieldCheck, Truck, Gift } from 'lucide-react';
 import { formatExpectedDate } from '@/lib/expectedDate';
+import { formatReturnDay } from '@/lib/storeAway';
 import { formatPrice } from '../lib/formatPrice';
 import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
@@ -64,6 +65,10 @@ const EN = {
   advanceNow: 'Pay now (delivery charge)',
   advanceRest: 'Pay on delivery',
   submitAdvance: (advance: string) => `Pay ${advance} & Place Order`,
+  awayTitle: 'The store is away',
+  awayOpen: (day: string | null) =>
+    day ? `You can still order. Delivery starts from ${day}.` : 'You can still order. Delivery starts when the store is back.',
+  awayClosed: (day: string | null) => (day ? `Orders are paused until ${day}.` : 'Orders are paused for now. Please check back soon.'),
   codBadge: 'Cash On Delivery All Over Bangladesh',
   genuineBadge: '100% genuine products',
   yourCart: 'Your cart',
@@ -128,6 +133,9 @@ const BN: Copy = {
   advanceNow: 'এখন পরিশোধ (ডেলিভারি চার্জ)',
   advanceRest: 'ডেলিভারির সময় পরিশোধ',
   submitAdvance: (advance) => `${advance} দিয়ে অর্ডার করুন`,
+  awayTitle: 'দোকান এখন সাময়িক বন্ধ',
+  awayOpen: (day) => (day ? `অর্ডার করতে পারবেন। ডেলিভারি শুরু হবে ${day} থেকে।` : 'অর্ডার করতে পারবেন। দোকান খুললে ডেলিভারি শুরু হবে।'),
+  awayClosed: (day) => (day ? `${day} পর্যন্ত অর্ডার নেওয়া বন্ধ।` : 'এখন অর্ডার নেওয়া বন্ধ। কিছুদিন পর আবার দেখুন।'),
   codBadge: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি',
   genuineBadge: '১০০% আসল পণ্য',
   yourCart: 'আপনার কার্ট',
@@ -206,6 +214,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     paymentMethod,
     setPaymentMethod,
     codAdvance,
+    storeAway,
     codOtpPhone,
     codOtpCode,
     setCodOtpCode,
@@ -213,6 +222,9 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     codOtpError,
     resendCodOtp,
   } = useCheckout(subdomain, 'thank-you');
+  // Store > Store Away: "browse only" stops the order here (the server refuses it too).
+  const ordersPaused = storeAway?.mode === 'BROWSE_ONLY';
+  const awayDay = storeAway?.returnDate ? formatReturnDay(storeAway.returnDate, lang) : null;
   const isCodSelected = paymentGateways.find((g) => g.id === paymentMethod)?.type === 'COD';
   const showCodOtp = isCodSelected && codOtpPhone !== null;
 
@@ -717,11 +729,22 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               </div>
             )}
 
+            {/* Store > Store Away — see useCheckout's storeAway. */}
+            {storeAway && (
+              <div className="mt-5 rounded-md border border-amber-300 bg-amber-50 p-4">
+                <p className="m-0 text-[13px] font-semibold text-ink">{t.awayTitle}</p>
+                {storeAway.message && <p className="m-0 mt-1 text-[12.5px] text-muted whitespace-pre-line">{storeAway.message}</p>}
+                <p className="m-0 mt-1 text-[12.5px] font-medium text-ink">
+                  {ordersPaused ? t.awayClosed(awayDay) : t.awayOpen(awayDay)}
+                </p>
+              </div>
+            )}
+
             {placeError && <p className="mt-4 text-[13px] text-accent">{placeError}</p>}
 
             <button
               onClick={handlePlaceOrder}
-              disabled={placing || codOtpSending}
+              disabled={placing || codOtpSending || ordersPaused}
               className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
             >
               {codOtpSending && !showCodOtp

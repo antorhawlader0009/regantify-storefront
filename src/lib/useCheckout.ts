@@ -13,6 +13,7 @@ import { trackAddPaymentInfo } from '@/lib/ecommerceEvents';
 import { gaAdContext } from '@/lib/googleAnalytics';
 import { tiktokAdContext } from '@/lib/tiktokPixel';
 import { captureTrafficSource } from '@/lib/trafficSource';
+import { stillAway, type StorefrontStoreAway } from '@/lib/storeAway';
 import {
   placeOrder,
   syncIncompleteOrder,
@@ -137,6 +138,7 @@ export function useCheckout(
     codSmsVerification: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
     codAdvance: { minOrder: number | null } | null;
     deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null } | null;
+    storeAway: StorefrontStoreAway | null;
   } | null>(null);
   useEffect(() => {
     let cancelled = false;
@@ -150,6 +152,7 @@ export function useCheckout(
         codSmsVerification: charges.codSmsVerification ?? null,
         codAdvance: charges.codAdvance ?? null,
         deliveryEstimate: charges.deliveryEstimate ?? null,
+        storeAway: stillAway(charges.storeAway),
       });
     });
     return () => {
@@ -717,6 +720,9 @@ export function useCheckout(
     // Delivery charge to pay online before a COD order is placed, with what's left for the courier;
     // null when none applies. Only StorePal's CheckoutDialog renders it.
     codAdvance,
+    // Store > Store Away: null while the store is open (always on Medium/Minimal). In BROWSE_ONLY the
+    // server refuses the order, so the checkout shows why instead of the place-order button.
+    storeAway: vendorCharges?.storeAway ?? null,
     // Store > COD Guard's before-checkout SMS step — only StorePal's
     // CheckoutView renders these (see codOtp's own comment above).
     codOtpPhone: codOtp && codOtp.phone === form.phone.trim() ? codOtp.phone : null,

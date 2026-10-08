@@ -5,6 +5,8 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { PopupCampaigns } from '@/themes/storepal/components/PopupCampaigns';
+import { StoreAwayBanner } from '@/themes/storepal/components/StoreAwayBanner';
+import type { StorefrontStoreAway } from '@/lib/storeAway';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import { MetaPixel } from '@/components/MetaPixel';
@@ -120,6 +122,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let showOutOfStockBadge = true;
   let lmsForms: StorefrontLmsForms | null = null;
   let popupCampaigns: StorefrontPopupCampaign[] = [];
+  let storeAway: StorefrontStoreAway | null = null;
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
@@ -138,6 +141,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     showOutOfStockBadge = store.stockSettings?.showOutOfStockBadge !== false;
     lmsForms = store.lmsForms ?? null;
     popupCampaigns = store.popupCampaigns ?? [];
+    storeAway = store.storeAway ?? null;
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
@@ -210,6 +214,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (
           <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lmsForms={lmsForms}>
+            {/* Store > Store Away (holiday mode): a strip above every page while the store is away. */}
+            {storeAway && <StoreAwayBanner away={storeAway} />}
             {children}
           </StorePalDesignProvider>
         ) : (

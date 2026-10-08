@@ -47,6 +47,12 @@ const BN: Record<string, string> = {
   Menu: 'মেনু',
   'Cash On Delivery All Over Bangladesh': 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি',
   'Guaranteed Pre-order Delivery in 20-25 Days': 'প্রি-অর্ডার ২০-২৫ দিনে ডেলিভারি',
+  // Store Away banner
+  'We are away for a few days.': 'আমরা কয়েক দিনের জন্য ছুটিতে আছি।',
+  'Orders are paused until': 'অর্ডার নেওয়া বন্ধ থাকবে, খুলবে',
+  'Orders are paused for now.': 'এখন অর্ডার নেওয়া বন্ধ।',
+  'You can still order. Delivery starts from': 'অর্ডার করতে পারবেন। ডেলিভারি শুরু হবে',
+  'You can still order. Delivery starts when we are back.': 'অর্ডার করতে পারবেন। আমরা ফিরলে ডেলিভারি শুরু হবে।',
   // Cart
   Cart: 'কার্ট',
   'Your cart is empty': 'আপনার কার্ট খালি',

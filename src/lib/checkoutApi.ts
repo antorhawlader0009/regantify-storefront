@@ -1,4 +1,5 @@
 import type { CourierTracking } from './courierTracking';
+import type { StorefrontStoreAway } from './storeAway';
 
 // Client-side (browser) fetch helper — used only by the checkout page,
 // which is a Client Component (needs cart state from localStorage) and
@@ -107,6 +108,8 @@ export interface StoreDeliveryCharges {
   // is expected, per zone, as YYYY-MM-DD; null for a zone the store set no days for. Worked out by the
   // server, so the storefront never repeats the rule.
   deliveryEstimate?: { DHAKA: string | null; OUTSIDE_DHAKA: string | null } | null;
+  // Store > Store Away (holiday mode), StorePal only; null while open. See lib/storeAway.ts.
+  storeAway?: StorefrontStoreAway | null;
 }
 
 export async function getStoreDeliveryCharges(subdomain: string): Promise<StoreDeliveryCharges | null> {
