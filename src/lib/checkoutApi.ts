@@ -441,6 +441,8 @@ export interface TrackedOrder {
   advanceAmount?: string;
   advanceMethod?: 'ONLINE' | 'MANUAL' | null;
   advancePaidAt?: string | null;
+  /** What the advance was for: DELIVERY, PREORDER, or LINK (a payment link the store sent); null = none. */
+  advanceFor?: 'DELIVERY' | 'PREORDER' | 'LINK' | null;
   status: string;
   customerName: string;
   // The shopper's own contact details (the lookup already required the
@@ -518,6 +520,33 @@ export async function cancelOrderByLink(subdomain: string, token: string, reason
   });
   if (!res.ok) throw await apiError(res, 'Could not cancel the order. Please try again.');
   return res.json() as Promise<TrackedOrder>;
+}
+
+/**
+ * What the page behind a payment link shows (the vendor made it on an order they entered, TellMe idea 19). READY =
+ * waiting for the customer to pay; PAID / EXPIRED / UNAVAILABLE carry no amounts.
+ */
+export interface PaymentLinkInfo {
+  state: 'READY' | 'PAID' | 'EXPIRED' | 'UNAVAILABLE';
+  orderId?: string;
+  orderRef?: string;
+  /** First name only. */
+  customerName?: string;
+  total?: number;
+  /** The advance asked for. */
+  amount?: number;
+  /** The platform's fee, added on the payment page. */
+  fee?: number;
+  /** What the customer pays now (amount plus fee). */
+  payable?: number;
+  dueOnDelivery?: number;
+  expiresAt?: string | null;
+}
+
+export async function fetchPaymentLink(subdomain: string, token: string): Promise<PaymentLinkInfo> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/pay/${encodeURIComponent(token)}`, { cache: 'no-store' });
+  if (!res.ok) throw await apiError(res, 'This payment link is not valid.');
+  return res.json() as Promise<PaymentLinkInfo>;
 }
 
 /** `reference` is the public order number (a string) or the old numeric serial. */

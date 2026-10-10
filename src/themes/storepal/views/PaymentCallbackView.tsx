@@ -54,6 +54,18 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
   const storeName = useStoreDisplayName(subdomain);
   const [state, setState] = useState<'checking' | OrderPaymentStatus | 'error'>('checking');
   const attemptsRef = useRef(0);
+  // Set by a payment link's page (PayLinkView) just before it opened PayStation, so a failed payment can offer
+  // "try again" on that same link instead of sending the customer to a cart they never used.
+  const [payLinkHref, setPayLinkHref] = useState<string | null>(null);
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem('regantify-pay-link');
+      const saved = raw ? (JSON.parse(raw) as { subdomain?: string; token?: string }) : null;
+      if (saved?.subdomain === subdomain && saved.token) setPayLinkHref(`/store/${subdomain}/pay/${saved.token}`);
+    } catch {
+      // no link remembered: the cart link below stays
+    }
+  }, [subdomain]);
 
   const [nav, setNav] = useState<StoreNavData>({ categories: [], categoryDetails: [] });
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
@@ -173,9 +185,11 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
           <>
             <XCircle className="mx-auto mb-4 text-accent" size={40} />
             <h1 className="text-[18px] font-bold text-ink mb-1">{state === 'CANCELLED' ? 'Payment cancelled' : 'Payment failed'}</h1>
-            <p className="text-[13.5px] text-muted mb-6">Nothing was charged. You can return to your cart and try again.</p>
-            <Link href={`/store/${subdomain}/cart`} className="text-accent text-[13.5px] font-medium hover:underline">
-              Back to Cart
+            <p className="text-[13.5px] text-muted mb-6">
+              {payLinkHref ? 'Nothing was charged. You can try again with the same payment link.' : 'Nothing was charged. You can return to your cart and try again.'}
+            </p>
+            <Link href={payLinkHref ?? `/store/${subdomain}/cart`} className="text-accent text-[13.5px] font-medium hover:underline">
+              {payLinkHref ? 'Try again' : 'Back to Cart'}
             </Link>
           </>
         )}

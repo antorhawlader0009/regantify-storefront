@@ -143,7 +143,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
               : order.paymentMethod === 'ONLINE_PAYMENT'
                 ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'
                 : advancePaid > 0
-                  ? 'Your delivery charge was received and your order is confirmed. You pay the rest in cash on delivery. A confirmation call may follow shortly.'
+                  ? order.advanceFor === 'LINK'
+                    ? 'Your advance payment was received and your order is confirmed. You pay the rest in cash on delivery.'
+                    : 'Your delivery charge was received and your order is confirmed. You pay the rest in cash on delivery. A confirmation call may follow shortly.'
                 : 'Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.'}
           </p>
         </div>

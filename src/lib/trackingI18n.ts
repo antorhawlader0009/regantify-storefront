@@ -75,6 +75,22 @@ export type UiKey =
   | 'cancelDone'
   | 'cancelCallStore'
   | 'whatsapp'
+  | 'payTitle'
+  | 'payHello'
+  | 'payIntro'
+  | 'payOrder'
+  | 'payAdvance'
+  | 'payFee'
+  | 'payNowAmount'
+  | 'payOnDelivery'
+  | 'payValidUntil'
+  | 'payButton'
+  | 'payOpening'
+  | 'payNote'
+  | 'payPaid'
+  | 'payExpired'
+  | 'payUnavailable'
+  | 'payTrack'
   | 'liveNote'
   | 'lastChecked'
   | 'trackYourOrder'
@@ -134,6 +150,22 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     cancelDone: 'Your order has been cancelled.',
     cancelCallStore: 'The store has started on this order. To cancel it, please call the store.',
     whatsapp: 'Message on WhatsApp',
+    payTitle: 'Pay your advance',
+    payHello: 'Hello',
+    payIntro: 'The store is waiting for the advance on your order. Pay it here and your order moves ahead.',
+    payOrder: 'Order',
+    payAdvance: 'Advance',
+    payFee: 'Payment processing fee',
+    payNowAmount: 'You pay now',
+    payOnDelivery: 'Pay in cash on delivery',
+    payValidUntil: 'This link works until',
+    payButton: 'Pay now',
+    payOpening: 'Opening the payment page…',
+    payNote: 'You pay on PayStation’s secure page and come back here afterwards.',
+    payPaid: 'This payment has been received. Thank you!',
+    payExpired: 'This payment link has expired. Please ask the store for a new one.',
+    payUnavailable: 'This payment link is not available any more. Please contact the store.',
+    payTrack: 'Track your order',
     liveNote: 'This page updates by itself.',
     lastChecked: 'Last checked',
     trackYourOrder: 'Track your order',
@@ -191,6 +223,22 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     cancelDone: 'আপনার অর্ডার বাতিল করা হয়েছে।',
     cancelCallStore: 'দোকান এই অর্ডারের কাজ শুরু করেছে। বাতিল করতে হলে দোকানে ফোন করুন।',
     whatsapp: 'হোয়াটসঅ্যাপে মেসেজ করুন',
+    payTitle: 'অগ্রিম টাকা পরিশোধ করুন',
+    payHello: 'হ্যালো',
+    payIntro: 'আপনার অর্ডারের অগ্রিম টাকার জন্য দোকান অপেক্ষা করছে। এখানে পরিশোধ করলেই অর্ডার এগিয়ে যাবে।',
+    payOrder: 'অর্ডার',
+    payAdvance: 'অগ্রিম',
+    payFee: 'পেমেন্ট প্রসেসিং ফি',
+    payNowAmount: 'এখন আপনি দেবেন',
+    payOnDelivery: 'ডেলিভারির সময় নগদে দেবেন',
+    payValidUntil: 'এই লিংক চলবে',
+    payButton: 'এখন পরিশোধ করুন',
+    payOpening: 'পেমেন্ট পেজ খুলছে…',
+    payNote: 'আপনি PayStation-এর নিরাপদ পেজে টাকা দেবেন, তারপর এখানে ফিরে আসবেন।',
+    payPaid: 'এই পেমেন্ট পাওয়া গেছে। ধন্যবাদ!',
+    payExpired: 'এই পেমেন্ট লিংকের সময় শেষ। দোকান থেকে নতুন লিংক চেয়ে নিন।',
+    payUnavailable: 'এই পেমেন্ট লিংক আর চালু নেই। দোকানের সাথে যোগাযোগ করুন।',
+    payTrack: 'আপনার অর্ডার ট্র্যাক করুন',
     liveNote: 'এই পেজ নিজে থেকেই আপডেট হয়।',
     lastChecked: 'সর্বশেষ দেখা হয়েছে',
     trackYourOrder: 'আপনার অর্ডার ট্র্যাক করুন',
