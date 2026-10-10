@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Stars } from '../../medium/components/Stars';
 import { getProductReviews, submitProductReview, type ProductReview } from '@/lib/reviewsApi';
+import { getProductQuestions, type ProductQuestion } from '@/lib/questionsApi';
 import { useStoreText } from '../lib/storeText';
+import { ProductQuestionsTab } from './ProductQuestionsTab';
 
 /**
  * StorePal's own copy of Medium's product tabs (Medium/Minimal are never edited for StorePal), kept in step by hand.
@@ -13,10 +15,19 @@ import { useStoreText } from '../lib/storeText';
  */
 export function StorePalProductTabs({ subdomain, slug, description }: { subdomain: string; slug: string; description?: string | null }) {
   const t = useStoreText();
-  const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
+  const [activeTab, setActiveTab] = useState<'description' | 'reviews' | 'questions'>('description');
 
   const [reviews, setReviews] = useState<ProductReview[] | null>(null);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
+
+  // Answered questions (TellMe idea 35); loaded here so the tab can show its count.
+  const [questions, setQuestions] = useState<ProductQuestion[] | null>(null);
+  const [questionsError, setQuestionsError] = useState<string | null>(null);
+  useEffect(() => {
+    getProductQuestions(subdomain, slug)
+      .then(setQuestions)
+      .catch((err) => setQuestionsError(err instanceof Error ? err.message : 'Could not load questions.'));
+  }, [subdomain, slug]);
 
   useEffect(() => {
     getProductReviews(subdomain, slug)
@@ -27,7 +38,7 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
   return (
     <div className="p-4 sm:p-6">
       <div className="flex gap-6 border-b border-line mb-4">
-        {(['description', 'reviews'] as const).map((tab) => (
+        {(['description', 'reviews', 'questions'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -35,7 +46,11 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
               activeTab === tab ? 'text-ink' : 'text-muted hover:text-ink'
             }`}
           >
-            {tab === 'reviews' ? `Reviews${reviews ? ` (${reviews.length})` : ''}` : 'Description'}
+            {tab === 'reviews'
+              ? `Reviews${reviews ? ` (${reviews.length})` : ''}`
+              : tab === 'questions'
+                ? `${t('Questions')}${questions && questions.length > 0 ? ` (${questions.length})` : ''}`
+                : 'Description'}
             {activeTab === tab && <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-accent rounded-full" />}
           </button>
         ))}
@@ -47,6 +62,8 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
         ) : (
           <p className="text-[13px] text-muted">No description provided for this product.</p>
         )
+      ) : activeTab === 'questions' ? (
+        <ProductQuestionsTab subdomain={subdomain} slug={slug} questions={questions} error={questionsError} />
       ) : (
         <div className="max-w-2xl">
           {reviewsError && <p className="text-[13px] text-accent mb-4">{reviewsError}</p>}

@@ -23,6 +23,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   cardDisplayAsCard: true,
   cardShowVideo: false,
   cardShowWishlist: false,
+  productBadgeColor: null,
   bannerEnabled: true,
   bannerContent: null,
   bannerStyle: 'MARQUEE',

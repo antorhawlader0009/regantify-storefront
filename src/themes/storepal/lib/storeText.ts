@@ -67,6 +67,19 @@ const BN: Record<string, string> = {
   Wishlist: 'পছন্দের তালিকা',
   'Your wishlist is empty': 'আপনার পছন্দের তালিকা খালি',
   'Tap the heart on any product to save it here.': 'যেকোনো পণ্যের হার্ট চাপলে এখানে জমা হবে।',
+  // Product questions
+  Questions: 'প্রশ্ন',
+  'Ask a question': 'প্রশ্ন করুন',
+  'Your question about this product': 'এই পণ্য সম্পর্কে আপনার প্রশ্ন',
+  'Your name': 'আপনার নাম',
+  'Send question': 'প্রশ্ন পাঠান',
+  'Sending…': 'পাঠানো হচ্ছে…',
+  'Loading questions…': 'প্রশ্ন লোড হচ্ছে…',
+  'No questions yet. Ask the first one.': 'এখনো কোনো প্রশ্ন নেই। আপনিই প্রথম প্রশ্নটি করুন।',
+  'Answer from the store': 'দোকানের উত্তর',
+  'Please enter your name and your question.': 'আপনার নাম আর প্রশ্ন লিখুন।',
+  'Could not send your question. Please try again.': 'প্রশ্ন পাঠানো যায়নি। আবার চেষ্টা করুন।',
+  'Thanks! Your question was sent. It will appear here once the store answers it.': 'ধন্যবাদ! আপনার প্রশ্ন পাঠানো হয়েছে। দোকান উত্তর দিলে এখানে দেখা যাবে।',
   // Recently viewed
   'Recently viewed': 'সম্প্রতি দেখেছেন',
   // Shop / home

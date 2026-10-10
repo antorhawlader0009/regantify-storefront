@@ -206,6 +206,8 @@ export interface StorefrontDesignSettings {
   cardDisplayAsCard: boolean;
   cardShowVideo: boolean;
   cardShowWishlist: boolean;
+  /** The one colour of every product badge; null = the theme's accent. */
+  productBadgeColor?: string | null;
   bannerEnabled: boolean;
   bannerContent: string | null;
   bannerStyle: 'STATIC' | 'MARQUEE';
@@ -343,6 +345,8 @@ export interface StorefrontSizeGuide {
 
 export interface StorefrontProduct {
   id: string;
+  /** The store's own badge ("New", "Hot"); already empty once its end time has passed. StorePal shows it. */
+  badgeText?: string | null;
   /** Hidden words that also find this product in StorePal's search (Product.searchKeywords); never shown. */
   searchKeywords?: string[];
   /** The guide this product shows (its own, else its category's); null when none. Only the product page answer carries it. */
@@ -408,6 +412,8 @@ export interface StorefrontDetailData {
 // variationOptions, variationPhotos, etc — only what ProductCard reads).
 export interface StorefrontCardProduct {
   id: string;
+  /** The store's own badge ("New", "Hot"); StorePal shows it. */
+  badgeText?: string | null;
   name: string;
   slug: string;
   category?: string | null;

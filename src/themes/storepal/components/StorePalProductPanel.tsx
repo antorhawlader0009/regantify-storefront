@@ -9,6 +9,7 @@ import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText } from '../lib/storeText';
+import { useStorePalDesign } from '../lib/designSettings';
 import { SizeGuideLink } from './SizeGuideLink';
 
 interface StorePalProductPanelProps {
@@ -79,6 +80,7 @@ interface StorePalProductPanelProps {
  */
 export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, onAddedToCart, onBuyNow }: StorePalProductPanelProps) {
   const t = useStoreText();
+  const design = useStorePalDesign();
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -341,6 +343,14 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
 
       {/* Info & Purchase */}
       <div>
+        {product.badgeText && (
+          <span
+            className="mb-1.5 inline-block rounded px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide text-white bg-accent"
+            style={design.productBadgeColor ? { backgroundColor: design.productBadgeColor } : undefined}
+          >
+            {product.badgeText}
+          </span>
+        )}
         {product.brand && <span className="text-[11.5px] text-muted uppercase tracking-wider font-medium">{product.brand}</span>}
         <h1 className="mt-1 mb-2.5 text-[19px] sm:text-[22px] font-bold leading-snug text-ink tracking-tight">{product.name}</h1>
 

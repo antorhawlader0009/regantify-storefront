@@ -104,6 +104,15 @@ export type UiKey =
   | 'payExpired'
   | 'payUnavailable'
   | 'payTrack'
+  | 'recTitle'
+  | 'recIntro'
+  | 'recContinue'
+  | 'recRemoved'
+  | 'recReduced'
+  | 'recExpired'
+  | 'recOrdered'
+  | 'recUnavailable'
+  | 'recEmpty'
   | 'liveNote'
   | 'lastChecked'
   | 'trackYourOrder'
@@ -192,6 +201,15 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     payExpired: 'This payment link has expired. Please ask the store for a new one.',
     payUnavailable: 'This payment link is not available any more. Please contact the store.',
     payTrack: 'Track your order',
+    recTitle: 'Your cart is ready',
+    recIntro: 'We put your items back, at today’s prices. Check them and finish your order.',
+    recContinue: 'Continue to checkout',
+    recRemoved: 'Not available any more, so we left it out:',
+    recReduced: 'Only a few are left, so we lowered the quantity:',
+    recExpired: 'This link has expired. Please visit the store and add your items again.',
+    recOrdered: 'You have already placed an order after this reminder. Thank you!',
+    recUnavailable: 'This link is not available. Please visit the store.',
+    recEmpty: 'None of your items are available right now.',
     liveNote: 'This page updates by itself.',
     lastChecked: 'Last checked',
     trackYourOrder: 'Track your order',
@@ -278,6 +296,15 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     payExpired: 'এই পেমেন্ট লিংকের সময় শেষ। দোকান থেকে নতুন লিংক চেয়ে নিন।',
     payUnavailable: 'এই পেমেন্ট লিংক আর চালু নেই। দোকানের সাথে যোগাযোগ করুন।',
     payTrack: 'আপনার অর্ডার ট্র্যাক করুন',
+    recTitle: 'আপনার কার্ট তৈরি',
+    recIntro: 'আপনার পণ্যগুলো আজকের দামে আবার কার্টে দিয়েছি। দেখে নিয়ে অর্ডারটা শেষ করুন।',
+    recContinue: 'চেকআউটে যান',
+    recRemoved: 'এগুলো আর পাওয়া যাচ্ছে না, তাই বাদ দিয়েছি:',
+    recReduced: 'অল্প কয়েকটা আছে, তাই পরিমাণ কমিয়েছি:',
+    recExpired: 'এই লিংকের মেয়াদ শেষ। দোকানে গিয়ে আবার পণ্য যোগ করুন।',
+    recOrdered: 'এই মেসেজের পরে আপনি অর্ডার করে ফেলেছেন। ধন্যবাদ!',
+    recUnavailable: 'এই লিংক চালু নেই। দোকানে ঘুরে আসুন।',
+    recEmpty: 'আপনার পণ্যগুলোর কোনোটাই এখন পাওয়া যাচ্ছে না।',
     liveNote: 'এই পেজ নিজে থেকেই আপডেট হয়।',
     lastChecked: 'সর্বশেষ দেখা হয়েছে',
     trackYourOrder: 'আপনার অর্ডার ট্র্যাক করুন',

@@ -568,6 +568,34 @@ export async function fetchPaymentLink(subdomain: string, token: string): Promis
   return res.json() as Promise<PaymentLinkInfo>;
 }
 
+/** What the cart recovery link answers (server StorefrontService.getCartRecovery). */
+export type CartRecovery =
+  | { status: 'NOT_FOUND' | 'EXPIRED' | 'ORDERED' }
+  | {
+      status: 'OK';
+      customer: { fullName: string; phone: string; address: string };
+      lines: Array<{
+        productSlug: string;
+        name: string;
+        image: string | null;
+        unitPrice: number;
+        originalUnitPrice: number | null;
+        quantity: number;
+        selectedOptions: Record<string, string>;
+        isPreOrder: boolean;
+        minOrderQuantity: number | null;
+        productId: string;
+        variantId: string | null;
+      }>;
+      notices: Array<{ name: string; reason: 'UNAVAILABLE' | 'SOLD_OUT' | 'REDUCED'; available?: number }>;
+    };
+
+export async function fetchCartRecovery(subdomain: string, token: string): Promise<CartRecovery> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/recover/${encodeURIComponent(token)}`, { cache: 'no-store' });
+  if (!res.ok) return { status: 'NOT_FOUND' };
+  return res.json() as Promise<CartRecovery>;
+}
+
 /** `reference` is the public order number (a string) or the old numeric serial. */
 export async function trackOrder(subdomain: string, reference: number | string, phone: string): Promise<TrackedOrder> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track-order`, {

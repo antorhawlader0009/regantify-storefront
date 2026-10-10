@@ -40,6 +40,8 @@ interface CardProduct {
   quoteOnly?: boolean;
   /** Fewest a shopper may order; Add to cart starts there. */
   minOrderQuantity?: number | null;
+  /** The store's own badge ("New", "Hot") — shown in the image's corner. */
+  badgeText?: string | null;
   /** Running Flash Sale end (ISO) — shows the sale badge with a countdown. */
   flashSaleEndsAt?: string | null;
   variants: ({ stock: number } & Partial<Omit<StorefrontVariant, 'stock'>>)[];
@@ -205,8 +207,16 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
             </div>
           )}
         </Link>
+        {product.badgeText && (
+          <span
+            className="absolute top-2 left-2 z-10 pointer-events-none rounded px-2 py-0.5 text-[10.5px] font-bold uppercase tracking-wide text-white shadow-sm bg-accent"
+            style={design.productBadgeColor ? { backgroundColor: design.productBadgeColor } : undefined}
+          >
+            {product.badgeText}
+          </span>
+        )}
         {!quoteOnly && product.flashSaleEndsAt && (
-          <FlashSaleTimer endsAt={product.flashSaleEndsAt} className="absolute top-2 left-2 z-10 pointer-events-none" />
+          <FlashSaleTimer endsAt={product.flashSaleEndsAt} className={`absolute ${product.badgeText ? "top-9" : "top-2"} left-2 z-10 pointer-events-none`} />
         )}
         {design.cardShowWishlist && (
           <button
