@@ -74,6 +74,19 @@ export type UiKey =
   | 'cancelPickReason'
   | 'cancelDone'
   | 'cancelCallStore'
+  | 'editTitle'
+  | 'editHelp'
+  | 'editButton'
+  | 'editAddress'
+  | 'editAddressHint'
+  | 'editThana'
+  | 'editPhoneAlt'
+  | 'editPhoneAltHint'
+  | 'editSave'
+  | 'editSaving'
+  | 'editBack'
+  | 'editDone'
+  | 'editLocked'
   | 'whatsapp'
   | 'payTitle'
   | 'payHello'
@@ -149,6 +162,19 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     cancelPickReason: 'Please pick a reason.',
     cancelDone: 'Your order has been cancelled.',
     cancelCallStore: 'The store has started on this order. To cancel it, please call the store.',
+    editTitle: 'Wrong address?',
+    editHelp: 'You can correct your delivery address until the store sends your order.',
+    editButton: 'Fix my address',
+    editAddress: 'Full delivery address',
+    editAddressHint: 'House, road, area. For your safety we don’t show the old address here, so type the whole corrected address.',
+    editThana: 'Thana / Upazila (optional)',
+    editPhoneAlt: 'Second phone number (optional)',
+    editPhoneAltHint: 'Someone the rider can call if you don’t answer.',
+    editSave: 'Save address',
+    editSaving: 'Saving…',
+    editBack: 'Cancel',
+    editDone: 'Thank you. Your delivery address was updated and the store has been told.',
+    editLocked: 'To change your phone number or district, please call the store.',
     whatsapp: 'Message on WhatsApp',
     payTitle: 'Pay your advance',
     payHello: 'Hello',
@@ -222,6 +248,19 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     cancelPickReason: 'একটি কারণ বেছে নিন।',
     cancelDone: 'আপনার অর্ডার বাতিল করা হয়েছে।',
     cancelCallStore: 'দোকান এই অর্ডারের কাজ শুরু করেছে। বাতিল করতে হলে দোকানে ফোন করুন।',
+    editTitle: 'ঠিকানা ভুল হয়েছে?',
+    editHelp: 'দোকান আপনার অর্ডার পাঠানোর আগে পর্যন্ত আপনি ডেলিভারি ঠিকানা ঠিক করতে পারবেন।',
+    editButton: 'আমার ঠিকানা ঠিক করুন',
+    editAddress: 'পুরো ডেলিভারি ঠিকানা',
+    editAddressHint: 'বাড়ি, রাস্তা, এলাকা। আপনার নিরাপত্তার জন্য পুরনো ঠিকানা এখানে দেখানো হয় না, তাই সম্পূর্ণ ঠিক করা ঠিকানা লিখুন।',
+    editThana: 'থানা / উপজেলা (ঐচ্ছিক)',
+    editPhoneAlt: 'দ্বিতীয় ফোন নম্বর (ঐচ্ছিক)',
+    editPhoneAltHint: 'আপনি না ধরলে রাইডার যাকে ফোন করতে পারবে।',
+    editSave: 'ঠিকানা সেভ করুন',
+    editSaving: 'সেভ হচ্ছে…',
+    editBack: 'বাতিল',
+    editDone: 'ধন্যবাদ। আপনার ডেলিভারি ঠিকানা বদলানো হয়েছে এবং দোকানকে জানানো হয়েছে।',
+    editLocked: 'ফোন নম্বর বা জেলা বদলাতে হলে দোকানে ফোন করুন।',
     whatsapp: 'হোয়াটসঅ্যাপে মেসেজ করুন',
     payTitle: 'অগ্রিম টাকা পরিশোধ করুন',
     payHello: 'হ্যালো',

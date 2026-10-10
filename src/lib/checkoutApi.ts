@@ -449,6 +449,8 @@ export interface TrackedOrder {
   // phone). Used for the Meta pixel's advanced matching on the thank-you page.
   customerPhone?: string;
   customerEmail?: string | null;
+  /** The second phone; masked to null on the tracking-link answer. */
+  customerPhoneAlt?: string | null;
   shippingAddress: string;
   shippingCity?: string | null;
   shippingDistrict?: string | null;
@@ -496,6 +498,8 @@ export interface TrackedOrder {
   // Whether the shopper may cancel this order themselves right now (server: orders/customer-cancel.ts).
   // Absent on the "My orders" list and on older answers.
   customerCancel?: { allowed: boolean };
+  // Whether the shopper may correct their delivery details right now ("Fix my address").
+  customerEdit?: { allowed: boolean };
 }
 
 /** The reasons the "Cancel my order" button offers; the server accepts exactly these. */
@@ -519,6 +523,21 @@ export async function cancelOrderByLink(subdomain: string, token: string, reason
     body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw await apiError(res, 'Could not cancel the order. Please try again.');
+  return res.json() as Promise<TrackedOrder>;
+}
+
+/** The shopper corrects their street address, thana/area and second phone (tracking token as proof). Returns the order as it is now. */
+export async function editOrderAddressByLink(
+  subdomain: string,
+  token: string,
+  body: { shippingAddress: string; shippingCity?: string; customerPhoneAlt?: string },
+): Promise<TrackedOrder> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/contact`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) throw await apiError(res, 'Could not save the address. Please try again.');
   return res.json() as Promise<TrackedOrder>;
 }
 

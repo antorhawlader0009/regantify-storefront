@@ -4,6 +4,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Download, Package, MapPin, Phone, ArrowRight } from 'lucide-react';
 import { useTrackOrder } from '@/lib/useTrackOrder';
+import type { TrackedOrder } from '@/lib/checkoutApi';
 import { orderLabel } from '@/lib/orderLabel';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
@@ -16,6 +17,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { CodOrderVerification } from '../components/CodOrderVerification';
 import { CancelOrderCard } from '../components/CancelOrderCard';
+import { EditAddressCard } from '../components/EditAddressCard';
 import { useStorePalDesign } from '../lib/designSettings';
 import { trackMetaPurchase } from '@/lib/metaPixelEvents';
 import { trackPurchase } from '@/lib/ecommerceEvents';
@@ -94,6 +96,23 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
     );
   }
 
+  // What a cancel or an address fix answers is the tracking-link order, which masks the name, phone and address.
+  // This page shows the memo with the full details, so only what really changed is taken from it.
+  const mergeUpdate = (next: TrackedOrder, edited?: { shippingAddress: string; shippingCity: string | null; customerPhoneAlt: string | null }) =>
+    setOrder((prev) =>
+      prev
+        ? {
+            ...prev,
+            status: next.status,
+            statusHistory: next.statusHistory,
+            timeline: next.timeline,
+            customerCancel: next.customerCancel,
+            customerEdit: next.customerEdit,
+            ...(edited ?? {}),
+          }
+        : next,
+    );
+
   // Cancelled (by the shopper just now, or the store): no code to enter any more.
   const cancelled = order.status === 'CANCELLED';
   const awaitingCodVerification = order.codVerificationStatus === 'PENDING' && !codVerified && !cancelled;
@@ -156,8 +175,15 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
 
         {/* "Cancel my order" while the store hasn't started on it (the server decides, see CancelOrderCard). */}
         {!awaitingCodVerification && (
-          <div className="mb-6">
-            <CancelOrderCard subdomain={subdomain} order={order} lang={storeLanguage === 'bn' ? 'bn' : 'en'} onChanged={setOrder} />
+          <div className="mb-6 space-y-3">
+            <EditAddressCard
+              subdomain={subdomain}
+              order={order}
+              lang={storeLanguage === 'bn' ? 'bn' : 'en'}
+              prefillAddress={order.shippingAddress}
+              onChanged={(next, edited) => mergeUpdate(next, edited)}
+            />
+            <CancelOrderCard subdomain={subdomain} order={order} lang={storeLanguage === 'bn' ? 'bn' : 'en'} onChanged={(next) => mergeUpdate(next)} />
           </div>
         )}
 

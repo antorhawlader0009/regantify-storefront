@@ -24,6 +24,8 @@ import { ProductFilters, type ProductFilterState } from '../components/ProductFi
 import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
 import { useStoreText } from '../lib/storeText';
+import { RecentlyViewed } from '../components/RecentlyViewed';
+import { matchesSearch as matchesSearchWords } from '../lib/searchMatch';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -150,7 +152,8 @@ export function HomeView({
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
   const filtered = products.filter((p) => {
-    const matchesSearch = search?.trim() ? p.name.toLowerCase().includes(search.trim().toLowerCase()) : true;
+    // The name, or one of the product's hidden search words (lib/searchMatch.ts).
+    const matchesSearch = search?.trim() ? matchesSearchWords(p, search.trim().toLowerCase()) : true;
     // Matches on secondaryCategories too — a promo bucket like "50% OFF"
     // (see the header nav) is typically tagged onto products from many
     // different primary categories purely via Secondary Categories, never
@@ -500,6 +503,9 @@ export function HomeView({
           })}
         </div>
       )}
+
+      {/* Not while searching or browsing a category: the results are what the shopper is after. */}
+      {!isFiltered && <RecentlyViewed subdomain={subdomain} storeName={storeName} />}
 
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
     </div>

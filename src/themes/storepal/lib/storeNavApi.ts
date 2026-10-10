@@ -50,6 +50,8 @@ export interface StoreSearchProduct {
   photoUrls: string[];
   price: string;
   discountPrice?: string | null;
+  /** The product's hidden search words (Product.searchKeywords), matched by the dropdown too. */
+  searchKeywords?: string[];
 }
 
 const EMPTY_SEARCH_INDEX: StoreSearchProduct[] = [];
@@ -69,12 +71,13 @@ export async function getStoreSearchIndex(subdomain: string): Promise<StoreSearc
     if (!res.ok) return EMPTY_SEARCH_INDEX;
     const data = await res.json();
     if (!Array.isArray(data.products)) return EMPTY_SEARCH_INDEX;
-    return data.products.map((p: { slug: string; name: string; photoUrls?: string[]; price: string; discountPrice?: string | null }) => ({
+    return data.products.map((p: { slug: string; name: string; photoUrls?: string[]; price: string; discountPrice?: string | null; searchKeywords?: string[] }) => ({
       slug: p.slug,
       name: p.name,
       photoUrls: p.photoUrls ?? [],
       price: p.price,
       discountPrice: p.discountPrice ?? null,
+      searchKeywords: p.searchKeywords ?? [],
     }));
   } catch {
     return EMPTY_SEARCH_INDEX;

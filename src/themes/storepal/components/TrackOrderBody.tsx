@@ -11,6 +11,7 @@ import { formatPrice } from '../lib/formatPrice';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { isFinishedOrder } from '@/lib/useLiveOrder';
 import { CancelOrderCard } from './CancelOrderCard';
+import { EditAddressCard } from './EditAddressCard';
 
 const STOPPED_STATUSES = ['CANCELLED', 'RETURN', 'REFUNDED', 'PAYMENT_FAILED', 'STOCK_OUT'];
 
@@ -218,6 +219,8 @@ export function TrackOrderBody({
           </ol>
         )}
       </section>
+
+      {subdomain && onOrderChanged && <EditAddressCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 
       {subdomain && onOrderChanged && <CancelOrderCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 

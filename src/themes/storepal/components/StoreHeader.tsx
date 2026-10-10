@@ -23,6 +23,7 @@ import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefr
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { useStoreText } from '../lib/storeText';
+import { matchesSearch as matchesSearchWords } from '../lib/searchMatch';
 
 interface StoreHeaderProps {
   subdomain: string;
@@ -252,7 +253,7 @@ export function StoreHeader({
   }, [categories, draftLower]);
   const matchedProducts = useMemo(() => {
     if (!draftLower || !searchIndex) return [];
-    return searchIndex.filter((p) => p.name.toLowerCase().includes(draftLower)).slice(0, 6);
+    return searchIndex.filter((p) => matchesSearchWords(p, draftLower)).slice(0, 6);
   }, [searchIndex, draftLower]);
   const showSuggestions = suggestionsOpen && draftLower.length > 0 && (matchedCategories.length > 0 || matchedProducts.length > 0);
 

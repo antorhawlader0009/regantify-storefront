@@ -22,6 +22,7 @@ import { StorePalProductTabs } from '../components/StorePalProductTabs';
 import { StorePalPurchasePanel } from '../components/StorePalPurchasePanel';
 import { resolveBackorder, visibleInListings } from '../lib/backorder';
 import { StoreLabel } from '../components/StoreLabel';
+import { RecentlyViewed } from '../components/RecentlyViewed';
 
 interface ProductViewProps {
   subdomain: string;
@@ -118,6 +119,9 @@ export function ProductView({
           </section>
         )}
       </div>
+
+      {/* This product is remembered, and the others viewed lately are shown (StorePal only). */}
+      <RecentlyViewed subdomain={subdomain} storeName={storeName} currentSlug={product.slug} />
 
       <div className="hidden sm:block">
         <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />

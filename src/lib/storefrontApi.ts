@@ -343,6 +343,8 @@ export interface StorefrontSizeGuide {
 
 export interface StorefrontProduct {
   id: string;
+  /** Hidden words that also find this product in StorePal's search (Product.searchKeywords); never shown. */
+  searchKeywords?: string[];
   /** The guide this product shows (its own, else its category's); null when none. Only the product page answer carries it. */
   sizeGuide?: StorefrontSizeGuide | null;
   name: string;
