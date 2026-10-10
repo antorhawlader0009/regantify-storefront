@@ -19,6 +19,9 @@ export interface ProductReview {
   customerName: string | null;
   featured: boolean;
   createdAt: string;
+  /** The store's public reply (plain text); null/absent = none. Shown by StorePal only. */
+  replyText?: string | null;
+  repliedAt?: string | null;
 }
 
 export interface SubmitReviewInput {

@@ -90,6 +90,16 @@ const BN: Record<string, string> = {
   INFORMATION: 'তথ্য',
   'Your Email': 'আপনার ইমেইল',
   'Thanks for subscribing!': 'সাবস্ক্রাইব করার জন্য ধন্যবাদ!',
+
+  // The store's reply under a customer review
+  'Reply from the store': 'দোকানের উত্তর',
+
+  // Size guide (the link beside a product's Size choice, and its popup)
+  'Size guide': 'সাইজ গাইড',
+  Close: 'বন্ধ করুন',
+
+  // Chat bubble (typed into WhatsApp from a product page)
+  "I'd like to know about this product:": 'এই পণ্যটা সম্পর্কে জানতে চাই:',
 };
 
 /** Bangla digits for numbers shown inside a Bangla label. */

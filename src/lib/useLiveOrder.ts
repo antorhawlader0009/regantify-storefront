@@ -63,5 +63,12 @@ export function useLiveOrder(initial: TrackedOrder, refetch: () => Promise<Track
     };
   }, [finished]);
 
-  return { order, checkedAt, finished };
+  // Shows an order the page already has in hand (the answer to "Cancel my order") without waiting for the next check.
+  const replace = (next: TrackedOrder) => {
+    setOrder(next);
+    setCheckedAt(new Date());
+    lastRef.current = Date.now();
+  };
+
+  return { order, checkedAt, finished, replace };
 }

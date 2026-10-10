@@ -18,7 +18,7 @@ import { ProductOffers } from '../components/ProductOffers';
 // Medium's own components rather than a near-duplicate rebuild. Only
 // the surrounding page chrome (header/footer/breadcrumb/layout) is
 // StorePal's own.
-import { ProductTabs } from '../../medium/components/ProductTabs';
+import { StorePalProductTabs } from '../components/StorePalProductTabs';
 import { StorePalPurchasePanel } from '../components/StorePalPurchasePanel';
 import { resolveBackorder, visibleInListings } from '../lib/backorder';
 import { StoreLabel } from '../components/StoreLabel';
@@ -65,6 +65,7 @@ export function ProductView({
         categoryDetails={categoryDetails}
         logoUrl={logoUrl}
         socialLinks={socialLinks}
+        chatProductName={product.name}
       />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 text-[12px] text-muted">
@@ -103,7 +104,7 @@ export function ProductView({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="bg-surface border border-line rounded mb-5">
-          <ProductTabs subdomain={subdomain} slug={product.slug} description={product.description} />
+          <StorePalProductTabs subdomain={subdomain} slug={product.slug} description={product.description} />
         </div>
 
         {visibleRelated.length > 0 && (

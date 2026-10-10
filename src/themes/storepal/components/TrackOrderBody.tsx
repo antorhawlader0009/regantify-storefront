@@ -10,6 +10,7 @@ import { stageText, statusText, timelineDetail, timelineTitle, ui, type TrackLan
 import { formatPrice } from '../lib/formatPrice';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { isFinishedOrder } from '@/lib/useLiveOrder';
+import { CancelOrderCard } from './CancelOrderCard';
 
 const STOPPED_STATUSES = ['CANCELLED', 'RETURN', 'REFUNDED', 'PAYMENT_FAILED', 'STOCK_OUT'];
 
@@ -157,6 +158,8 @@ export function TrackOrderBody({
   whatsappUrl,
   checkedAt,
   live,
+  subdomain,
+  onOrderChanged,
 }: {
   order: TrackedOrder;
   lang: TrackLang;
@@ -164,6 +167,9 @@ export function TrackOrderBody({
   checkedAt?: Date;
   /** Whether the page is still refreshing itself (the order has not finished). */
   live?: boolean;
+  /** With `onOrderChanged`, turns on the "Cancel my order" card (CancelOrderCard). */
+  subdomain?: string;
+  onOrderChanged?: (order: TrackedOrder) => void;
 }) {
   const stepIndex = HAPPY_PATH.indexOf(order.status);
   const stopped = STOPPED_STATUSES.includes(order.status);
@@ -212,6 +218,8 @@ export function TrackOrderBody({
           </ol>
         )}
       </section>
+
+      {subdomain && onOrderChanged && <CancelOrderCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 
       {order.courierTracking && <CourierBlock tracking={order.courierTracking} lang={lang} />}
 

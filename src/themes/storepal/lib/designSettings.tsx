@@ -36,6 +36,12 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   homeHighlights: [],
   homeHighlightsHeading: null,
   storeLanguage: 'en',
+  chatButtonEnabled: true,
+  chatButtonChannel: 'WHATSAPP',
+  chatButtonMessengerLink: null,
+  chatButtonSide: 'RIGHT',
+  chatButtonPages: ['HOME', 'PRODUCT', 'OTHER'],
+  chatButtonProductMessage: true,
 };
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);

@@ -30,7 +30,17 @@ function LiveResult({
 }) {
   const reference = order.publicCode ?? order.invoiceNumber;
   const live = useLiveOrder(order, () => trackOrder(subdomain, reference, phone));
-  return <TrackOrderBody order={live.order} lang={lang} whatsappUrl={whatsappUrl} checkedAt={live.checkedAt} live={!live.finished} />;
+  return (
+    <TrackOrderBody
+      order={live.order}
+      lang={lang}
+      whatsappUrl={whatsappUrl}
+      checkedAt={live.checkedAt}
+      live={!live.finished}
+      subdomain={subdomain}
+      onOrderChanged={live.replace}
+    />
+  );
 }
 
 /**

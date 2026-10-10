@@ -9,6 +9,7 @@ import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText } from '../lib/storeText';
+import { SizeGuideLink } from './SizeGuideLink';
 
 interface StorePalProductPanelProps {
   subdomain: string;
@@ -100,6 +101,13 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
       : undefined;
 
   const needsVariantSelection = product.variationOptions.length > 0 && !matchedVariant;
+
+  // The size guide (Store > Product > Size Guides) sits beside the Size choice: the option named like a size, else
+  // the first one; a product with no choices at all gets it as a plain link.
+  const sizeGuide = product.sizeGuide ?? null;
+  const sizeGuideOptionId = sizeGuide
+    ? (product.variationOptions.find((o) => /size|সাইজ|মাপ/i.test(o.name)) ?? product.variationOptions[0])?.id
+    : undefined;
 
   // Defensive: normalize once, since older cached API responses (before
   // this field existed) or an in-flight backend deploy could still omit
@@ -406,9 +414,18 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           </div>
         </div>
 
+        {sizeGuide && product.variationOptions.length === 0 && (
+          <div className="mb-4">
+            <SizeGuideLink guide={sizeGuide} />
+          </div>
+        )}
+
         {product.variationOptions.map((opt) => (
           <div key={opt.id} className="mb-4">
-            <p className="m-0 mb-2 text-[12px] font-semibold text-ink">{opt.name}</p>
+            <div className="mb-2 flex items-center justify-between gap-3">
+              <p className="m-0 text-[12px] font-semibold text-ink">{opt.name}</p>
+              {sizeGuide && opt.id === sizeGuideOptionId && <SizeGuideLink guide={sizeGuide} />}
+            </div>
             <div className="flex gap-1.5 flex-wrap">
               {opt.values.map((val) => {
                 const isSelected = selected[opt.name] === val;

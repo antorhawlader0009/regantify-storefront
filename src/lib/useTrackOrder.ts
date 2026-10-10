@@ -96,6 +96,7 @@ export function useTrackOrder(subdomain: string) {
     loading,
     error,
     order,
+    setOrder,
     justPlaced,
     handleSubmit,
     rememberedOrders,

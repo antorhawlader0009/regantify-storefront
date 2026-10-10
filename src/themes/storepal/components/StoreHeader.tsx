@@ -11,7 +11,7 @@ import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/custo
 import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
 import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi';
 import { formatPrice } from '../lib/formatPrice';
-import { WhatsAppBubble } from './WhatsAppBubble';
+import { ChatBubble } from './ChatBubble';
 import { AiAssistantWidget } from './AiAssistantWidget';
 import { CartDrawer } from './CartDrawer';
 import { CheckoutDialog } from './CheckoutDialog';
@@ -36,7 +36,7 @@ interface StoreHeaderProps {
   // convention as StoreFooter's own logoUrl/socialLinks.
   logoUrl?: string | null;
   // Store > Social — only ever read here for whatsappUrl (see
-  // WhatsAppBubble below); everywhere else that needs the full set
+  // ChatBubble below); everywhere else that needs the full set
   // (StoreFooter's icon row) still gets it as its own prop. Same
   // prop-or-fetch convention as logoUrl: omit entirely on pages with no
   // server-fetched copy already in scope and this component fetches it
@@ -48,6 +48,9 @@ interface StoreHeaderProps {
   // fetch categoryDetails at all — those simply get a chevron-only nav
   // with no dropdown, same as before this prop existed.
   categoryDetails?: StorefrontCategoryDetail[];
+  // The product page passes its product's name so the chat bubble can open
+  // the chat with "I'd like to know about this product: name, link" typed in.
+  chatProductName?: string;
 }
 
 // Store > Design > Site Banner. With nothing saved it's the reference
@@ -138,6 +141,7 @@ export function StoreHeader({
   categories,
   logoUrl: logoUrlProp,
   socialLinks: socialLinksProp,
+  chatProductName,
   categoryDetails = [],
 }: StoreHeaderProps) {
   const t = useStoreText();
@@ -616,7 +620,7 @@ export function StoreHeader({
         </div>
       )}
 
-      <WhatsAppBubble socialLinks={socialLinks} />
+      <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
       <AiAssistantWidget subdomain={subdomain} />
       <CartDrawer subdomain={subdomain} />
       <CheckoutDialog subdomain={subdomain} />

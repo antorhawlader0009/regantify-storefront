@@ -36,7 +36,7 @@ export function useTrackLang(): [TrackLang, (lang: TrackLang) => void] {
   return [lang, setLang];
 }
 
-type UiKey =
+export type UiKey =
   | 'orderTracking'
   | 'order'
   | 'placed'
@@ -61,6 +61,19 @@ type UiKey =
   | 'deliveryTo'
   | 'needHelp'
   | 'helpText'
+  | 'cancelTitle'
+  | 'cancelHelp'
+  | 'cancelOrder'
+  | 'cancelWhy'
+  | 'cancelChangedMind'
+  | 'cancelMistake'
+  | 'cancelElsewhere'
+  | 'cancelConfirm'
+  | 'cancelKeep'
+  | 'cancelling'
+  | 'cancelPickReason'
+  | 'cancelDone'
+  | 'cancelCallStore'
   | 'whatsapp'
   | 'liveNote'
   | 'lastChecked'
@@ -107,6 +120,19 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     deliveryTo: 'Delivering to',
     needHelp: 'Need help?',
     helpText: 'Questions about this order? Message the store and quote your order number.',
+    cancelTitle: 'Changed your mind?',
+    cancelHelp: 'You can cancel this order until the store confirms it.',
+    cancelOrder: 'Cancel order',
+    cancelWhy: 'Why are you cancelling?',
+    cancelChangedMind: 'I changed my mind',
+    cancelMistake: 'I ordered by mistake',
+    cancelElsewhere: 'I bought it from somewhere else',
+    cancelConfirm: 'Yes, cancel my order',
+    cancelKeep: 'Keep my order',
+    cancelling: 'Cancelling…',
+    cancelPickReason: 'Please pick a reason.',
+    cancelDone: 'Your order has been cancelled.',
+    cancelCallStore: 'The store has started on this order. To cancel it, please call the store.',
     whatsapp: 'Message on WhatsApp',
     liveNote: 'This page updates by itself.',
     lastChecked: 'Last checked',
@@ -151,6 +177,19 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     deliveryTo: 'ডেলিভারি ঠিকানা',
     needHelp: 'সাহায্য লাগবে?',
     helpText: 'এই অর্ডার নিয়ে প্রশ্ন থাকলে দোকানে মেসেজ করুন এবং অর্ডার নম্বরটি জানান।',
+    cancelTitle: 'মত বদলেছেন?',
+    cancelHelp: 'দোকান কনফার্ম করার আগে পর্যন্ত আপনি এই অর্ডার বাতিল করতে পারবেন।',
+    cancelOrder: 'অর্ডার বাতিল করুন',
+    cancelWhy: 'কেন বাতিল করছেন?',
+    cancelChangedMind: 'আমি মত বদলেছি',
+    cancelMistake: 'ভুলে অর্ডার দিয়েছি',
+    cancelElsewhere: 'অন্য জায়গা থেকে কিনেছি',
+    cancelConfirm: 'হ্যাঁ, আমার অর্ডার বাতিল করুন',
+    cancelKeep: 'অর্ডার রাখুন',
+    cancelling: 'বাতিল হচ্ছে…',
+    cancelPickReason: 'একটি কারণ বেছে নিন।',
+    cancelDone: 'আপনার অর্ডার বাতিল করা হয়েছে।',
+    cancelCallStore: 'দোকান এই অর্ডারের কাজ শুরু করেছে। বাতিল করতে হলে দোকানে ফোন করুন।',
     whatsapp: 'হোয়াটসঅ্যাপে মেসেজ করুন',
     liveNote: 'এই পেজ নিজে থেকেই আপডেট হয়।',
     lastChecked: 'সর্বশেষ দেখা হয়েছে',

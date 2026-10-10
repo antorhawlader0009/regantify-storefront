@@ -491,7 +491,13 @@ export interface TrackedOrder {
   vatIncluded?: boolean;
   // Counter sales on the tracking-link answer only: how it was paid (CASH, CARD, BKASH...).
   paidWith?: string[];
+  // Whether the shopper may cancel this order themselves right now (server: orders/customer-cancel.ts).
+  // Absent on the "My orders" list and on older answers.
+  customerCancel?: { allowed: boolean };
 }
+
+/** The reasons the "Cancel my order" button offers; the server accepts exactly these. */
+export type CustomerCancelReason = 'CHANGED_MIND' | 'ORDERED_BY_MISTAKE' | 'BOUGHT_ELSEWHERE';
 
 /**
  * The same order by its private tracking-link token, from the browser: the tracking page uses it
@@ -500,6 +506,17 @@ export interface TrackedOrder {
 export async function fetchTrackedOrderByLink(subdomain: string, token: string): Promise<TrackedOrder> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}`, { cache: 'no-store' });
   if (!res.ok) throw new Error('Could not refresh the order.');
+  return res.json() as Promise<TrackedOrder>;
+}
+
+/** The shopper cancels their own order (tracking token as proof). Returns the order as it is now. */
+export async function cancelOrderByLink(subdomain: string, token: string, reason: CustomerCancelReason): Promise<TrackedOrder> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/cancel`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ reason }),
+  });
+  if (!res.ok) throw await apiError(res, 'Could not cancel the order. Please try again.');
   return res.json() as Promise<TrackedOrder>;
 }
 

@@ -221,6 +221,15 @@ export interface StorefrontDesignSettings {
   homeHighlightsHeading: string | null;
   /** StorePal's buttons and labels: "en" or "bn" (themes/storepal/lib/storeText.ts). */
   storeLanguage?: 'en' | 'bn';
+  /** Store > Design > Chat Button — the floating bubble (see themes/storepal/components/ChatBubble.tsx). Missing = the bubble as it always was. */
+  chatButtonEnabled?: boolean;
+  chatButtonChannel?: 'WHATSAPP' | 'MESSENGER';
+  /** Messenger only: https://m.me/<page>. */
+  chatButtonMessengerLink?: string | null;
+  chatButtonSide?: 'LEFT' | 'RIGHT';
+  /** HOME = home and shop lists, PRODUCT = product pages, OTHER = cart, info pages, account... */
+  chatButtonPages?: ('HOME' | 'PRODUCT' | 'OTHER')[];
+  chatButtonProductMessage?: boolean;
 }
 
 export interface StorefrontCustomCode {
@@ -319,8 +328,23 @@ export interface StorefrontVariationValuePhoto {
   photoUrls: string[];
 }
 
+/** A size guide (Store > Product > Size Guides): a measurement table or one picture. StorePal shows it beside the Size choice. */
+export interface StorefrontSizeGuide {
+  id: string;
+  name: string;
+  kind: 'TABLE' | 'IMAGE';
+  /** TABLE: the column headings and the rows of cells (each row as long as the headings). */
+  columns: string[];
+  rows: string[][];
+  /** IMAGE: the chart picture. */
+  imageUrl: string | null;
+  note: string | null;
+}
+
 export interface StorefrontProduct {
   id: string;
+  /** The guide this product shows (its own, else its category's); null when none. Only the product page answer carries it. */
+  sizeGuide?: StorefrontSizeGuide | null;
   name: string;
   slug: string;
   description?: string | null;

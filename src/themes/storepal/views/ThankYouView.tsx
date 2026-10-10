@@ -15,12 +15,15 @@ import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { CodOrderVerification } from '../components/CodOrderVerification';
+import { CancelOrderCard } from '../components/CancelOrderCard';
+import { useStorePalDesign } from '../lib/designSettings';
 import { trackMetaPurchase } from '@/lib/metaPixelEvents';
 import { trackPurchase } from '@/lib/ecommerceEvents';
 
 export function ThankYouView({ subdomain }: { subdomain: string }) {
-  const { order, loading, justPlaced } = useTrackOrder(subdomain);
+  const { order, setOrder, loading, justPlaced } = useTrackOrder(subdomain);
   const storeName = useStoreDisplayName(subdomain);
+  const { storeLanguage } = useStorePalDesign();
 
   // Meta pixel Purchase / GA4 purchase: only for the order checkout just
   // handed off (justPlaced), never for a refresh or a manual order lookup,
@@ -91,7 +94,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
     );
   }
 
-  const awaitingCodVerification = order.codVerificationStatus === 'PENDING' && !codVerified;
+  // Cancelled (by the shopper just now, or the store): no code to enter any more.
+  const cancelled = order.status === 'CANCELLED';
+  const awaitingCodVerification = order.codVerificationStatus === 'PENDING' && !codVerified && !cancelled;
   // The time to enter the SMS code ran out: the store cancelled the order, or kept it to call the shopper.
   const codVerificationExpired = order.codVerificationStatus === 'EXPIRED';
   // The delivery charge (or part) a COD shopper already paid, so the page shows what is still due in cash.
@@ -124,13 +129,15 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             </svg>
           </div>
           <h1 className="storepal-fade-up text-[24px] sm:text-[28px] font-bold text-ink mb-2">
-            {codVerificationExpired ? 'Order not confirmed' : justPlaced ? 'Thank you for your order!' : 'Order confirmed'}
+            {codVerificationExpired ? 'Order not confirmed' : cancelled ? 'Order cancelled' : justPlaced ? 'Thank you for your order!' : 'Order confirmed'}
           </h1>
           <p className="storepal-fade-up text-[13.5px] text-muted max-w-md" style={{ animationDelay: '0.08s' }}>
             {codVerificationExpired
               ? order.status === 'CANCELLED'
                 ? 'The SMS code was not entered in time, so this order was cancelled. You are welcome to place it again.'
                 : 'The SMS code was not entered in time. The store will contact you to confirm this order.'
+              : cancelled
+              ? 'This order has been cancelled. You are welcome to place a new one any time.'
               : awaitingCodVerification
               ? 'One more step: confirm your order with the code we just texted you.'
               : order.paymentMethod === 'ONLINE_PAYMENT'
@@ -143,6 +150,13 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
 
         {awaitingCodVerification && (
           <CodOrderVerification subdomain={subdomain} orderId={order.id} onVerified={() => setCodVerified(true)} />
+        )}
+
+        {/* "Cancel my order" while the store hasn't started on it (the server decides, see CancelOrderCard). */}
+        {!awaitingCodVerification && (
+          <div className="mb-6">
+            <CancelOrderCard subdomain={subdomain} order={order} lang={storeLanguage === 'bn' ? 'bn' : 'en'} onChanged={setOrder} />
+          </div>
         )}
 
         {/* Memo / invoice card */}

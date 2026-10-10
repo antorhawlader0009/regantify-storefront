@@ -45,7 +45,7 @@ export function TrackOrderView({
   initialOrder: TrackedOrder;
 }) {
   const [lang, setLang] = useTrackLang();
-  const { order, checkedAt, finished } = useLiveOrder(initialOrder, () => fetchTrackedOrderByLink(subdomain, token));
+  const { order, checkedAt, finished, replace } = useLiveOrder(initialOrder, () => fetchTrackedOrderByLink(subdomain, token));
 
   return (
     <div className="min-h-screen bg-surface">
@@ -72,7 +72,15 @@ export function TrackOrderView({
         ) : (
           <>
             <h1 className="text-[18px] sm:text-[20px] font-bold text-ink mb-4">{ui(lang, 'orderTracking')}</h1>
-            <TrackOrderBody order={order} lang={lang} whatsappUrl={whatsappUrl} checkedAt={checkedAt} live={!finished} />
+            <TrackOrderBody
+              order={order}
+              lang={lang}
+              whatsappUrl={whatsappUrl}
+              checkedAt={checkedAt}
+              live={!finished}
+              subdomain={subdomain}
+              onOrderChanged={replace}
+            />
           </>
         )}
       </main>
