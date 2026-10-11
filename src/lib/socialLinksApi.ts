@@ -46,6 +46,16 @@ export interface StoreFooterConfig {
   subscribeSubheading: string;
   showPaymentIcons: boolean;
   paymentIcons: string[];
+  showContact?: boolean;
+  contactTitle?: string;
+  contactAddress?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  showApps?: boolean;
+  appsTitle?: string;
+  playStoreUrl?: string | null;
+  appStoreUrl?: string | null;
+  showCredit?: boolean;
 }
 
 // Store > Logo — bundled into the same fetch/shape as social links

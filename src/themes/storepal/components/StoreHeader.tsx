@@ -5,7 +5,7 @@ import { createPortal } from 'react-dom';
 import { useQueryState } from 'nuqs';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Search, ShoppingBag, User, ChevronDown, X, Menu, Heart } from 'lucide-react';
+import { Search, ShoppingBag, User, ChevronDown, X, Menu, Heart, Phone } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
@@ -66,9 +66,27 @@ const ANNOUNCEMENTS = ['Cash On Delivery All Over Bangladesh', 'Guaranteed Pre-o
 function SiteBanner() {
   const t = useStoreText();
   const design = useStorePalDesign();
-  if (!design.bannerEnabled) return null;
-  const marquee = design.bannerStyle === 'MARQUEE';
-  const html = design.bannerContent;
+  // Scheduled banners (TellMe idea 110): the one whose time is on now replaces the usual banner. Decided here in the browser, from the
+  // time of the visit, because the store's page is cached and a start or an end must not wait for the cache. Until the page has loaded, and
+  // for a visit with nothing scheduled, the usual banner shows.
+  const [now, setNow] = useState<number | null>(null);
+  useEffect(() => {
+    if (!design.bannerSchedule || design.bannerSchedule.length === 0) return;
+    setNow(Date.now());
+    const timer = setInterval(() => setNow(Date.now()), 60_000);
+    return () => clearInterval(timer);
+  }, [design.bannerSchedule]);
+  const scheduled =
+    now === null
+      ? null
+      : ([...(design.bannerSchedule ?? [])]
+          .filter((b) => (!b.startAt || Date.parse(b.startAt) <= now) && (!b.endAt || Date.parse(b.endAt) > now))
+          // Two running at once: the one that started last.
+          .sort((a, b) => (b.startAt ? Date.parse(b.startAt) : 0) - (a.startAt ? Date.parse(a.startAt) : 0))[0] ?? null);
+  if (!scheduled && !design.bannerEnabled) return null;
+  const marquee = (scheduled?.style ?? design.bannerStyle) === 'MARQUEE';
+  const html = scheduled ? scheduled.content : design.bannerContent;
+  const background = scheduled?.backgroundColor || design.bannerBackgroundColor;
   // TipTap saves runs of spaces as plain spaces (its editor shows them via
   // white-space: pre-wrap), so the banner must preserve whitespace too or
   // the vendor's spacing collapses to one space. `pre` keeps the marquee
@@ -89,7 +107,7 @@ function SiteBanner() {
   return (
     <div
       className="bg-canvas overflow-hidden border-b border-line"
-      style={design.bannerBackgroundColor ? { backgroundColor: design.bannerBackgroundColor } : undefined}
+      style={background ? { backgroundColor: background } : undefined}
     >
       {marquee ? (
         <MarqueeTrack items={items.map((item) => item.node)} />
@@ -394,6 +412,20 @@ export function StoreHeader({
             </div>
           )}
         </div>
+
+        {/* "Call Us Now" + number (Store > Design > Header Editor; off by default). */}
+        {design.headerPhoneEnabled && design.headerPhone?.trim() && (
+          <a
+            href={`tel:${design.headerPhone.split(/[,/]/)[0].replace(/[^\d+]/g, '')}`}
+            className="hidden lg:flex items-center gap-2.5 shrink-0 text-ink hover:text-accent transition-colors"
+          >
+            <Phone size={22} strokeWidth={1.75} aria-hidden />
+            <span className="leading-tight">
+              <span className="block text-[11px] text-muted">{design.headerPhoneLabel?.trim() || t('Call Us Now')}</span>
+              <span className="block text-[13px] font-semibold">{design.headerPhone}</span>
+            </span>
+          </a>
+        )}
 
         <div className="flex items-center gap-4 ml-auto shrink-0">
           {design.cardShowWishlist && (

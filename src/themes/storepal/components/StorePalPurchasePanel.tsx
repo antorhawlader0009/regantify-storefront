@@ -14,6 +14,7 @@ import { BundleIncludes } from './BundleIncludes';
 import { ShareButton } from './ShareButton';
 import { DeliveryCheck } from './DeliveryCheck';
 import { SoldRecentLine } from './SoldRecentLine';
+import { ComingSoonNotify } from './ComingSoonNotify';
 import type { ResolvedPolicy } from '../lib/policy';
 import { CallMeBackLink, LeadFormButton, PriceOnRequest, StoreLeadFormDialog, type StoreFormType } from './StoreLeadForms';
 
@@ -54,14 +55,18 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
   const quoteOnly = !!product.quoteOnly && !!lmsForms;
   const notifyMe = !quoteOnly && !!lmsForms?.notifyMe && !props.backorder && isOutOfStock(product);
   const callMeBack = !!lmsForms?.callMeBack;
+  // Coming soon (TellMe idea 104): no price, no Buy; a "Notify me" form instead.
+  const comingSoon = !!product.comingSoon;
 
   const policyLines = policy && !quoteOnly ? <ProductPolicyLines policy={policy} /> : null;
   const bundleInfo = product.bundle && !quoteOnly ? <BundleIncludes product={product} /> : null;
   const leadSlots =
-    lmsForms || policyLines || bundleInfo || (design.socialProofDays ?? 0) > 0 || !quoteOnly
+    lmsForms || policyLines || bundleInfo || (design.socialProofDays ?? 0) > 0 || !quoteOnly || comingSoon
       ? {
-          price: quoteOnly ? <PriceOnRequest /> : undefined,
-          purchase: quoteOnly ? (
+          price: comingSoon ? <span /> : quoteOnly ? <PriceOnRequest /> : undefined,
+          purchase: comingSoon ? (
+            <ComingSoonNotify subdomain={props.subdomain} slug={product.slug} until={product.comingSoonUntil} />
+          ) : quoteOnly ? (
             <LeadFormButton type="price-request" onOpen={() => setForm('price-request')} />
           ) : notifyMe ? (
             <LeadFormButton type="notify-me" onOpen={() => setForm('notify-me')} />

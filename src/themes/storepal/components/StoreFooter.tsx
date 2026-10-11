@@ -5,10 +5,11 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
-import { getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
+import { getStoreHasBlog, getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplates';
 import { useStoreText } from '../lib/storeText';
 import { BusinessHoursTable } from './BusinessHoursTable';
+import { APP_STORE_BADGE, GOOGLE_PLAY_BADGE } from '../lib/appBadges';
 
 interface StoreFooterProps {
   subdomain: string;
@@ -54,6 +55,28 @@ const PLATFORMS: { key: keyof SocialLinks; label: string; Icon: typeof Facebook 
   { key: 'whatsappUrl', label: 'WhatsApp', Icon: MessageCircle },
 ];
 
+/** "System Design & Developed By : Reganto IT Solution" in the bottom bar. The vendor can hide it in Store > Footer. */
+function DeveloperCredit() {
+  return (
+    <span>
+      System Design &amp; Developed By :{' '}
+      <a href="https://regantoitsolution.com/" target="_blank" rel="noopener noreferrer" className="font-medium text-accent hover:text-accent-dark">
+        Reganto IT Solution
+      </a>
+    </span>
+  );
+}
+
+/** The store's official badge (appBadges.ts), unchanged, linking to the app's page. Both are shown at the same height. */
+function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }) {
+  return (
+    <a href={href} target="_blank" rel="noopener noreferrer" className="inline-block hover:opacity-90">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={src} alt={alt} height={40} className="block h-10 w-auto" />
+    </a>
+  );
+}
+
 /**
  * Store > Footer's configurable, template-driven footer — see
  * FooterConfig in the server's schema.prisma and footerTemplates.ts's
@@ -94,6 +117,8 @@ export function StoreFooter({
   // case today) needs this for the original hardcoded INFORMATION
   // column below.
   const [pages, setPages] = useState<StorefrontPageSummary[]>([]);
+  // Store > Magazine (TellMe idea 106): a "Magazine" link once there is a published post.
+  const [hasBlog, setHasBlog] = useState(false);
 
   const haveAllProps = socialLinksProp && logoUrlProp !== undefined && footerConfigProp !== undefined;
 
@@ -106,6 +131,7 @@ export function StoreFooter({
 
   useEffect(() => {
     getStorePages(subdomain).then(setPages);
+    getStoreHasBlog(subdomain).then(setHasBlog);
   }, [subdomain]);
 
   const socialLinks = socialLinksProp ?? fetched?.socialLinks ?? {};
@@ -179,7 +205,7 @@ export function StoreFooter({
             {SocialIcons}
           </div>
 
-          {pages.length > 0 && (
+          {(pages.length > 0 || hasBlog) && (
             <div>
               <p className="text-[15px] font-semibold text-ink mb-3">{t('INFORMATION')}</p>
               <div className="flex flex-col gap-2.5 text-[13px]">
@@ -192,6 +218,11 @@ export function StoreFooter({
                     {page.title}
                   </Link>
                 ))}
+                {hasBlog && (
+                  <Link href={`/store/${subdomain}/blog`} className="text-accent hover:text-accent-dark transition-colors w-fit">
+                    {t('Magazine')}
+                  </Link>
+                )}
               </div>
             </div>
           )}
@@ -213,8 +244,11 @@ export function StoreFooter({
         </div>
 
         <div className="border-t border-line">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-center text-[13px] text-muted">
-            © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[13px] text-muted flex flex-col items-center gap-1 sm:flex-row sm:justify-between">
+            <span>
+              © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
+            </span>
+            <DeveloperCredit />
           </div>
         </div>
       </footer>
@@ -286,7 +320,7 @@ export function StoreFooter({
   const infoItems =
     footerConfig.infoLinks.length > 0
       ? footerConfig.infoLinks
-      : pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` }));
+      : [...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : [])];
   const InfoColumn = infoItems.length > 0 && (
     <div>
       <p className="text-[15px] font-semibold text-ink mb-3 uppercase">{footerConfig.infoTitle}</p>
@@ -329,13 +363,50 @@ export function StoreFooter({
     </div>
   );
 
+  // Contact info and app download links (each can be hidden), a column of its own at the left whatever the template.
+  const contactLines = [footerConfig.contactAddress, footerConfig.contactPhone, footerConfig.contactEmail].filter((v): v is string => Boolean(v?.trim()));
+  const showContact = Boolean(footerConfig.showContact) && contactLines.length > 0;
+  const showApps = Boolean(footerConfig.showApps) && Boolean(footerConfig.playStoreUrl?.trim() || footerConfig.appStoreUrl?.trim());
+  const ContactColumn = (showContact || showApps) && (
+    <div>
+      {showContact && (
+        <>
+          <p className="text-[15px] font-semibold text-ink mb-3 uppercase">{footerConfig.contactTitle || 'Contact Info'}</p>
+          <div className="flex flex-col gap-2.5 text-[13px] text-muted">
+            {footerConfig.contactAddress?.trim() && <p className="m-0 whitespace-pre-line">{footerConfig.contactAddress}</p>}
+            {footerConfig.contactPhone?.trim() && (
+              <a href={`tel:${footerConfig.contactPhone.split(/[,/]/)[0].replace(/[^\d+]/g, '')}`} className="w-fit hover:text-ink">
+                {footerConfig.contactPhone}
+              </a>
+            )}
+            {footerConfig.contactEmail?.trim() && (
+              <a href={`mailto:${footerConfig.contactEmail}`} className="w-fit hover:text-ink">
+                {footerConfig.contactEmail}
+              </a>
+            )}
+          </div>
+        </>
+      )}
+      {showApps && (
+        <div className={showContact ? 'mt-5' : ''}>
+          <p className="text-[14px] font-semibold text-ink mb-2">{footerConfig.appsTitle || 'Download Now'}</p>
+          <div className="flex flex-wrap gap-2">
+            {footerConfig.playStoreUrl?.trim() && <AppBadge href={footerConfig.playStoreUrl} src={GOOGLE_PLAY_BADGE} alt="Get it on Google Play" />}
+            {footerConfig.appStoreUrl?.trim() && <AppBadge href={footerConfig.appStoreUrl} src={APP_STORE_BADGE} alt="Download on the App Store" />}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+
   const columnContent: Record<string, React.ReactNode> = {
+    contact: ContactColumn,
     logo: LogoColumn,
     menu: MenuColumn,
     info: InfoColumn,
     about: AboutColumn,
   };
-  const visibleColumns = def.columns.filter((c) => columnContent[c]);
+  const visibleColumns = ['contact', ...def.columns].filter((c) => columnContent[c]);
   // Fixed Tailwind class per count (1-4) rather than an inline
   // gridTemplateColumns — keeps this a plain utility-class grid like
   // every other layout in this theme, at the cost of only supporting up
@@ -358,8 +429,11 @@ export function StoreFooter({
       </div>
 
       <div className="border-t border-line">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-center text-[13px] text-muted">
-          © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[13px] text-muted flex flex-col items-center gap-1 sm:flex-row sm:justify-between">
+          <span>
+            © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
+          </span>
+          {footerConfig.showCredit !== false && <DeveloperCredit />}
         </div>
       </div>
     </footer>

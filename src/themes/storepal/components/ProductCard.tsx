@@ -42,6 +42,11 @@ interface CardProduct {
   quoteOnly?: boolean;
   /** Fewest a shopper may order; Add to cart starts there. */
   minOrderQuantity?: number | null;
+  /** Coming soon (TellMe idea 104). */
+  comingSoon?: boolean;
+  /** Sold in packs (TellMe idea 102). */
+  quantityStep?: number;
+  unitLabel?: string | null;
   /** Buyers in the store's social-proof window (TellMe idea 63). */
   soldRecent?: number;
   /** The store's own badge ("New", "Hot") — shown in the image's corner. */
@@ -146,10 +151,11 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       image: product.photoUrls[0],
       unitPrice: Number(displayPrice),
       originalUnitPrice: originalPrice ? Number(originalPrice) : undefined,
-      quantity: product.minOrderQuantity ?? 1,
+      quantity: Math.max(product.minOrderQuantity ?? 1, product.quantityStep ?? 1),
       selectedOptions: selected,
       isPreOrder: product.isPreOrder,
       minOrderQuantity: product.minOrderQuantity,
+      quantityStep: product.quantityStep,
       productId: product.id,
       variantId: matchedVariant?.id,
     });
@@ -165,9 +171,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   // "Show Button (Default)": Add to Cart for a simple product, View
   // Product for one with variations. Merged with the explicit toggles so
   // the same button never shows twice.
+  const comingSoon = !!product.comingSoon;
   const showView = !quoteOnly && (design.cardShowViewButton || (design.cardShowDefaultButton && hasVariations));
-  const showAddToCart = !quoteOnly && (design.cardShowAddToCart || (design.cardShowDefaultButton && !hasVariations));
-  const showBuyNow = !quoteOnly && design.cardShowBuyNow;
+  const showAddToCart = !quoteOnly && !comingSoon && (design.cardShowAddToCart || (design.cardShowDefaultButton && !hasVariations));
+  const showBuyNow = !quoteOnly && !comingSoon && design.cardShowBuyNow;
 
   const video = design.cardShowVideo && product.videoUrl ? videoEmbed(product.videoUrl) : null;
   const inWishlist = wishlist.has(product.slug);
@@ -281,12 +288,15 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
           </label>
         )}
 
-        {quoteOnly ? (
+        {comingSoon ? (
+          <p className="text-[13.5px] font-bold text-accent">{t('Coming soon')}</p>
+        ) : quoteOnly ? (
           <p className="text-[13.5px] font-bold text-ink">{t('Price on request')}</p>
         ) : (
           <div className="flex gap-2 items-baseline flex-wrap">
             {originalPrice && <span className="text-muted line-through text-[12.5px]">{formatPrice(originalPrice)}</span>}
             <span className="font-bold text-[15px] text-accent">{formatPrice(displayPrice)}</span>
+            {product.unitLabel && <span className="text-muted text-[12px]"> / {product.unitLabel}</span>}
           </div>
         )}
 
@@ -365,6 +375,14 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
                 </button>
               )}
             </div>
+          )}
+          {comingSoon && (
+            <Link
+              href={href}
+              className="text-center py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-semibold transition-colors"
+            >
+              {t('Notify me')}
+            </Link>
           )}
           {quoteOnly && (
             <Link

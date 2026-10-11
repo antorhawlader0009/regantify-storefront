@@ -97,8 +97,10 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const [activePhoto, setActivePhoto] = useState(0);
   const [selected, setSelected] = useState<Record<string, string>>({});
   // Product.minOrderQuantity: the picker starts there and never goes below it.
-  const minQty = product.minOrderQuantity ?? 1;
-  const [quantity, setQuantity] = useState(minQty);
+  // Sold in packs (TellMe idea 102): +/- move one pack; the first quantity is one pack at least.
+  const packStep = product.quantityStep ?? 1;
+  const minQty = Math.max(product.minOrderQuantity ?? 1, packStep);
+  const [quantity, setQuantity] = useState(packStep > 1 ? Math.ceil(minQty / packStep) * packStep : minQty);
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
   // Backorder confirm popup — holds the action (add / buy) to run on Continue.
@@ -264,6 +266,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     isPreOrder: product.isPreOrder,
     preOrderDate: product.isPreOrder ? (product.preOrderDate ?? undefined) : undefined,
     minOrderQuantity: product.minOrderQuantity,
+    quantityStep: packStep > 1 ? packStep : undefined,
     // For StorePal's Meta pixel content_ids (see stores/cart-store.ts).
     productId: product.id,
     variantId: matchedVariant?.id,
@@ -433,6 +436,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         <div className="bg-accent-light border border-accent/15 rounded-lg p-4 mb-4">
           <div className="flex gap-2.5 items-baseline flex-wrap">
             <span className="text-[28px] font-bold text-accent tracking-tight">{formatPrice(breakApplied ? brokenPrice : displayPrice)}</span>
+            {product.unitLabel && <span className="text-muted text-[14px]">/ {product.unitLabel}</span>}
             {wholesaleApplied && <span className="rounded bg-accent px-1.5 py-0.5 text-[11px] font-semibold text-white">{t('Wholesale price')}</span>}
             {breakApplied ? (
               <span className="text-muted line-through text-[15px]">{formatPrice(displayOriginalPrice ?? displayPrice)}</span>
@@ -591,13 +595,13 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         <div className="mb-5">
           <p className="m-0 mb-2 text-[12px] font-semibold text-ink">{t('Quantity')}</p>
           <div className="inline-flex items-center border border-line rounded-md overflow-hidden bg-canvas">
-            <button onClick={() => setQuantity((q) => Math.max(minQty, q - 1))} className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors">
+            <button onClick={() => setQuantity((q) => Math.max(minQty, q - packStep))} className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors">
               <Minus size={13} />
             </button>
             <span className="w-10 text-center text-[13.5px] font-semibold bg-surface h-9 flex items-center justify-center">{quantity}</span>
             <button
-              onClick={() => setQuantity((q) => (quantityCap !== undefined ? Math.min(quantityCap, q + 1) : q + 1))}
-              disabled={quantityCap !== undefined && quantity >= quantityCap}
+              onClick={() => setQuantity((q) => (quantityCap !== undefined ? Math.max(q, Math.floor(Math.min(quantityCap, q + packStep) / packStep) * packStep) : q + packStep))}
+              disabled={quantityCap !== undefined && quantity + packStep > quantityCap}
               className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
             >
               <Plus size={13} />

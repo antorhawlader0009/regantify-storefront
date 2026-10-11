@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getStoreProducts, siteUrl } from '@/lib/storefrontApi';
+import { getStoreBlog, getStoreProducts, siteUrl } from '@/lib/storefrontApi';
 
 // Per-store sitemap at /store/:subdomain/sitemap.xml — every product a
 // vendor adds through Add Product (with visibility: Public) shows up
@@ -23,8 +23,14 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
     return new NextResponse('Not found', { status: 404 });
   }
 
+  // Store > Magazine posts (StorePal only; the list is empty on any other theme).
+  const blog = await getStoreBlog(subdomain, 48).catch(() => ({ posts: [] }));
+
   const urls = [
     { loc: await siteUrl(`/store/${subdomain}`), lastmod: new Date().toISOString() },
+    ...(await Promise.all(
+      blog.posts.map(async (b) => ({ loc: await siteUrl(`/store/${subdomain}/blog/${b.slug}`), lastmod: b.publishedAt })),
+    )),
     ...(await Promise.all(
       products.map(async (p) => ({
         loc: await siteUrl(`/store/${subdomain}/product/${p.slug}`),

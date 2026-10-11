@@ -32,6 +32,8 @@ export interface CartLine {
   // Product.minOrderQuantity: the line never goes below it (the server
   // refuses a smaller one at checkout). Missing = no minimum.
   minOrderQuantity?: number | null;
+  // Sold in packs (TellMe idea 102): the quantity moves in steps of this many (StorePal). Missing or 1 = one at a time.
+  quantityStep?: number;
   // Product.id / ProductVariant.id, for StorePal's Meta pixel content_ids
   // (see lib/metaPixelEvents.ts). Optional: Minimal's panel doesn't set
   // them, and carts saved before these fields existed don't have them.
@@ -120,7 +122,11 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
         ...initState,
 
         addLine: (input) => {
-          const line = { ...input, quantity: Math.max(input.quantity, input.minOrderQuantity ?? 1) };
+          // Packs (TellMe idea 102): never below the minimum or one pack, and always a whole number of packs.
+          const step = input.quantityStep ?? 1;
+          const floor = Math.max(input.minOrderQuantity ?? 1, step);
+          const wanted = Math.max(input.quantity, floor);
+          const line = { ...input, quantity: step > 1 ? Math.ceil(wanted / step) * step : wanted };
           const id = lineId(line.productSlug, line.selectedOptions, line.customValues);
           set((state) => {
             const existing = state.lines.find((l) => l.id === id);
@@ -158,7 +164,11 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
         setQuantity: (id, requested) => {
           const before = get().lines.find((l) => l.id === id);
           // Above 0 never goes below the product's minimum; 0 still removes the line.
-          const quantity = requested > 0 ? Math.max(requested, before?.minOrderQuantity ?? 1) : requested;
+          // A line sold in packs (TellMe idea 102) moves one pack per +/- press, whichever button the theme draws.
+          const step = before?.quantityStep ?? 1;
+          let target = requested;
+          if (step > 1 && before && requested > 0) target = requested > before.quantity ? before.quantity + step : before.quantity - step;
+          const quantity = requested > 0 ? Math.max(target, before?.minOrderQuantity ?? 1, step) : requested;
           set((state) => ({
             lines: applyBreaks(
               quantity <= 0 ? state.lines.filter((l) => l.id !== id) : state.lines.map((l) => (l.id === id ? { ...l, quantity } : l)),

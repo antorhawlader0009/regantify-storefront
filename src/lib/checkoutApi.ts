@@ -534,6 +534,8 @@ export interface TrackedOrder {
   heardFrom?: { ask: boolean; options: Array<{ key: string; label: string }>; answered: string | null };
   // The preferred delivery time slot the shopper chose (TellMe idea 90).
   preferredSlot?: string | null;
+  // After a failed delivery attempt (TellMe idea 106): the next days the shopper may pick, and the day already picked.
+  reschedule?: { canPick: boolean; days: string[]; pickedDay: string | null; picks: number };
 }
 
 /** The reasons the "Cancel my order" button offers; the server accepts exactly these. */
@@ -569,6 +571,17 @@ export async function fetchDeliverySlots(subdomain: string, date: string): Promi
   } catch {
     return [];
   }
+}
+
+/** The shopper picks a new delivery day after a failed attempt (TellMe idea 106; tracking token as proof). Returns the order as it is now. */
+export async function rescheduleDeliveryByLink(subdomain: string, token: string, day: string): Promise<TrackedOrder> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/reschedule`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ day }),
+  });
+  if (!res.ok) throw await apiError(res, 'Could not save the day. Please try again.');
+  return res.json() as Promise<TrackedOrder>;
 }
 
 /** The shopper's one tap on "How did you hear about us?" (tracking token as proof). Returns the order as it is now. */
@@ -651,6 +664,7 @@ export type CartRecovery =
         selectedOptions: Record<string, string>;
         isPreOrder: boolean;
         minOrderQuantity: number | null;
+        quantityStep?: number;
         productId: string;
         variantId: string | null;
       }>;
@@ -801,6 +815,7 @@ export type SharedCart =
         selectedOptions: Record<string, string>;
         isPreOrder: boolean;
         minOrderQuantity: number | null;
+        quantityStep?: number;
         productId: string;
         variantId: string | null;
       }>;

@@ -36,6 +36,16 @@ export interface StorefrontFooterConfig {
   subscribeSubheading: string;
   showPaymentIcons: boolean;
   paymentIcons: string[];
+  showContact?: boolean;
+  contactTitle?: string;
+  contactAddress?: string | null;
+  contactPhone?: string | null;
+  contactEmail?: string | null;
+  showApps?: boolean;
+  appsTitle?: string;
+  playStoreUrl?: string | null;
+  appStoreUrl?: string | null;
+  showCredit?: boolean;
 }
 
 /** Which LMS store forms a StorePal product page shows. */
@@ -211,6 +221,8 @@ export interface StorefrontDesignSettings {
   /** The one colour of every product badge; null = the theme's accent. */
   productBadgeColor?: string | null;
   bannerEnabled: boolean;
+  /** Scheduled banners (TellMe idea 110); the one whose time is on now replaces the usual banner. */
+  bannerSchedule?: { id: string; content: string; startAt: string | null; endAt: string | null; style: 'MARQUEE' | 'STATIC' | null; backgroundColor: string | null }[];
   bannerContent: string | null;
   bannerStyle: 'STATIC' | 'MARQUEE';
   bannerBackgroundColor: string | null;
@@ -218,6 +230,10 @@ export interface StorefrontDesignSettings {
   siteMenu: StorefrontMenuItem[];
   headerLeftMenu: StorefrontMenuItem[];
   headerRightMenu: StorefrontMenuItem[];
+  /** "Call Us Now" and a number beside the search bar; off by default. */
+  headerPhoneEnabled?: boolean;
+  headerPhoneLabel?: string | null;
+  headerPhone?: string | null;
   mobileMenu: StorefrontMenuItem[];
   // Store > Design > Customize (the home page). Empty = StorePal's own order and its three built-in highlights.
   homeSections: { id: string; enabled: boolean }[];
@@ -366,6 +382,10 @@ export interface StorefrontProduct {
   badgeText?: string | null;
   /** Hidden words that also find this product in StorePal's search (Product.searchKeywords); never shown. */
   searchKeywords?: string[];
+  quantityStep?: number;
+  unitLabel?: string | null;
+  comingSoon?: boolean;
+  comingSoonUntil?: string | null;
   /** The guide this product shows (its own, else its category's); null when none. Only the product page answer carries it. */
   sizeGuide?: StorefrontSizeGuide | null;
   name: string;
@@ -512,6 +532,13 @@ class StorePageNotFoundError extends Error {
   }
 }
 
+class StoreBlogPostNotFoundError extends Error {
+  constructor(slug: string) {
+    super(`No blog post found for slug "${slug}"`);
+    this.name = 'StoreBlogPostNotFoundError';
+  }
+}
+
 class LandingPageNotFoundError extends Error {
   constructor(slug: string) {
     super(`No landing page found for slug "${slug}"`);
@@ -524,6 +551,7 @@ export {
   ProductNotFoundError,
   CampaignNotFoundError,
   StorePageNotFoundError,
+  StoreBlogPostNotFoundError,
   LandingPageNotFoundError,
 };
 
@@ -820,4 +848,53 @@ export async function getStorePage(subdomain: string, slug: string): Promise<Sto
   ]);
   if (!data) throw new StorePageNotFoundError(slug);
   return data;
+}
+
+/** Store > Magazine (TellMe idea 106, StorePal only). */
+export interface StorefrontBlogCard {
+  title: string;
+  slug: string;
+  coverUrl: string | null;
+  excerpt: string | null;
+  authorName: string | null;
+  publishedAt: string;
+}
+export interface StorefrontBlogPost extends StorefrontBlogCard {
+  content: string | null;
+  tags: string[];
+}
+
+/** The latest posts (empty on any store that is not StorePal, or with no post yet). */
+export async function getStoreBlog(subdomain: string, limit?: number): Promise<{ store: StorefrontInfo; posts: StorefrontBlogCard[]; total: number }> {
+  const data = await fetchJson<{ store: StorefrontInfo; posts: StorefrontBlogCard[]; total: number }>(`/v1/store/${subdomain}/blog${limit ? `?limit=${limit}` : ''}`, [`store:${subdomain}`]);
+  if (!data) throw new StoreNotFoundError(subdomain);
+  return data;
+}
+
+/** One post and the other latest ones; throws StoreBlogPostNotFoundError for a draft, a scheduled post or another theme. */
+export async function getStoreBlogPost(
+  subdomain: string,
+  slug: string,
+): Promise<{ store: StorefrontInfo; post: StorefrontBlogPost; others: Array<Pick<StorefrontBlogCard, 'title' | 'slug' | 'coverUrl' | 'publishedAt'>> }> {
+  const data = await fetchJson<{ store: StorefrontInfo; post: StorefrontBlogPost; others: Array<Pick<StorefrontBlogCard, 'title' | 'slug' | 'coverUrl' | 'publishedAt'>> }>(
+    `/v1/store/${subdomain}/blog/${slug}`,
+    [`store:${subdomain}`],
+  );
+  if (!data) throw new StoreBlogPostNotFoundError(slug);
+  return data;
+}
+
+/** "Notify me" on a coming-soon product (TellMe idea 104): the phone joins the waitlist. */
+export async function joinProductWaitlist(subdomain: string, slug: string, phone: string, name?: string): Promise<void> {
+  const origin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? `${window.location.protocol}//${window.location.hostname}:4000`;
+  const res = await fetch(`${origin}/v1/store/${encodeURIComponent(subdomain)}/products/${encodeURIComponent(slug)}/waitlist`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ phone, name: name?.trim() || undefined }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
+    throw new Error(message || 'Could not save your number. Please try again.');
+  }
 }

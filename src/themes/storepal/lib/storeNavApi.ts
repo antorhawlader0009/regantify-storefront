@@ -44,6 +44,18 @@ export async function getStoreNavData(subdomain: string): Promise<StoreNavData> 
   }
 }
 
+/** Whether the store has a published Magazine post (TellMe idea 106), for the footer's "Magazine" link. */
+export async function getStoreHasBlog(subdomain: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/blog?limit=1`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return Array.isArray(data.posts) && data.posts.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 export interface StoreSearchProduct {
   slug: string;
   name: string;

@@ -14,6 +14,7 @@ import { CancelOrderCard } from './CancelOrderCard';
 import { DeliveryRatingCard } from './DeliveryRatingCard';
 import { ReviewProductsCard } from './ReviewProductsCard';
 import { HeardFromCard } from './HeardFromCard';
+import { RescheduleCard } from './RescheduleCard';
 import { EditAddressCard } from './EditAddressCard';
 
 const STOPPED_STATUSES = ['CANCELLED', 'RETURN', 'REFUNDED', 'PAYMENT_FAILED', 'STOCK_OUT'];
@@ -239,6 +240,8 @@ export function TrackOrderBody({
             : `Your order is coming in ${order.splitParts} parts. What is in stock goes first and the rest follows as its own order.`}
         </p>
       )}
+
+      {subdomain && onOrderChanged && <RescheduleCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 
       {subdomain && onOrderChanged && <EditAddressCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 

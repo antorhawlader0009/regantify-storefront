@@ -4,7 +4,8 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail } from '@/lib/storefrontApi';
+import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail, StorefrontBlogCard } from '@/lib/storefrontApi';
+import { MagazineSection } from '../components/MagazineSection';
 import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { resolveCouponLink } from '@/lib/checkoutApi';
 import { setPendingCoupon } from '../lib/pendingCoupon';
@@ -52,6 +53,9 @@ interface HomeViewProps {
   socialLinks?: SocialLinks;
   /** Marketing > Campaigns pages, listed on the homepage by CampaignsStrip (the hero itself uses categoryDetails, see HeroBanner). */
   campaigns?: StorefrontCampaignSummary[];
+  /** Store > Magazine (TellMe idea 106): the latest posts and how many there are in all. */
+  blogPosts?: StorefrontBlogCard[];
+  blogTotal?: number;
   logoUrl?: string | null;
   /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
   footerConfig?: StoreFooterConfig | null;
@@ -91,6 +95,8 @@ export function HomeView({
   search,
   socialLinks,
   campaigns = [],
+  blogPosts = [],
+  blogTotal = 0,
   logoUrl,
   footerConfig,
   couponLink,
@@ -476,6 +482,12 @@ export function HomeView({
                 );
               case 'HIGHLIGHTS':
                 return <HomeHighlights key={id} />;
+              case 'MAGAZINE':
+                return (
+                  <div key={id} className={`${HOME_WRAP} mt-4`}>
+                    {blogPosts.length > 0 && <MagazineSection subdomain={subdomain} storeName={storeName} posts={blogPosts} total={blogTotal} />}
+                  </div>
+                );
               case 'REVIEWS':
                 return (
                   <Fragment key={id}>

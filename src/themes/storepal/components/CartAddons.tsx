@@ -77,10 +77,11 @@ export function CartAddons({ subdomain }: { subdomain: string }) {
                     image: p.photoUrls[0],
                     unitPrice: Number(price),
                     originalUnitPrice: p.discountPrice ? Number(p.price) : undefined,
-                    quantity: p.minOrderQuantity ?? 1,
+                    quantity: Math.max(p.minOrderQuantity ?? 1, p.quantityStep ?? 1),
                     selectedOptions: {},
                     isPreOrder: p.isPreOrder,
                     minOrderQuantity: p.minOrderQuantity,
+                    quantityStep: p.quantityStep,
                     productId: p.id,
                   })
                 }

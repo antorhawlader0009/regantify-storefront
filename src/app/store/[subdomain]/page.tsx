@@ -4,6 +4,7 @@ import {
   getStoreProducts,
   getStoreReviews,
   getStoreCampaigns,
+  getStoreBlog,
   getStoreLandingPage,
   LandingPageNotFoundError,
   StoreNotFoundError,
@@ -188,6 +189,8 @@ export default async function StorePage({ params, searchParams }: PageProps) {
           // Categories' cover photos instead (see HeroBanner's doc
           // comment) via categoryDetails below.
           const campaigns = await getStoreCampaigns(subdomain);
+          // Store > Magazine (TellMe idea 106): the latest posts for the home section; none on any hiccup.
+          const blog = await getStoreBlog(subdomain, 5).catch(() => ({ posts: [], total: 0 }));
           return (
             <StorepalHomeView
               {...viewProps}
@@ -198,6 +201,8 @@ export default async function StorePage({ params, searchParams }: PageProps) {
               socialLinks={socialLinks}
               footerConfig={store.footerConfig}
               campaigns={campaigns}
+              blogPosts={blog.posts}
+              blogTotal={blog.total}
               categoryDetails={categoryDetails}
               // "Create custom link for this coupon" — only StorePal
               // reads this (see [[theme-scope-storepal-only]]);

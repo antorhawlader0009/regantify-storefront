@@ -353,6 +353,7 @@ export interface BuyAgainResult {
     selectedOptions: Record<string, string>;
     isPreOrder: boolean;
     minOrderQuantity: number | null;
+    quantityStep?: number;
     productId: string;
     variantId: string | null;
   }>;

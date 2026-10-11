@@ -85,6 +85,7 @@ export function SharedCartView({ subdomain, code, coupon, storeName, logoUrl }: 
         selectedOptions: l.selectedOptions,
         isPreOrder: l.isPreOrder,
         minOrderQuantity: l.minOrderQuantity,
+        quantityStep: l.quantityStep,
         productId: l.productId,
         variantId: l.variantId ?? undefined,
       });
