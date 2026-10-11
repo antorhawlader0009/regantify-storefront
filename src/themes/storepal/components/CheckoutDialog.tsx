@@ -76,6 +76,12 @@ const EN = {
     `Pay ${advance}${percent ? ` (${percent}% of your pre-order items)` : ''} online (bKash, Nagad, cards) to confirm your pre-order. You pay the remaining ${rest} in cash when it arrives.`,
   advanceNowPre: 'Pay now (pre-order advance)',
   aroundDhaka: 'Around Dhaka',
+  preferredDay: 'Preferred delivery day (optional)',
+  noPreference: 'No preference',
+  preferredDayNote: 'We will try to deliver on this day, but a courier cannot always promise it.',
+  pickupOption: 'Pick up from the shop — Free',
+  pickupFrom: 'Pick up from our shop',
+  pickupNote: 'No address needed. We will text you when your order is ready.',
   submitAdvance: (advance: string) => `Pay ${advance} & Place Order`,
   awayTitle: 'The store is away',
   awayOpen: (day: string | null) =>
@@ -92,7 +98,11 @@ const EN = {
   platformCharge: 'Platform Charge',
   coupon: (code: string) => `Coupon ${code}`,
   freeShipping: 'Free shipping',
+  freeGift: 'Free gift',
   giftCard: (code: string) => `Gift card ${code}`,
+  rewardPoints: 'Reward points',
+  usePoints: (n: number) => `Use my ${n} reward points`,
+  pointsHint: (pct: number) => `1 point = ৳1. Up to ${pct}% of the order.`,
   total: 'Total',
   haveCoupon: 'Coupon code',
   haveGift: 'Gift card',
@@ -154,6 +164,12 @@ const BN: Copy = {
     `প্রি-অর্ডার নিশ্চিত করতে ${advance}${percent ? ` (প্রি-অর্ডার পণ্যের ${percent}%)` : ''} অনলাইনে (বিকাশ, নগদ, কার্ড) দিন। বাকি ${rest} পণ্য হাতে পেয়ে ক্যাশে দেবেন।`,
   advanceNowPre: 'এখন পরিশোধ (প্রি-অর্ডার অগ্রিম)',
   aroundDhaka: 'ঢাকার আশেপাশে',
+  preferredDay: 'পছন্দের ডেলিভারির দিন (ঐচ্ছিক)',
+  noPreference: 'কোনো পছন্দ নেই',
+  preferredDayNote: 'আমরা ওই দিনে পৌঁছে দেওয়ার চেষ্টা করব, তবে কুরিয়ার সবসময় দিন রাখতে পারে না।',
+  pickupOption: 'দোকান থেকে নিন — ফ্রি',
+  pickupFrom: 'আমাদের দোকান থেকে নিয়ে যান',
+  pickupNote: 'ঠিকানা লাগবে না। অর্ডার তৈরি হলে আপনাকে SMS করা হবে।',
   submitAdvance: (advance) => `${advance} দিয়ে অর্ডার করুন`,
   awayTitle: 'দোকান এখন সাময়িক বন্ধ',
   awayOpen: (day) => (day ? `অর্ডার করতে পারবেন। ডেলিভারি শুরু হবে ${day} থেকে।` : 'অর্ডার করতে পারবেন। দোকান খুললে ডেলিভারি শুরু হবে।'),
@@ -169,7 +185,11 @@ const BN: Copy = {
   platformCharge: 'প্ল্যাটফর্ম চার্জ',
   coupon: (code) => `কুপন ${code}`,
   freeShipping: 'ফ্রি ডেলিভারি',
+  freeGift: 'ফ্রি উপহার',
   giftCard: (code) => `গিফট কার্ড ${code}`,
+  rewardPoints: 'রিওয়ার্ড পয়েন্ট',
+  usePoints: (n) => `আমার ${n} পয়েন্ট ব্যবহার করব`,
+  pointsHint: (pct) => `১ পয়েন্ট = ১ টাকা। অর্ডারের সর্বোচ্চ ${pct}% পর্যন্ত।`,
   total: 'সর্বমোট',
   haveCoupon: 'কুপন কোড',
   haveGift: 'গিফট কার্ড',
@@ -219,6 +239,11 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     appliedCoupon,
     automaticDiscount,
     automaticFreeShipping,
+    freeGifts,
+    rewards,
+    usePoints,
+    setUsePoints,
+    rewardPointsAmount,
     couponChecking,
     couponError,
     applyCoupon,
@@ -237,6 +262,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     setPaymentMethod,
     codAdvance,
     aroundDhaka,
+    pickup,
+    preferredDays,
+    preferredDate,
+    setPreferredDate,
     zone,
     storeAway,
     codOtpPhone,
@@ -400,6 +429,17 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 {errors.phone && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.phone)}</p>}
               </div>
 
+              {zone === 'PICKUP' && pickup && (
+                <div className="rounded-md border border-line bg-canvas px-3.5 py-3 text-[13px] text-ink">
+                  <p className="m-0 font-semibold">{t.pickupFrom}</p>
+                  {pickup.address && <p className="m-0 mt-1">{pickup.address}</p>}
+                  {pickup.hours && <p className="m-0 mt-0.5 text-muted">{pickup.hours}</p>}
+                  <p className="m-0 mt-1 text-muted">{t.pickupNote}</p>
+                </div>
+              )}
+
+              {zone !== 'PICKUP' && (
+                <>
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.address}</label>
                 <textarea
@@ -435,6 +475,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 labelClassName="block text-[13.5px] font-medium text-ink mb-1.5"
                 controlClassName="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
               />
+                </>
+              )}
 
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.shipping}</label>
@@ -449,8 +491,28 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   <option value="DHAKA">{t.insideDhaka} — {formatPrice(deliveryChargeByZone.DHAKA)}</option>
                   {aroundDhaka && <option value="AROUND_DHAKA">{t.aroundDhaka} — {formatPrice(deliveryChargeByZone.AROUND_DHAKA)}</option>}
                   <option value="OUTSIDE_DHAKA">{t.outsideDhaka} — {formatPrice(deliveryChargeByZone.OUTSIDE_DHAKA)}</option>
+                  {pickup && <option value="PICKUP">{t.pickupOption}</option>}
                 </select>
               </div>
+
+              {preferredDays && preferredDays.length > 0 && (
+                <div>
+                  <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.preferredDay}</label>
+                  <select
+                    value={preferredDate}
+                    onChange={(e) => setPreferredDate(e.target.value)}
+                    className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
+                  >
+                    <option value="">{t.noPreference}</option>
+                    {preferredDays.map((day) => (
+                      <option key={day} value={day}>
+                        {new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="mt-1.5 text-[12px] text-muted">{t.preferredDayNote}</p>
+                </div>
+              )}
 
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.note}</label>
@@ -592,6 +654,25 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   <span className="font-semibold">{t.freeShipping}</span>
                 </div>
               )}
+              {freeGifts.map((g) => (
+                <div key={g.offerId} className="flex justify-between text-success">
+                  <span className="flex items-center gap-1">
+                    <Gift size={12} />
+                    {g.productName}
+                    {g.quantity > 1 ? ` × ${g.quantity}` : ''}
+                  </span>
+                  <span className="font-semibold">{t.freeGift}</span>
+                </div>
+              ))}
+              {rewardPointsAmount > 0 && (
+                <div className="flex justify-between text-success">
+                  <span className="flex items-center gap-1">
+                    <Gift size={12} />
+                    {t.rewardPoints}
+                  </span>
+                  <span className="font-semibold">-{formatPrice(rewardPointsAmount)}</span>
+                </div>
+              )}
               {/* Marketing > Gift Cards — what the card pays of this order. */}
               {appliedGiftCard && giftCardAmount > 0 && (
                 <div className="flex justify-between text-success">
@@ -655,6 +736,16 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </div>
                 )}
             </div>
+
+            {rewards && (
+              <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-md border border-line px-3 py-2 text-[12.5px] text-ink">
+                <input type="checkbox" checked={usePoints} onChange={(e) => setUsePoints(e.target.checked)} className="mt-0.5" />
+                <span>
+                  <span className="font-medium">{t.usePoints(rewards.balance)}</span>
+                  <span className="block text-muted">{t.pointsHint(rewards.maxRedeemPercent)}</span>
+                </span>
+              </label>
+            )}
 
             <div className="mt-3">
                 <p className="mb-1.5 text-[12.5px] font-medium text-ink">{t.haveGift}</p>

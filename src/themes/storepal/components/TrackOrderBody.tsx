@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { Check, Copy, ExternalLink, MapPin, MessageCircle, Package, Phone, Truck, Undo2, User, XCircle } from 'lucide-react';
 import type { TrackedOrder, TrackedTimelineEntry } from '@/lib/checkoutApi';
 import { COURIER_TRACKING_STEPS, courierStageLabel, type CourierTracking } from '@/lib/courierTracking';
-import { customerOrderStatusLabel, HAPPY_PATH } from '@/lib/orderStatusDisplay';
+import { customerOrderStatusLabel, HAPPY_PATH, PICKUP_PATH } from '@/lib/orderStatusDisplay';
 import { orderLabel } from '@/lib/orderLabel';
 import { stageText, statusText, timelineDetail, timelineTitle, ui, type TrackLang } from '@/lib/trackingI18n';
 import { formatPrice } from '../lib/formatPrice';
@@ -172,9 +172,10 @@ export function TrackOrderBody({
   subdomain?: string;
   onOrderChanged?: (order: TrackedOrder) => void;
 }) {
-  const stepIndex = HAPPY_PATH.indexOf(order.status);
+  const path = order.deliveryZone === 'PICKUP' ? PICKUP_PATH : HAPPY_PATH;
+  const stepIndex = path.indexOf(order.status);
   const stopped = STOPPED_STATUSES.includes(order.status);
-  const statusLabel = statusText(lang, customerOrderStatusLabel(order.status));
+  const statusLabel = statusText(lang, customerOrderStatusLabel(order.status, order.deliveryZone));
 
   return (
     <div className="space-y-4">
@@ -206,13 +207,19 @@ export function TrackOrderBody({
           </p>
         )}
 
+        {order.preferredDeliveryDate && !isFinishedOrder(order) && (
+          <p className="mt-3 rounded-md border border-line px-3 py-2 text-[13px] text-ink">
+            {ui(lang, 'preferredDay')}: <span className="font-semibold">{formatExpectedDate(order.preferredDeliveryDate.slice(0, 10), lang)}</span>
+          </p>
+        )}
+
         {stepIndex >= 0 && (
           <ol className="mt-5 grid grid-cols-4 gap-1" aria-label={`${ui(lang, 'progress')}: ${statusLabel}`}>
-            {HAPPY_PATH.map((status, i) => (
+            {path.map((status, i) => (
               <li key={status} className="min-w-0" aria-current={i === stepIndex ? 'step' : undefined}>
                 <div className={`h-1.5 rounded-full ${i <= stepIndex ? 'bg-accent' : 'bg-line'}`} />
                 <p className={`mt-1.5 text-[10.5px] sm:text-[11px] leading-tight ${i === stepIndex ? 'font-semibold text-ink' : 'text-muted'}`}>
-                  {statusText(lang, customerOrderStatusLabel(status))}
+                  {statusText(lang, customerOrderStatusLabel(status, order.deliveryZone))}
                 </p>
               </li>
             ))}

@@ -199,7 +199,7 @@ export function HomeView({
       ? payPrice(a) - payPrice(b)
       : sortBy === 'price-desc'
         ? payPrice(b) - payPrice(a)
-        : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        : 0, // "Latest" keeps the store's own order: the vendor's pinned products first, then newest first
   );
 
   // Meta pixel Search / GA4 search, once per query, with the top results
@@ -217,9 +217,8 @@ export function HomeView({
   const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
   const grouped = !isFiltered ? groupByCategory(products) : null;
 
-  const topSelling = [...products]
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-    .slice(0, 4);
+  // The store's own order (pinned products first, then newest first).
+  const topSelling = products.slice(0, 4);
 
   const activeCategoryDetail = activeCategory ? categoryDetails.find((c) => c.name === activeCategory) : undefined;
 

@@ -263,6 +263,53 @@ export async function listCustomerOrders(subdomain: string, accessToken: string)
   return res.json();
 }
 
+/** Reward points: the store's rules and the logged-in shopper's balance (server StorefrontService.getCustomerRewards). */
+export interface CustomerRewards {
+  enabled: boolean;
+  earnPerBdt: number;
+  maxRedeemPercent: number;
+  balance: number;
+  entries: Array<{ id: string; type: 'EARN' | 'SPEND' | 'REFUND_SPEND' | 'REVERSE_EARN'; points: number; note: string | null; createdAt: string }>;
+}
+
+export async function fetchCustomerRewards(subdomain: string, accessToken: string): Promise<CustomerRewards> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/rewards`, {
+    credentials: 'include',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Could not load your reward points.');
+  return res.json();
+}
+
+/** One earlier order's lines at today's price and stock (server StorefrontService.getBuyAgainLines). */
+export interface BuyAgainResult {
+  lines: Array<{
+    productSlug: string;
+    name: string;
+    image: string | null;
+    unitPrice: number;
+    originalUnitPrice: number | null;
+    quantity: number;
+    selectedOptions: Record<string, string>;
+    isPreOrder: boolean;
+    minOrderQuantity: number | null;
+    productId: string;
+    variantId: string | null;
+  }>;
+  notices: Array<{ name: string; reason: 'UNAVAILABLE' | 'SOLD_OUT' | 'REDUCED'; available?: number }>;
+}
+
+export async function fetchBuyAgain(subdomain: string, accessToken: string, orderId: string): Promise<BuyAgainResult> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/orders/${encodeURIComponent(orderId)}/buy-again`, {
+    credentials: 'include',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Could not load that order.');
+  return res.json();
+}
+
 // -----------------------------------------------------------------
 // "Your Coupons" (see StorefrontController's customer/coupons route)
 // -----------------------------------------------------------------

@@ -6,7 +6,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import type { CartLine } from '@/stores/cart-store';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
-import { refreshCustomerSession } from '@/lib/customerAuthApi';
+import { refreshCustomerSession, fetchCustomerRewards, type CustomerRewards } from '@/lib/customerAuthApi';
 import { trackMetaAddPaymentInfo } from '@/lib/metaPixelEvents';
 import { metaAdContext } from '@/lib/metaPixel';
 import { trackAddPaymentInfo } from '@/lib/ecommerceEvents';
@@ -67,7 +67,7 @@ export interface CheckoutFormState {
   // DTO), which so far only Add Order (vendor dashboard) populated.
   city: string;
   district: string;
-  zone: 'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA';
+  zone: 'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA' | 'PICKUP';
   note: string;
 }
 
@@ -137,8 +137,10 @@ export function useCheckout(
     paymentGateways: StorePaymentGateway[];
     codSmsVerification: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
     codAdvance: { minOrder: number | null; delivery?: boolean; preOrderPercent?: number | null } | null;
-    deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null; AROUND_DHAKA?: string | null } | null;
+    deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null; AROUND_DHAKA?: string | null; PICKUP?: string | null } | null;
     aroundDhaka: { charge: number } | null;
+    pickup: { address: string | null; hours: string | null } | null;
+    preferredDays: string[] | null;
     storeAway: StorefrontStoreAway | null;
   } | null>(null);
   useEffect(() => {
@@ -154,6 +156,8 @@ export function useCheckout(
         codAdvance: charges.codAdvance ?? null,
         deliveryEstimate: charges.deliveryEstimate ?? null,
         aroundDhaka: charges.aroundDhaka ?? null,
+        pickup: charges.pickup ?? null,
+        preferredDays: charges.preferredDelivery?.days ?? null,
         storeAway: stillAway(charges.storeAway),
       });
     });
@@ -165,14 +169,23 @@ export function useCheckout(
   // null otherwise); a zone the shopper can't be offered counts as Outside Dhaka, so a saved "around" choice
   // from another store's checkout never prices or sends a zone this checkout doesn't show.
   const aroundDhaka = vendorCharges?.aroundDhaka ?? null;
-  const zone: CheckoutFormState['zone'] = form.zone === 'AROUND_DHAKA' && !aroundDhaka ? 'OUTSIDE_DHAKA' : form.zone;
-  const resolvedDeliveryCharge: Record<'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA', number> = vendorCharges
+  // Store pickup (TellMe idea 46) follows the same rule: offered only while on, else it counts as Outside Dhaka.
+  const pickup = vendorCharges?.pickup ?? null;
+  // Preferred delivery day (TellMe idea 50): optional, kept apart from the saved form so an old pick never lingers; a day
+  // the store no longer offers counts as none.
+  const preferredDays = vendorCharges?.preferredDays ?? null;
+  const [preferredPick, setPreferredPick] = useState('');
+  const preferredDate = preferredDays && preferredDays.includes(preferredPick) ? preferredPick : '';
+  const zone: CheckoutFormState['zone'] =
+    (form.zone === 'AROUND_DHAKA' && !aroundDhaka) || (form.zone === 'PICKUP' && !pickup) ? 'OUTSIDE_DHAKA' : form.zone;
+  const resolvedDeliveryCharge: Record<'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA' | 'PICKUP', number> = vendorCharges
     ? {
+        PICKUP: 0,
         DHAKA: vendorCharges.insideDhakaCharge,
         OUTSIDE_DHAKA: vendorCharges.outsideDhakaCharge,
         AROUND_DHAKA: vendorCharges.aroundDhaka?.charge ?? vendorCharges.outsideDhakaCharge,
       }
-    : { ...DELIVERY_CHARGE, AROUND_DHAKA: DELIVERY_CHARGE.OUTSIDE_DHAKA };
+    : { ...DELIVERY_CHARGE, AROUND_DHAKA: DELIVERY_CHARGE.OUTSIDE_DHAKA, PICKUP: 0 };
   const resolvedVatCharge = vendorCharges?.vatChargeBdt ?? FALLBACK_VAT_CHARGE;
   const paymentGateways = vendorCharges?.paymentGateways ?? FALLBACK_GATEWAYS;
 
@@ -213,6 +226,26 @@ export function useCheckout(
   const authHydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
   const setSession = useCustomerAuthStore((s) => s.setSession);
+  const accessToken = useCustomerAuthStore((s) => s.accessToken);
+
+  // Reward points (TellMe idea 41): a logged-in shopper of a store that turned them on can pay part of the order with
+  // their points. The server caps the amount again at Place Order; this only previews it.
+  const [rewards, setRewards] = useState<CustomerRewards | null>(null);
+  const [usePoints, setUsePoints] = useState(false);
+  useEffect(() => {
+    if (!authHydrated || !customer || !accessToken) {
+      setRewards(null);
+      return;
+    }
+    let cancelled = false;
+    fetchCustomerRewards(subdomain, accessToken)
+      .then((r) => !cancelled && setRewards(r.enabled && r.balance > 0 ? r : null))
+      .catch(() => !cancelled && setRewards(null));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authHydrated, customer?.id, accessToken === null, subdomain]);
 
   // A logged-in shopper's order must be saved to their account, which the server only does for a valid
   // token. The 15-minute access token may have run out by the time they press Place Order, so take a
@@ -365,23 +398,29 @@ export function useCheckout(
     0,
     subtotal + effectiveDeliveryCharge + vatAmount + platformChargeAmount - totalDiscount,
   );
-  // Marketing > Gift Cards — takes as much of the real total as the card
+  // Reward points first (same rule as OrdersService.create: within the balance and the store's % of the total).
+  const rewardPointsAmount =
+    usePoints && rewards
+      ? Math.max(0, Math.min(rewards.balance, Math.floor((grandTotalBeforeGiftCard * rewards.maxRedeemPercent) / 100), Math.floor(grandTotalBeforeGiftCard)))
+      : 0;
+  const grandTotalAfterPoints = grandTotalBeforeGiftCard - rewardPointsAmount;
+  // Marketing > Gift Cards — takes as much of what is left as the card
   // holds, same rule as OrdersService.create. Zero unless a card is applied,
   // so Medium/Minimal (which never show one) are unchanged.
   const giftCardAmount = appliedGiftCard
-    ? Math.round(Math.max(0, Math.min(appliedGiftCard.balance, grandTotalBeforeGiftCard)) * 100) / 100
+    ? Math.round(Math.max(0, Math.min(appliedGiftCard.balance, grandTotalAfterPoints)) * 100) / 100
     : 0;
-  const grandTotal = grandTotalBeforeGiftCard - giftCardAmount;
+  const grandTotal = grandTotalAfterPoints - giftCardAmount;
   // The server won't put a card that pays the whole order on an online gateway
   // (it can't take a payment of nothing), so checkout warns about it.
-  const giftCardCoversOrder = giftCardAmount > 0 && giftCardAmount >= grandTotalBeforeGiftCard;
+  const giftCardCoversOrder = (giftCardAmount > 0 || rewardPointsAmount > 0) && giftCardAmount + rewardPointsAmount >= grandTotalBeforeGiftCard;
   // What checkout actually displays as "Total" — silently excludes a
   // hidden fee, per Plan.codFeeHidden/onlinePaymentFeeHidden's design:
   // the shopper never sees it broken out, but they ARE still charged it
   // (the order the server creates always uses the real amount above).
   const visibleGrandTotal = Math.max(
     0,
-    subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - totalDiscount - giftCardAmount,
+    subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - totalDiscount - rewardPointsAmount - giftCardAmount,
   );
 
   // Store > COD Guard > "Delivery charge in advance" — a preview of what OrdersService.resolveCodAdvance
@@ -496,7 +535,7 @@ export function useCheckout(
     const next: Partial<Record<keyof CheckoutFormState, string>> = {};
     if (!form.fullName.trim()) next.fullName = 'Enter your full name.';
     if (!/^01[0-9]{9}$/.test(form.phone.trim())) next.phone = 'Enter a valid 11-digit phone number.';
-    if (!form.address.trim()) next.address = 'Enter your delivery address.';
+    if (zone !== 'PICKUP' && !form.address.trim()) next.address = 'Enter your delivery address.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -587,13 +626,15 @@ export function useCheckout(
         customerName: form.fullName.trim(),
         customerPhone: form.phone.trim(),
         customerNote: form.note.trim() || undefined,
-        shippingAddress: form.address.trim(),
+        shippingAddress: zone === 'PICKUP' ? 'Pickup from the shop' : form.address.trim(),
         shippingCity: form.city.trim() || undefined,
         shippingDistrict: form.district.trim() || undefined,
         deliveryZone: zone,
+        preferredDeliveryDate: preferredDate || undefined,
         sessionKey: sessionKey || undefined,
         couponCode: appliedCoupon?.code,
         giftCardCode: appliedGiftCard?.code,
+        rewardPointsToUse: rewardPointsAmount > 0 ? rewardPointsAmount : undefined,
         paymentMethod,
         items: lines.map((l) => ({
           productSlug: l.productSlug,
@@ -686,6 +727,10 @@ export function useCheckout(
     expectedDeliveryDate: vendorCharges?.deliveryEstimate?.[zone] ?? null,
     // The optional third zone ({ charge } while the store offers it, else null) and the zone actually in use.
     aroundDhaka,
+    pickup,
+    preferredDays,
+    preferredDate,
+    setPreferredDate: setPreferredPick,
     zone,
     // Applies regardless of payment method now (see comment above) —
     // StorePal's CheckoutView/ThankYouView show this as "VAT";
@@ -724,12 +769,19 @@ export function useCheckout(
     // discount's name (delivery is already 0 when set).
     automaticDiscount: autoDiscount && automaticDiscountAmount > 0 ? { name: autoDiscount.name, amount: automaticDiscountAmount } : null,
     automaticFreeShipping: autoFreeShipping && !couponFreeShipping ? { name: autoFreeShipping.name } : null,
+    // Free gifts the order will carry as price-0 lines (a coupon that resets discounts does not take them away).
+    freeGifts: automaticDiscounts?.gifts ?? [],
     couponChecking,
     couponError,
     applyCoupon,
     removeCoupon,
     // Marketing > Gift Cards, already folded into grandTotal/visibleGrandTotal:
     // giftCardAmount is what the card pays of this order (0 with none applied).
+    // Reward points: the shopper's balance (null when off or empty), the toggle, and what they pay of this order.
+    rewards,
+    usePoints,
+    setUsePoints,
+    rewardPointsAmount,
     giftCardCode,
     setGiftCardCode,
     appliedGiftCard,

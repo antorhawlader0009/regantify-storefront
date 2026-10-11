@@ -11,6 +11,7 @@ import { formatPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { CartOffers } from './CartOffers';
+import { CartAddons } from './CartAddons';
 import { useStoreText } from '../lib/storeText';
 
 const SLIDE_MS = 300;
@@ -194,6 +195,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                   </li>
                 ))}
               </ul>
+              {everOpened && <CartAddons subdomain={subdomain} />}
             </div>
 
             <div className="shrink-0 border-t border-line bg-canvas px-5 pb-5 pt-4 shadow-[0_-10px_18px_-14px_rgba(0,0,0,0.35)]">

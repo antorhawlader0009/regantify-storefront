@@ -5,6 +5,7 @@ import { StoreFooter } from '../components/StoreFooter';
 import { CartList } from '../../medium/components/CartList';
 import { CartViewTracker } from '../components/CartViewTracker';
 import { CartOffers } from '../components/CartOffers';
+import { CartAddons } from '../components/CartAddons';
 import { StoreLabel } from '../components/StoreLabel';
 
 interface CartViewProps {
@@ -23,6 +24,7 @@ export function CartView({ subdomain, storeName, categories }: CartViewProps) {
           <CartList subdomain={subdomain} storeName={storeName} />
         </div>
         <CartOffers subdomain={subdomain} />
+        <CartAddons subdomain={subdomain} />
         <CartViewTracker subdomain={subdomain} />
       </main>
       <StoreFooter subdomain={subdomain} storeName={storeName} />

@@ -115,6 +115,14 @@ const BN: Record<string, string> = {
 
   // Chat bubble (typed into WhatsApp from a product page)
   "I'd like to know about this product:": 'এই পণ্যটা সম্পর্কে জানতে চাই:',
+  // Buy again
+  'Buy again': 'আবার কিনুন',
+  'None of these items are available right now.': 'এই পণ্যগুলোর কোনোটাই এখন পাওয়া যাচ্ছে না।',
+  'Not added': 'যোগ হয়নি',
+  'You may also like': 'আরও দেখুন',
+  Add: 'যোগ করুন',
+  'Reward points': 'রিওয়ার্ড পয়েন্ট',
+  'Use them at checkout. 1 point = ৳1.': 'চেকআউটে ব্যবহার করুন। ১ পয়েন্ট = ১ টাকা।',
 };
 
 /** Bangla digits for numbers shown inside a Bangla label. */

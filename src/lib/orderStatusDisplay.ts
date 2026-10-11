@@ -16,9 +16,12 @@ const LABELS: Record<string, string> = {
   RETURN: 'Returned',
   REFUNDED: 'Refunded',
   STOCK_OUT: 'Item unavailable',
+  READY_FOR_PICKUP: 'Ready for pickup',
 };
 
-export function customerOrderStatusLabel(status: string): string {
+/** A store-pickup order is collected at the shop, so its last step reads "Picked up" and it never says "On the way". */
+export function customerOrderStatusLabel(status: string, zone?: string | null): string {
+  if (zone === 'PICKUP' && status === 'COMPLETED') return 'Picked up';
   return LABELS[status] ?? status;
 }
 
@@ -26,3 +29,4 @@ export function customerOrderStatusLabel(status: string): string {
 // outside this set (cancelled, refunded, etc) is shown as its own
 // standalone state rather than forced onto the track.
 export const HAPPY_PATH = ['PENDING', 'PROCESSING', 'SHIPPING', 'COMPLETED'];
+export const PICKUP_PATH = ['PENDING', 'PROCESSING', 'READY_FOR_PICKUP', 'COMPLETED'];

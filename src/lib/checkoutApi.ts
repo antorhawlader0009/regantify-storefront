@@ -113,6 +113,10 @@ export interface StoreDeliveryCharges {
   // Store > Delivery Charge > Around Dhaka: the optional third zone with its charge; null while off (and on
   // Medium/Minimal, which keep two zones).
   aroundDhaka?: { charge: number } | null;
+  /** Store pickup (StorePal only): where and when the shopper can collect the order, null while the store has it off. */
+  pickup?: { address: string | null; hours: string | null } | null;
+  /** Preferred delivery day (StorePal only): the days a shopper may pick (YYYY-MM-DD), null while the store has it off. */
+  preferredDelivery?: { days: string[] } | null;
   // Store > Store Away (holiday mode), StorePal only; null while open. See lib/storeAway.ts.
   storeAway?: StorefrontStoreAway | null;
 }
@@ -284,6 +288,8 @@ export async function validateGiftCard(subdomain: string, code: string): Promise
 export interface AutomaticDiscounts {
   discount: { id: string; name: string; discountType: 'FIXED' | 'PERCENT'; discountAmount: number } | null;
   freeShipping: { id: string; name: string } | null;
+  /** Free gifts (Marketing > Discounts > Free gifts) the cart gets; they join the order as price-0 lines. */
+  gifts?: Array<{ offerId: string; name: string; productName: string; productImage: string | null; quantity: number }>;
 }
 
 /**
@@ -427,6 +433,10 @@ export interface TrackedTimelineEntry {
 export interface TrackedOrder {
   id: string;
   invoiceNumber: number;
+  /** DHAKA | OUTSIDE_DHAKA | AROUND_DHAKA | PICKUP (a store-pickup order is collected at the shop). */
+  deliveryZone?: string | null;
+  /** The day the shopper asked for (an ISO date at midnight UTC), when they picked one. */
+  preferredDeliveryDate?: string | null;
   // Public order number (tracking-plan.md Step 2); null on an order the backfill has not reached.
   publicCode?: string | null;
   // Private tracking link token (tracking-plan.md Step 1): /store/{sub}/t/{token}. Null on

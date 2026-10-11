@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
-import { Tag, Truck } from 'lucide-react';
+import { Gift, Tag, Truck } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { previewDiscounts, fetchDiscountOffers, type AutomaticDiscounts, type DiscountOffer } from '@/lib/checkoutApi';
 import { formatPrice } from '@/lib/productDisplay';
@@ -62,7 +62,8 @@ export function CartOffers({ subdomain }: { subdomain: string }) {
 
   const discount = offers?.discount && offers.discount.discountAmount > 0 ? offers.discount : null;
   const freeShipping = offers?.freeShipping ?? null;
-  if (lines.length === 0 || (!discount && !freeShipping && !nextOffer)) return null;
+  const gifts = offers?.gifts ?? [];
+  if (lines.length === 0 || (!discount && !freeShipping && gifts.length === 0 && !nextOffer)) return null;
 
   return (
     <div className="mt-4 rounded-lg border border-line bg-success-bg px-4 py-3 text-[13px] text-success space-y-1.5">
@@ -94,7 +95,14 @@ export function CartOffers({ subdomain }: { subdomain: string }) {
           {freeShipping.name}: free delivery
         </p>
       )}
-      {(discount || freeShipping) && (
+      {gifts.map((g) => (
+        <p key={g.offerId} className="flex items-center gap-1.5 font-medium">
+          <Gift size={14} aria-hidden />
+          Free gift: {g.productName}
+          {g.quantity > 1 ? ` × ${g.quantity}` : ''}
+        </p>
+      ))}
+      {(discount || freeShipping || gifts.length > 0) && (
         <p className="text-[12px] opacity-80">Applied automatically at checkout. Have a coupon code? Add it there.</p>
       )}
     </div>

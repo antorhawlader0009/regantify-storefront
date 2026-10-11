@@ -44,6 +44,7 @@ export type UiKey =
   | 'shippedWith'
   | 'trackingId'
   | 'expectedBy'
+  | 'preferredDay'
   | 'runningLate'
   | 'yourRider'
   | 'callRider'
@@ -141,6 +142,7 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     shippedWith: 'Shipped with',
     trackingId: 'Tracking ID',
     expectedBy: 'Expected by',
+    preferredDay: 'You asked for delivery on (we will try)',
     runningLate: 'Running late. It was expected by',
     yourRider: 'Your delivery rider',
     callRider: 'Call',
@@ -236,6 +238,7 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     shippedWith: 'পাঠানো হয়েছে',
     trackingId: 'ট্র্যাকিং আইডি',
     expectedBy: 'আনুমানিক ডেলিভারি',
+    preferredDay: 'আপনার পছন্দের ডেলিভারির দিন (আমরা চেষ্টা করব)',
     runningLate: 'দেরি হচ্ছে। প্রত্যাশিত তারিখ ছিল',
     yourRider: 'আপনার ডেলিভারি রাইডার',
     callRider: 'কল করুন',
