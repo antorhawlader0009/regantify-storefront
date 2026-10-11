@@ -38,6 +38,7 @@ import {
   type ValidatedGiftCard,
   type AutomaticDiscounts,
   type StorePaymentGateway,
+  type StoreDeliveryCharges,
 } from '@/lib/checkoutApi';
 
 // Frozen fallback — the exact old constant every theme's checkout used
@@ -78,6 +79,16 @@ export interface CheckoutFormState {
   district: string;
   zone: 'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA' | 'PICKUP';
   note: string;
+  // Optional boxes the store can switch on (TellMe idea 128): a second phone and an email.
+  altPhone: string;
+  email: string;
+}
+
+/** Which optional checkout boxes the store asks and how strictly (TellMe idea 128, StorePal's form). Missing = today's form. */
+export interface CheckoutFormRules {
+  altPhone?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
+  email?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
+  thana?: 'OPTIONAL' | 'REQUIRED';
 }
 
 /**
@@ -105,8 +116,9 @@ export interface CheckoutFormState {
 export function useCheckout(
   subdomain: string,
   redirectTo: 'orders' | 'thank-you' = 'orders',
-  options?: { lines?: CartLine[] },
+  options?: { lines?: CartLine[]; formRules?: CheckoutFormRules },
 ) {
+  const formRules = options?.formRules;
   const router = useRouter();
 
   const externalLines = options?.lines;
@@ -127,6 +139,8 @@ export function useCheckout(
     district: '',
     zone: 'DHAKA',
     note: '',
+    altPhone: '',
+    email: '',
   });
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormState, string>>>({});
   const [placing, setPlacing] = useState(false);
@@ -148,6 +162,7 @@ export function useCheckout(
     codAdvance: { minOrder: number | null; delivery?: boolean; preOrderPercent?: number | null } | null;
     deliveryEstimate: { DHAKA: string | null; OUTSIDE_DHAKA: string | null; AROUND_DHAKA?: string | null; PICKUP?: string | null } | null;
     aroundDhaka: { charge: number } | null;
+    express: StoreDeliveryCharges['express'] | null;
     pickup: { address: string | null; hours: string | null } | null;
     preferredDays: string[] | null;
     hasSlots: boolean;
@@ -171,6 +186,7 @@ export function useCheckout(
         codAdvance: charges.codAdvance ?? null,
         deliveryEstimate: charges.deliveryEstimate ?? null,
         aroundDhaka: charges.aroundDhaka ?? null,
+        express: charges.express ?? null,
         pickup: charges.pickup ?? null,
         preferredDays: charges.preferredDelivery?.days ?? null,
         hasSlots: (charges.preferredDelivery?.slots?.length ?? 0) > 0,
@@ -437,6 +453,18 @@ export function useCheckout(
   // discount waives both (effectiveDeliveryCharge below).
   const weightExtra = lines.length > 0 && zone !== 'PICKUP' ? (automaticDiscounts?.weightExtra?.[zone] ?? 0) : 0;
   const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[zone] + weightExtra : 0;
+  // Express delivery (TellMe idea 132): a second choice for the zones the store runs it in, until its cut-off (Dhaka time). The shopper's
+  // pick only counts while it is offered, so a zone change or the cut-off passing quietly puts it back to standard. The server judges it again.
+  const [speedPick, setSpeedPick] = useState<'STANDARD' | 'EXPRESS'>('STANDARD');
+  const expressInfo = vendorCharges?.express ?? null;
+  const dhakaMinutesNow = (() => {
+    const d = new Date(Date.now() + 6 * 3_600_000);
+    return d.getUTCHours() * 60 + d.getUTCMinutes();
+  })();
+  const expressOffered =
+    !!expressInfo && lines.length > 0 && zone !== 'PICKUP' && expressInfo.zones.includes(zone) && (expressInfo.cutoffMinutes === null || dhakaMinutesNow < expressInfo.cutoffMinutes);
+  const expressSelected = expressOffered && speedPick === 'EXPRESS';
+  const expressCharge = expressSelected && expressInfo ? expressInfo.charge : 0;
   // Gift option (TellMe idea 57): the shopper's tick, message and "hide prices"; the wrap charge is the store's.
   const [isGift, setIsGift] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
@@ -470,11 +498,22 @@ export function useCheckout(
   // conditional discounts" is applied, and capped so coupon + discount
   // never exceed the subtotal; same rules as OrdersService.create.
   const discountsReset = Boolean(appliedCoupon?.resetOtherDiscounts);
+  // Products that must be paid online (TellMe idea 126): Cash on Delivery is off while the cart holds one.
+  const onlineOnlyNames = automaticDiscounts?.onlineOnly ?? [];
+  const codBlocked = onlineOnlyNames.length > 0;
+  const onlineGateways = paymentGateways.filter((g) => g.type !== 'COD');
+  useEffect(() => {
+    if (!codBlocked || onlineGateways.length === 0) return;
+    if (selectedGateway?.type === 'COD') setPaymentMethod((onlineGateways.find((g) => g.type === 'ONLINE_PAYMENT') ?? onlineGateways[0]).id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [codBlocked, selectedGateway?.type, paymentGateways.length]);
   const autoDiscount = discountsReset ? null : (automaticDiscounts?.discount ?? null);
   const autoFreeShipping = discountsReset ? null : (automaticDiscounts?.freeShipping ?? null);
   const automaticDiscountAmount = Math.max(0, Math.min(autoDiscount?.discountAmount ?? 0, subtotal - couponDiscount));
   const totalDiscount = couponDiscount + automaticDiscountAmount;
-  const effectiveDeliveryCharge = couponFreeShipping || autoFreeShipping ? 0 : deliveryCharge;
+  // A free-delivery coupon or discount waives the normal charge; the express extra stays unless the store waives it too.
+  const freeDelivery = couponFreeShipping || !!autoFreeShipping;
+  const effectiveDeliveryCharge = freeDelivery ? (expressSelected && expressInfo && !expressInfo.waivedByFree ? expressCharge : 0) : deliveryCharge + expressCharge;
   // Store > Payment Gateway's per-gateway Platform Charge — the
   // CURRENTLY SELECTED gateway's own configured surcharge, independent
   // of vatAmount above. Never shown until a gateway is actually
@@ -584,6 +623,8 @@ export function useCheckout(
     district: 100,
     zone: 20, // not user-typed (a <select> value), generous ceiling only
     note: 500,
+    altPhone: 30,
+    email: 150,
   };
 
   const updateField = (field: keyof CheckoutFormState, value: string) => {
@@ -658,6 +699,13 @@ export function useCheckout(
     if (!form.fullName.trim()) next.fullName = 'Enter your full name.';
     if (!/^01[0-9]{9}$/.test(form.phone.trim())) next.phone = 'Enter a valid 11-digit phone number.';
     if (zone !== 'PICKUP' && !form.address.trim()) next.address = 'Enter your delivery address.';
+    // The store's own checkout rules (TellMe idea 128).
+    const alt = form.altPhone.trim();
+    if (alt && !/^01[0-9]{9}$/.test(alt)) next.altPhone = 'Enter a valid 11-digit phone number, or leave it empty.';
+    else if (formRules?.altPhone === 'REQUIRED' && !alt) next.altPhone = 'Enter a second phone number.';
+    if (formRules?.email && formRules.email !== 'HIDDEN' && form.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) next.email = 'Enter a valid email, or leave it empty.';
+    else if (formRules?.email === 'REQUIRED' && !form.email.trim()) next.email = 'Enter your email.';
+    if (formRules?.thana === 'REQUIRED' && zone !== 'PICKUP' && !form.city.trim()) next.city = 'Choose your thana or area.';
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -760,10 +808,14 @@ export function useCheckout(
         customerName: form.fullName.trim(),
         customerPhone: form.phone.trim(),
         customerNote: form.note.trim() || undefined,
+        customerPhoneAlt: formRules?.altPhone && formRules.altPhone !== 'HIDDEN' ? form.altPhone.trim() || undefined : undefined,
+        customerEmail: formRules?.email && formRules.email !== 'HIDDEN' ? form.email.trim() || undefined : undefined,
+        fromStorePalCheckout: formRules ? true : undefined,
         shippingAddress: zone === 'PICKUP' ? 'Pickup from the shop' : form.address.trim(),
         shippingCity: form.city.trim() || undefined,
         shippingDistrict: form.district.trim() || undefined,
         deliveryZone: zone,
+        deliverySpeed: expressSelected ? 'EXPRESS' : undefined,
         preferredDeliveryDate: preferredDate || undefined,
         preferredSlotId: preferredSlotId || undefined,
         ...(isGift && giftOption ? { isGift: true, giftMessage: giftMessage.trim() || undefined, hidePricesOnInvoice: hidePrices || undefined } : {}),
@@ -878,7 +930,12 @@ export function useCheckout(
     // unchanged.
     deliveryChargeByZone: resolvedDeliveryCharge,
     // "Expected by" date (YYYY-MM-DD) for the chosen zone, or null when the store set no delivery time.
-    expectedDeliveryDate: vendorCharges?.deliveryEstimate?.[zone] ?? null,
+    expectedDeliveryDate: expressSelected ? null : (vendorCharges?.deliveryEstimate?.[zone] ?? null),
+    // Express delivery (TellMe idea 132): the offer (null when not offered here and now), whether it is picked, and the pick setter.
+    standardDeliveryDate: vendorCharges?.deliveryEstimate?.[zone] ?? null,
+    express: expressOffered && expressInfo ? { charge: expressInfo.charge, day: expressInfo.day, waivedByFree: expressInfo.waivedByFree } : null,
+    expressSelected,
+    setDeliverySpeed: setSpeedPick,
     // The optional third zone ({ charge } while the store offers it, else null) and the zone actually in use.
     aroundDhaka,
     pickup,
@@ -978,6 +1035,8 @@ export function useCheckout(
     // ignore this entirely (unchanged JSX), same as paymentMethod/
     // setPaymentMethod below.
     paymentGateways,
+    codBlocked,
+    onlineOnlyNames,
     paymentMethod,
     setPaymentMethod,
     // Delivery charge to pay online before a COD order is placed, with what's left for the courier;

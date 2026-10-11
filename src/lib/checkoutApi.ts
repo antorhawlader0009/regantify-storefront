@@ -113,6 +113,8 @@ export interface StoreDeliveryCharges {
   // Store > Delivery Charge > Around Dhaka: the optional third zone with its charge; null while off (and on
   // Medium/Minimal, which keep two zones).
   aroundDhaka?: { charge: number } | null;
+  /** Express delivery (TellMe idea 132, StorePal only): the zones it runs in, its extra charge, when it arrives and the cut-off (Dhaka minutes after midnight); null while off. */
+  express?: { zones: string[]; charge: number; day: 'TODAY' | 'NEXT_DAY'; cutoffMinutes: number | null; waivedByFree: boolean } | null;
   /** Store pickup (StorePal only): where and when the shopper can collect the order, null while the store has it off. */
   pickup?: { address: string | null; hours: string | null } | null;
   /** Preferred delivery day (StorePal only): the days a shopper may pick (YYYY-MM-DD), null while the store has it off. */
@@ -302,6 +304,8 @@ export interface AutomaticDiscounts {
   gifts?: Array<{ offerId: string; name: string; productName: string; productImage: string | null; quantity: number }>;
   /** Extra delivery charge for a heavy cart per zone (TellMe idea 58); null while the store has none. */
   weightExtra?: { DHAKA: number; AROUND_DHAKA: number; OUTSIDE_DHAKA: number } | null;
+  /** Names of cart products that must be paid online (TellMe idea 126); Cash on Delivery is off while there are any. */
+  onlineOnly?: string[];
 }
 
 /**

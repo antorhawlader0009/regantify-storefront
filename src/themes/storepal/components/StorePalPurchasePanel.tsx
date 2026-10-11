@@ -10,6 +10,7 @@ import { trackViewItem } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { ProductPolicyLines } from './ProductPolicyLines';
+import { TrustStrip } from './TrustStrip';
 import { BundleIncludes } from './BundleIncludes';
 import { ShareButton } from './ShareButton';
 import { DeliveryCheck } from './DeliveryCheck';
@@ -77,6 +78,7 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
               <SoldRecentLine product={product} />
               {bundleInfo}
               {policyLines}
+              {!quoteOnly && !comingSoon && <TrustStrip where="product" />}
               {callMeBack ? <CallMeBackLink onOpen={() => setForm('call-back')} /> : null}
             </>
           ),

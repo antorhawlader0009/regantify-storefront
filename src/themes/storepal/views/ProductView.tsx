@@ -108,7 +108,7 @@ export function ProductView({
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
         <div className="bg-surface border border-line rounded mb-5">
-          <StorePalProductTabs subdomain={subdomain} slug={product.slug} description={product.description} />
+          <StorePalProductTabs subdomain={subdomain} slug={product.slug} description={product.description} infoTabs={product.infoTabs} />
         </div>
 
         {!product.quoteOnly && <BoughtTogether subdomain={subdomain} slug={product.slug} storeName={storeName} />}

@@ -19,6 +19,7 @@ import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
 import { useStoreText } from '../lib/storeText';
+import { preOrderDateText } from '../lib/preOrderDate';
 
 // Minimal shape ProductCard actually reads — satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
@@ -49,6 +50,8 @@ interface CardProduct {
   unitLabel?: string | null;
   /** Buyers in the store's social-proof window (TellMe idea 63). */
   soldRecent?: number;
+  /** Expected restock day while sold out (TellMe idea 114). */
+  restockDate?: string | null;
   /** The store's own badge ("New", "Hot") — shown in the image's corner. */
   badgeText?: string | null;
   /** Running Flash Sale end (ISO) — shows the sale badge with a countdown. */
@@ -223,7 +226,14 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
           )}
           {outOfStock && showOutOfStockBadge && (
             <div className="absolute inset-0 bg-white/80 flex items-center justify-center">
-              <span className="bg-ink text-white text-[11px] font-semibold px-2.5 py-1.5 rounded">{t('Out of Stock')}</span>
+              <span className="flex flex-col items-center gap-1">
+                <span className="bg-ink text-white text-[11px] font-semibold px-2.5 py-1.5 rounded">{t('Out of Stock')}</span>
+                {product.restockDate && (
+                  <span className="bg-white/90 text-ink text-[10.5px] font-medium px-2 py-0.5 rounded">
+                    {t('Back')} {preOrderDateText(product.restockDate, design.storeLanguage)}
+                  </span>
+                )}
+              </span>
             </div>
           )}
         </Link>

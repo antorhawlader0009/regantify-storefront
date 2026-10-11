@@ -1,5 +1,6 @@
 'use client';
 
+import { TrustStrip } from './TrustStrip';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
@@ -13,6 +14,7 @@ import { preOrderDateText } from '../lib/preOrderDate';
 import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { takePendingCoupon } from '../lib/pendingCoupon';
+import { useStorePalDesign } from '../lib/designSettings';
 import { loadSavedCheckoutForm, saveCheckoutForm } from '../lib/checkoutFormStorage';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
@@ -41,7 +43,7 @@ const EN = {
   ordersFull: 'Today’s orders are full. Please order again tomorrow morning.',
   fewOrdersLeft: (n: number) => `Only ${n} ${n === 1 ? 'order' : 'orders'} left today.`,
   afterCutoff: (time: string) => `You are ordering after ${time}, so this counts as tomorrow’s order and delivery is counted from tomorrow.`,
-  heavyExtra: (amount: string) => `Includes ${amount} extra for a heavy parcel`,
+  heavyExtra: (amount: string) => `Includes ${amount} extra for a heavy or special item`,
   giftTick: 'This is a gift',
   giftMessageLabel: 'Message for the card (optional)',
   giftHidePrices: 'Hide the prices on the invoice',
@@ -53,6 +55,9 @@ const EN = {
   addressName: 'Name this address',
   addressNamePlaceholder: 'Home, Office…',
   phone: 'Phone',
+  altPhone: 'Second phone number',
+  email: 'Email',
+  optional: '(optional)',
   address: 'Address',
   addressPlaceholder: 'Your full address including upazila',
   thana: 'Thana / Upazila',
@@ -68,6 +73,8 @@ const EN = {
   outsideDhaka: 'Outside Dhaka',
   note: 'Note',
   paymentMethod: 'Payment Method',
+  onlineOnlyNote: (names: string) => `${names} must be paid online, so Cash on Delivery is not available for this order.`,
+  noOnlineNote: 'This order cannot be placed right now because the store has no online payment. Please contact the store.',
   gatewayLabels: { COD: 'Cash on Delivery', ONLINE_PAYMENT: 'Online Payment' } as Record<string, string>,
   onlineHint: '(bKash, Nagad, cards & more via PayStation)',
   verifyTitle: 'Verify your phone number',
@@ -111,6 +118,11 @@ const EN = {
   cartTotal: 'Cart Total',
   delivery: 'Delivery Charge',
   expectedBy: 'Expected by',
+  speedLabel: 'Delivery speed',
+  speedStandard: 'Standard',
+  speedExpress: 'Express',
+  expressToday: 'today',
+  expressNext: 'tomorrow',
   vat: 'VAT',
   platformCharge: 'Platform Charge',
   coupon: (code: string) => `Coupon ${code}`,
@@ -145,7 +157,7 @@ const BN: Copy = {
   ordersFull: 'আজকের অর্ডার শেষ, কাল সকাল থেকে আবার নেব।',
   fewOrdersLeft: (n: number) => `আজকের মাত্র ${n}টা অর্ডার বাকি।`,
   afterCutoff: (time: string) => `${time}-এর পরে অর্ডার করছেন, তাই এটা কালকের অর্ডার হিসেবে ধরা হবে, ডেলিভারির দিনও কাল থেকে গোনা হবে।`,
-  heavyExtra: (amount: string) => `ভারী পার্সেলের জন্য ${amount} বাড়তি ধরা আছে`,
+  heavyExtra: (amount: string) => `ভারী বা বিশেষ পণ্যের জন্য ${amount} বাড়তি ধরা আছে`,
   giftTick: 'এটা একটা উপহার',
   giftMessageLabel: 'কার্ডের জন্য বার্তা (ঐচ্ছিক)',
   giftHidePrices: 'ইনভয়েসে দাম লুকান',
@@ -157,6 +169,9 @@ const BN: Copy = {
   addressName: 'ঠিকানার নাম',
   addressNamePlaceholder: 'বাসা, অফিস…',
   phone: 'ফোন নম্বর',
+  altPhone: 'দ্বিতীয় ফোন নম্বর',
+  email: 'ইমেইল',
+  optional: '(ঐচ্ছিক)',
   address: 'ঠিকানা',
   addressPlaceholder: 'উপজেলাসহ আপনার সম্পূর্ণ ঠিকানা',
   thana: 'থানা / উপজেলা',
@@ -172,6 +187,8 @@ const BN: Copy = {
   outsideDhaka: 'ঢাকার বাইরে',
   note: 'নোট',
   paymentMethod: 'পেমেন্ট পদ্ধতি',
+  onlineOnlyNote: (names: string) => `${names} অনলাইনে পেমেন্ট করতে হবে, তাই এই অর্ডারে ক্যাশ অন ডেলিভারি নেই।`,
+  noOnlineNote: 'দোকানে অনলাইন পেমেন্ট চালু নেই, তাই এখন এই অর্ডার করা যাচ্ছে না। দোকানের সাথে যোগাযোগ করুন।',
   gatewayLabels: { COD: 'ক্যাশ অন ডেলিভারি', ONLINE_PAYMENT: 'অনলাইন পেমেন্ট' },
   onlineHint: '(পে-স্টেশনের মাধ্যমে বিকাশ, নগদ, কার্ড ও আরও অনেক কিছু)',
   verifyTitle: 'আপনার ফোন নম্বর যাচাই করুন',
@@ -214,6 +231,11 @@ const BN: Copy = {
   cartTotal: 'কার্ট মোট',
   delivery: 'ডেলিভারি চার্জ',
   expectedBy: 'প্রত্যাশিত ডেলিভারি',
+  speedLabel: 'ডেলিভারির গতি',
+  speedStandard: 'সাধারণ',
+  speedExpress: 'দ্রুত',
+  expressToday: 'আজই',
+  expressNext: 'আগামীকাল',
   vat: 'ভ্যাট',
   platformCharge: 'প্ল্যাটফর্ম চার্জ',
   coupon: (code) => `কুপন ${code}`,
@@ -248,6 +270,8 @@ const COPY: Record<Lang, Copy> = { en: EN, bn: BN };
 
 function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; onClose: () => void; lang: Lang }) {
   const t = COPY[lang];
+  // The store's choices for the optional checkout boxes (TellMe idea 128).
+  const design = useStorePalDesign();
   const tr = (message: string) => t.errors[message] ?? message;
   const {
     hydrated,
@@ -262,6 +286,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     deliveryCharge,
     deliveryChargeByZone,
     expectedDeliveryDate,
+    standardDeliveryDate,
+    express,
+    expressSelected,
+    setDeliverySpeed,
     vatAmount,
     visiblePlatformChargeAmount,
     visibleGrandTotal,
@@ -314,6 +342,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     applyGiftCard,
     removeGiftCard,
     paymentGateways,
+    codBlocked,
+    onlineOnlyNames,
     paymentMethod,
     setPaymentMethod,
     codAdvance,
@@ -333,7 +363,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     codOtpSending,
     codOtpError,
     resendCodOtp,
-  } = useCheckout(subdomain, 'thank-you');
+  } = useCheckout(subdomain, 'thank-you', { formRules: { altPhone: design.checkoutAltPhone, email: design.checkoutEmail, thana: design.checkoutThana } });
   // Store > Store Away: "browse only" stops the order here (the server refuses it too).
   const ordersPaused = storeAway?.mode === 'BROWSE_ONLY';
   const awayDay = storeAway?.returnDate ? formatReturnDay(storeAway.returnDate, lang) : null;
@@ -512,6 +542,38 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 {errors.phone && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.phone)}</p>}
               </div>
 
+              {/* Optional boxes the store switched on (Store > Checkout > Form fields, TellMe idea 128). */}
+              {design.checkoutAltPhone && design.checkoutAltPhone !== 'HIDDEN' && (
+                <div>
+                  <label className="block text-[13.5px] font-medium text-ink mb-1.5">
+                    {t.altPhone} {design.checkoutAltPhone === 'OPTIONAL' && <span className="font-normal text-muted">{t.optional}</span>}
+                  </label>
+                  <input
+                    value={form.altPhone}
+                    onChange={(e) => updateField('altPhone', e.target.value)}
+                    placeholder="01XXXXXXXXX"
+                    maxLength={30}
+                    className={`w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border outline-none transition-colors ${errors.altPhone ? 'border-accent' : 'border-line-strong focus:border-ink'}`}
+                  />
+                  {errors.altPhone && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.altPhone)}</p>}
+                </div>
+              )}
+              {design.checkoutEmail && design.checkoutEmail !== 'HIDDEN' && (
+                <div>
+                  <label className="block text-[13.5px] font-medium text-ink mb-1.5">
+                    {t.email} {design.checkoutEmail === 'OPTIONAL' && <span className="font-normal text-muted">{t.optional}</span>}
+                  </label>
+                  <input
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => updateField('email', e.target.value)}
+                    maxLength={150}
+                    className={`w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border outline-none transition-colors ${errors.email ? 'border-accent' : 'border-line-strong focus:border-ink'}`}
+                  />
+                  {errors.email && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.email)}</p>}
+                </div>
+              )}
+
               {zone === 'PICKUP' && pickup && (
                 <div className="rounded-md border border-line bg-canvas px-3.5 py-3 text-[13px] text-ink">
                   <p className="m-0 font-semibold">{t.pickupFrom}</p>
@@ -558,6 +620,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 labelClassName="block text-[13.5px] font-medium text-ink mb-1.5"
                 controlClassName="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
               />
+              {errors.city && <p className="-mt-2 text-[12px] text-accent">{tr(errors.city)}</p>}
                 </>
               )}
 
@@ -637,6 +700,28 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 </select>
               </div>
 
+              {/* Express delivery (TellMe idea 132): two radios while the store offers it for this area. The extra is added to the delivery charge. */}
+              {express && (
+                <div>
+                  <p className="block text-[13.5px] font-medium text-ink mb-1.5 m-0">{t.speedLabel}</p>
+                  <div className="space-y-2">
+                    <label className="flex cursor-pointer items-center gap-2.5 rounded-md border border-line-strong bg-surface px-3.5 py-2.5 text-[13.5px] text-ink">
+                      <input type="radio" name="delivery-speed" checked={!expressSelected} onChange={() => setDeliverySpeed('STANDARD')} />
+                      <span>
+                        {t.speedStandard}
+                        {standardDeliveryDate ? ` · ${formatExpectedDate(standardDeliveryDate, lang)}` : ''}
+                      </span>
+                    </label>
+                    <label className="flex cursor-pointer items-center gap-2.5 rounded-md border border-line-strong bg-surface px-3.5 py-2.5 text-[13.5px] text-ink">
+                      <input type="radio" name="delivery-speed" checked={expressSelected} onChange={() => setDeliverySpeed('EXPRESS')} />
+                      <span>
+                        {t.speedExpress} · {express.day === 'NEXT_DAY' ? t.expressNext : t.expressToday} · +{formatPrice(express.charge)}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              )}
+
               {preferredDays && preferredDays.length > 0 && (
                 <div>
                   <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.preferredDay}</label>
@@ -674,6 +759,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 </div>
               )}
 
+              {design.checkoutNote !== 'HIDDEN' && (
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.note}</label>
                 <textarea
@@ -684,6 +770,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none resize-y font-[inherit] focus:border-ink transition-colors"
                 />
               </div>
+              )}
             </div>
           </div>
 
@@ -766,6 +853,14 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 <div className="flex justify-between">
                   <span className="text-ink">{t.expectedBy}</span>
                   <span className="font-semibold text-ink">{formatExpectedDate(expectedDeliveryDate, lang)}</span>
+                </div>
+              )}
+              {expressSelected && express && (
+                <div className="flex justify-between">
+                  <span className="text-ink">{t.speedLabel}</span>
+                  <span className="font-semibold text-ink">
+                    {t.speedExpress} · {express.day === 'NEXT_DAY' ? t.expressNext : t.expressToday}
+                  </span>
                 </div>
               )}
               {isGift && giftOption && (
@@ -968,6 +1063,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
             </div>
           </div>
 
+            <TrustStrip where="checkout" />
+
             <div className="mt-5 bg-surface border border-line rounded-lg p-4 sm:p-5">
               <p className="text-[15px] font-semibold text-ink mb-3">{t.paymentMethod}</p>
               <div className="space-y-2.5">
@@ -977,7 +1074,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     gateway's own Platform Charge is deliberately NOT shown
                     here — it only appears once selected, in the cart
                     summary below (see the Platform Charge line). */}
-                {paymentGateways.map((gateway) => (
+                {paymentGateways.filter((gateway) => !(codBlocked && gateway.type === 'COD')).map((gateway) => (
                   <label key={gateway.id} className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
                     <input
                       type="radio"
@@ -992,6 +1089,11 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </label>
                 ))}
               </div>
+              {codBlocked && (
+                <p className="m-0 mt-3 text-[12.5px] text-muted">
+                  {paymentGateways.some((g) => g.type !== 'COD') ? t.onlineOnlyNote(onlineOnlyNames.slice(0, 3).join(', ')) : t.noOnlineNote}
+                </p>
+              )}
             </div>
 
             {/* Store > COD Guard > "Delivery charge in advance" — see useCheckout's codAdvance. */}

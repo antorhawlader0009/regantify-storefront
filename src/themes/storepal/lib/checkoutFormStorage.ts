@@ -26,7 +26,7 @@ const KEY_PREFIX = 'regantify-checkout-form:';
 // included (a guest still has to retype it; only a logged-in Customer's
 // phone comes from their account) since retyping an 11-digit number is
 // exactly the kind of friction this feature exists to remove.
-type SavedFields = Omit<CheckoutFormState, 'note'>;
+type SavedFields = Omit<CheckoutFormState, 'note' | 'altPhone' | 'email'>;
 
 export function loadSavedCheckoutForm(subdomain: string): Partial<SavedFields> | null {
   try {

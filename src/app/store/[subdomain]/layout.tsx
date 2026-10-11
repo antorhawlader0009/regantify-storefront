@@ -5,6 +5,7 @@ import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { PopupCampaigns } from '@/themes/storepal/components/PopupCampaigns';
+import { RecentBuyersPopup } from '@/themes/storepal/components/RecentBuyersPopup';
 import { StoreAwayBanner } from '@/themes/storepal/components/StoreAwayBanner';
 import type { StorefrontStoreAway } from '@/lib/storeAway';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
@@ -229,6 +230,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms}>
             <WishlistSync subdomain={subdomain} />
             <CompareBar subdomain={subdomain} />
+            {/* "Someone bought" popup (TellMe idea 123): off unless the store turned it on; real orders only. */}
+            <RecentBuyersPopup subdomain={subdomain} />
             {/* Store > Store Away (holiday mode): a strip above every page while the store is away. */}
             {storeAway && <StoreAwayBanner away={storeAway} />}
             {children}

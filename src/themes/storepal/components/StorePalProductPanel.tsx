@@ -484,7 +484,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             <p className={`flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 ${outOfStock || display?.isLowStock?.(availableStock) ? 'text-accent-dark' : 'text-success'}`}>
               <span className={`w-1.5 h-1.5 rounded-full ${outOfStock || display?.isLowStock?.(availableStock) ? 'bg-accent' : 'bg-success'}`} />
               {availableStock !== undefined && availableStock <= 0
-                ? (display?.outOfStock ?? t('Out of stock'))
+                ? `${display?.outOfStock ?? t('Out of stock')}${product.restockDate ? ` · ${t('Back')} ${preOrderDateText(product.restockDate, display?.language)}` : ''}`
                 : inStockText(availableStock)}
             </p>
           )}

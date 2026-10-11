@@ -5,6 +5,7 @@ import {
   getStoreReviews,
   getStoreCampaigns,
   getStoreBlog,
+  getStoreFaq,
   getStoreLandingPage,
   LandingPageNotFoundError,
   StoreNotFoundError,
@@ -191,6 +192,8 @@ export default async function StorePage({ params, searchParams }: PageProps) {
           const campaigns = await getStoreCampaigns(subdomain);
           // Store > Magazine (TellMe idea 106): the latest posts for the home section; none on any hiccup.
           const blog = await getStoreBlog(subdomain, 5).catch(() => ({ posts: [], total: 0 }));
+          // Store FAQ (TellMe idea 122): the questions for the home section; none on any hiccup.
+          const faq = await getStoreFaq(subdomain).catch(() => ({ items: [] }));
           return (
             <StorepalHomeView
               {...viewProps}
@@ -201,6 +204,7 @@ export default async function StorePage({ params, searchParams }: PageProps) {
               socialLinks={socialLinks}
               footerConfig={store.footerConfig}
               campaigns={campaigns}
+              faqItems={faq.items}
               blogPosts={blog.posts}
               blogTotal={blog.total}
               categoryDetails={categoryDetails}

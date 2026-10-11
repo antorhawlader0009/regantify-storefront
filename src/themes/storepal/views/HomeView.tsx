@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail, StorefrontBlogCard } from '@/lib/storefrontApi';
 import { MagazineSection } from '../components/MagazineSection';
+import { FaqSection } from '../components/FaqSection';
 import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { resolveCouponLink } from '@/lib/checkoutApi';
 import { setPendingCoupon } from '../lib/pendingCoupon';
@@ -19,6 +20,7 @@ import { HeroBanner } from '../components/HeroBanner';
 import { FlashSaleSection } from '../components/FlashSaleSection';
 import { CampaignsStrip } from '../components/CampaignsStrip';
 import { HomeHighlights } from '../components/HomeHighlights';
+import { TrustStrip } from '../components/TrustStrip';
 import { useStorePalDesign } from '../lib/designSettings';
 import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
@@ -54,6 +56,8 @@ interface HomeViewProps {
   /** Marketing > Campaigns pages, listed on the homepage by CampaignsStrip (the hero itself uses categoryDetails, see HeroBanner). */
   campaigns?: StorefrontCampaignSummary[];
   /** Store > Magazine (TellMe idea 106): the latest posts and how many there are in all. */
+  /** Store FAQ (TellMe idea 122): the questions switched on. */
+  faqItems?: Array<{ id: string; question: string; answer: string }>;
   blogPosts?: StorefrontBlogCard[];
   blogTotal?: number;
   logoUrl?: string | null;
@@ -95,6 +99,7 @@ export function HomeView({
   search,
   socialLinks,
   campaigns = [],
+  faqItems = [],
   blogPosts = [],
   blogTotal = 0,
   logoUrl,
@@ -482,6 +487,12 @@ export function HomeView({
                 );
               case 'HIGHLIGHTS':
                 return <HomeHighlights key={id} />;
+              case 'FAQ':
+                return (
+                  <div key={id} className={`${HOME_WRAP} mt-4`}>
+                    {faqItems.length > 0 && <FaqSection subdomain={subdomain} items={faqItems} />}
+                  </div>
+                );
               case 'MAGAZINE':
                 return (
                   <div key={id} className={`${HOME_WRAP} mt-4`}>
@@ -516,6 +527,8 @@ export function HomeView({
           })}
         </div>
       )}
+
+      {!isFiltered && <TrustStrip where="home" />}
 
       {/* Not while searching or browsing a category: the results are what the shopper is after. */}
       {!isFiltered && <RecentlyViewed subdomain={subdomain} storeName={storeName} />}

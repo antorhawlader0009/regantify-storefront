@@ -5,7 +5,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
-import { getStoreHasBlog, getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
+import { getGiftCardSale, getStoreHasBlog, getStoreHasFaq, getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplates';
 import { useStoreText } from '../lib/storeText';
 import { BusinessHoursTable } from './BusinessHoursTable';
@@ -119,6 +119,10 @@ export function StoreFooter({
   const [pages, setPages] = useState<StorefrontPageSummary[]>([]);
   // Store > Magazine (TellMe idea 106): a "Magazine" link once there is a published post.
   const [hasBlog, setHasBlog] = useState(false);
+  // Store FAQ (TellMe idea 122): a "FAQ" link once a question is switched on.
+  const [hasFaq, setHasFaq] = useState(false);
+  // Gift cards sold online (TellMe idea 135): a "Gift cards" link while the store sells them.
+  const [hasGiftCards, setHasGiftCards] = useState(false);
 
   const haveAllProps = socialLinksProp && logoUrlProp !== undefined && footerConfigProp !== undefined;
 
@@ -132,6 +136,8 @@ export function StoreFooter({
   useEffect(() => {
     getStorePages(subdomain).then(setPages);
     getStoreHasBlog(subdomain).then(setHasBlog);
+    getStoreHasFaq(subdomain).then(setHasFaq);
+    getGiftCardSale(subdomain).then((c) => setHasGiftCards(!!c?.enabled && c.amounts.length > 0));
   }, [subdomain]);
 
   const socialLinks = socialLinksProp ?? fetched?.socialLinks ?? {};
@@ -205,7 +211,7 @@ export function StoreFooter({
             {SocialIcons}
           </div>
 
-          {(pages.length > 0 || hasBlog) && (
+          {(pages.length > 0 || hasBlog || hasFaq || hasGiftCards) && (
             <div>
               <p className="text-[15px] font-semibold text-ink mb-3">{t('INFORMATION')}</p>
               <div className="flex flex-col gap-2.5 text-[13px]">
@@ -221,6 +227,16 @@ export function StoreFooter({
                 {hasBlog && (
                   <Link href={`/store/${subdomain}/blog`} className="text-accent hover:text-accent-dark transition-colors w-fit">
                     {t('Magazine')}
+                  </Link>
+                )}
+                {hasFaq && (
+                  <Link href={`/store/${subdomain}/faq`} className="text-accent hover:text-accent-dark transition-colors w-fit">
+                    {t('FAQ')}
+                  </Link>
+                )}
+                {hasGiftCards && (
+                  <Link href={`/store/${subdomain}/gift-card`} className="text-accent hover:text-accent-dark transition-colors w-fit">
+                    {t('Gift cards')}
                   </Link>
                 )}
               </div>
@@ -320,7 +336,7 @@ export function StoreFooter({
   const infoItems =
     footerConfig.infoLinks.length > 0
       ? footerConfig.infoLinks
-      : [...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : [])];
+      : [...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : []), ...(hasFaq ? [{ label: t('FAQ'), url: `/store/${subdomain}/faq` }] : [])];
   const InfoColumn = infoItems.length > 0 && (
     <div>
       <p className="text-[15px] font-semibold text-ink mb-3 uppercase">{footerConfig.infoTitle}</p>

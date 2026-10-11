@@ -13,9 +13,11 @@ import { ProductQuestionsTab } from './ProductQuestionsTab';
  * reply). Rendered inside the parent page's own bordered card — no outer section/border/max-width here, this is just
  * the tab content.
  */
-export function StorePalProductTabs({ subdomain, slug, description }: { subdomain: string; slug: string; description?: string | null }) {
+export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: { subdomain: string; slug: string; description?: string | null; infoTabs?: { title: string; text: string }[] | null }) {
   const t = useStoreText();
-  const [activeTab, setActiveTab] = useState<'description' | 'reviews' | 'questions'>('description');
+  // Extra information tabs (TellMe idea 119) sit after the description: "info:0", "info:1", "info:2".
+  const [activeTab, setActiveTab] = useState<string>('description');
+  const extraTabs = (infoTabs ?? []).filter((x) => x.title && x.text);
 
   const [reviews, setReviews] = useState<ProductReview[] | null>(null);
   const [reviewsError, setReviewsError] = useState<string | null>(null);
@@ -73,8 +75,8 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
 
   return (
     <div className="p-4 sm:p-6">
-      <div className="flex gap-6 border-b border-line mb-4">
-        {(['description', 'reviews', 'questions'] as const).map((tab) => (
+      <div className="flex gap-6 border-b border-line mb-4 overflow-x-auto whitespace-nowrap">
+        {['description', ...extraTabs.map((_, i) => `info:${i}`), 'reviews', 'questions'].map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -86,7 +88,9 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
               ? `Reviews${reviews ? ` (${reviews.length})` : ''}`
               : tab === 'questions'
                 ? `${t('Questions')}${questions && questions.length > 0 ? ` (${questions.length})` : ''}`
-                : 'Description'}
+                : tab.startsWith('info:')
+                  ? extraTabs[Number(tab.slice(5))]?.title
+                  : 'Description'}
             {activeTab === tab && <span className="absolute left-0 right-0 -bottom-px h-[2px] bg-accent rounded-full" />}
           </button>
         ))}
@@ -98,6 +102,12 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
         ) : (
           <p className="text-[13px] text-muted">No description provided for this product.</p>
         )
+      ) : activeTab.startsWith('info:') ? (
+        <div
+          className="text-[13px] text-ink/85 leading-relaxed max-w-2xl [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2"
+          // The text was cleaned when the store saved it (products/info-tabs.ts).
+          dangerouslySetInnerHTML={{ __html: extraTabs[Number(activeTab.slice(5))]?.text ?? '' }}
+        />
       ) : activeTab === 'questions' ? (
         <ProductQuestionsTab subdomain={subdomain} slug={slug} questions={questions} error={questionsError} />
       ) : (

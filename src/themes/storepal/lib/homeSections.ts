@@ -12,7 +12,8 @@ export type HomeSectionId =
   | 'CATEGORY_SECTIONS'
   | 'HIGHLIGHTS'
   | 'REVIEWS'
-  | 'MAGAZINE';
+  | 'MAGAZINE'
+  | 'FAQ';
 
 export interface HomeSectionSetting {
   id: string;
@@ -31,6 +32,7 @@ const DEFAULT_ORDER: HomeSectionId[] = [
   'HIGHLIGHTS',
   'REVIEWS',
   'MAGAZINE',
+  'FAQ',
 ];
 
 /**

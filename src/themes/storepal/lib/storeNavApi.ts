@@ -44,6 +44,18 @@ export async function getStoreNavData(subdomain: string): Promise<StoreNavData> 
   }
 }
 
+/** Whether the store has a FAQ question switched on (TellMe idea 122), for the footer's "FAQ" link. */
+export async function getStoreHasFaq(subdomain: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/faq`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return Array.isArray(data.items) && data.items.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /** Whether the store has a published Magazine post (TellMe idea 106), for the footer's "Magazine" link. */
 export async function getStoreHasBlog(subdomain: string): Promise<boolean> {
   try {
@@ -117,4 +129,30 @@ export async function getStorePages(subdomain: string): Promise<StorefrontPageSu
   } catch {
     return [];
   }
+}
+
+/** Gift cards sold on the store (TellMe idea 135): what the store offers; amounts is empty while the sale is off. */
+export interface GiftCardSaleConfig {
+  storeName: string;
+  enabled: boolean;
+  amounts: number[];
+  expiryDays: number | null;
+}
+export async function getGiftCardSale(subdomain: string): Promise<GiftCardSaleConfig | null> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store-gift-cards/store/${encodeURIComponent(subdomain)}`);
+    return res.ok ? ((await res.json()) as GiftCardSaleConfig) : null;
+  } catch {
+    return null;
+  }
+}
+
+export interface GiftCardPurchaseResult {
+  status: 'PENDING' | 'PAID' | 'FAILED' | 'CANCELLED';
+  amount: number;
+  recipientName: string;
+  recipientPhone: string;
+  smsSent: boolean;
+  code: string | null;
+  expiresAt: string | null;
 }

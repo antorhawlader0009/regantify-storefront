@@ -222,6 +222,7 @@ export interface StorefrontDesignSettings {
   productBadgeColor?: string | null;
   bannerEnabled: boolean;
   /** Scheduled banners (TellMe idea 110); the one whose time is on now replaces the usual banner. */
+  trustStrip?: { enabled: boolean; items: { icon: string; title: string; text: string }[]; product: boolean; checkout: boolean; home: boolean };
   bannerSchedule?: { id: string; content: string; startAt: string | null; endAt: string | null; style: 'MARQUEE' | 'STATIC' | null; backgroundColor: string | null }[];
   bannerContent: string | null;
   bannerStyle: 'STATIC' | 'MARQUEE';
@@ -231,6 +232,15 @@ export interface StorefrontDesignSettings {
   headerLeftMenu: StorefrontMenuItem[];
   headerRightMenu: StorefrontMenuItem[];
   /** "Call Us Now" and a number beside the search bar; off by default. */
+  /** "Someone bought" popup (TellMe idea 123): off by default. */
+  /** Checkout form fields (TellMe idea 128); missing = today's form. */
+  checkoutAltPhone?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
+  checkoutEmail?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
+  checkoutThana?: 'OPTIONAL' | 'REQUIRED';
+  checkoutNote?: 'SHOWN' | 'HIDDEN';
+  recentBuyersEnabled?: boolean;
+  recentBuyersPosition?: 'LEFT' | 'RIGHT';
+  recentBuyersSeconds?: number;
   headerPhoneEnabled?: boolean;
   headerPhoneLabel?: string | null;
   headerPhone?: string | null;
@@ -417,6 +427,10 @@ export interface StorefrontProduct {
   priceBreaks?: { minQty: number; price: number }[] | null;
   /** Pre-order expected date, YYYY-MM-DD (TellMe idea 64). */
   preOrderDate?: string | null;
+  /** Expected restock day (YYYY-MM-DD, TellMe idea 114); only present while the product is sold out and the day has not passed. */
+  restockDate?: string | null;
+  /** Extra information tabs (TellMe idea 119): up to 3 of { title, text (cleaned HTML) }. */
+  infoTabs?: { title: string; text: string }[] | null;
   /** Orders that bought it in the social-proof window (TellMe idea 63), counted nightly. */
   soldRecent?: number;
   /** Most pieces in one order (TellMe idea 56); null = no limit. The cart stops at it. */
@@ -881,6 +895,18 @@ export async function getStoreBlogPost(
     [`store:${subdomain}`],
   );
   if (!data) throw new StoreBlogPostNotFoundError(slug);
+  return data;
+}
+
+/** Store FAQ (TellMe idea 122, StorePal only): the questions switched on, in the owner's order; empty on any other theme. */
+export interface StorefrontFaqItem {
+  id: string;
+  question: string;
+  answer: string;
+}
+export async function getStoreFaq(subdomain: string): Promise<{ store: StorefrontInfo; items: StorefrontFaqItem[] }> {
+  const data = await fetchJson<{ store: StorefrontInfo; items: StorefrontFaqItem[] }>(`/v1/store/${subdomain}/faq`, [`store:${subdomain}`]);
+  if (!data) throw new StoreNotFoundError(subdomain);
   return data;
 }
 
