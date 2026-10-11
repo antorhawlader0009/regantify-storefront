@@ -237,6 +237,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
                   <p className="text-[11.5px] text-muted">
                     Qty {item.quantity} × {formatPrice(item.unitPrice)}
                   </p>
+                  {item.customValues && item.customValues.length > 0 && (
+                    <p className="text-[11.5px] text-ink">{item.customValues.map((v) => `${v.label}: ${v.value}`).join(' · ')}</p>
+                  )}
                 </div>
                 <span className="text-[13px] font-semibold text-ink shrink-0">{formatPrice(item.lineTotal)}</span>
               </div>

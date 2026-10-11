@@ -9,6 +9,9 @@ import { StoreAwayBanner } from '@/themes/storepal/components/StoreAwayBanner';
 import type { StorefrontStoreAway } from '@/lib/storeAway';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
+import type { BusinessHours } from '@/lib/businessHours';
+import { CompareBar } from '@/themes/storepal/components/CompareBar';
+import { WishlistSync } from '@/themes/storepal/components/WishlistSync';
 import { MetaPixel } from '@/components/MetaPixel';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { GoogleTagManager } from '@/components/GoogleTagManager';
@@ -120,6 +123,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let googleTagManager: StorefrontGoogleTagManager | null = null;
   let tiktokPixel: StorefrontTiktokPixel | null = null;
   let showOutOfStockBadge = true;
+  let lowStock: { limit: number; hideCount: boolean } | null = null;
+  let businessHours: BusinessHours | null = null;
   let lmsForms: StorefrontLmsForms | null = null;
   let popupCampaigns: StorefrontPopupCampaign[] = [];
   let storeAway: StorefrontStoreAway | null = null;
@@ -139,9 +144,17 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     googleTagManager = store.googleTagManager ?? null;
     tiktokPixel = store.tiktokPixel ?? null;
     showOutOfStockBadge = store.stockSettings?.showOutOfStockBadge !== false;
+    // The "Only 3 left" message is off for a store that allows backorders.
+    if (store.stockSettings?.lowStockMessageEnabled && !store.stockSettings.allowBackorder) {
+      lowStock = { limit: store.stockSettings.lowStockMessageLimit ?? 5, hideCount: !!store.stockSettings.hideStockCount };
+    } else if (store.stockSettings?.hideStockCount) {
+      lowStock = { limit: 0, hideCount: true };
+    }
     lmsForms = store.lmsForms ?? null;
     popupCampaigns = store.popupCampaigns ?? [];
     storeAway = store.storeAway ?? null;
+    // Shop hours (TellMe idea 73): Store Away wins while it is on.
+    businessHours = storeAway ? null : ((store.businessHours as BusinessHours | null | undefined) ?? null);
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
     // Store not found — leave the default theme; not-found.tsx handles
@@ -213,7 +226,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (
-          <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lmsForms={lmsForms}>
+          <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms}>
+            <WishlistSync subdomain={subdomain} />
+            <CompareBar subdomain={subdomain} />
             {/* Store > Store Away (holiday mode): a strip above every page while the store is away. */}
             {storeAway && <StoreAwayBanner away={storeAway} />}
             {children}

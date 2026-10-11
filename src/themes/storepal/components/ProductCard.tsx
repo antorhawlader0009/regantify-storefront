@@ -9,7 +9,9 @@ import type { StorefrontVariant, StorefrontVariationOption } from '@/lib/storefr
 import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice } from '../lib/formatPrice';
-import { useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
+import { SoldRecentLine } from './SoldRecentLine';
+import { useCompare } from '../lib/compare';
+import { lowStockLabel, useLowStock, useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { FlashSaleTimer } from './FlashSaleTimer';
 import { useCartDrawer } from '../lib/cartDrawer';
@@ -40,6 +42,8 @@ interface CardProduct {
   quoteOnly?: boolean;
   /** Fewest a shopper may order; Add to cart starts there. */
   minOrderQuantity?: number | null;
+  /** Buyers in the store's social-proof window (TellMe idea 63). */
+  soldRecent?: number;
   /** The store's own badge ("New", "Hot") — shown in the image's corner. */
   badgeText?: string | null;
   /** Running Flash Sale end (ISO) — shows the sale badge with a countdown. */
@@ -73,11 +77,14 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   const lmsForms = useStorePalLmsForms();
   const quoteOnly = !!product.quoteOnly && !!lmsForms;
   const showOutOfStockBadge = useShowOutOfStockBadge();
+  const lowStockConfig = useLowStock();
   const router = useRouter();
   const addLine = useCartStore((s) => s.addLine);
   const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
   const wishlist = useWishlist(subdomain);
+  const compare = useCompare(subdomain);
+  const [compareFull, setCompareFull] = useState(false);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
@@ -102,6 +109,12 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
     options.length > 0 && options.every((o) => selected[o.name])
       ? product.variants.find((v) => options.every((o) => v.optionValues?.[o.name] === selected[o.name]))
       : undefined;
+
+  // "Only 3 left": a plain product's stock, or the chosen variation's; never for pre-order.
+  const lowStockText =
+    product.isPreOrder || outOfStock
+      ? null
+      : lowStockLabel(lowStockConfig, design.storeLanguage, hasVariations ? matchedVariant?.stock : (product.stockQuantity ?? undefined));
 
   const hasProductDiscount = Boolean(product.discountPrice) && Number(product.discountPrice) < Number(product.price);
   const displayPrice = matchedVariant?.discountPrice ?? matchedVariant?.listPrice ?? (hasProductDiscount ? product.discountPrice! : product.price);
@@ -247,6 +260,25 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
 
         {design.cardShowSummary && product.summary && (
           <p className="text-[12px] text-muted leading-snug line-clamp-2">{product.summary}</p>
+        )}
+
+        {lowStockText && !quoteOnly && <p className="text-[11.5px] font-semibold text-accent-dark">{lowStockText}</p>}
+        {!quoteOnly && <SoldRecentLine product={product} />}
+        {/* Compare (TellMe idea 74): tick up to 3 products. */}
+        {!quoteOnly && (
+          <label className="flex w-fit cursor-pointer items-center gap-1.5 text-[11.5px] text-muted">
+            <input
+              type="checkbox"
+              checked={compare.has(product.slug)}
+              onChange={() => {
+                const ok = compare.toggle(product.slug);
+                setCompareFull(!ok);
+              }}
+              className="h-3.5 w-3.5"
+            />
+            {design.storeLanguage === 'bn' ? 'তুলনা' : 'Compare'}
+            {compareFull && <span className="text-accent">{design.storeLanguage === 'bn' ? '(সর্বোচ্চ ৩টা)' : '(max 3)'}</span>}
+          </label>
         )}
 
         {quoteOnly ? (

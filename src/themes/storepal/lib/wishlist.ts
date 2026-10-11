@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useSyncExternalStore } from 'react';
+import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
+import { syncServerWishlist } from '@/lib/customerAuthApi';
 
 // Store > Design > Product Card's "Show Wishlist Button". The wishlist is
 // a list of product slugs kept in the shopper's own browser, per store —
@@ -53,7 +55,18 @@ function subscribe(listener: () => void) {
   };
 }
 
+/** Replaces this browser's list (used when the account's saved list is merged in at login). */
+export function setLocalWishlist(subdomain: string, slugs: string[]) {
+  write(subdomain, slugs);
+}
+
+export function readLocalWishlist(subdomain: string): string[] {
+  return read(subdomain);
+}
+
 export function useWishlist(subdomain: string) {
+  // A logged-in shopper's list also goes to their account (TellMe idea 62), so it follows them to another phone.
+  const accessToken = useCustomerAuthStore((s) => s.accessToken);
   const slugs = useSyncExternalStore(
     subscribe,
     () => read(subdomain),
@@ -62,9 +75,11 @@ export function useWishlist(subdomain: string) {
   const toggle = useCallback(
     (slug: string) => {
       const current = read(subdomain);
-      write(subdomain, current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug]);
+      const next = current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug];
+      write(subdomain, next);
+      if (accessToken) void syncServerWishlist(accessToken, subdomain, next).catch(() => undefined);
     },
-    [subdomain],
+    [subdomain, accessToken],
   );
   return { slugs, has: (slug: string) => slugs.includes(slug), toggle };
 }

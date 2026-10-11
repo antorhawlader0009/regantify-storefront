@@ -8,6 +8,7 @@ import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@
 import { getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplates';
 import { useStoreText } from '../lib/storeText';
+import { BusinessHoursTable } from './BusinessHoursTable';
 
 interface StoreFooterProps {
   subdomain: string;
@@ -350,6 +351,10 @@ export function StoreFooter({
         {visibleColumns.map((c) => (
           <div key={c}>{columnContent[c]}</div>
         ))}
+      </div>
+
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
+        <BusinessHoursTable />
       </div>
 
       <div className="border-t border-line">

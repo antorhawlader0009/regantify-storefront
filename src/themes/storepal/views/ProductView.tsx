@@ -19,8 +19,10 @@ import { ProductOffers } from '../components/ProductOffers';
 // the surrounding page chrome (header/footer/breadcrumb/layout) is
 // StorePal's own.
 import { StorePalProductTabs } from '../components/StorePalProductTabs';
+import { BoughtTogether } from '../components/BoughtTogether';
 import { StorePalPurchasePanel } from '../components/StorePalPurchasePanel';
 import { resolveBackorder, visibleInListings } from '../lib/backorder';
+import { resolvePolicy } from '../lib/policy';
 import { StoreLabel } from '../components/StoreLabel';
 import { RecentlyViewed } from '../components/RecentlyViewed';
 
@@ -98,6 +100,7 @@ export function ProductView({
             storeName={storeName}
             product={product}
             backorder={resolveBackorder(stockSettings)}
+            policy={resolvePolicy(product, stockSettings)}
           />
         </div>
         {!product.quoteOnly && <ProductOffers subdomain={subdomain} product={product} />}
@@ -107,6 +110,8 @@ export function ProductView({
         <div className="bg-surface border border-line rounded mb-5">
           <StorePalProductTabs subdomain={subdomain} slug={product.slug} description={product.description} />
         </div>
+
+        {!product.quoteOnly && <BoughtTogether subdomain={subdomain} slug={product.slug} storeName={storeName} />}
 
         {visibleRelated.length > 0 && (
           <section className="bg-surface border border-line rounded p-4 sm:p-6 mb-8">

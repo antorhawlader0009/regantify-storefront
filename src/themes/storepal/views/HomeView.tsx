@@ -218,7 +218,9 @@ export function HomeView({
   const grouped = !isFiltered ? groupByCategory(products) : null;
 
   // The store's own order (pinned products first, then newest first).
-  const topSelling = products.slice(0, 4);
+  // "Top Selling" (TellMe idea 63): when the store counts sales, the 4 with the most buyers (from 5 up); else the first 4.
+  const bySales = [...products].filter((p) => (p.soldRecent ?? 0) >= 5).sort((a, b) => (b.soldRecent ?? 0) - (a.soldRecent ?? 0));
+  const topSelling = bySales.length >= 1 ? bySales.slice(0, 4) : products.slice(0, 4);
 
   const activeCategoryDetail = activeCategory ? categoryDetails.find((c) => c.name === activeCategory) : undefined;
 

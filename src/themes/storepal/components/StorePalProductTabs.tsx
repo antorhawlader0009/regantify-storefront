@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { Stars } from '../../medium/components/Stars';
-import { getProductReviews, submitProductReview, type ProductReview } from '@/lib/reviewsApi';
+import { getProductReviews, submitProductReview, voteReviewHelpful, type ProductReview } from '@/lib/reviewsApi';
 import { getProductQuestions, type ProductQuestion } from '@/lib/questionsApi';
 import { useStoreText } from '../lib/storeText';
 import { ProductQuestionsTab } from './ProductQuestionsTab';
@@ -29,11 +29,47 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
       .catch((err) => setQuestionsError(err instanceof Error ? err.message : 'Could not load questions.'));
   }, [subdomain, slug]);
 
+  // "Most helpful" or "Newest" (TellMe idea 99); and the tracking token from a "Review your products" link (?order=...) that proves a purchase.
+  const [sort, setSort] = useState<'newest' | 'helpful'>('newest');
+  const [orderToken, setOrderToken] = useState<string | undefined>(undefined);
   useEffect(() => {
-    getProductReviews(subdomain, slug)
+    const token = new URLSearchParams(window.location.search).get('order');
+    if (token) {
+      setOrderToken(token);
+      setActiveTab('reviews');
+    }
+  }, []);
+  // Reviews this browser already voted for, so the button reads "Thanks" and a second tap does nothing.
+  const [voted, setVoted] = useState<Set<string>>(new Set());
+  useEffect(() => {
+    try {
+      setVoted(new Set(JSON.parse(localStorage.getItem(`storepal-review-votes:${subdomain}`) ?? '[]') as string[]));
+    } catch {
+      // Storage blocked: the server still holds one vote per address.
+    }
+  }, [subdomain]);
+  const vote = async (id: string) => {
+    if (voted.has(id)) return;
+    try {
+      const res = await voteReviewHelpful(subdomain, id);
+      setReviews((cur) => (cur ? cur.map((r) => (r.id === id ? { ...r, helpfulCount: res.helpfulCount } : r)) : cur));
+      const next = new Set(voted).add(id);
+      setVoted(next);
+      try {
+        localStorage.setItem(`storepal-review-votes:${subdomain}`, JSON.stringify([...next].slice(-500)));
+      } catch {
+        // ignore
+      }
+    } catch {
+      // A failed vote is not worth a message.
+    }
+  };
+
+  useEffect(() => {
+    getProductReviews(subdomain, slug, sort)
       .then(setReviews)
       .catch((err) => setReviewsError(err instanceof Error ? err.message : 'Could not load reviews.'));
-  }, [subdomain, slug]);
+  }, [subdomain, slug, sort]);
 
   return (
     <div className="p-4 sm:p-6">
@@ -74,6 +110,16 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
             <p className="text-[13px] text-muted mb-4">No reviews yet — be the first to write one.</p>
           )}
 
+          {reviews && reviews.length > 1 && (
+            <div className="mb-3 flex items-center gap-2 text-[12.5px] text-muted">
+              <label htmlFor="review-sort">{t('Sort by')}</label>
+              <select id="review-sort" value={sort} onChange={(e) => setSort(e.target.value as 'newest' | 'helpful')} className="rounded-md border border-line bg-surface px-2 py-1 text-ink">
+                <option value="newest">{t('Newest')}</option>
+                <option value="helpful">{t('Most helpful')}</option>
+              </select>
+            </div>
+          )}
+
           {reviews && reviews.length > 0 && (
             <div className="flex flex-col gap-4 mb-6">
               {reviews.map((r) => (
@@ -83,6 +129,7 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
                     {r.featured && (
                       <span className="text-[10px] font-semibold uppercase tracking-wide text-accent">Featured</span>
                     )}
+                    {r.verified && <span className="text-[10px] font-semibold uppercase tracking-wide text-success">{t('Verified buyer')}</span>}
                   </div>
                   <p className="mt-1.5 text-[13.5px] font-semibold text-ink">{r.title}</p>
                   {r.content && <p className="mt-1 text-[13px] text-ink/85 leading-relaxed">{r.content}</p>}
@@ -95,6 +142,15 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
                     </div>
                   )}
                   <p className="mt-1.5 text-[12px] text-muted font-medium">{r.customerName ?? 'Anonymous'}</p>
+                  <button
+                    type="button"
+                    onClick={() => void vote(r.id)}
+                    disabled={voted.has(r.id)}
+                    className="mt-1.5 rounded-md border border-line px-2.5 py-1 text-[12px] text-muted hover:text-ink disabled:opacity-70"
+                  >
+                    {voted.has(r.id) ? t('Thanks') : t('Helpful')}
+                    {(r.helpfulCount ?? 0) > 0 ? ` (${r.helpfulCount})` : ''}
+                  </button>
                   {r.replyText && (
                     <div className="mt-2.5 rounded-md border-l-2 border-accent bg-canvas px-3 py-2">
                       <p className="m-0 text-[11.5px] font-bold text-ink">{t('Reply from the store')}</p>
@@ -106,14 +162,14 @@ export function StorePalProductTabs({ subdomain, slug, description }: { subdomai
             </div>
           )}
 
-          <WriteReviewForm subdomain={subdomain} slug={slug} />
+          <WriteReviewForm subdomain={subdomain} slug={slug} orderToken={orderToken} />
         </div>
       )}
     </div>
   );
 }
 
-function WriteReviewForm({ subdomain, slug }: { subdomain: string; slug: string }) {
+function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; slug: string; orderToken?: string }) {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [title, setTitle] = useState('');
@@ -139,6 +195,7 @@ function WriteReviewForm({ subdomain, slug }: { subdomain: string; slug: string 
         rating,
         customerName: name.trim(),
         customerEmail: email.trim() || undefined,
+        orderToken,
       });
       setSubmitted(true);
       setOpen(false);

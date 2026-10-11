@@ -221,6 +221,65 @@ export function updateMyAddress(accessToken: string, input: UpdateAddressInput):
   return authFetch<Customer>('/v1/customer-auth/me/address', accessToken, { method: 'PATCH', body: input });
 }
 
+/** The account's saved wishlist for one store (TellMe idea 62). notifyDrop = "tell me when the price falls or it is back". */
+export interface ServerWishlist {
+  items: Array<{ slug: string; notifyDrop: boolean }>;
+}
+
+export function getServerWishlist(accessToken: string, subdomain: string): Promise<ServerWishlist> {
+  return authFetch<ServerWishlist>(`/v1/customer-auth/me/wishlist?subdomain=${encodeURIComponent(subdomain)}`, accessToken);
+}
+
+/** Makes the account's list exactly these slugs (alert choices stay on the ones kept). */
+export function syncServerWishlist(accessToken: string, subdomain: string, slugs: string[]): Promise<ServerWishlist> {
+  return authFetch<ServerWishlist>('/v1/customer-auth/me/wishlist', accessToken, { method: 'PUT', body: { subdomain, slugs } });
+}
+
+export function setWishlistNotify(accessToken: string, subdomain: string, slug: string, notify: boolean): Promise<ServerWishlist> {
+  return authFetch<ServerWishlist>('/v1/customer-auth/me/wishlist/notify', accessToken, { method: 'PATCH', body: { subdomain, slug, notify } });
+}
+
+/** A saved delivery address in the shopper's account (TellMe idea 53): up to 5, one of them the default. */
+export interface SavedAddress {
+  id: string;
+  label: string;
+  recipientName: string;
+  phone: string;
+  district: string | null;
+  city: string | null;
+  address: string;
+  deliveryZone: 'DHAKA' | 'AROUND_DHAKA' | 'OUTSIDE_DHAKA';
+  isDefault: boolean;
+}
+
+export type SavedAddressInput = Omit<SavedAddress, 'id' | 'district' | 'city' | 'isDefault'> & {
+  district?: string;
+  city?: string;
+  isDefault?: boolean;
+};
+
+export interface SavedAddressList {
+  addresses: SavedAddress[];
+  /** Most addresses a shopper may keep. */
+  max: number;
+}
+
+export function listMyAddresses(accessToken: string): Promise<SavedAddressList> {
+  return authFetch<SavedAddressList>('/v1/customer-auth/me/addresses', accessToken);
+}
+
+export function createMyAddress(accessToken: string, input: SavedAddressInput): Promise<SavedAddressList> {
+  return authFetch<SavedAddressList>('/v1/customer-auth/me/addresses', accessToken, { method: 'POST', body: input });
+}
+
+export function updateMyAddressById(accessToken: string, id: string, input: Partial<SavedAddressInput>): Promise<SavedAddressList> {
+  return authFetch<SavedAddressList>(`/v1/customer-auth/me/addresses/${encodeURIComponent(id)}`, accessToken, { method: 'PATCH', body: input });
+}
+
+export function deleteMyAddress(accessToken: string, id: string): Promise<SavedAddressList> {
+  return authFetch<SavedAddressList>(`/v1/customer-auth/me/addresses/${encodeURIComponent(id)}`, accessToken, { method: 'DELETE' });
+}
+
 /** Account > Change Password (requires the current password). */
 export function changeMyPassword(accessToken: string, currentPassword: string, newPassword: string) {
   return authFetch<{ message: string }>('/v1/customer-auth/me/password', accessToken, {
@@ -333,5 +392,21 @@ export async function listCustomerCoupons(subdomain: string, accessToken: string
   if (!res.ok) {
     throw new Error('Could not load your coupons.');
   }
+  return res.json();
+}
+
+/** Wholesale prices for the logged-in shopper (server StorefrontService.getCustomerWholesale); empty unless their phone has the store's tag. */
+export interface CustomerWholesale {
+  active: boolean;
+  prices: Record<string, number>;
+}
+
+export async function fetchCustomerWholesale(subdomain: string, accessToken: string): Promise<CustomerWholesale> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/wholesale`, {
+    credentials: 'include',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) return { active: false, prices: {} };
   return res.json();
 }

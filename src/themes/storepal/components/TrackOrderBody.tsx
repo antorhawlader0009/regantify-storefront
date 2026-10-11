@@ -11,6 +11,9 @@ import { formatPrice } from '../lib/formatPrice';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { isFinishedOrder } from '@/lib/useLiveOrder';
 import { CancelOrderCard } from './CancelOrderCard';
+import { DeliveryRatingCard } from './DeliveryRatingCard';
+import { ReviewProductsCard } from './ReviewProductsCard';
+import { HeardFromCard } from './HeardFromCard';
 import { EditAddressCard } from './EditAddressCard';
 
 const STOPPED_STATUSES = ['CANCELLED', 'RETURN', 'REFUNDED', 'PAYMENT_FAILED', 'STOCK_OUT'];
@@ -210,6 +213,7 @@ export function TrackOrderBody({
         {order.preferredDeliveryDate && !isFinishedOrder(order) && (
           <p className="mt-3 rounded-md border border-line px-3 py-2 text-[13px] text-ink">
             {ui(lang, 'preferredDay')}: <span className="font-semibold">{formatExpectedDate(order.preferredDeliveryDate.slice(0, 10), lang)}</span>
+            {order.preferredSlot && <span className="font-semibold"> · {order.preferredSlot}</span>}
           </p>
         )}
 
@@ -227,9 +231,24 @@ export function TrackOrderBody({
         )}
       </section>
 
+      {/* The parcel was split (TellMe idea 59): what was in stock goes first, the rest follows in its own order. */}
+      {(order.splitParts ?? 0) > 1 && (
+        <p className="rounded-md border border-line bg-canvas px-3.5 py-3 text-[13px] text-ink">
+          {lang === 'bn'
+            ? `আপনার অর্ডার ${order.splitParts}টা ভাগে আসছে। যে পণ্য আছে সেগুলো আগে যাচ্ছে, বাকিগুলো আলাদা অর্ডারে আসবে।`
+            : `Your order is coming in ${order.splitParts} parts. What is in stock goes first and the rest follows as its own order.`}
+        </p>
+      )}
+
       {subdomain && onOrderChanged && <EditAddressCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 
       {subdomain && onOrderChanged && <CancelOrderCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
+
+      {subdomain && onOrderChanged && <HeardFromCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
+
+      {subdomain && onOrderChanged && <DeliveryRatingCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
+
+      {subdomain && <ReviewProductsCard subdomain={subdomain} order={order} lang={lang} />}
 
       {order.courierTracking && <CourierBlock tracking={order.courierTracking} lang={lang} />}
 
@@ -246,6 +265,9 @@ export function TrackOrderBody({
               <span className="text-ink min-w-0">
                 <span className="block truncate">{item.productName}</span>
                 <span className="text-muted text-[12px]">x{item.quantity}</span>
+                {item.customValues && item.customValues.length > 0 && (
+                  <span className="block text-[12px] text-ink">{item.customValues.map((v) => `${v.label}: ${v.value}`).join(' · ')}</span>
+                )}
               </span>
               <span className="text-ink font-medium shrink-0">{formatPrice(item.lineTotal)}</span>
             </li>

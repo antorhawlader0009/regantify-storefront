@@ -22,6 +22,10 @@ export interface ProductReview {
   /** The store's public reply (plain text); null/absent = none. Shown by StorePal only. */
   replyText?: string | null;
   repliedAt?: string | null;
+  /** "Helpful" votes (TellMe idea 99). */
+  helpfulCount?: number;
+  /** The server confirmed a Completed order of this product (TellMe idea 99). */
+  verified?: boolean;
 }
 
 export interface SubmitReviewInput {
@@ -34,11 +38,13 @@ export interface SubmitReviewInput {
   // SubmitReviewDto's own comment on the backend). Only the StorePal
   // theme's review form currently offers a photo upload control.
   photos?: string[];
+  /** The order's tracking token from the "Review your products" link; the server checks it (TellMe idea 99). */
+  orderToken?: string;
 }
 
 /** Approved reviews for one product — see ReviewsService.listForProduct on the backend. */
-export async function getProductReviews(subdomain: string, slug: string): Promise<ProductReview[]> {
-  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews`);
+export async function getProductReviews(subdomain: string, slug: string, sort: 'newest' | 'helpful' = 'newest'): Promise<ProductReview[]> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews${sort === 'helpful' ? '?sort=helpful' : ''}`);
   if (!res.ok) {
     throw new Error('Could not load reviews.');
   }
@@ -64,4 +70,11 @@ export async function submitProductReview(subdomain: string, slug: string, input
     const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
     throw new Error(message || 'Could not submit your review. Please try again.');
   }
+}
+
+/** One "helpful" vote on a review (TellMe idea 99); the server allows one per address. Returns the new count. */
+export async function voteReviewHelpful(subdomain: string, reviewId: string): Promise<{ helpfulCount: number; counted: boolean }> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/reviews/${encodeURIComponent(reviewId)}/helpful`, { method: 'POST' });
+  if (!res.ok) throw new Error('Could not save your vote.');
+  return res.json();
 }

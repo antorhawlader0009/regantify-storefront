@@ -1,5 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { persist, createJSONStorage } from 'zustand/middleware';
+import { priceWithBreaks, type PriceBreak } from '@/lib/priceBreaks';
 
 export interface CartLine {
   // productSlug + a stable string of the selected variant options is
@@ -17,6 +18,17 @@ export interface CartLine {
   quantity: number;
   selectedOptions: Record<string, string>;
   isPreOrder: boolean;
+  // Quantity price breaks (TellMe idea 67): `unitPrice` is kept at the break price for the product's total pieces in the cart
+  // (see applyBreaks); `basePrice` is the price without a step. Missing = the product has no steps.
+  priceBreaks?: PriceBreak[];
+  basePrice?: number;
+  // The shopper's own text for the product (TellMe idea 75), by field id, with the labels for showing it, and the per-piece fee that is
+  // already inside unitPrice. Lines with different text are different lines.
+  customValues?: Record<string, string>;
+  customDisplay?: { label: string; value: string }[];
+  customFee?: number;
+  // The pre-order's expected date (YYYY-MM-DD, TellMe idea 64), shown in the cart and checkout. Missing = none.
+  preOrderDate?: string;
   // Product.minOrderQuantity: the line never goes below it (the server
   // refuses a smaller one at checkout). Missing = no minimum.
   minOrderQuantity?: number | null;
@@ -47,6 +59,19 @@ function dispatchRemove(line: CartLine | undefined, quantity: number) {
   window.dispatchEvent(new CustomEvent<CartRemoveDetail>(CART_REMOVE_EVENT, { detail: { line, quantity } }));
 }
 
+/** Gives every line the break price for its product's total pieces in the cart (TellMe idea 67); lines without steps stay as they are. */
+export function applyBreaks(lines: CartLine[]): CartLine[] {
+  const totals = new Map<string, number>();
+  for (const l of lines) if (l.priceBreaks?.length) totals.set(`${l.subdomain}|${l.productSlug}`, (totals.get(`${l.subdomain}|${l.productSlug}`) ?? 0) + l.quantity);
+  if (totals.size === 0) return lines;
+  return lines.map((l) => {
+    if (!l.priceBreaks?.length) return l;
+    const base = l.basePrice ?? l.unitPrice;
+    const unitPrice = priceWithBreaks(base, l.priceBreaks, totals.get(`${l.subdomain}|${l.productSlug}`) ?? l.quantity) + (l.customFee ?? 0);
+    return unitPrice === l.unitPrice && l.basePrice === base ? l : { ...l, basePrice: base, unitPrice };
+  });
+}
+
 export interface CartState {
   lines: CartLine[];
   // The Customer account this cart belongs to, or null for a guest cart. Lets the cart be emptied when
@@ -72,12 +97,15 @@ export type CartStore = CartState & CartActions;
 
 export const defaultInitState: CartState = { lines: [], ownerId: null };
 
-function lineId(productSlug: string, selectedOptions: Record<string, string>): string {
+function lineId(productSlug: string, selectedOptions: Record<string, string>, customValues?: Record<string, string>): string {
+  const custom = customValues && Object.keys(customValues).length > 0
+    ? `::c:${Object.entries(customValues).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('|')}`
+    : '';
   const optionsKey = Object.entries(selectedOptions)
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}:${v}`)
     .join('|');
-  return `${productSlug}::${optionsKey}`;
+  return `${productSlug}::${optionsKey}${custom}`;
 }
 
 // Store factory — called fresh per request via CartStoreProvider (see
@@ -93,7 +121,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
 
         addLine: (input) => {
           const line = { ...input, quantity: Math.max(input.quantity, input.minOrderQuantity ?? 1) };
-          const id = lineId(line.productSlug, line.selectedOptions);
+          const id = lineId(line.productSlug, line.selectedOptions, line.customValues);
           set((state) => {
             const existing = state.lines.find((l) => l.id === id);
             if (existing) {
@@ -106,6 +134,8 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
                         productId: l.productId ?? line.productId,
                         variantId: l.variantId ?? line.variantId,
                         minOrderQuantity: line.minOrderQuantity ?? l.minOrderQuantity,
+                        priceBreaks: line.priceBreaks ?? l.priceBreaks,
+                        basePrice: line.basePrice ?? l.basePrice,
                       }
                     : l,
                 ),
@@ -113,6 +143,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
             }
             return { lines: [...state.lines, { ...line, id }] };
           });
+          set((state) => ({ lines: applyBreaks(state.lines) }));
           if (typeof window !== 'undefined') {
             window.dispatchEvent(new CustomEvent<CartLine>(CART_ADD_EVENT, { detail: { ...line, id } }));
           }
@@ -120,7 +151,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
 
         removeLine: (id) => {
           const removed = get().lines.find((l) => l.id === id);
-          set((state) => ({ lines: state.lines.filter((l) => l.id !== id) }));
+          set((state) => ({ lines: applyBreaks(state.lines.filter((l) => l.id !== id)) }));
           dispatchRemove(removed, removed?.quantity ?? 0);
         },
 
@@ -129,9 +160,9 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
           // Above 0 never goes below the product's minimum; 0 still removes the line.
           const quantity = requested > 0 ? Math.max(requested, before?.minOrderQuantity ?? 1) : requested;
           set((state) => ({
-            lines: quantity <= 0
-              ? state.lines.filter((l) => l.id !== id)
-              : state.lines.map((l) => (l.id === id ? { ...l, quantity } : l)),
+            lines: applyBreaks(
+              quantity <= 0 ? state.lines.filter((l) => l.id !== id) : state.lines.map((l) => (l.id === id ? { ...l, quantity } : l)),
+            ),
           }));
           if (before) dispatchRemove(before, before.quantity - Math.max(quantity, 0));
         },
@@ -144,7 +175,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
 
         resetFor: (ownerId) => set({ lines: [], ownerId }),
         claimFor: (ownerId) => set({ ownerId }),
-        setLines: (lines) => set({ lines }),
+        setLines: (lines) => set({ lines: applyBreaks(lines) }),
       }),
       {
         name: 'regantify-cart',

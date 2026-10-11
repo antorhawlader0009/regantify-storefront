@@ -116,7 +116,17 @@ export interface StoreDeliveryCharges {
   /** Store pickup (StorePal only): where and when the shopper can collect the order, null while the store has it off. */
   pickup?: { address: string | null; hours: string | null } | null;
   /** Preferred delivery day (StorePal only): the days a shopper may pick (YYYY-MM-DD), null while the store has it off. */
-  preferredDelivery?: { days: string[] } | null;
+  preferredDelivery?: { days: string[]; slots?: Array<{ id: string; label: string }> } | null;
+  /** Daily order limit (TellMe idea 69, StorePal only): the limit and how many orders are still free today; null = no limit. */
+  dailyLimit?: { limit: number; remaining: number } | null;
+  /** Cut-off time (TellMe idea 69, StorePal only): "15:00" and whether it has passed (an order now counts as tomorrow's). */
+  orderCutoff?: { time: string; passed: boolean } | null;
+  /** Delivery area control (TellMe idea 65, StorePal only): where the store delivers; null = everywhere. */
+  deliveryArea?: { mode: 'ONLY' | 'EXCEPT'; districts: string[]; message: string | null } | null;
+  /** Minimum order (TellMe idea 56): the smallest goods total allowed; null = none. */
+  minOrderAmount?: number | null;
+  /** Gift option (TellMe idea 57, StorePal only): the wrap charge; null while off. */
+  giftOption?: { charge: number } | null;
   // Store > Store Away (holiday mode), StorePal only; null while open. See lib/storeAway.ts.
   storeAway?: StorefrontStoreAway | null;
 }
@@ -290,6 +300,8 @@ export interface AutomaticDiscounts {
   freeShipping: { id: string; name: string } | null;
   /** Free gifts (Marketing > Discounts > Free gifts) the cart gets; they join the order as price-0 lines. */
   gifts?: Array<{ offerId: string; name: string; productName: string; productImage: string | null; quantity: number }>;
+  /** Extra delivery charge for a heavy cart per zone (TellMe idea 58); null while the store has none. */
+  weightExtra?: { DHAKA: number; AROUND_DHAKA: number; OUTSIDE_DHAKA: number } | null;
 }
 
 /**
@@ -405,9 +417,13 @@ export interface TrackedOrderItem {
   productName: string;
   productImage?: string | null;
   selectedOptions: Record<string, string>;
+  /** The shopper's own text for this line (TellMe idea 75), like a name to print. */
+  customValues?: { label: string; value: string }[] | null;
   unitPrice: string;
   quantity: number;
   lineTotal: string;
+  /** The live product, for the "Review your products" links (TellMe idea 99); null once deleted. */
+  product?: { slug: string; visibility: string } | null;
 }
 
 export interface TrackedOrderStatusHistoryEntry {
@@ -437,6 +453,8 @@ export interface TrackedOrder {
   deliveryZone?: string | null;
   /** The day the shopper asked for (an ISO date at midnight UTC), when they picked one. */
   preferredDeliveryDate?: string | null;
+  /** The parcel was split into this many orders (TellMe idea 59); 0 = never split. */
+  splitParts?: number;
   // Public order number (tracking-plan.md Step 2); null on an order the backfill has not reached.
   publicCode?: string | null;
   // Private tracking link token (tracking-plan.md Step 1): /store/{sub}/t/{token}. Null on
@@ -510,6 +528,12 @@ export interface TrackedOrder {
   customerCancel?: { allowed: boolean };
   // Whether the shopper may correct their delivery details right now ("Fix my address").
   customerEdit?: { allowed: boolean };
+  // "How was the delivery?" (TellMe idea 89): asked once on a Completed online order; `rating` once given.
+  deliveryRating?: { canRate: boolean; rating: number | null };
+  // "How did you hear about us?" (TellMe idea 100): asked once while the store has it on; `answered` once given.
+  heardFrom?: { ask: boolean; options: Array<{ key: string; label: string }>; answered: string | null };
+  // The preferred delivery time slot the shopper chose (TellMe idea 90).
+  preferredSlot?: string | null;
 }
 
 /** The reasons the "Cancel my order" button offers; the server accepts exactly these. */
@@ -533,6 +557,39 @@ export async function cancelOrderByLink(subdomain: string, token: string, reason
     body: JSON.stringify({ reason }),
   });
   if (!res.ok) throw await apiError(res, 'Could not cancel the order. Please try again.');
+  return res.json() as Promise<TrackedOrder>;
+}
+
+/** Which of the store's delivery time slots still have room on a day (TellMe idea 90); read fresh, the store info is cached. */
+export async function fetchDeliverySlots(subdomain: string, date: string): Promise<Array<{ id: string; label: string; full: boolean }>> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/delivery-slots?date=${encodeURIComponent(date)}`, { cache: 'no-store' });
+    if (!res.ok) return [];
+    return ((await res.json()) as { slots: Array<{ id: string; label: string; full: boolean }> }).slots;
+  } catch {
+    return [];
+  }
+}
+
+/** The shopper's one tap on "How did you hear about us?" (tracking token as proof). Returns the order as it is now. */
+export async function answerHeardFromByLink(subdomain: string, token: string, choice: string): Promise<TrackedOrder> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/heard-from`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ choice }),
+  });
+  if (!res.ok) throw await apiError(res, 'Could not save your answer.');
+  return res.json() as Promise<TrackedOrder>;
+}
+
+/** The shopper rates the delivery, 1 to 5 stars and an optional line (tracking token as proof). Returns the order as it is now. */
+export async function rateDeliveryByLink(subdomain: string, token: string, rating: number, comment?: string): Promise<TrackedOrder> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/delivery-rating`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ rating, comment: comment?.trim() || undefined }),
+  });
+  if (!res.ok) throw await apiError(res, 'Could not save your rating. Please try again.');
   return res.json() as Promise<TrackedOrder>;
 }
 
@@ -727,4 +784,31 @@ export async function resendCodOrderOtp(subdomain: string, orderId: string): Pro
   });
   if (!res.ok) throw await apiError(res, 'Could not resend the code. Please try again.');
   return res.json();
+}
+
+/** What a shared cart link answers (server StorefrontService.getSharedCart, TellMe idea 77). */
+export type SharedCart =
+  | { status: 'NOT_FOUND' }
+  | {
+      status: 'OK';
+      lines: Array<{
+        productSlug: string;
+        name: string;
+        image: string | null;
+        unitPrice: number;
+        originalUnitPrice: number | null;
+        quantity: number;
+        selectedOptions: Record<string, string>;
+        isPreOrder: boolean;
+        minOrderQuantity: number | null;
+        productId: string;
+        variantId: string | null;
+      }>;
+      notices: Array<{ name: string; reason: 'UNAVAILABLE' | 'SOLD_OUT' | 'REDUCED'; available?: number }>;
+    };
+
+export async function fetchSharedCart(subdomain: string, code: string): Promise<SharedCart> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/cart-link/${encodeURIComponent(code)}`, { cache: 'no-store' });
+  if (!res.ok) return { status: 'NOT_FOUND' };
+  return res.json() as Promise<SharedCart>;
 }

@@ -19,7 +19,7 @@ const NAV_ITEMS: { label: string; href: (subdomain: string) => string }[] = [
   { label: 'Dashboard', href: (s) => `/store/${s}/account/orders` },
   { label: 'Orders', href: (s) => `/store/${s}/account/orders` },
   { label: 'Coupons', href: (s) => `/store/${s}/account/coupons` },
-  { label: 'Change Address', href: (s) => `/store/${s}/account/address` },
+  { label: 'My Addresses', href: (s) => `/store/${s}/account/address` },
   { label: 'Change Password', href: (s) => `/store/${s}/account/change-password` },
 ];
 

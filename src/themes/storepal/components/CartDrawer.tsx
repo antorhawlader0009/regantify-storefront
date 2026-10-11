@@ -10,6 +10,7 @@ import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { formatPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
+import { encodeCartLink } from '@/lib/cartLink';
 import { CartOffers } from './CartOffers';
 import { CartAddons } from './CartAddons';
 import { useStoreText } from '../lib/storeText';
@@ -35,6 +36,25 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
   const setQuantity = useCartStore((s) => s.setQuantity);
   const removeLine = useCartStore((s) => s.removeLine);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const [shared, setShared] = useState(false);
+
+  // "Share cart" (TellMe idea 77): the cart as a link (slugs, options, quantities). Lines with the shopper's own text or a
+  // gift cannot be put in a link, and the server looks everything up again when the link is opened.
+  const shareCart = async () => {
+    const shareable = lines.filter((l) => !l.customValues);
+    if (shareable.length === 0) return;
+    // Path mode (/store/<sub>/...) keeps that prefix; on the store's own domain the link sits at the root.
+    const base = window.location.pathname.startsWith(`/store/${subdomain}`) ? `/store/${subdomain}` : '';
+    const url = `${window.location.origin}${base}/cart-link/${encodeCartLink(shareable)}`;
+    try {
+      if (navigator.share) await navigator.share({ url });
+      else await navigator.clipboard.writeText(url);
+      setShared(true);
+      setTimeout(() => setShared(false), 2500);
+    } catch {
+      // The shopper closed the share sheet or the clipboard is blocked: nothing to do.
+    }
+  };
   // Mount the offers box (it fetches) only once the drawer has been opened, then keep it.
   const [everOpened, setEverOpened] = useState(false);
 
@@ -219,6 +239,9 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                 className="flex h-12 w-full items-center justify-center rounded-lg bg-accent text-[14.5px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 {t('Checkout')}
+              </button>
+              <button type="button" onClick={() => void shareCart()} className="mt-2 flex h-10 w-full items-center justify-center rounded-lg border border-line text-[13px] font-medium text-ink hover:bg-surface">
+                {shared ? t('Cart link copied') : t('Share cart')}
               </button>
             </div>
           </>

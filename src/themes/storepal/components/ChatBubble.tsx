@@ -1,11 +1,12 @@
 'use client';
 
 import { usePathname } from 'next/navigation';
-import type { MouseEvent } from 'react';
+import { useEffect, useState, type MouseEvent } from 'react';
+import { isOpenNow, nextOpening, timeLabel, type BusinessHours } from '@/lib/businessHours';
 import type { SocialLinks } from '@/lib/socialLinksApi';
 import { useCartDrawer } from '../lib/cartDrawer';
-import { useStorePalDesign } from '../lib/designSettings';
-import { useStoreText } from '../lib/storeText';
+import { useBusinessHours, useStorePalDesign } from '../lib/designSettings';
+import { bnDigits, useStoreText } from '../lib/storeText';
 
 type PageKind = 'HOME' | 'PRODUCT' | 'OTHER';
 
@@ -16,6 +17,19 @@ function pageKind(pathname: string): PageKind {
   if (rest === '' || rest === '/') return 'HOME';
   if (/^\/product\//.test(rest)) return 'PRODUCT';
   return 'OTHER';
+}
+
+// "We are closed now, we will reply tomorrow at 10:00 AM" (TellMe idea 73); null while open or with no hours set.
+function hoursNote(hours: BusinessHours | null, language: string | undefined): string | null {
+  if (!hours || isOpenNow(hours)) return null;
+  const next = nextOpening(hours);
+  if (!next) return null;
+  const bn = language === 'bn';
+  const time = bn ? bnDigits(timeLabel(next.from)) : timeLabel(next.from);
+  const EN_DAYS = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+  const BN_DAYS = ['রবিবার', 'সোমবার', 'মঙ্গলবার', 'বুধবার', 'বৃহস্পতিবার', 'শুক্রবার', 'শনিবার'];
+  const when = next.daysAhead === 0 ? (bn ? 'আজ' : 'today') : next.daysAhead === 1 ? (bn ? 'কাল' : 'tomorrow') : (bn ? BN_DAYS : EN_DAYS)[next.dayIndex];
+  return bn ? `এখন আমরা বন্ধ, ${when} ${time}-এ উত্তর দেব।` : `We are closed now. We will reply ${when} at ${time}.`;
 }
 
 // WhatsApp's wa.me and api.whatsapp.com links both take the typed-in message as ?text=.
@@ -42,6 +56,11 @@ function withText(link: string, text: string): string {
  */
 export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialLinks; productName?: string }) {
   const design = useStorePalDesign();
+  const hours = useBusinessHours();
+  const [closedNow, setClosedNow] = useState(false);
+  useEffect(() => {
+    setClosedNow(!!hours && !isOpenNow(hours));
+  }, [hours]);
   const t = useStoreText();
   const pathname = usePathname() ?? '';
   // Steps over to the left edge while the slide-in cart is open, back when it closes.
@@ -56,6 +75,8 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
   const link = (messenger ? design.chatButtonMessengerLink : socialLinks?.whatsappUrl)?.trim();
   if (!link) return null;
 
+  // Outside the shop hours (TellMe idea 73) the bubble says so and when we answer again; the chat still opens.
+  const closedNote = hoursNote(hours, design.storeLanguage);
   const left = design.chatButtonSide === 'LEFT';
   const prefill = !messenger && kind === 'PRODUCT' && !!productName && design.chatButtonProductMessage !== false;
 
@@ -68,6 +89,15 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
     : undefined;
 
   return (
+    <>
+    {closedNote && closedNow && (
+      <p
+        className={`fixed bottom-[4.8rem] ${left ? 'left-5' : 'right-5'} z-30 m-0 max-w-[15rem] rounded-md bg-ink px-3 py-2 text-[12px] leading-snug text-white shadow-lg`}
+        role="status"
+      >
+        {closedNote}
+      </p>
+    )}
     <a
       href={link}
       target="_blank"
@@ -93,5 +123,6 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
         </svg>
       )}
     </a>
+    </>
   );
 }

@@ -1,7 +1,8 @@
 'use client';
 
 import { createContext, useContext, type ReactNode } from 'react';
-import { storeText } from './storeText';
+import { bnDigits, storeText } from './storeText';
+import type { BusinessHours } from '@/lib/businessHours';
 import type { StorefrontDesignSettings, StorefrontLmsForms, StorefrontMenuItem } from '@/lib/storefrontApi';
 
 // Store > Design settings the vendor never saved. Must render StorePal
@@ -43,6 +44,9 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   chatButtonSide: 'RIGHT',
   chatButtonPages: ['HOME', 'PRODUCT', 'OTHER'],
   chatButtonProductMessage: true,
+  productShareEnabled: true,
+  socialProofDays: 0,
+  wishlistAlertsEnabled: false,
 };
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
@@ -56,11 +60,16 @@ const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
 export function StorePalDesignProvider({
   settings,
   showOutOfStockBadge = true,
+  lowStock = null,
+  businessHours = null,
   lmsForms = null,
   children,
 }: {
+  /** Shop and support hours (TellMe idea 73); null = none set, or the store is away. */
+  businessHours?: BusinessHours | null;
   settings: StorefrontDesignSettings | null;
   showOutOfStockBadge?: boolean;
+  lowStock?: LowStockConfig | null;
   lmsForms?: StorefrontLmsForms | null;
   children: ReactNode;
 }) {
@@ -69,7 +78,11 @@ export function StorePalDesignProvider({
   return (
     <DesignContext.Provider value={{ ...DEFAULT_DESIGN, ...settings }}>
       <OutOfStockBadgeContext.Provider value={showOutOfStockBadge}>
-        <LmsFormsContext.Provider value={lmsForms}>{children}</LmsFormsContext.Provider>
+        <LowStockContext.Provider value={lowStock}>
+          <BusinessHoursContext.Provider value={businessHours}>
+            <LmsFormsContext.Provider value={lmsForms}>{children}</LmsFormsContext.Provider>
+          </BusinessHoursContext.Provider>
+        </LowStockContext.Provider>
       </OutOfStockBadgeContext.Provider>
     </DesignContext.Provider>
   );
@@ -95,6 +108,31 @@ const OutOfStockBadgeContext = createContext(true);
 
 export function useShowOutOfStockBadge() {
   return useContext(OutOfStockBadgeContext);
+}
+
+// Store > Stock Settings' "Only 3 left" message (TellMe idea 52). Null = the vendor has not turned
+// it on, and not for a store that allows backorders either.
+export interface LowStockConfig {
+  limit: number;
+  hideCount: boolean;
+}
+const LowStockContext = createContext<LowStockConfig | null>(null);
+const BusinessHoursContext = createContext<BusinessHours | null>(null);
+
+export function useBusinessHours() {
+  return useContext(BusinessHoursContext);
+}
+
+export function useLowStock() {
+  return useContext(LowStockContext);
+}
+
+/** "Only 3 left" (or its Bangla form) when stock is at or under the limit, else null. */
+export function lowStockLabel(config: LowStockConfig | null, language: string | undefined, stock: number | undefined): string | null {
+  if (!config || stock === undefined || stock <= 0 || stock > config.limit) return null;
+  return language === 'BN' || language === 'bn'
+    ? `মাত্র ${bnDigits(stock)}টা বাকি`
+    : `Only ${stock} left`;
 }
 
 const OTHER_PATHS: Record<string, string> = {

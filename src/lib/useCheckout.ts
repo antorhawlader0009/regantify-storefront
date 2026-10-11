@@ -1,12 +1,20 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { deliveryAreaRefusal } from '@/lib/deliveryArea';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import type { CartLine } from '@/stores/cart-store';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
-import { refreshCustomerSession, fetchCustomerRewards, type CustomerRewards } from '@/lib/customerAuthApi';
+import {
+  refreshCustomerSession,
+  fetchCustomerRewards,
+  listMyAddresses,
+  createMyAddress,
+  type CustomerRewards,
+  type SavedAddress,
+} from '@/lib/customerAuthApi';
 import { trackMetaAddPaymentInfo } from '@/lib/metaPixelEvents';
 import { metaAdContext } from '@/lib/metaPixel';
 import { trackAddPaymentInfo } from '@/lib/ecommerceEvents';
@@ -23,6 +31,7 @@ import {
   initiateOrderPayment,
   initiateGatewayOrderPayment,
   getStoreDeliveryCharges,
+  fetchDeliverySlots,
   sendCodVerificationOtp,
   CheckoutApiError,
   type ValidatedCoupon,
@@ -141,6 +150,12 @@ export function useCheckout(
     aroundDhaka: { charge: number } | null;
     pickup: { address: string | null; hours: string | null } | null;
     preferredDays: string[] | null;
+    hasSlots: boolean;
+    minOrderAmount: number | null;
+    giftOption: { charge: number } | null;
+    deliveryArea: { mode: 'ONLY' | 'EXCEPT'; districts: string[]; message: string | null } | null;
+    dailyLimit: { limit: number; remaining: number } | null;
+    orderCutoff: { time: string; passed: boolean } | null;
     storeAway: StorefrontStoreAway | null;
   } | null>(null);
   useEffect(() => {
@@ -158,6 +173,12 @@ export function useCheckout(
         aroundDhaka: charges.aroundDhaka ?? null,
         pickup: charges.pickup ?? null,
         preferredDays: charges.preferredDelivery?.days ?? null,
+        hasSlots: (charges.preferredDelivery?.slots?.length ?? 0) > 0,
+        minOrderAmount: charges.minOrderAmount ?? null,
+        giftOption: charges.giftOption ?? null,
+        deliveryArea: charges.deliveryArea ?? null,
+        dailyLimit: charges.dailyLimit ?? null,
+        orderCutoff: charges.orderCutoff ?? null,
         storeAway: stillAway(charges.storeAway),
       });
     });
@@ -176,6 +197,23 @@ export function useCheckout(
   const preferredDays = vendorCharges?.preferredDays ?? null;
   const [preferredPick, setPreferredPick] = useState('');
   const preferredDate = preferredDays && preferredDays.includes(preferredPick) ? preferredPick : '';
+  // Delivery time slot (TellMe idea 90): only after a day is picked; which are full on that day is read fresh.
+  const [slotPick, setSlotPick] = useState('');
+  const [slotOptions, setSlotOptions] = useState<Array<{ id: string; label: string; full: boolean }>>([]);
+  const hasSlots = vendorCharges?.hasSlots ?? false;
+  useEffect(() => {
+    setSlotPick('');
+    if (!hasSlots || !preferredDate) {
+      setSlotOptions([]);
+      return;
+    }
+    let cancelled = false;
+    fetchDeliverySlots(subdomain, preferredDate).then((s) => !cancelled && setSlotOptions(s));
+    return () => {
+      cancelled = true;
+    };
+  }, [hasSlots, preferredDate, subdomain]);
+  const preferredSlotId = preferredDate && slotOptions.some((s) => s.id === slotPick && !s.full) ? slotPick : '';
   const zone: CheckoutFormState['zone'] =
     (form.zone === 'AROUND_DHAKA' && !aroundDhaka) || (form.zone === 'PICKUP' && !pickup) ? 'OUTSIDE_DHAKA' : form.zone;
   const resolvedDeliveryCharge: Record<'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA' | 'PICKUP', number> = vendorCharges
@@ -246,6 +284,68 @@ export function useCheckout(
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authHydrated, customer?.id, accessToken === null, subdomain]);
+
+  // Saved addresses (TellMe idea 53): a logged-in shopper picks one to fill the form, or ticks "save this address"
+  // when typing a new one. Only StorePal's checkout renders it; the other themes ignore the extra fields.
+  const [savedAddresses, setSavedAddresses] = useState<SavedAddress[]>([]);
+  const [maxAddresses, setMaxAddresses] = useState(5);
+  const [pickedAddressId, setPickedAddressId] = useState<string | null>(null);
+  const [saveNewAddress, setSaveNewAddress] = useState(false);
+  const [newAddressLabel, setNewAddressLabel] = useState('');
+  useEffect(() => {
+    if (!authHydrated || !customer || !accessToken) {
+      setSavedAddresses([]);
+      return;
+    }
+    let cancelled = false;
+    listMyAddresses(accessToken)
+      .then((r) => {
+        if (cancelled) return;
+        setSavedAddresses(r.addresses);
+        setMaxAddresses(r.max);
+      })
+      .catch(() => !cancelled && setSavedAddresses([]));
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authHydrated, customer?.id, accessToken === null]);
+
+  /** Fills receiver, phone, address, thana, district and delivery zone from a saved address. */
+  const applyAddress = (a: SavedAddress) => {
+    setForm((prev) => ({
+      ...prev,
+      fullName: a.recipientName,
+      phone: a.phone,
+      address: a.address,
+      city: a.city ?? '',
+      district: a.district ?? '',
+      // A store without the Around Dhaka option prices that address as Outside Dhaka (see `zone` below).
+      zone: a.deliveryZone,
+    }));
+    setErrors({});
+    setPickedAddressId(a.id);
+    setSaveNewAddress(false);
+  };
+
+  // "Save this address" is offered for an address that is not already saved, while there is room for one more.
+  const canSaveAddress =
+    !!customer &&
+    !!accessToken &&
+    savedAddresses.length < maxAddresses &&
+    form.address.trim().length >= 3 &&
+    !savedAddresses.some((a) => a.address === form.address.trim() && a.phone === form.phone.trim());
+
+  // The district picked in the product page's delivery check (TellMe idea 68) starts the checkout, when nothing else has filled it.
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(`storepal-delivery-district:${subdomain}`);
+      if (saved) setForm((prev) => (prev.district === '' ? { ...prev, district: saved } : prev));
+    } catch {
+      // Storage blocked: nothing to prefill.
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subdomain]);
 
   // A logged-in shopper's order must be saved to their account, which the server only does for a valid
   // token. The 15-minute access token may have run out by the time they press Place Order, so take a
@@ -333,7 +433,29 @@ export function useCheckout(
 
   const storeName = lines[0]?.storeName ?? '';
   const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
-  const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[zone] : 0;
+  // Heavy cart (TellMe idea 58): the server's own number per zone, added to the zone's charge. A free-shipping coupon or
+  // discount waives both (effectiveDeliveryCharge below).
+  const weightExtra = lines.length > 0 && zone !== 'PICKUP' ? (automaticDiscounts?.weightExtra?.[zone] ?? 0) : 0;
+  const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[zone] + weightExtra : 0;
+  // Gift option (TellMe idea 57): the shopper's tick, message and "hide prices"; the wrap charge is the store's.
+  const [isGift, setIsGift] = useState(false);
+  const [giftMessage, setGiftMessage] = useState('');
+  const [hidePrices, setHidePrices] = useState(false);
+  const giftOption = vendorCharges?.giftOption ?? null;
+  const giftWrapCharge = isGift && giftOption && lines.length > 0 ? giftOption.charge : 0;
+  // Minimum order (TellMe idea 56): the goods total before discounts; the button waits until it is reached.
+  const minOrderAmount = vendorCharges?.minOrderAmount ?? null;
+  // Delivery area control (TellMe idea 65): the shopper's district against the store's list, so the shopper hears it at once.
+  const deliveryArea = vendorCharges?.deliveryArea ?? null;
+  const areaRefusal =
+    deliveryArea && zone !== 'PICKUP' && lines.length > 0
+      ? deliveryAreaRefusal(deliveryArea.mode, deliveryArea.districts, form.district, deliveryArea.message)
+      : null;
+  // Daily order limit and cut-off (TellMe idea 69): full today means no order; after the cut-off the shopper is told it counts as tomorrow's.
+  const dailyLimit = vendorCharges?.dailyLimit ?? null;
+  const ordersFullToday = !!dailyLimit && dailyLimit.remaining <= 0;
+  const orderCutoff = vendorCharges?.orderCutoff ?? null;
+  const minOrderShortfall = minOrderAmount && lines.length > 0 && subtotal < minOrderAmount ? Math.ceil(minOrderAmount - subtotal) : 0;
   // VAT — a flat fee applied to every order regardless of payment method
   // (see Vendor.vatChargeBdt's own schema comment). Zero whenever the
   // cart is empty, same as deliveryCharge above.
@@ -371,7 +493,7 @@ export function useCheckout(
   // of what the client sends).
   const platformChargeFlat = selectedGateway ? Number(selectedGateway.platformChargeBdt) : 0;
   const platformChargeBase =
-    Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount - totalDiscount) + platformChargeFlat;
+    Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount + giftWrapCharge - totalDiscount) + platformChargeFlat;
   const platformChargeAmount =
     lines.length > 0 && selectedGateway
       ? Math.round(
@@ -396,7 +518,7 @@ export function useCheckout(
   // itemized breakdown. What's actually rendered is visibleGrandTotal.
   const grandTotalBeforeGiftCard = Math.max(
     0,
-    subtotal + effectiveDeliveryCharge + vatAmount + platformChargeAmount - totalDiscount,
+    subtotal + effectiveDeliveryCharge + vatAmount + giftWrapCharge + platformChargeAmount - totalDiscount,
   );
   // Reward points first (same rule as OrdersService.create: within the balance and the store's % of the total).
   const rewardPointsAmount =
@@ -578,6 +700,18 @@ export function useCheckout(
 
   const handlePlaceOrder = async () => {
     if (!validate()) return;
+    if (areaRefusal) {
+      setPlaceError(areaRefusal);
+      return;
+    }
+    if (ordersFullToday) {
+      setPlaceError('Today’s orders are full. Please order again tomorrow morning.');
+      return;
+    }
+    if (minOrderShortfall > 0) {
+      setPlaceError(`The minimum order is ৳${minOrderAmount}. Add ৳${minOrderShortfall} more to order.`);
+      return;
+    }
     const phone = form.phone.trim();
     const isCod = selectedGateway?.type === 'COD';
     const otpForThisPhone = codOtp?.phone === phone ? codOtp : null;
@@ -631,6 +765,8 @@ export function useCheckout(
         shippingDistrict: form.district.trim() || undefined,
         deliveryZone: zone,
         preferredDeliveryDate: preferredDate || undefined,
+        preferredSlotId: preferredSlotId || undefined,
+        ...(isGift && giftOption ? { isGift: true, giftMessage: giftMessage.trim() || undefined, hidePricesOnInvoice: hidePrices || undefined } : {}),
         sessionKey: sessionKey || undefined,
         couponCode: appliedCoupon?.code,
         giftCardCode: appliedGiftCard?.code,
@@ -641,6 +777,7 @@ export function useCheckout(
           productName: l.name,
           productImage: l.image,
           selectedOptions: l.selectedOptions,
+          customValues: l.customValues,
           listPrice: l.originalUnitPrice ?? l.unitPrice,
           unitPrice: l.unitPrice,
           quantity: l.quantity,
@@ -656,6 +793,23 @@ export function useCheckout(
       // to that gateway's hosted checkout instead of the thank-you/
       // orders page; that page is only reached once payment-callback
       // confirms success (see themes/storepal/views/PaymentCallbackView.tsx).
+      // "Save this address": best effort, the order is already placed whatever happens here.
+      if (saveNewAddress && canSaveAddress && authToken && zone !== 'PICKUP') {
+        try {
+          await createMyAddress(authToken, {
+            label: newAddressLabel.trim() || 'Home',
+            recipientName: form.fullName.trim(),
+            phone: form.phone.trim(),
+            district: form.district.trim() || undefined,
+            city: form.city.trim() || undefined,
+            address: form.address.trim(),
+            deliveryZone: zone,
+          });
+        } catch {
+          // The shopper can add it again from Account > My Addresses.
+        }
+      }
+
       if (!externalLines) clearStore(subdomain);
       sessionStorage.removeItem(sessionStorageKey);
 
@@ -731,6 +885,9 @@ export function useCheckout(
     preferredDays,
     preferredDate,
     setPreferredDate: setPreferredPick,
+    slotOptions,
+    preferredSlotId,
+    setPreferredSlot: setSlotPick,
     zone,
     // Applies regardless of payment method now (see comment above) —
     // StorePal's CheckoutView/ThankYouView show this as "VAT";
@@ -761,6 +918,31 @@ export function useCheckout(
     visibleGrandTotal,
     updateField,
     handlePlaceOrder,
+    // Saved addresses (TellMe idea 53); StorePal's checkout only.
+    // Heavy-cart extra, gift option and minimum order (TellMe ideas 56, 57, 58); StorePal's checkout shows them.
+    weightExtra,
+    giftOption,
+    isGift,
+    setIsGift,
+    giftMessage,
+    setGiftMessage: (value: string) => setGiftMessage(value.slice(0, 200)),
+    hidePrices,
+    setHidePrices,
+    giftWrapCharge,
+    minOrderAmount,
+    minOrderShortfall,
+    areaRefusal,
+    dailyLimit,
+    ordersFullToday,
+    orderCutoff,
+    savedAddresses,
+    pickedAddressId,
+    applyAddress,
+    canSaveAddress,
+    saveNewAddress,
+    setSaveNewAddress,
+    newAddressLabel,
+    setNewAddressLabel,
     couponCode,
     setCouponCode,
     appliedCoupon,

@@ -11,6 +11,16 @@ import { useStorePalDesign } from './designSettings';
 const BN: Record<string, string> = {
   // Product card
   'Add to Cart': 'কার্টে যোগ করুন',
+  'Share cart': 'কার্ট শেয়ার করুন',
+  'Verified buyer': 'কিনেছেন',
+  Helpful: 'কাজের',
+  Thanks: 'ধন্যবাদ',
+  'Sort by': 'সাজান',
+  Newest: 'সবচেয়ে নতুন',
+  'Most helpful': 'সবচেয়ে কাজের',
+  'Often bought together': 'এর সাথে অনেকে কেনেন',
+  'Wholesale price': 'পাইকারি দাম',
+  'Cart link copied': 'কার্টের লিংক কপি হয়েছে',
   'Buy Now': 'এখনই কিনুন',
   Added: 'যোগ হয়েছে',
   // Product page

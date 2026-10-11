@@ -10,7 +10,10 @@ import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
+import { preOrderDateText } from '../lib/preOrderDate';
+import { priceWithBreaks } from '@/lib/priceBreaks';
 import { SizeGuideLink } from './SizeGuideLink';
+import { useWholesalePrices } from '../lib/wholesale';
 
 interface StorePalProductPanelProps {
   subdomain: string;
@@ -35,8 +38,12 @@ interface StorePalProductPanelProps {
     imageShape: 'SQUARE' | 'PORTRAIT';
     galleryStyle: 'LEFT' | 'BOTTOM' | 'RIGHT';
     inStock: (stock: number | undefined) => string;
+    /** True when the stock line is the red "Only 3 left" one (Store > Stock Settings). */
+    isLowStock?: (stock: number | undefined) => boolean;
     outOfStock: string;
     preOrder: string;
+    /** The store's language, for the pre-order date wording. */
+    language?: string;
   };
   /**
    * LMS store forms (LMS-plan.md Step 9; see themes/storepal/components/
@@ -51,6 +58,8 @@ interface StorePalProductPanelProps {
     /** Under the buttons ("Call me back"). */
     after?: ReactNode;
   };
+  /** Beside the product name (StorePal's Share button, TellMe idea 61). */
+  titleExtra?: ReactNode;
   /**
    * Called after "Add to Cart" (not "Buy Now", which goes straight to checkout).
    * Only StorePal passes it, to open its slide-in cart; without it nothing
@@ -78,7 +87,7 @@ interface StorePalProductPanelProps {
  * construction) is unchanged from the audited version — only the visual
  * treatment is refined here.
  */
-export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, onAddedToCart, onBuyNow }: StorePalProductPanelProps) {
+export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, titleExtra, onAddedToCart, onBuyNow }: StorePalProductPanelProps) {
   const t = useStoreText();
   const design = useStorePalDesign();
   const router = useRouter();
@@ -189,14 +198,24 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
 
   const activePhotoUrl = allPhotos[activePhoto] ?? allPhotos[0];
 
-  const displayPrice = matchedVariant?.discountPrice ?? matchedVariant?.listPrice ?? product.discountPrice ?? product.price;
-  const displayOriginalPrice =
+  const regularPrice = matchedVariant?.discountPrice ?? matchedVariant?.listPrice ?? product.discountPrice ?? product.price;
+  // Wholesale price (TellMe idea 79): only for a logged-in shopper with the store's wholesale tag; the lowest price wins, as at checkout.
+  const wholesaleOffer = useWholesalePrices(subdomain)[product.slug];
+  const wholesaleApplied = wholesaleOffer !== undefined && wholesaleOffer > 0 && wholesaleOffer < Number(regularPrice);
+  const displayPrice = wholesaleApplied ? wholesaleOffer : regularPrice;
+  const regularOriginalPrice =
     matchedVariant?.discountPrice && matchedVariant?.listPrice
       ? matchedVariant.listPrice
       : !matchedVariant && product.discountPrice
         ? product.price
         : null;
+  const displayOriginalPrice = wholesaleApplied ? (regularOriginalPrice ?? regularPrice) : regularOriginalPrice;
 
+  // Quantity price breaks (TellMe idea 67): the price follows the quantity chosen here; the cart applies the same rule to all of
+  // the product's pieces together.
+  const breaks = product.priceBreaks ?? [];
+  const brokenPrice = priceWithBreaks(Number(displayPrice), breaks, quantity);
+  const breakApplied = breaks.length > 0 && brokenPrice < Number(displayPrice);
   const percentOff = displayOriginalPrice
     ? Math.round(((Number(displayOriginalPrice) - Number(displayPrice)) / Number(displayOriginalPrice)) * 100)
     : 0;
@@ -217,7 +236,10 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     !!backorder &&
     !product.isPreOrder &&
     (outOfStock || selectedVariantOutOfStock || (availableStock !== undefined && quantity > availableStock));
-  const quantityCap = backorder ? undefined : availableStock;
+  // Stock, and the store's "most per order" for this product (TellMe idea 56), whichever is smaller.
+  const stockCap = backorder ? undefined : availableStock;
+  const maxPerOrder = product.maxOrderQuantity ?? undefined;
+  const quantityCap = stockCap !== undefined && maxPerOrder !== undefined ? Math.min(stockCap, maxPerOrder) : (stockCap ?? maxPerOrder);
 
   const buildLine = () => ({
     subdomain,
@@ -225,11 +247,22 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     productSlug: product.slug,
     name: product.name,
     image: activePhotoUrl,
-    unitPrice: Number(displayPrice),
+    // The price without a step; the cart store lowers it to the break price for the product's total pieces (applyBreaks).
+    unitPrice: Number(displayPrice) + customFeeNow,
+    basePrice: Number(displayPrice),
+    ...(customFilled
+      ? {
+          customValues: Object.fromEntries(customFields.filter((f) => (customAnswers[f.id] ?? '').trim()).map((f) => [f.id, customAnswers[f.id].trim().slice(0, f.maxLength)])),
+          customDisplay: customFields.filter((f) => (customAnswers[f.id] ?? '').trim()).map((f) => ({ label: f.label, value: customAnswers[f.id].trim().slice(0, f.maxLength) })),
+          customFee: customFeeNow || undefined,
+        }
+      : {}),
+    priceBreaks: breaks.length > 0 ? breaks : undefined,
     originalUnitPrice: displayOriginalPrice ? Number(displayOriginalPrice) : undefined,
     quantity,
     selectedOptions: selected,
     isPreOrder: product.isPreOrder,
+    preOrderDate: product.isPreOrder ? (product.preOrderDate ?? undefined) : undefined,
     minOrderQuantity: product.minOrderQuantity,
     // For StorePal's Meta pixel content_ids (see stores/cart-store.ts).
     productId: product.id,
@@ -252,7 +285,22 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     router.push(`/store/${subdomain}/checkout`);
   };
 
+  // The shopper's own text (TellMe idea 75): a required box left empty stops the order of this product.
+  const customFields = product.isBundle ? [] : (product.customFields ?? []);
+  const [customAnswers, setCustomAnswers] = useState<Record<string, string>>({});
+  const [customError, setCustomError] = useState<string | null>(null);
+  const customFilled = customFields.some((f) => (customAnswers[f.id] ?? '').trim());
+  const customFeeNow = customFilled && product.customFee ? Number(product.customFee) : 0;
+  const customProblem = () => {
+    const missing = customFields.find((f) => f.required && !(customAnswers[f.id] ?? '').trim());
+    if (!missing) return false;
+    setCustomError(`${missing.label}${display?.language === 'bn' ? ' লিখুন' : ' is required'}`);
+    return true;
+  };
+
   const handleAddToCart = () => {
+    if (customProblem()) return;
+    setCustomError(null);
     if (needsVariantSelection) {
       setVariantWarning(true);
       return;
@@ -266,6 +314,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   };
 
   const handleBuyNow = () => {
+    if (customProblem()) return;
+    setCustomError(null);
     if (needsVariantSelection) {
       setVariantWarning(true);
       return;
@@ -352,7 +402,10 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           </span>
         )}
         {product.brand && <span className="text-[11.5px] text-muted uppercase tracking-wider font-medium">{product.brand}</span>}
-        <h1 className="mt-1 mb-2.5 text-[19px] sm:text-[22px] font-bold leading-snug text-ink tracking-tight">{product.name}</h1>
+        <div className="flex items-start justify-between gap-3">
+          <h1 className="mt-1 mb-2.5 text-[19px] sm:text-[22px] font-bold leading-snug text-ink tracking-tight">{product.name}</h1>
+          {titleExtra}
+        </div>
 
         {(product.category || product.secondaryCategories.length > 0) && (
           <div className="flex gap-1.5 flex-wrap mb-3.5">
@@ -379,9 +432,34 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             BD e-commerce product pages foreground the price block. */}
         <div className="bg-accent-light border border-accent/15 rounded-lg p-4 mb-4">
           <div className="flex gap-2.5 items-baseline flex-wrap">
-            <span className="text-[28px] font-bold text-accent tracking-tight">{formatPrice(displayPrice)}</span>
-            {displayOriginalPrice && <span className="text-muted line-through text-[15px]">{formatPrice(displayOriginalPrice)}</span>}
+            <span className="text-[28px] font-bold text-accent tracking-tight">{formatPrice(breakApplied ? brokenPrice : displayPrice)}</span>
+            {wholesaleApplied && <span className="rounded bg-accent px-1.5 py-0.5 text-[11px] font-semibold text-white">{t('Wholesale price')}</span>}
+            {breakApplied ? (
+              <span className="text-muted line-through text-[15px]">{formatPrice(displayOriginalPrice ?? displayPrice)}</span>
+            ) : (
+              displayOriginalPrice && <span className="text-muted line-through text-[15px]">{formatPrice(displayOriginalPrice)}</span>
+            )}
           </div>
+          {breaks.length > 0 && (
+            <div className="mt-2.5 rounded-md border border-accent/20 bg-surface px-3 py-2 text-[12.5px] text-ink">
+              <p className="m-0 mb-1 font-semibold">{display?.language === 'bn' ? 'বেশি কিনলে কম দাম' : 'Buy more, pay less'}</p>
+              <table className="w-full border-collapse">
+                <tbody>
+                  {[{ minQty: 1, price: Number(displayPrice) }, ...breaks].map((b, i, all) => {
+                    const next = all[i + 1];
+                    const range = next ? (next.minQty - 1 === b.minQty ? `${b.minQty}` : `${b.minQty}-${next.minQty - 1}`) : `${b.minQty}+`;
+                    const active = quantity >= b.minQty && (!next || quantity < next.minQty);
+                    return (
+                      <tr key={b.minQty} className={active ? 'font-bold text-accent' : ''}>
+                        <td className="py-0.5 pr-3">{range}</td>
+                        <td className="py-0.5 text-right tabular-nums">{formatPrice(b.price)}</td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
           {displayOriginalPrice && (
             <p className="m-0 mt-1.5 inline-flex items-center gap-1 text-[12.5px] text-save font-semibold bg-success-bg px-2 py-0.5 rounded w-fit">
               You save {formatPrice(saveAmount)} ({percentOff}%)
@@ -391,6 +469,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           {product.isPreOrder ? (
             <span className="inline-block bg-ink text-white text-[11px] font-semibold px-2.5 py-1 rounded mt-3">
               {display ? display.preOrder : t('Available for pre-order')}
+              {product.preOrderDate ? ` · ${preOrderDateText(product.preOrderDate, display?.language)}` : ''}
             </span>
           ) : backorder && (outOfStock || selectedVariantOutOfStock) ? (
             <p className="flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 text-accent-dark">
@@ -398,8 +477,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
               {backorder.shortMessage}
             </p>
           ) : (
-            <p className={`flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 ${outOfStock ? 'text-accent-dark' : 'text-success'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${outOfStock ? 'bg-accent' : 'bg-success'}`} />
+            <p className={`flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 ${outOfStock || display?.isLowStock?.(availableStock) ? 'text-accent-dark' : 'text-success'}`}>
+              <span className={`w-1.5 h-1.5 rounded-full ${outOfStock || display?.isLowStock?.(availableStock) ? 'bg-accent' : 'bg-success'}`} />
               {availableStock !== undefined && availableStock <= 0
                 ? (display?.outOfStock ?? t('Out of stock'))
                 : inStockText(availableStock)}
@@ -477,6 +556,34 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           <p className="text-[12.5px] text-accent-dark bg-accent-light border border-accent/20 rounded px-3 py-2 -mt-1 mb-4">
             {t('Select an option above first.')}
           </p>
+        )}
+
+        {customFields.length > 0 && (
+          <div className="mb-4 space-y-2.5">
+            {customFields.map((f) => (
+              <div key={f.id}>
+                <label className="mb-1 block text-[12.5px] font-semibold text-ink">
+                  {f.label}
+                  {f.required && <span className="text-accent"> *</span>}
+                </label>
+                <input
+                  value={customAnswers[f.id] ?? ''}
+                  maxLength={f.maxLength}
+                  onChange={(e) => {
+                    setCustomAnswers({ ...customAnswers, [f.id]: e.target.value });
+                    setCustomError(null);
+                  }}
+                  className="w-full rounded-md border border-line-strong bg-surface px-3 py-2 text-[13.5px] outline-none focus:border-ink"
+                />
+              </div>
+            ))}
+            {product.customFee && Number(product.customFee) > 0 && (
+              <p className="m-0 text-[12px] text-muted">
+                {display?.language === 'bn' ? `লিখলে প্রতি পিসে ${formatPrice(product.customFee)} বাড়তি` : `+${formatPrice(product.customFee)} per piece when filled in`}
+              </p>
+            )}
+            {customError && <p className="m-0 text-[12.5px] font-semibold text-accent">{customError}</p>}
+          </div>
         )}
 
         {leadSlots?.purchase ?? (

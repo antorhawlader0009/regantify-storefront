@@ -4,14 +4,23 @@ import { useEffect, useState, type ComponentProps } from 'react';
 import { StorePalProductPanel as ProductPurchasePanel } from './StorePalProductPanel';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
-import { stockMessages, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
+import { lowStockLabel, stockMessages, useLowStock, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { trackMetaViewContent } from '@/lib/metaPixelEvents';
 import { trackViewItem } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
 import { isOutOfStock } from '@/lib/productDisplay';
+import { ProductPolicyLines } from './ProductPolicyLines';
+import { BundleIncludes } from './BundleIncludes';
+import { ShareButton } from './ShareButton';
+import { DeliveryCheck } from './DeliveryCheck';
+import { SoldRecentLine } from './SoldRecentLine';
+import type { ResolvedPolicy } from '../lib/policy';
 import { CallMeBackLink, LeadFormButton, PriceOnRequest, StoreLeadFormDialog, type StoreFormType } from './StoreLeadForms';
 
-type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 'leadSlots' | 'onAddedToCart'>;
+type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 'leadSlots' | 'onAddedToCart'> & {
+  /** Warranty and return lines under the Buy button (see lib/policy.ts). */
+  policy?: ResolvedPolicy | null;
+};
 
 /**
  * Medium's shared ProductPurchasePanel plus Store > Design > Product
@@ -23,12 +32,13 @@ type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 
  * - sold out, not pre-order, no backorder -> "Notify me when it's back" instead of Buy;
  * - every product -> "Ask us to call you back" under Buy.
  */
-export function StorePalPurchasePanel(props: PanelProps) {
+export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
   const design = useStorePalDesign();
   const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
   // The store's LMS forms (LMS-plan.md Step 9), from the StorePal layout's store info.
   const lmsForms = useStorePalLmsForms();
+  const lowStock = useLowStock();
   const { product } = props;
   const [form, setForm] = useState<StoreFormType | null>(null);
 
@@ -45,23 +55,48 @@ export function StorePalPurchasePanel(props: PanelProps) {
   const notifyMe = !quoteOnly && !!lmsForms?.notifyMe && !props.backorder && isOutOfStock(product);
   const callMeBack = !!lmsForms?.callMeBack;
 
-  const leadSlots = lmsForms
-    ? {
-        price: quoteOnly ? <PriceOnRequest /> : undefined,
-        purchase: quoteOnly ? (
-          <LeadFormButton type="price-request" onOpen={() => setForm('price-request')} />
-        ) : notifyMe ? (
-          <LeadFormButton type="notify-me" onOpen={() => setForm('notify-me')} />
-        ) : undefined,
-        after: callMeBack ? <CallMeBackLink onOpen={() => setForm('call-back')} /> : undefined,
-      }
-    : undefined;
+  const policyLines = policy && !quoteOnly ? <ProductPolicyLines policy={policy} /> : null;
+  const bundleInfo = product.bundle && !quoteOnly ? <BundleIncludes product={product} /> : null;
+  const leadSlots =
+    lmsForms || policyLines || bundleInfo || (design.socialProofDays ?? 0) > 0 || !quoteOnly
+      ? {
+          price: quoteOnly ? <PriceOnRequest /> : undefined,
+          purchase: quoteOnly ? (
+            <LeadFormButton type="price-request" onOpen={() => setForm('price-request')} />
+          ) : notifyMe ? (
+            <LeadFormButton type="notify-me" onOpen={() => setForm('notify-me')} />
+          ) : undefined,
+          after: (
+            <>
+              {!quoteOnly && <DeliveryCheck subdomain={props.subdomain} />}
+              <SoldRecentLine product={product} />
+              {bundleInfo}
+              {policyLines}
+              {callMeBack ? <CallMeBackLink onOpen={() => setForm('call-back')} /> : null}
+            </>
+          ),
+        }
+      : undefined;
+
+  // "Only 3 left" (Store > Stock Settings); never for pre-order products.
+  const messages = stockMessages(design);
+  const lowText = (stock: number | undefined) => (product.isPreOrder ? null : lowStockLabel(lowStock, design.storeLanguage, stock));
+  const display = {
+    imageShape: design.productImageShape,
+    galleryStyle: design.galleryStyle,
+    ...messages,
+    inStock: (stock: number | undefined) =>
+      lowText(stock) ?? messages.inStock(lowStock?.hideCount ? undefined : stock),
+    isLowStock: (stock: number | undefined) => lowText(stock) !== null,
+    language: design.storeLanguage,
+  };
 
   return (
     <>
       <ProductPurchasePanel
         {...props}
-        display={{ imageShape: design.productImageShape, galleryStyle: design.galleryStyle, ...stockMessages(design) }}
+        display={display}
+        titleExtra={<ShareButton name={product.name} price={Number(product.discountPrice ?? product.price)} />}
         leadSlots={leadSlots}
         onAddedToCart={openCartDrawer}
         onBuyNow={openCheckout}

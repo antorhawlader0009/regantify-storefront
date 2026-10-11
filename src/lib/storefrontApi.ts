@@ -49,6 +49,8 @@ export interface StorefrontInfo {
   storeName: string;
   subdomain: string;
   theme: StoreTheme;
+  /** Shop and support hours (TellMe idea 73), StorePal only; null = none set. */
+  businessHours?: Record<string, { open: boolean; from: string; to: string }> | null;
   // Store > Logo — replaces the plain-text storeName wordmark wherever
   // a theme's header/footer shows it, when set. Nullable: a vendor who
   // hasn't uploaded one yet keeps the existing text-wordmark fallback.
@@ -224,6 +226,12 @@ export interface StorefrontDesignSettings {
   /** StorePal's buttons and labels: "en" or "bn" (themes/storepal/lib/storeText.ts). */
   storeLanguage?: 'en' | 'bn';
   /** Store > Design > Chat Button — the floating bubble (see themes/storepal/components/ChatBubble.tsx). Missing = the bubble as it always was. */
+  /** Share button on the product page (TellMe idea 61); missing = shown. */
+  productShareEnabled?: boolean;
+  /** "N bought in the last X days" window (TellMe idea 63): 0 or missing = off. */
+  socialProofDays?: number;
+  /** Wishlist price / restock alerts by SMS (TellMe idea 62). */
+  wishlistAlertsEnabled?: boolean;
   chatButtonEnabled?: boolean;
   chatButtonChannel?: 'WHATSAPP' | 'MESSENGER';
   /** Messenger only: https://m.me/<page>. */
@@ -249,6 +257,15 @@ export interface StorefrontStockSettings {
   allowBackorder: boolean;
   backorderPopupMessage: string | null;
   backorderShortMessage: string | null;
+  // "Only 3 left" message (Store > Stock Settings). Absent in an older cached response.
+  lowStockMessageEnabled?: boolean;
+  lowStockMessageLimit?: number;
+  hideStockCount?: boolean;
+  // Store-wide warranty and return policy for products that set none of their own.
+  defaultWarrantyKind?: string | null;
+  defaultWarrantyCustom?: string | null;
+  defaultReturnDays?: number | null;
+  defaultReturnCondition?: string | null;
 }
 
 /**
@@ -370,6 +387,25 @@ export interface StorefrontProduct {
   quoteOnly?: boolean;
   /** Fewest a shopper may order in one cart line; null = no minimum. */
   minOrderQuantity?: number | null;
+  /** Bundle / combo (TellMe idea 51): what the set holds and what the parts cost one by one. Its stock is the fewest sets they allow. */
+  isBundle?: boolean;
+  bundle?: { items: { name: string; quantity: number }[]; separateTotal: number };
+  /** Information asked from the shopper (TellMe idea 75): up to 3 boxes and a fee per piece when any is filled in. */
+  customFields?: { id: string; label: string; required: boolean; maxLength: number }[] | null;
+  customFee?: string | number | null;
+  /** Quantity price breaks (TellMe idea 67): from minQty pieces each costs price. Absent or empty = none. */
+  priceBreaks?: { minQty: number; price: number }[] | null;
+  /** Pre-order expected date, YYYY-MM-DD (TellMe idea 64). */
+  preOrderDate?: string | null;
+  /** Orders that bought it in the social-proof window (TellMe idea 63), counted nightly. */
+  soldRecent?: number;
+  /** Most pieces in one order (TellMe idea 56); null = no limit. The cart stops at it. */
+  maxOrderQuantity?: number | null;
+  /** Warranty and return policy (TellMe idea 54); null = the store default (stockSettings.default*). */
+  warrantyKind?: string | null;
+  warrantyCustom?: string | null;
+  returnDays?: number | null;
+  returnCondition?: string | null;
   /** When a running Flash Sale that is lowering this product's price ends (ISO); null/absent = no sale. */
   flashSaleEndsAt?: string | null;
   stockQuantity?: number | null;
@@ -616,6 +652,28 @@ export async function getStoreCampaign(subdomain: string, slug: string): Promise
     `store:${subdomain}`,
   ]);
   if (!data) throw new CampaignNotFoundError(slug);
+  return data;
+}
+
+export interface StorefrontCollectionData {
+  store: StorefrontInfo;
+  collection: { id: string; name: string; coverPhotoUrl: string | null; content: string | null };
+  products: StorefrontProduct[];
+  categories: string[];
+}
+
+class CollectionNotFoundError extends Error {
+  constructor(slug: string) {
+    super(`No collection found for slug "${slug}"`);
+    this.name = 'CollectionNotFoundError';
+  }
+}
+export { CollectionNotFoundError };
+
+// A collection's public page (TellMe idea 72): hand-picked or rule-based, StorePal only.
+export async function getStoreCollection(subdomain: string, slug: string): Promise<StorefrontCollectionData> {
+  const data = await fetchJson<StorefrontCollectionData>(`/v1/store/${subdomain}/collections/${slug}`, [`store:${subdomain}`]);
+  if (!data) throw new CollectionNotFoundError(slug);
   return data;
 }
 

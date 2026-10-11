@@ -9,6 +9,7 @@ import { formatReturnDay } from '@/lib/storeAway';
 import { suggestZone } from '@/lib/deliveryZone';
 import { BdAddressPicker } from '@/components/BdAddressPicker';
 import { formatPrice } from '../lib/formatPrice';
+import { preOrderDateText } from '../lib/preOrderDate';
 import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { takePendingCoupon } from '../lib/pendingCoupon';
@@ -37,6 +38,20 @@ const EN = {
   placeOrder: 'Place Order',
   close: 'Close',
   name: 'Name',
+  ordersFull: 'Today’s orders are full. Please order again tomorrow morning.',
+  fewOrdersLeft: (n: number) => `Only ${n} ${n === 1 ? 'order' : 'orders'} left today.`,
+  afterCutoff: (time: string) => `You are ordering after ${time}, so this counts as tomorrow’s order and delivery is counted from tomorrow.`,
+  heavyExtra: (amount: string) => `Includes ${amount} extra for a heavy parcel`,
+  giftTick: 'This is a gift',
+  giftMessageLabel: 'Message for the card (optional)',
+  giftHidePrices: 'Hide the prices on the invoice',
+  giftWrap: 'Gift wrap',
+  giftWrapFree: 'Free',
+  minOrderNote: (amount: string, more: string) => `Minimum order is ${amount}. Add ${more} more to order.`,
+  savedAddresses: 'Your saved addresses',
+  saveThisAddress: 'Save this address for next time',
+  addressName: 'Name this address',
+  addressNamePlaceholder: 'Home, Office…',
   phone: 'Phone',
   address: 'Address',
   addressPlaceholder: 'Your full address including upazila',
@@ -78,6 +93,8 @@ const EN = {
   aroundDhaka: 'Around Dhaka',
   preferredDay: 'Preferred delivery day (optional)',
   noPreference: 'No preference',
+  preferredSlot: 'Preferred delivery time (optional)',
+  slotFull: 'full',
   preferredDayNote: 'We will try to deliver on this day, but a courier cannot always promise it.',
   pickupOption: 'Pick up from the shop — Free',
   pickupFrom: 'Pick up from our shop',
@@ -125,6 +142,20 @@ const BN: Copy = {
   placeOrder: 'অর্ডার করুন',
   close: 'বন্ধ করুন',
   name: 'নাম',
+  ordersFull: 'আজকের অর্ডার শেষ, কাল সকাল থেকে আবার নেব।',
+  fewOrdersLeft: (n: number) => `আজকের মাত্র ${n}টা অর্ডার বাকি।`,
+  afterCutoff: (time: string) => `${time}-এর পরে অর্ডার করছেন, তাই এটা কালকের অর্ডার হিসেবে ধরা হবে, ডেলিভারির দিনও কাল থেকে গোনা হবে।`,
+  heavyExtra: (amount: string) => `ভারী পার্সেলের জন্য ${amount} বাড়তি ধরা আছে`,
+  giftTick: 'এটা একটা উপহার',
+  giftMessageLabel: 'কার্ডের জন্য বার্তা (ঐচ্ছিক)',
+  giftHidePrices: 'ইনভয়েসে দাম লুকান',
+  giftWrap: 'গিফট মোড়ক',
+  giftWrapFree: 'ফ্রি',
+  minOrderNote: (amount: string, more: string) => `সর্বনিম্ন অর্ডার ${amount}। অর্ডার করতে আর ${more} যোগ করুন।`,
+  savedAddresses: 'আপনার সেভ করা ঠিকানা',
+  saveThisAddress: 'পরের বার কাজে লাগবে, ঠিকানাটা সেভ করুন',
+  addressName: 'ঠিকানার নাম',
+  addressNamePlaceholder: 'বাসা, অফিস…',
   phone: 'ফোন নম্বর',
   address: 'ঠিকানা',
   addressPlaceholder: 'উপজেলাসহ আপনার সম্পূর্ণ ঠিকানা',
@@ -166,6 +197,8 @@ const BN: Copy = {
   aroundDhaka: 'ঢাকার আশেপাশে',
   preferredDay: 'পছন্দের ডেলিভারির দিন (ঐচ্ছিক)',
   noPreference: 'কোনো পছন্দ নেই',
+  preferredSlot: 'পছন্দের ডেলিভারির সময় (ঐচ্ছিক)',
+  slotFull: 'ভরে গেছে',
   preferredDayNote: 'আমরা ওই দিনে পৌঁছে দেওয়ার চেষ্টা করব, তবে কুরিয়ার সবসময় দিন রাখতে পারে না।',
   pickupOption: 'দোকান থেকে নিন — ফ্রি',
   pickupFrom: 'আমাদের দোকান থেকে নিয়ে যান',
@@ -234,6 +267,29 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     visibleGrandTotal,
     updateField,
     handlePlaceOrder,
+    weightExtra,
+    giftOption,
+    isGift,
+    setIsGift,
+    giftMessage,
+    setGiftMessage,
+    hidePrices,
+    setHidePrices,
+    giftWrapCharge,
+    minOrderAmount,
+    minOrderShortfall,
+    areaRefusal,
+    dailyLimit,
+    ordersFullToday,
+    orderCutoff,
+    savedAddresses,
+    pickedAddressId,
+    applyAddress,
+    canSaveAddress,
+    saveNewAddress,
+    setSaveNewAddress,
+    newAddressLabel,
+    setNewAddressLabel,
     couponCode,
     setCouponCode,
     appliedCoupon,
@@ -266,6 +322,9 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     preferredDays,
     preferredDate,
     setPreferredDate,
+    slotOptions,
+    preferredSlotId,
+    setPreferredSlot,
     zone,
     storeAway,
     codOtpPhone,
@@ -397,6 +456,30 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
           {/* Place Order form */}
           <div>
             <div className="space-y-4">
+              {/* Saved addresses (TellMe idea 53): one tap fills the receiver, address, thana, district and delivery zone. */}
+              {savedAddresses.length > 0 && (
+                <div>
+                  <p className="m-0 mb-1.5 text-[13.5px] font-medium text-ink">{t.savedAddresses}</p>
+                  <div className="flex flex-wrap gap-2">
+                    {savedAddresses.map((a) => (
+                      <button
+                        key={a.id}
+                        type="button"
+                        onClick={() => {
+                          zoneChosenByShopper.current = true;
+                          applyAddress(a);
+                        }}
+                        className={`rounded-full border px-3.5 min-h-[36px] text-[13px] font-semibold transition-colors ${
+                          pickedAddressId === a.id ? 'border-ink bg-ink text-white' : 'border-line-strong bg-surface text-ink hover:border-ink'
+                        }`}
+                      >
+                        {a.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.name}</label>
                 <input
@@ -478,6 +561,65 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 </>
               )}
 
+              {zone !== 'PICKUP' && canSaveAddress && (
+                <div>
+                  <label className="flex cursor-pointer items-center gap-2 text-[13px] text-ink">
+                    <input type="checkbox" checked={saveNewAddress} onChange={(e) => setSaveNewAddress(e.target.checked)} className="h-4 w-4 accent-[currentColor]" />
+                    {t.saveThisAddress}
+                  </label>
+                  {saveNewAddress && (
+                    <input
+                      value={newAddressLabel}
+                      onChange={(e) => setNewAddressLabel(e.target.value.slice(0, 30))}
+                      maxLength={30}
+                      placeholder={t.addressNamePlaceholder}
+                      aria-label={t.addressName}
+                      className="mt-2 w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
+                    />
+                  )}
+                </div>
+              )}
+
+              {ordersFullToday && <p role="alert" className="m-0 rounded-md border border-accent bg-accent/5 px-3.5 py-2.5 text-[13px] font-semibold text-accent">{t.ordersFull}</p>}
+              {!ordersFullToday && dailyLimit && dailyLimit.remaining <= 5 && (
+                <p className="m-0 text-[12.5px] font-semibold text-accent-dark">{t.fewOrdersLeft(dailyLimit.remaining)}</p>
+              )}
+              {orderCutoff?.passed && !ordersFullToday && <p className="m-0 rounded-md border border-line bg-canvas px-3.5 py-2.5 text-[12.5px] text-ink">{t.afterCutoff(orderCutoff.time)}</p>}
+              {areaRefusal && (
+                <p role="alert" className="m-0 rounded-md border border-accent bg-accent/5 px-3.5 py-2.5 text-[13px] font-semibold text-accent">
+                  {lang === 'bn' && areaRefusal === 'Sorry, we do not deliver to this district right now.' ? 'দুঃখিত, আমরা এই জেলায় এখন ডেলিভারি দিই না' : areaRefusal}
+                </p>
+              )}
+
+              {/* Gift option (TellMe idea 57). */}
+              {giftOption && (
+                <div className="rounded-md border border-line bg-canvas px-3.5 py-3">
+                  <label className="flex cursor-pointer items-center gap-2 text-[13.5px] font-medium text-ink">
+                    <input type="checkbox" checked={isGift} onChange={(e) => setIsGift(e.target.checked)} className="h-4 w-4" />
+                    {t.giftTick}
+                    {giftOption.charge > 0 && <span className="font-normal text-muted">(+{formatPrice(giftOption.charge)})</span>}
+                  </label>
+                  {isGift && (
+                    <div className="mt-2 space-y-2">
+                      <div>
+                        <label className="mb-1 block text-[12.5px] text-ink">{t.giftMessageLabel}</label>
+                        <textarea
+                          value={giftMessage}
+                          onChange={(e) => setGiftMessage(e.target.value)}
+                          rows={2}
+                          maxLength={200}
+                          className="w-full px-3 py-2 rounded-md text-[13px] bg-surface border border-line-strong outline-none focus:border-ink resize-y font-[inherit]"
+                        />
+                      </div>
+                      <label className="flex cursor-pointer items-center gap-2 text-[13px] text-ink">
+                        <input type="checkbox" checked={hidePrices} onChange={(e) => setHidePrices(e.target.checked)} className="h-4 w-4" />
+                        {t.giftHidePrices}
+                      </label>
+                    </div>
+                  )}
+                </div>
+              )}
+
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.shipping}</label>
                 <select
@@ -510,6 +652,24 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                       </option>
                     ))}
                   </select>
+                  {preferredDate && slotOptions.length > 0 && (
+                    <div className="mt-3">
+                      <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.preferredSlot}</label>
+                      <select
+                        value={preferredSlotId}
+                        onChange={(e) => setPreferredSlot(e.target.value)}
+                        className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
+                      >
+                        <option value="">{t.noPreference}</option>
+                        {slotOptions.map((s) => (
+                          <option key={s.id} value={s.id} disabled={s.full}>
+                            {s.label}
+                            {s.full ? ` — ${t.slotFull}` : ''}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  )}
                   <p className="mt-1.5 text-[12px] text-muted">{t.preferredDayNote}</p>
                 </div>
               )}
@@ -557,6 +717,15 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                       </div>
                     </div>
                     <p className="text-[11.5px] text-muted font-mono mt-0.5">{line.productSlug}</p>
+                    {line.customDisplay && line.customDisplay.length > 0 && (
+                      <p className="text-[11.5px] text-ink mt-0.5">{line.customDisplay.map((v) => `${v.label}: ${v.value}`).join(' · ')}</p>
+                    )}
+                    {line.isPreOrder && line.preOrderDate && (
+                      <p className="text-[11.5px] font-semibold text-ink mt-0.5">
+                        {lang === 'bn' ? 'প্রি-অর্ডার: ' : 'Pre-order: '}
+                        {preOrderDateText(line.preOrderDate, lang)}
+                      </p>
+                    )}
                     <div className="flex items-center gap-2 mt-1.5">
                       <span className="text-[11.5px] text-muted">x{line.quantity}</span>
                       <div className="flex items-center border border-line rounded overflow-hidden ml-2">
@@ -592,10 +761,17 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 <span className="text-ink">{t.delivery}</span>
                 <span className="font-semibold text-accent">{formatPrice(deliveryCharge)}</span>
               </div>
+              {weightExtra > 0 && deliveryCharge > 0 && <p className="m-0 -mt-1 text-[11.5px] text-muted">{t.heavyExtra(formatPrice(weightExtra))}</p>}
               {expectedDeliveryDate && (
                 <div className="flex justify-between">
                   <span className="text-ink">{t.expectedBy}</span>
                   <span className="font-semibold text-ink">{formatExpectedDate(expectedDeliveryDate, lang)}</span>
+                </div>
+              )}
+              {isGift && giftOption && (
+                <div className="flex justify-between">
+                  <span className="text-ink">{t.giftWrap}</span>
+                  <span className="font-semibold text-accent">{giftWrapCharge > 0 ? formatPrice(giftWrapCharge) : t.giftWrapFree}</span>
                 </div>
               )}
               {vatAmount > 0 && (
@@ -873,10 +1049,13 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
             )}
 
             {placeError && <p className="mt-4 text-[13px] text-accent">{placeError}</p>}
+            {minOrderShortfall > 0 && minOrderAmount && (
+              <p className="mt-4 text-[13px] font-semibold text-accent">{t.minOrderNote(formatPrice(minOrderAmount), formatPrice(minOrderShortfall))}</p>
+            )}
 
             <button
               onClick={handlePlaceOrder}
-              disabled={placing || codOtpSending || ordersPaused}
+              disabled={placing || codOtpSending || ordersPaused || minOrderShortfall > 0 || !!areaRefusal || ordersFullToday}
               className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
             >
               {codOtpSending && !showCodOtp
