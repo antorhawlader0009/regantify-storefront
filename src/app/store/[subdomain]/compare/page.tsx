@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { subdomain } = await params;
   try {
     const { store } = await getStoreProducts(subdomain);
-    return { title: `Compare products — ${store.storeName}`, robots: { index: false } };
+    return { title: { absolute: `Compare products — ${store.storeName}` }, robots: { index: false } };
   } catch {
     return { title: 'Compare products' };
   }

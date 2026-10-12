@@ -10,6 +10,7 @@ import {
 import { resolveTheme } from '@/lib/theme';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { safeJsonLd } from '@/lib/safeJsonLd';
+import { resolvePolicy } from '@/themes/storepal/lib/policy';
 import { ProductView as MediumProductView } from '@/themes/medium/views/ProductView';
 import { ProductView as MinimalProductView } from '@/themes/minimal/views/ProductView';
 import { ProductView as StorepalProductView } from '@/themes/storepal/views/ProductView';
@@ -39,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title,
       description,
-      alternates: { canonical: canonicalPath },
+      alternates: { canonical: await siteUrl(canonicalPath) },
       openGraph: {
         title,
         description,
@@ -100,6 +101,43 @@ export default async function ProductPage({ params }: PageProps) {
     ? Math.min(...product.variants.map((v) => Number(v.discountPrice ?? v.listPrice ?? product.price)))
     : Number(product.discountPrice ?? product.price);
 
+  const productUrl = await siteUrl(`/store/${subdomain}/product/${product.slug}`);
+  const homeUrl = await siteUrl(`/store/${subdomain}`);
+
+  // Return window, from the product's own policy or the store's default (Stock Settings): only said when the vendor set one.
+  const policy = resolvePolicy(product, store.stockSettings);
+  const returnPolicy =
+    policy && policy.returnDays != null
+      ? {
+          '@type': 'MerchantReturnPolicy',
+          applicableCountry: 'BD',
+          ...(policy.returnDays > 0
+            ? { returnPolicyCategory: 'https://schema.org/MerchantReturnFiniteReturnWindow', merchantReturnDays: policy.returnDays }
+            : { returnPolicyCategory: 'https://schema.org/MerchantReturnNotPermitted' }),
+        }
+      : undefined;
+  // The store's own delivery charges (Store > Delivery Charge): Dhaka, and the rest of the country.
+  const dhakaCharge = Number(store.insideDhakaCharge);
+  const restCharge = Number(store.outsideDhakaCharge);
+  const shippingDetails =
+    Number.isFinite(dhakaCharge) && Number.isFinite(restCharge)
+      ? [
+          { '@type': 'OfferShippingDetails', shippingRate: { '@type': 'MonetaryAmount', value: dhakaCharge, currency: 'BDT' }, shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'BD', addressRegion: ['Dhaka'] } },
+          { '@type': 'OfferShippingDetails', shippingRate: { '@type': 'MonetaryAmount', value: restCharge, currency: 'BDT' }, shippingDestination: { '@type': 'DefinedRegion', addressCountry: 'BD' } },
+        ]
+      : undefined;
+
+  // The path to this product (Home > Category > Product), shown in the search result instead of a bare web address.
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: store.storeName, item: homeUrl },
+      ...(product.category ? [{ '@type': 'ListItem', position: 2, name: product.category, item: `${homeUrl}?category=${encodeURIComponent(product.category)}` }] : []),
+      { '@type': 'ListItem', position: product.category ? 3 : 2, name: product.name, item: productUrl },
+    ],
+  };
+
   const productJsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -113,11 +151,17 @@ export default async function ProductPage({ params }: PageProps) {
     image: product.photoUrls,
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     // A price-on-request product publishes no price anywhere, search results included.
+    url: productUrl,
+    category: product.category || undefined,
     offers: product.quoteOnly ? undefined : {
       '@type': 'Offer',
-      url: await siteUrl(`/store/${subdomain}/product/${product.slug}`),
+      url: productUrl,
       priceCurrency: 'BDT',
       price: lowestPrice,
+      itemCondition: 'https://schema.org/NewCondition',
+      seller: { '@type': 'Organization', name: store.storeName },
+      shippingDetails,
+      hasMerchantReturnPolicy: returnPolicy,
       availability: product.isPreOrder
         ? 'https://schema.org/PreOrder'
         : outOfStock
@@ -146,6 +190,11 @@ export default async function ProductPage({ params }: PageProps) {
         type="application/ld+json"
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: safeJsonLd(productJsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: safeJsonLd(breadcrumbJsonLd) }}
       />
       {resolveTheme(store.theme) === 'MINIMAL' ? (
         <MinimalProductView {...viewProps} />

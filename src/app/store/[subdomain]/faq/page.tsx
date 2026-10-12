@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const { store } = await getStoreFaq(subdomain);
     const path = `/store/${subdomain}/faq`;
-    return { title: `FAQ — ${store.storeName}`, alternates: { canonical: path }, openGraph: { title: `FAQ — ${store.storeName}`, url: await siteUrl(path), siteName: store.storeName, type: 'website' } };
+    return { title: `FAQ — ${store.storeName}`, alternates: { canonical: await siteUrl(path) }, openGraph: { title: `FAQ — ${store.storeName}`, url: await siteUrl(path), siteName: store.storeName, type: 'website' } };
   } catch {
     return { title: 'FAQ' };
   }

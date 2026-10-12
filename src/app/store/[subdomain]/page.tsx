@@ -37,7 +37,7 @@ interface PageProps {
   searchParams: Promise<{ category?: string; q?: string; coupon?: string; brand?: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
   const { subdomain } = await params;
 
   // Homepage-override check (see HOMEPAGE_LANDING_SLUG's own comment) —
@@ -49,10 +49,10 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const canonicalPath = `/store/${subdomain}`;
     const title = landingPage.metaTitle || `${landingPage.title} — ${store.storeName}`;
     return {
-      title,
+      title: { absolute: title },
       description: landingPage.metaDescription || undefined,
       keywords: landingPage.metaKeywords || undefined,
-      alternates: { canonical: canonicalPath },
+      alternates: { canonical: await siteUrl(canonicalPath) },
       openGraph: {
         title,
         description: landingPage.metaDescription || undefined,
@@ -79,17 +79,28 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const { store } = await getStoreProducts(subdomain);
     const canonicalPath = `/store/${subdomain}`;
-    const genericDescription = `Shop ${store.storeName} online — browse products, fast delivery, cash on delivery available.`;
-    const title = store.brandMetaTitle || store.storeName;
-    const description = store.brandMetaDescription || genericDescription;
+    // A category or brand listing (?category= / ?brand=) is a page of its own for search engines (people search "phones in
+    // Dhaka"), so it gets its own title and canonical instead of being folded into the home page. Search results (?q=) and
+    // coupon links are not pages worth listing.
+    const { category, brand, q, coupon } = await searchParams;
+    const listing = category?.trim() || brand?.trim() || null;
+    const listingQuery = category?.trim() ? `?category=${encodeURIComponent(category.trim())}` : brand?.trim() ? `?brand=${encodeURIComponent(brand.trim())}` : '';
+    const homeTitle = store.brandMetaTitle || store.storeName;
+    const title = listing ? `${listing} | ${store.storeName}` : homeTitle;
+    const description = listing
+      ? `Shop ${listing} at ${store.storeName}. Browse products, fast delivery, cash on delivery available.`
+      : store.brandMetaDescription || `Shop ${store.storeName} online — browse products, fast delivery, cash on delivery available.`;
+    const canonical = (await siteUrl(canonicalPath)) + listingQuery;
     return {
-      title,
+      // The home page's title is the vendor's own words: the layout's " | Store name" is added to listings only.
+      title: listing ? listing : { absolute: homeTitle },
       description,
-      alternates: { canonical: canonicalPath },
+      alternates: { canonical },
+      robots: q?.trim() || coupon ? { index: false, follow: true } : undefined,
       openGraph: {
         title,
         description,
-        url: await siteUrl(canonicalPath),
+        url: canonical,
         siteName: store.storeName,
         type: 'website',
         images: store.brandCoverImageUrl ? [store.brandCoverImageUrl] : undefined,
@@ -142,12 +153,39 @@ export default async function StorePage({ params, searchParams }: PageProps) {
 
   const reviews = await getStoreReviews(subdomain);
   const { store, products, categories, categoryDetails } = data;
+  // Structured data for the home page: who the store is (Organization, with its logo and social profiles) and the site's name
+  // (WebSite). Google reads the WebSite name to show the right site name above the result, and the domain as an alternate name,
+  // so a search for the store's name finds it by that name. Only the plain home page carries it, not category or search views.
+  const homeUrl = await siteUrl(`/store/${subdomain}`);
+  const profiles = [store.facebookUrl, store.instagramUrl, store.twitterUrl, store.youtubeUrl, store.tiktokUrl, store.linkedinUrl].filter((u): u is string => Boolean(u && /^https?:\/\//.test(u)));
+  let domainName: string | null = null;
+  try {
+    domainName = new URL(homeUrl).hostname;
+  } catch {
+    domainName = null;
+  }
   const storeJsonLd = {
     '@context': 'https://schema.org',
-    '@type': 'Store',
-    name: store.storeName,
-    url: await siteUrl(`/store/${subdomain}`),
+    '@graph': [
+      {
+        '@type': 'Organization',
+        '@id': `${homeUrl}#organization`,
+        name: store.storeName,
+        url: homeUrl,
+        logo: store.logoUrl || undefined,
+        sameAs: profiles.length > 0 ? profiles : undefined,
+      },
+      {
+        '@type': 'WebSite',
+        '@id': `${homeUrl}#website`,
+        url: homeUrl,
+        name: store.storeName,
+        alternateName: domainName && domainName.toLowerCase() !== store.storeName.toLowerCase() ? domainName : undefined,
+        publisher: { '@id': `${homeUrl}#organization` },
+      },
+    ],
   };
+  const isPlainHome = !activeCategory && !activeBrand && !search?.trim();
 
   const viewProps = {
     subdomain,
@@ -175,11 +213,13 @@ export default async function StorePage({ params, searchParams }: PageProps) {
 
   return (
     <>
-      <script
-        type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
-        dangerouslySetInnerHTML={{ __html: safeJsonLd(storeJsonLd) }}
-      />
+      {isPlainHome && (
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: safeJsonLd(storeJsonLd) }}
+        />
+      )}
       {await (async () => {
         const theme = resolveTheme(store.theme);
         if (theme === 'MINIMAL') return <MinimalHomeView {...viewProps} />;

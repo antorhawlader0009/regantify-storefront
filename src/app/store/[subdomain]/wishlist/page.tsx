@@ -12,7 +12,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { subdomain } = await params;
   try {
     const { store } = await getStoreProducts(subdomain);
-    return { title: `Wishlist — ${store.storeName}`, robots: { index: false } };
+    return { title: { absolute: `Wishlist — ${store.storeName}` }, robots: { index: false } };
   } catch {
     return { title: 'Wishlist' };
   }

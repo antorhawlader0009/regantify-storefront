@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getStoreInfo, StoreNotFoundError, type StorefrontLmsForms } from '@/lib/storefrontApi';
+import { getStoreInfo, siteUrl, StoreNotFoundError, type StorefrontLmsForms } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
@@ -49,13 +49,31 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
     const store = await getStoreInfo(subdomain);
     const metadata: Metadata = {};
     if (store.faviconUrl) metadata.icons = { icon: store.faviconUrl };
+
+    // Store > SEO. Relative URLs in a page's metadata (share pictures, icons) are resolved against the store's own address; the
+    // root layout's base is the platform's root domain, which is the wrong host for a store on its own subdomain or domain.
+    try {
+      metadata.metadataBase = new URL(new URL(await siteUrl(`/store/${subdomain}`)).origin);
+    } catch {
+      // No usable host (a build step, say): keep the root layout's base.
+    }
+    const seo = store.seo;
+    // Indexing switched off: every page says noindex (robots.txt disallows the whole store and the sitemap is gone too).
+    if (seo && !seo.allowIndexing) metadata.robots = { index: false, follow: false };
+    // " | Store name" after page titles (people who search the store by name find it); pages that already carry their own
+    // full title ask for `absolute`. The default is the title of a page that gives none.
+    const defaultTitle = store.brandMetaTitle?.trim() || store.storeName;
+    metadata.title = seo?.appendStoreName === false ? defaultTitle : { default: defaultTitle, template: `%s | ${store.storeName}` };
+    // Google Search Console / Bing Webmaster ownership codes (only the code itself, cleaned by the server).
+    if (seo?.googleVerification) metadata.verification = { google: seo.googleVerification };
     // Store > Integrations > Facebook Pixel's domain verification code, as
     // <meta name="facebook-domain-verification">. StorePal only, like the
     // pixel itself; the server keeps it to [A-Za-z0-9_-].
+    const other: Record<string, string> = {};
     const verification = store.metaPixel?.domainVerificationCode;
-    if (verification) {
-      metadata.other = { 'facebook-domain-verification': verification };
-    }
+    if (verification) other['facebook-domain-verification'] = verification;
+    if (seo?.bingVerification) other['msvalidate.01'] = seo.bingVerification;
+    if (Object.keys(other).length > 0) metadata.other = other;
     return metadata;
   } catch {
     return {};

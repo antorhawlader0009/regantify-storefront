@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { subdomain } = await params;
   try {
     const { store } = await getStoreProducts(subdomain);
-    return { title: `Your Cart — ${store.storeName}` };
+    return { title: { absolute: `Your Cart — ${store.storeName}` } };
   } catch {
     return { title: 'Cart' };
   }

@@ -54,6 +54,29 @@ export interface StorefrontLmsForms {
   callMeBack: boolean;
 }
 
+/** Store > SEO — mirrors the `seo` object StorefrontService.findVendorBySubdomainOrThrow adds to the public store answer. */
+export interface StorefrontSeo {
+  allowIndexing: boolean;
+  appendStoreName: boolean;
+  preferCustomDomain: boolean;
+  googleVerification: string | null;
+  bingVerification: string | null;
+}
+
+/** What a search engine may index on a store — mirrors StorefrontService.getSitemapData. Empty lists when `indexable` is false. */
+export interface StorefrontSitemapData {
+  subdomain: string;
+  customDomain: string | null;
+  preferCustomDomain: boolean;
+  theme: StoreTheme;
+  indexable: boolean;
+  products: { slug: string; name: string; updatedAt: string; photos: string[] }[];
+  pages: { slug: string; updatedAt: string }[];
+  landingPages: { slug: string; updatedAt: string }[];
+  collections: { slug: string; updatedAt: string }[];
+  campaigns: { slug: string; updatedAt: string }[];
+}
+
 export interface StorefrontInfo {
   id: string;
   storeName: string;
@@ -89,6 +112,10 @@ export interface StorefrontInfo {
   brandCoverImageUrl?: string | null;
   brandMetaTitle?: string | null;
   brandMetaDescription?: string | null;
+  /** The vendor's own domain (Store > Domain), when they have one. */
+  customDomain?: string | null;
+  /** Store > SEO: how search engines may see the store. Always present on the store answer (defaults when the vendor saved nothing). */
+  seo?: StorefrontSeo;
   // Store > Footer — null when the vendor has never saved one (see
   // FooterConfig's own "singleton, optional" schema comment); each
   // theme's StoreFooter falls back to its own current hardcoded content
@@ -595,7 +622,22 @@ export async function siteUrl(path: string): Promise<string> {
   const host = h.get('host');
   if (!host) return path;
   const proto = h.get('x-forwarded-proto') ?? 'http';
+  // A store reached on its own address ({sub}.ROOT_DOMAIN or a custom domain, marked by middleware.ts) has one clean public form of
+  // every page: /product/x, never /store/{sub}/product/x. Pages build their paths in the long form, so cut the prefix off here;
+  // that way canonical links, Open Graph URLs, JSON-LD and the sitemap all agree on a single address per page.
+  const m = /^\/store\/([^/]+)(\/.*)?$/.exec(path);
+  if (m && h.get('x-store-clean') === '1') {
+    // The vendor may prefer their custom domain on every address the store answers on (Store > SEO).
+    const store = await getStoreInfo(m[1]).catch(() => null);
+    const base = store?.customDomain && store.seo?.preferCustomDomain ? `https://${store.customDomain}` : `${proto}://${host}`;
+    return `${base}${m[2] ?? '/'}`;
+  }
   return `${proto}://${host}${path}`;
+}
+
+/** Everything a search engine may index on this store (the sitemap's data). Null when the store does not exist. */
+export async function getSitemapData(subdomain: string): Promise<StorefrontSitemapData | null> {
+  return fetchJson<StorefrontSitemapData>(`/v1/store/${subdomain}/sitemap-data`, [`store:${subdomain}`]);
 }
 
 

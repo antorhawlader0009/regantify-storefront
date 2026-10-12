@@ -16,9 +16,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const description = `Shop the ${campaign.name} campaign from ${store.storeName}.`;
     const canonicalPath = `/store/${subdomain}/campaigns/${slug}`;
     return {
-      title: `${campaign.name} — ${store.storeName}`,
+      title: campaign.name,
       description,
-      alternates: { canonical: canonicalPath },
+      alternates: { canonical: await siteUrl(canonicalPath) },
       openGraph: {
         title: campaign.name,
         description,

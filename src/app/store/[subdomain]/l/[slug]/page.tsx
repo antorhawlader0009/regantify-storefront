@@ -34,10 +34,11 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const title = landingPage.metaTitle || `${landingPage.title} — ${store.storeName}`;
     const description = landingPage.metaDescription || undefined;
     return {
-      title,
+      // Already the vendor's own title, or one that names the store: the layout's " | Store name" is not added.
+      title: { absolute: title },
       description,
       keywords: landingPage.metaKeywords || undefined,
-      alternates: { canonical: canonicalPath },
+      alternates: { canonical: await siteUrl(canonicalPath) },
       openGraph: {
         title,
         description,

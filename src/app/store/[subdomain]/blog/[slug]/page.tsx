@@ -14,9 +14,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     const { store, post } = await getStoreBlogPost(subdomain, slug);
     const path = `/store/${subdomain}/blog/${slug}`;
     return {
-      title: `${post.title} — ${store.storeName}`,
+      title: post.title,
       description: post.excerpt ?? undefined,
-      alternates: { canonical: path },
+      alternates: { canonical: await siteUrl(path) },
       openGraph: { title: post.title, description: post.excerpt ?? undefined, url: await siteUrl(path), siteName: store.storeName, type: 'article', images: post.coverUrl ? [post.coverUrl] : undefined },
     };
   } catch {
