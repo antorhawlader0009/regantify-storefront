@@ -222,6 +222,8 @@ export interface StorefrontDesignSettings {
   productBadgeColor?: string | null;
   bannerEnabled: boolean;
   /** Scheduled banners (TellMe idea 110); the one whose time is on now replaces the usual banner. */
+  /** The store's counted figures (TellMe idea 147), already rounded down; null/missing = nothing to show. */
+  reputation?: { orders?: number; rating?: { avg: number; count: number }; reviews?: { percent: number; count: number }; since?: number } | null;
   trustStrip?: { enabled: boolean; items: { icon: string; title: string; text: string }[]; product: boolean; checkout: boolean; home: boolean };
   bannerSchedule?: { id: string; content: string; startAt: string | null; endAt: string | null; style: 'MARQUEE' | 'STATIC' | null; backgroundColor: string | null }[];
   bannerContent: string | null;
@@ -911,12 +913,12 @@ export async function getStoreFaq(subdomain: string): Promise<{ store: Storefron
 }
 
 /** "Notify me" on a coming-soon product (TellMe idea 104): the phone joins the waitlist. */
-export async function joinProductWaitlist(subdomain: string, slug: string, phone: string, name?: string): Promise<void> {
+export async function joinProductWaitlist(subdomain: string, slug: string, phone: string, name?: string, kind: 'COMING' | 'RESTOCK' = 'COMING'): Promise<void> {
   const origin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? `${window.location.protocol}//${window.location.hostname}:4000`;
   const res = await fetch(`${origin}/v1/store/${encodeURIComponent(subdomain)}/products/${encodeURIComponent(slug)}/waitlist`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, name: name?.trim() || undefined }),
+    body: JSON.stringify({ phone, name: name?.trim() || undefined, kind }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);

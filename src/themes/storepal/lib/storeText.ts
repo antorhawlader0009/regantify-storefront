@@ -15,6 +15,8 @@ const BN: Record<string, string> = {
   'Coming soon': 'শীঘ্রই আসছে',
   Expected: 'আনুমানিক',
   'Notify me': 'আমাকে জানান',
+  'Tell me when it is back': 'স্টকে এলে জানান',
+  'We will text you when it is back in stock.': 'স্টকে ফিরলে আমরা SMS করে জানাব।',
   'We will text you when it is here.': 'পণ্যটি এলে আমরা SMS করে জানাব।',
   'Your name (optional)': 'আপনার নাম (ঐচ্ছিক)',
   'Verified buyer': 'কিনেছেন',

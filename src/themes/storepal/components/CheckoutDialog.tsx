@@ -20,6 +20,7 @@ import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
 import { trackBeginCheckout } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
+import { addressProblem } from '@/lib/addressCheck';
 
 // Fallback label for a gateway row with no vendor-set displayLabel — see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
@@ -60,6 +61,7 @@ const EN = {
   optional: '(optional)',
   address: 'Address',
   addressPlaceholder: 'Your full address including upazila',
+  addressHint: 'Add a house or road number, a village name or a nearby landmark so the rider can find you.',
   thana: 'Thana / Upazila',
   district: 'District',
   districtPlaceholder: 'Please select district',
@@ -174,6 +176,7 @@ const BN: Copy = {
   optional: '(ঐচ্ছিক)',
   address: 'ঠিকানা',
   addressPlaceholder: 'উপজেলাসহ আপনার সম্পূর্ণ ঠিকানা',
+  addressHint: 'বাড়ি বা রোড নম্বর, গ্রামের নাম বা কাছের কোনো চেনা জায়গা লিখুন, যাতে রাইডার সহজে খুঁজে পান।',
   thana: 'থানা / উপজেলা',
   district: 'জেলা',
   districtPlaceholder: 'জেলা নির্বাচন করুন',
@@ -273,6 +276,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   // The store's choices for the optional checkout boxes (TellMe idea 128).
   const design = useStorePalDesign();
   const tr = (message: string) => t.errors[message] ?? message;
+  // Soft address hint (TellMe idea 144): shown once the shopper leaves the box, never blocks the order.
+  const [addressLeft, setAddressLeft] = useState(false);
   const {
     hydrated,
     lines,
@@ -294,6 +299,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     visiblePlatformChargeAmount,
     visibleGrandTotal,
     updateField,
+    botTrap,
+    setBotTrap,
     handlePlaceOrder,
     weightExtra,
     giftOption,
@@ -574,6 +581,14 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 </div>
               )}
 
+              {/* Bot trap (TellMe idea 152): people never see or fill this; a script that fills every box does. */}
+              <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
+                <label>
+                  Leave this empty
+                  <input type="text" name="company_fax" tabIndex={-1} autoComplete="off" value={botTrap} onChange={(e) => setBotTrap(e.target.value)} />
+                </label>
+              </div>
+
               {zone === 'PICKUP' && pickup && (
                 <div className="rounded-md border border-line bg-canvas px-3.5 py-3 text-[13px] text-ink">
                   <p className="m-0 font-semibold">{t.pickupFrom}</p>
@@ -590,6 +605,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 <textarea
                   value={form.address}
                   onChange={(e) => updateField('address', e.target.value)}
+                  onBlur={() => setAddressLeft(true)}
                   placeholder={t.addressPlaceholder}
                   rows={3}
                   maxLength={300}
@@ -598,6 +614,11 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   }`}
                 />
                 {errors.address && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.address)}</p>}
+                {!errors.address && addressLeft && addressProblem(form.address, [form.city, form.district]) && (
+                  <p role="status" className="mt-1.5 text-[12px] text-muted">
+                    {t.addressHint}
+                  </p>
+                )}
               </div>
 
               {/* District, then thana/upazila, picked from the list (lib/bdLocations.ts) so every order spells a place the same way. */}

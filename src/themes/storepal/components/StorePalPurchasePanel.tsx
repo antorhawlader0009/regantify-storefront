@@ -55,6 +55,8 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
   // Price on request needs no store switch: it's the vendor's choice per product.
   const quoteOnly = !!product.quoteOnly && !!lmsForms;
   const notifyMe = !quoteOnly && !!lmsForms?.notifyMe && !props.backorder && isOutOfStock(product);
+  // Sold out on a store without the LMS "notify me" form (TellMe idea 136): the plain phone-number waitlist, on every plan.
+  const restockNotify = !quoteOnly && !lmsForms?.notifyMe && !props.backorder && !product.comingSoon && isOutOfStock(product);
   const callMeBack = !!lmsForms?.callMeBack;
   // Coming soon (TellMe idea 104): no price, no Buy; a "Notify me" form instead.
   const comingSoon = !!product.comingSoon;
@@ -71,6 +73,8 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
             <LeadFormButton type="price-request" onOpen={() => setForm('price-request')} />
           ) : notifyMe ? (
             <LeadFormButton type="notify-me" onOpen={() => setForm('notify-me')} />
+          ) : restockNotify ? (
+            <ComingSoonNotify subdomain={props.subdomain} slug={product.slug} restock />
           ) : undefined,
           after: (
             <>

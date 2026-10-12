@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { deliveryAreaRefusal } from '@/lib/deliveryArea';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
@@ -120,6 +120,10 @@ export function useCheckout(
 ) {
   const formRules = options?.formRules;
   const router = useRouter();
+  // Checkout bot guard (TellMe idea 152): when the checkout opened (so the server can tell a person from a script), and a hidden box
+  // that people never see. Only StorePal's checkout (the one with `formRules`) sends the time.
+  const openedAt = useRef(Date.now());
+  const [botTrap, setBotTrap] = useState('');
 
   const externalLines = options?.lines;
   const cartLines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));
@@ -811,6 +815,8 @@ export function useCheckout(
         customerPhoneAlt: formRules?.altPhone && formRules.altPhone !== 'HIDDEN' ? form.altPhone.trim() || undefined : undefined,
         customerEmail: formRules?.email && formRules.email !== 'HIDDEN' ? form.email.trim() || undefined : undefined,
         fromStorePalCheckout: formRules ? true : undefined,
+        botTrap: botTrap || undefined,
+        fillMs: formRules ? Math.max(0, Math.round(Date.now() - openedAt.current)) : undefined,
         shippingAddress: zone === 'PICKUP' ? 'Pickup from the shop' : form.address.trim(),
         shippingCity: form.city.trim() || undefined,
         shippingDistrict: form.district.trim() || undefined,
@@ -974,6 +980,8 @@ export function useCheckout(
     grandTotal,
     visibleGrandTotal,
     updateField,
+    botTrap,
+    setBotTrap,
     handlePlaceOrder,
     // Saved addresses (TellMe idea 53); StorePal's checkout only.
     // Heavy-cart extra, gift option and minimum order (TellMe ideas 56, 57, 58); StorePal's checkout shows them.

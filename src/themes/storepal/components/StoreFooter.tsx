@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
+import { ReputationStrip } from './ReputationStrip';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
 import { getGiftCardSale, getStoreHasBlog, getStoreHasFaq, getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplates';
@@ -189,6 +190,7 @@ export function StoreFooter({
   if (!footerConfig) {
     return (
       <footer className="bg-canvas border-t border-line mt-8">
+        <ReputationStrip />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3">
           <div>
             {Logo}
@@ -434,6 +436,7 @@ export function StoreFooter({
 
   return (
     <footer className={`${def.background === 'band' ? 'bg-canvas' : 'bg-surface'} border-t border-line mt-8`}>
+      <ReputationStrip />
       <div className={`max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 ${gridColsClass}`}>
         {visibleColumns.map((c) => (
           <div key={c}>{columnContent[c]}</div>
