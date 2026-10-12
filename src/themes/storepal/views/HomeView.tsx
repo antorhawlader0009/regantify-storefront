@@ -4,7 +4,7 @@ import { Fragment, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail, StorefrontBlogCard } from '@/lib/storefrontApi';
+import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail, StorefrontBlogCard, StorefrontSetupGuide } from '@/lib/storefrontApi';
 import { MagazineSection } from '../components/MagazineSection';
 import { FaqSection } from '../components/FaqSection';
 import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
@@ -21,6 +21,7 @@ import { FlashSaleSection } from '../components/FlashSaleSection';
 import { CampaignsStrip } from '../components/CampaignsStrip';
 import { HomeHighlights } from '../components/HomeHighlights';
 import { TrustStrip } from '../components/TrustStrip';
+import { StoreSetupGuide } from '../components/StoreSetupGuide';
 import { useStorePalDesign } from '../lib/designSettings';
 import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
@@ -65,6 +66,8 @@ interface HomeViewProps {
   footerConfig?: StoreFooterConfig | null;
   /** "Create custom link for this coupon" — the `?coupon=` query param a shopper lands on from a vendor-shared link (see lib/pendingCoupon.ts). StorePal-only prop; Medium/Minimal's HomeView has no equivalent. */
   couponLink?: string;
+  /** Present only while the store has no public product: the setup guide shows instead of the empty shop. */
+  setup?: StorefrontSetupGuide | null;
 }
 
 // Store > Design > Customize decides which home sections show and in what
@@ -105,6 +108,7 @@ export function HomeView({
   logoUrl,
   footerConfig,
   couponLink,
+  setup,
 }: HomeViewProps) {
   const t = useStoreText();
   const router = useRouter();
@@ -226,6 +230,8 @@ export function HomeView({
   }, [searchQuery]);
 
   const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
+  // Nothing to sell yet (the server sends `setup` only then): the setup guide replaces the shop.
+  const showSetup = !isFiltered && products.length === 0 && Boolean(setup);
   const grouped = !isFiltered ? groupByCategory(products) : null;
 
   // The store's own order (pinned products first, then newest first).
@@ -288,7 +294,9 @@ export function HomeView({
       )}
 
 
-      {(isFiltered || products.length === 0) && (
+      {showSetup && <StoreSetupGuide storeName={storeName} setup={setup} />}
+
+      {!showSetup && (isFiltered || products.length === 0) && (
         <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
           {isFiltered && (
             <div className="mb-4">
@@ -396,7 +404,7 @@ export function HomeView({
         </main>
       )}
 
-      {!isFiltered && (
+      {!isFiltered && !showSetup && (
         <div>
           {homeSections.map((id) => {
             switch (id) {
@@ -528,10 +536,10 @@ export function HomeView({
         </div>
       )}
 
-      {!isFiltered && <TrustStrip where="home" />}
+      {!isFiltered && !showSetup && <TrustStrip where="home" />}
 
       {/* Not while searching or browsing a category: the results are what the shopper is after. */}
-      {!isFiltered && <RecentlyViewed subdomain={subdomain} storeName={storeName} />}
+      {!isFiltered && !showSetup && <RecentlyViewed subdomain={subdomain} storeName={storeName} />}
 
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
     </div>

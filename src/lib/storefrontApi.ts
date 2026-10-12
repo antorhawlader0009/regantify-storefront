@@ -471,6 +471,14 @@ export interface StorefrontListData {
   categories: string[];
   /** Store > Categories' own photos for the names in `categories`, when set — see StorePal's HomeView shortcut cards. */
   categoryDetails?: StorefrontCategoryDetail[];
+  /** Only while the store has no public product: which setup cards are already done and where the dashboard is. Null/absent once a product exists. */
+  setup?: StorefrontSetupGuide | null;
+}
+
+export interface StorefrontSetupGuide {
+  /** The vendor dashboard's base URL (the server's CLIENT_URL); null when it isn't configured. */
+  dashboardUrl: string | null;
+  done: { design: boolean; payments: boolean; domain: boolean; shipping: boolean };
 }
 
 export interface StorefrontDetailData {

@@ -208,6 +208,8 @@ export default async function StorePage({ params, searchParams }: PageProps) {
               blogPosts={blog.posts}
               blogTotal={blog.total}
               categoryDetails={categoryDetails}
+              // A store with no public product yet shows the setup guide instead of an empty shop.
+              setup={data.setup}
               // "Create custom link for this coupon" — only StorePal
               // reads this (see [[theme-scope-storepal-only]]);
               // Medium/Minimal's own viewProps spread never includes
