@@ -12,6 +12,15 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
   products?: ChatProductRef[];
+  /** When it was sent or received (ms). The greeting has none, so nothing differs between the server and the browser render. */
+  at?: number;
+}
+
+/** "4:06 PM" for today, "11 Oct, 4:06 PM" for an earlier day, in the shopper's own time zone. */
+function chatTime(at: number): string {
+  const d = new Date(at);
+  const time = d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+  return d.toDateString() === new Date().toDateString() ? time : `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, ${time}`;
 }
 
 const GREETING: Message = {
@@ -63,17 +72,17 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
       .filter((m) => m !== GREETING)
       .map((m) => ({ role: m.role, content: m.content }));
 
-    setMessages((prev) => [...prev, { role: 'user', content: text }]);
+    setMessages((prev) => [...prev, { role: 'user', content: text, at: Date.now() }]);
     setDraft('');
     setSending(true);
     try {
       const res = await sendChatMessage(subdomain, text, history);
-      setMessages((prev) => [...prev, { role: 'assistant', content: res.reply, products: res.products }]);
+      setMessages((prev) => [...prev, { role: 'assistant', content: res.reply, products: res.products, at: Date.now() }]);
     } catch (err) {
       if (err instanceof ChatUnavailableError) setAvailable(false);
       setMessages((prev) => [
         ...prev,
-        { role: 'assistant', content: err instanceof Error ? err.message : 'Something went wrong. Please try again.' },
+        { role: 'assistant', content: err instanceof Error ? err.message : 'Something went wrong. Please try again.', at: Date.now() },
       ]);
     } finally {
       setSending(false);
@@ -118,6 +127,7 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
                 >
                   {m.content}
                 </div>
+                {m.at && <span className="mt-1 text-[10.5px] text-muted">{chatTime(m.at)}</span>}
 
                 {m.products && m.products.length > 0 && (
                   <div className="mt-2 flex flex-col gap-1.5 w-full max-w-[85%]">
