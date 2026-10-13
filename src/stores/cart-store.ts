@@ -34,6 +34,9 @@ export interface CartLine {
   minOrderQuantity?: number | null;
   // Sold in packs (TellMe idea 102): the quantity moves in steps of this many (StorePal). Missing or 1 = one at a time.
   quantityStep?: number;
+  // The most the shopper can put in this line: the stock left or the store's "most per order", whichever is smaller (StorePal's panel sets it).
+  // The + button stops there. Missing = no cap known (backorder, other themes); the server still checks at checkout.
+  maxQuantity?: number;
   // Product.id / ProductVariant.id, for StorePal's Meta pixel content_ids
   // (see lib/metaPixelEvents.ts). Optional: Minimal's panel doesn't set
   // them, and carts saved before these fields existed don't have them.
@@ -54,6 +57,12 @@ export const CART_REMOVE_EVENT = 'storefront:cart-remove';
 export interface CartRemoveDetail {
   line: CartLine;
   quantity: number;
+}
+
+// Keeps a quantity within a line's cap (a whole number of packs); never below one pack.
+export function capQuantity(quantity: number, max?: number, step = 1): number {
+  if (max === undefined || quantity <= max) return quantity;
+  return Math.max(Math.floor(max / step) * step, step);
 }
 
 function dispatchRemove(line: CartLine | undefined, quantity: number) {
@@ -136,7 +145,8 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
                   l.id === id
                     ? {
                         ...l,
-                        quantity: l.quantity + line.quantity,
+                        maxQuantity: line.maxQuantity ?? l.maxQuantity,
+                        quantity: capQuantity(l.quantity + line.quantity, line.maxQuantity ?? l.maxQuantity, l.quantityStep),
                         productId: l.productId ?? line.productId,
                         variantId: l.variantId ?? line.variantId,
                         minOrderQuantity: line.minOrderQuantity ?? l.minOrderQuantity,
@@ -168,7 +178,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
           const step = before?.quantityStep ?? 1;
           let target = requested;
           if (step > 1 && before && requested > 0) target = requested > before.quantity ? before.quantity + step : before.quantity - step;
-          const quantity = requested > 0 ? Math.max(target, before?.minOrderQuantity ?? 1, step) : requested;
+          const quantity = requested > 0 ? capQuantity(Math.max(target, before?.minOrderQuantity ?? 1, step), before?.maxQuantity, step) : requested;
           set((state) => ({
             lines: applyBreaks(
               quantity <= 0 ? state.lines.filter((l) => l.id !== id) : state.lines.map((l) => (l.id === id ? { ...l, quantity } : l)),

@@ -196,8 +196,9 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                           <span className="min-w-[24px] text-center text-[13px] font-semibold tabular-nums">{line.quantity}</span>
                           <button
                             onClick={() => setQuantity(line.id, line.quantity + 1)}
+                            disabled={line.maxQuantity !== undefined && line.quantity + (line.quantityStep ?? 1) > line.maxQuantity}
                             aria-label="Increase quantity"
-                            className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                            className="disabled:cursor-not-allowed disabled:opacity-40 flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                           >
                             <Plus size={13} />
                           </button>

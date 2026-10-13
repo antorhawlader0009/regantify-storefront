@@ -846,7 +846,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                         <span className="w-6 text-center text-[12px]">{line.quantity}</span>
                         <button
                           onClick={() => setQuantity(line.id, line.quantity + 1)}
-                          className="w-6 h-6 text-ink text-sm leading-none hover:bg-canvas"
+                          disabled={line.maxQuantity !== undefined && line.quantity + (line.quantityStep ?? 1) > line.maxQuantity}
+                          className="w-6 h-6 text-ink text-sm leading-none hover:bg-canvas disabled:opacity-40 disabled:cursor-not-allowed"
                         >
                           +
                         </button>

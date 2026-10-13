@@ -267,6 +267,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     preOrderDate: product.isPreOrder ? (product.preOrderDate ?? undefined) : undefined,
     minOrderQuantity: product.minOrderQuantity,
     quantityStep: packStep > 1 ? packStep : undefined,
+    maxQuantity: quantityCap,
     // For StorePal's Meta pixel content_ids (see stores/cart-store.ts).
     productId: product.id,
     variantId: matchedVariant?.id,
