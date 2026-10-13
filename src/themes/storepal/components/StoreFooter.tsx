@@ -452,6 +452,9 @@ export function StoreFooter({
           <span>
             © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
           </span>
+          <Link href={`/store/${subdomain}/report`} className="text-muted underline underline-offset-2 hover:text-ink transition-colors">
+            {t('Report this store')}
+          </Link>
           {footerConfig.showCredit !== false && <DeveloperCredit />}
         </div>
       </div>

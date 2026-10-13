@@ -976,3 +976,20 @@ export async function joinProductWaitlist(subdomain: string, slug: string, phone
     throw new Error(message || 'Could not save your number. Please try again.');
   }
 }
+
+export type StoreReportReason = 'FAKE_PRODUCTS' | 'NOT_DELIVERED' | 'SCAM' | 'ABUSE' | 'OTHER';
+
+/** "Report this store" (super-admin-plan.md Step 17): sent from the browser, no account. The server limits it to one report per store per day per address. */
+export async function submitStoreReport(subdomain: string, body: { reason: StoreReportReason; note?: string; phone?: string }): Promise<void> {
+  const origin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? `${window.location.protocol}//${window.location.hostname}:4000`;
+  const res = await fetch(`${origin}/v1/store/${encodeURIComponent(subdomain)}/report`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const message = Array.isArray(data?.message) ? data.message[0] : data?.message;
+    throw new Error(message || 'Could not send your report. Please try again.');
+  }
+}
