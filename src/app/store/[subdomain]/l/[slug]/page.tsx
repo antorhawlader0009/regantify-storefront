@@ -9,6 +9,7 @@ import {
 } from '@/lib/storefrontApi';
 import { LandingPageView } from '@/landing/LandingPageView';
 import { StoreChrome } from '@/landing/StoreChrome';
+import { socialMeta } from '@/lib/shareMeta';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -39,14 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       description,
       keywords: landingPage.metaKeywords || undefined,
       alternates: { canonical: await siteUrl(canonicalPath) },
-      openGraph: {
-        title,
-        description,
-        url: await siteUrl(canonicalPath),
-        siteName: store.storeName,
-        type: 'website',
-        images: landingPage.coverImageUrl ? [landingPage.coverImageUrl] : undefined,
-      },
+      ...socialMeta({ store, title, description, url: await siteUrl(canonicalPath), image: landingPage.coverImageUrl, locale: store.designSettings?.storeLanguage }),
     };
   } catch {
     return { title: 'Page not found' };

@@ -9,6 +9,7 @@ import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@
 import { getGiftCardSale, getStoreHasBlog, getStoreHasFaq, getStorePages, getStorePaymentMethods, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate } from '@/lib/footerTemplates';
 import { useStoreText } from '../lib/storeText';
+import { useStorePalDesign } from '../lib/designSettings';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { APP_STORE_BADGE, GOOGLE_PLAY_BADGE } from '../lib/appBadges';
 
@@ -166,12 +167,21 @@ export function StoreFooter({
   const footerConfig = footerConfigProp !== undefined ? footerConfigProp : fetched?.footerConfig;
   const activePlatforms = PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
 
-  const Logo = logoUrl ? (
-    <span className="relative block h-10 w-40 mb-4">
-      <Image src={logoUrl} alt={storeName} fill sizes="160px" className="object-contain object-left" />
-    </span>
-  ) : (
-    <span className="font-display font-extrabold text-3xl text-ink tracking-tight block mb-4">{storeName}</span>
+  // Same choice as the header (Store > Design > Header Editor): logo and name both by default, the name always there if nothing else would be.
+  const design = useStorePalDesign();
+  const showLogo = !!logoUrl && (design.headerShowLogo ?? true);
+  const showName = (design.headerShowStoreName ?? true) || !showLogo;
+  const Logo = (
+    <div className="flex flex-col items-start gap-2 mb-4">
+      {showLogo && (
+        <span className="relative block h-10 w-40 shrink-0">
+          <Image src={logoUrl!} alt={storeName} fill sizes="160px" className="object-contain object-left" />
+        </span>
+      )}
+      {showName && (
+        <span className={`font-display font-extrabold text-ink tracking-tight ${showLogo ? 'text-xl' : 'text-3xl'}`}>{storeName}</span>
+      )}
+    </div>
   );
 
   const SocialIcons = activePlatforms.length > 0 && (

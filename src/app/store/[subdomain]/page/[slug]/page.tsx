@@ -5,6 +5,7 @@ import { resolveTheme } from '@/lib/theme';
 import { PageView as MediumPageView } from '@/themes/medium/views/PageView';
 import { PageView as MinimalPageView } from '@/themes/minimal/views/PageView';
 import { PageView as StorepalPageView } from '@/themes/storepal/views/PageView';
+import { socialMeta } from '@/lib/shareMeta';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -18,7 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     return {
       title: page.title,
       alternates: { canonical: await siteUrl(canonicalPath) },
-      openGraph: { title: page.title, url: await siteUrl(canonicalPath), siteName: store.storeName, type: 'website' },
+      ...socialMeta({ store, title: page.title, url: await siteUrl(canonicalPath), locale: store.designSettings?.storeLanguage }),
     };
   } catch {
     return { title: 'Page not found' };

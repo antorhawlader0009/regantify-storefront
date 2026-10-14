@@ -4,6 +4,7 @@ import { getStoreCampaign, StoreNotFoundError, CampaignNotFoundError, siteUrl } 
 import { resolveTheme } from '@/lib/theme';
 import { CampaignView as MediumCampaignView } from '@/themes/medium/views/CampaignView';
 import { CampaignView as StorepalCampaignView } from '@/themes/storepal/views/CampaignView';
+import { socialMeta } from '@/lib/shareMeta';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -19,14 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: campaign.name,
       description,
       alternates: { canonical: await siteUrl(canonicalPath) },
-      openGraph: {
-        title: campaign.name,
-        description,
-        url: await siteUrl(canonicalPath),
-        siteName: store.storeName,
-        type: 'website',
-        images: campaign.coverPhotoUrl ? [{ url: campaign.coverPhotoUrl, width: 1200, height: 633 }] : undefined,
-      },
+      ...socialMeta({ store, title: campaign.name, description, url: await siteUrl(canonicalPath), image: campaign.coverPhotoUrl, locale: store.designSettings?.storeLanguage }),
     };
   } catch {
     return { title: 'Campaign not found' };

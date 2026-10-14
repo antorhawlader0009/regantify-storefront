@@ -232,6 +232,11 @@ export function StoreHeader({
   // Store > Design > Header Editor: logo size (MEDIUM is the old fixed size) and the cart total beside the bag.
   const logoBox = { SMALL: 'h-7 w-24', MEDIUM: 'h-9 w-32', LARGE: 'h-12 w-44' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'h-9 w-32';
   const logoText = { SMALL: 'text-xl', MEDIUM: 'text-2xl', LARGE: 'text-3xl' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'text-2xl';
+  // Logo picture and store name: both by default. With no logo uploaded, or with both switched off, the name still shows,
+  // so the link to the home page is never empty.
+  const showLogo = !!logoUrl && (design.headerShowLogo ?? true);
+  const showName = (design.headerShowStoreName ?? true) || !showLogo;
+  const logoTextWithLogo = { SMALL: 'text-base', MEDIUM: 'text-lg', LARGE: 'text-2xl' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'text-lg';
   const cartTotal = useCartStore((s) =>
     s.lines.filter((l) => l.subdomain === subdomain).reduce((sum, l) => sum + l.unitPrice * l.quantity, 0),
   );
@@ -381,13 +386,16 @@ export function StoreHeader({
             <Menu size={22} />
           </button>
         )}
-        <Link href={`/store/${subdomain}`} className="shrink-0">
-          {logoUrl ? (
-            <span className={`relative block ${logoBox}`}>
-              <Image src={logoUrl} alt={storeName} fill sizes="200px" className="object-contain object-left" />
+        <Link href={`/store/${subdomain}`} className="min-w-0 flex items-center gap-2.5 sm:shrink-0">
+          {showLogo && (
+            <span className={`relative block shrink-0 ${logoBox}`}>
+              <Image src={logoUrl!} alt={storeName} fill sizes="200px" className="object-contain object-left" />
             </span>
-          ) : (
-            <span className={`font-display font-extrabold ${logoText} text-ink tracking-tight`}>{storeName}</span>
+          )}
+          {showName && (
+            <span className={`font-display font-extrabold ${showLogo ? logoTextWithLogo : logoText} text-ink tracking-tight truncate max-w-[9rem] sm:max-w-none`}>
+              {storeName}
+            </span>
           )}
         </Link>
 

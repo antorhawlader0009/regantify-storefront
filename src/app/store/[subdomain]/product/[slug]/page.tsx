@@ -14,6 +14,7 @@ import { resolvePolicy } from '@/themes/storepal/lib/policy';
 import { ProductView as MediumProductView } from '@/themes/medium/views/ProductView';
 import { ProductView as MinimalProductView } from '@/themes/minimal/views/ProductView';
 import { ProductView as StorepalProductView } from '@/themes/storepal/views/ProductView';
+import { socialMeta } from '@/lib/shareMeta';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -41,20 +42,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title,
       description,
       alternates: { canonical: await siteUrl(canonicalPath) },
-      openGraph: {
-        title,
-        description,
-        url: await siteUrl(canonicalPath),
-        siteName: store.storeName,
-        type: 'website',
-        images: product.photoUrls[0] ? [{ url: product.photoUrls[0], width: 800, height: product.photoSize === 'PORTRAIT' ? 1200 : 800 }] : undefined,
-      },
-      twitter: {
-        card: product.photoUrls[0] ? 'summary_large_image' : 'summary',
-        title,
-        description,
-        images: product.photoUrls[0] ? [product.photoUrls[0]] : undefined,
-      },
+      // A product photo is kept whole on a coloured 1200x630 band (a cropped shirt or shoe looks broken in a chat).
+      ...socialMeta({ store, title, description, url: await siteUrl(canonicalPath), image: product.photoUrls[0], imageMode: 'fit', locale: store.designSettings?.storeLanguage }),
     };
   } catch {
     return { title: 'Product not found' };

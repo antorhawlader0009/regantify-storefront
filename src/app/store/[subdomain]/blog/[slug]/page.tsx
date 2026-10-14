@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getStoreBlogPost, getStoreProducts, StoreBlogPostNotFoundError, StoreNotFoundError, siteUrl } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { BlogPostView } from '@/themes/storepal/views/BlogPostView';
+import { socialMeta } from '@/lib/shareMeta';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -17,7 +18,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: post.title,
       description: post.excerpt ?? undefined,
       alternates: { canonical: await siteUrl(path) },
-      openGraph: { title: post.title, description: post.excerpt ?? undefined, url: await siteUrl(path), siteName: store.storeName, type: 'article', images: post.coverUrl ? [post.coverUrl] : undefined },
+      ...socialMeta({ store, title: post.title, description: post.excerpt, url: await siteUrl(path), type: 'article', image: post.coverUrl, locale: store.designSettings?.storeLanguage }),
     };
   } catch {
     return { title: 'Post not found' };

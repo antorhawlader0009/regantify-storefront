@@ -48,6 +48,8 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   headerPhone: null,
   headerLogoSize: 'MEDIUM',
   headerShowCartTotal: false,
+  headerShowLogo: true,
+  headerShowStoreName: true,
   mobileMenu: [],
   homeSections: [],
   homeHighlights: [],

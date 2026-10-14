@@ -62,6 +62,9 @@ interface HomeViewProps {
   blogPosts?: StorefrontBlogCard[];
   blogTotal?: number;
   logoUrl?: string | null;
+  /** Store > Branding > Website cover photo: the hero's first slide; siteCoverOnly drops the category covers after it. */
+  siteCoverUrl?: string | null;
+  siteCoverOnly?: boolean;
   /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
   footerConfig?: StoreFooterConfig | null;
   /** "Create custom link for this coupon" — the `?coupon=` query param a shopper lands on from a vendor-shared link (see lib/pendingCoupon.ts). StorePal-only prop; Medium/Minimal's HomeView has no equivalent. */
@@ -106,6 +109,8 @@ export function HomeView({
   blogPosts = [],
   blogTotal = 0,
   logoUrl,
+  siteCoverUrl,
+  siteCoverOnly,
   footerConfig,
   couponLink,
   setup,
@@ -409,7 +414,7 @@ export function HomeView({
           {homeSections.map((id) => {
             switch (id) {
               case 'HERO':
-                return <HeroBanner key={id} subdomain={subdomain} categoryDetails={categoryDetails} />;
+                return <HeroBanner key={id} subdomain={subdomain} categoryDetails={categoryDetails} siteCoverUrl={siteCoverUrl} siteCoverOnly={siteCoverOnly} />;
               case 'FLASH_SALE':
                 return (
                   <div key={id} className={HOME_WRAP}>

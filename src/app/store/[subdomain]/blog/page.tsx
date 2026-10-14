@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getStoreBlog, getStoreProducts, StoreNotFoundError, siteUrl } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { BlogListView } from '@/themes/storepal/views/BlogListView';
+import { socialMeta } from '@/lib/shareMeta';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
@@ -13,7 +14,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const { store } = await getStoreBlog(subdomain, 1);
     const path = `/store/${subdomain}/blog`;
-    return { title: `Magazine — ${store.storeName}`, alternates: { canonical: await siteUrl(path) }, openGraph: { title: `Magazine — ${store.storeName}`, url: await siteUrl(path), siteName: store.storeName, type: 'website' } };
+    return { title: `Magazine — ${store.storeName}`, alternates: { canonical: await siteUrl(path) }, ...socialMeta({ store, title: `Magazine — ${store.storeName}`, url: await siteUrl(path), locale: store.designSettings?.storeLanguage }) };
   } catch {
     return { title: 'Magazine' };
   }

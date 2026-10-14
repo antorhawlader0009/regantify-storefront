@@ -112,6 +112,9 @@ export interface StorefrontInfo {
   brandHeadingFont?: string | null;
   brandBodyFont?: string | null;
   brandCoverImageUrl?: string | null;
+  /** Store > Branding > Website cover photo: the first slide of StorePal's home page hero (not the link-preview picture above). */
+  brandSiteCoverUrl?: string | null;
+  brandSiteCoverOnly?: boolean;
   brandMetaTitle?: string | null;
   brandMetaDescription?: string | null;
   /** The vendor's own domain (Store > Domain), when they have one. */
@@ -277,6 +280,8 @@ export interface StorefrontDesignSettings {
   headerPhone?: string | null;
   headerLogoSize?: 'SMALL' | 'MEDIUM' | 'LARGE';
   headerShowCartTotal?: boolean;
+  headerShowLogo?: boolean;
+  headerShowStoreName?: boolean;
   mobileMenu: StorefrontMenuItem[];
   // Store > Design > Customize (the home page). Empty = StorePal's own order and its three built-in highlights.
   homeSections: { id: string; enabled: boolean }[];

@@ -8,6 +8,17 @@ import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
 interface HeroBannerProps {
   subdomain: string;
   categoryDetails: StorefrontCategoryDetail[];
+  /** Store > Branding > Website cover photo: shown first; siteCoverOnly shows it alone. */
+  siteCoverUrl?: string | null;
+  siteCoverOnly?: boolean;
+}
+
+interface HeroSlide {
+  key: string;
+  alt: string;
+  url: string;
+  /** null = the picture is not a link. */
+  href: string | null;
 }
 
 // How many banners the hero cycles through at most, and how long each
@@ -45,14 +56,23 @@ function shuffle<T>(items: T[]): T[] {
  * match — picking randomly during SSR would cause a hydration mismatch
  * since the server and client would each roll their own order.
  */
-export function HeroBanner({ subdomain, categoryDetails }: HeroBannerProps) {
+export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCoverOnly }: HeroBannerProps) {
   const [active, setActive] = useState(0);
 
   const withCover = useMemo(
     () => categoryDetails.filter((c): c is StorefrontCategoryDetail & { coverPhotoUrl: string } => Boolean(c.coverPhotoUrl)),
     [categoryDetails],
   );
-  const slides = useMemo(() => shuffle(withCover).slice(0, MAX_SLIDES), [withCover]);
+  // The website cover (Store > Branding) is always the first slide and links nowhere; the category covers follow it unless the
+  // store asked for the cover alone. With no website cover this is exactly the old behaviour.
+  const slides = useMemo<HeroSlide[]>(() => {
+    const own: HeroSlide[] = siteCoverUrl ? [{ key: '__site_cover__', alt: 'Cover', url: siteCoverUrl, href: null }] : [];
+    if (siteCoverUrl && siteCoverOnly) return own;
+    const categories = shuffle(withCover)
+      .slice(0, MAX_SLIDES - own.length)
+      .map((c) => ({ key: c.name, alt: c.name, url: c.coverPhotoUrl, href: `/store/${subdomain}?category=${encodeURIComponent(c.name)}` }));
+    return [...own, ...categories];
+  }, [withCover, siteCoverUrl, siteCoverOnly, subdomain]);
 
   useEffect(() => {
     if (slides.length <= 1) return;
@@ -64,7 +84,19 @@ export function HeroBanner({ subdomain, categoryDetails }: HeroBannerProps) {
 
   if (slides.length === 0) return null;
 
-  const category = slides[active];
+  const slide = slides[Math.min(active, slides.length - 1)];
+
+  const picture = (
+    <Image
+      key={slide.key}
+      src={slide.url}
+      alt={slide.alt}
+      fill
+      sizes="(max-width: 1100px) 100vw, 1100px"
+      className="object-cover"
+      priority
+    />
+  );
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
@@ -76,28 +108,21 @@ export function HeroBanner({ subdomain, categoryDetails }: HeroBannerProps) {
           rather than distorting or letterboxing). 21:9 mirrors the
           reference site's wide, short banner proportions. */}
       <div className="relative rounded-lg overflow-hidden bg-surface aspect-[21/9]">
-        <Link
-          href={`/store/${subdomain}?category=${encodeURIComponent(category.name)}`}
-          className="absolute inset-0 block"
-        >
-          <Image
-            key={category.name}
-            src={category.coverPhotoUrl}
-            alt={category.name}
-            fill
-            sizes="(max-width: 1100px) 100vw, 1100px"
-            className="object-cover"
-            priority
-          />
-        </Link>
+        {slide.href ? (
+          <Link href={slide.href} className="absolute inset-0 block">
+            {picture}
+          </Link>
+        ) : (
+          <div className="absolute inset-0">{picture}</div>
+        )}
 
         {slides.length > 1 && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex gap-1.5">
-            {slides.map((c, i) => (
+            {slides.map((s, i) => (
               <button
-                key={c.name}
+                key={s.key}
                 onClick={() => setActive(i)}
-                aria-label={`Show ${c.name}`}
+                aria-label={`Show ${s.alt}`}
                 className={`w-2 h-2 rounded-full transition-colors ${i === active ? 'bg-white' : 'bg-white/50'}`}
               />
             ))}

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getStoreCollection, StoreNotFoundError, CollectionNotFoundError, siteUrl } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { CollectionView } from '@/themes/storepal/views/CollectionView';
+import { socialMeta } from '@/lib/shareMeta';
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -18,14 +19,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       title: collection.name,
       description,
       alternates: { canonical: await siteUrl(canonicalPath) },
-      openGraph: {
-        title: collection.name,
-        description,
-        url: await siteUrl(canonicalPath),
-        siteName: store.storeName,
-        type: 'website',
-        images: collection.coverPhotoUrl ? [{ url: collection.coverPhotoUrl, width: 1200, height: 633 }] : undefined,
-      },
+      ...socialMeta({ store, title: collection.name, description, url: await siteUrl(canonicalPath), image: collection.coverPhotoUrl, locale: store.designSettings?.storeLanguage }),
     };
   } catch {
     return { title: 'Collection not found' };

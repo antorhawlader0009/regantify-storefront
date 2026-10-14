@@ -19,6 +19,7 @@ import { HomeView as StorepalHomeView } from '@/themes/storepal/views/HomeView';
 import { visibleInListings } from '@/themes/storepal/lib/backorder';
 import { LandingPageView } from '@/landing/LandingPageView';
 import { StoreChrome } from '@/landing/StoreChrome';
+import { socialMeta } from '@/lib/shareMeta';
 
 // The reserved "use as homepage" sentinel (LandingPage.slug's own schema
 // comment, landing-plan.md §6) — a vendor can publish at most one
@@ -53,14 +54,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       description: landingPage.metaDescription || undefined,
       keywords: landingPage.metaKeywords || undefined,
       alternates: { canonical: await siteUrl(canonicalPath) },
-      openGraph: {
-        title,
-        description: landingPage.metaDescription || undefined,
-        url: await siteUrl(canonicalPath),
-        siteName: store.storeName,
-        type: 'website',
-        images: landingPage.coverImageUrl ? [landingPage.coverImageUrl] : undefined,
-      },
+      ...socialMeta({ store, title, description: landingPage.metaDescription, url: await siteUrl(canonicalPath), image: landingPage.coverImageUrl, locale: store.designSettings?.storeLanguage }),
     };
   } catch (err) {
     if (!(err instanceof LandingPageNotFoundError) && !(err instanceof StoreNotFoundError)) throw err;
@@ -97,14 +91,7 @@ export async function generateMetadata({ params, searchParams }: PageProps): Pro
       description,
       alternates: { canonical },
       robots: q?.trim() || coupon ? { index: false, follow: true } : undefined,
-      openGraph: {
-        title,
-        description,
-        url: canonical,
-        siteName: store.storeName,
-        type: 'website',
-        images: store.brandCoverImageUrl ? [store.brandCoverImageUrl] : undefined,
-      },
+      ...socialMeta({ store, title, description, url: canonical, locale: store.designSettings?.storeLanguage }),
     };
   } catch {
     return { title: 'Store not found' };
@@ -248,6 +235,8 @@ export default async function StorePage({ params, searchParams }: PageProps) {
               blogPosts={blog.posts}
               blogTotal={blog.total}
               categoryDetails={categoryDetails}
+              siteCoverUrl={store.brandSiteCoverUrl}
+              siteCoverOnly={store.brandSiteCoverOnly}
               // A store with no public product yet shows the setup guide instead of an empty shop.
               setup={data.setup}
               // "Create custom link for this coupon" — only StorePal
