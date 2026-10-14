@@ -76,8 +76,11 @@ export function StorePalDesignProvider({
   lowStock = null,
   businessHours = null,
   lmsForms = null,
+  verifiedSeller = null,
   children,
 }: {
+  /** "Verified seller" badge (super-admin-new.md Step 12); null = not verified. */
+  verifiedSeller?: VerifiedSeller | null;
   /** Shop and support hours (TellMe idea 73); null = none set, or the store is away. */
   businessHours?: BusinessHours | null;
   settings: StorefrontDesignSettings | null;
@@ -93,7 +96,9 @@ export function StorePalDesignProvider({
       <OutOfStockBadgeContext.Provider value={showOutOfStockBadge}>
         <LowStockContext.Provider value={lowStock}>
           <BusinessHoursContext.Provider value={businessHours}>
-            <LmsFormsContext.Provider value={lmsForms}>{children}</LmsFormsContext.Provider>
+            <LmsFormsContext.Provider value={lmsForms}>
+              <VerifiedSellerContext.Provider value={verifiedSeller}>{children}</VerifiedSellerContext.Provider>
+            </LmsFormsContext.Provider>
           </BusinessHoursContext.Provider>
         </LowStockContext.Provider>
       </OutOfStockBadgeContext.Provider>
@@ -105,6 +110,17 @@ export function StorePalDesignProvider({
 // price-on-request product hides its price only while requests can reach
 // the store, the same rule as the product page.
 const LmsFormsContext = createContext<StorefrontLmsForms | null>(null);
+
+export interface VerifiedSeller {
+  since: string;
+  dbid: string | null;
+}
+const VerifiedSellerContext = createContext<VerifiedSeller | null>(null);
+
+/** The store's "Verified seller" status (super-admin-new.md Step 12), from the store answer; null when it is not verified. */
+export function useVerifiedSeller() {
+  return useContext(VerifiedSellerContext);
+}
 
 export function useStorePalLmsForms() {
   return useContext(LmsFormsContext);

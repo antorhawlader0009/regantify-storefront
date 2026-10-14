@@ -144,6 +144,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let showOutOfStockBadge = true;
   let lowStock: { limit: number; hideCount: boolean } | null = null;
   let businessHours: BusinessHours | null = null;
+  let verifiedSeller: { since: string; dbid: string | null } | null = null;
   let lmsForms: StorefrontLmsForms | null = null;
   let popupCampaigns: StorefrontPopupCampaign[] = [];
   let storeAway: StorefrontStoreAway | null = null;
@@ -170,6 +171,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       lowStock = { limit: 0, hideCount: true };
     }
     lmsForms = store.lmsForms ?? null;
+    verifiedSeller = store.verifiedSeller ?? null;
     popupCampaigns = store.popupCampaigns ?? [];
     storeAway = store.storeAway ?? null;
     // Shop hours (TellMe idea 73): Store Away wins while it is on.
@@ -245,7 +247,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (
-          <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms}>
+          <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms} verifiedSeller={verifiedSeller}>
             <WishlistSync subdomain={subdomain} />
             <CompareBar subdomain={subdomain} />
             {/* "Someone bought" popup (TellMe idea 123): off unless the store turned it on; real orders only. */}

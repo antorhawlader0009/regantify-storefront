@@ -1,7 +1,7 @@
 'use client';
 
-import { CalendarDays, PackageCheck, Star, ThumbsUp, type LucideIcon } from 'lucide-react';
-import { useStorePalDesign } from '../lib/designSettings';
+import { BadgeCheck, CalendarDays, PackageCheck, Star, ThumbsUp, type LucideIcon } from 'lucide-react';
+import { useStorePalDesign, useVerifiedSeller } from '../lib/designSettings';
 
 const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
 const toBn = (text: string) => text.replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)]);
@@ -13,12 +13,22 @@ const toBn = (text: string) => text.replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)
  */
 export function ReputationStrip() {
   const { reputation, storeLanguage } = useStorePalDesign();
-  if (!reputation) return null;
+  const verified = useVerifiedSeller();
+  if (!reputation && !verified) return null;
   const bn = storeLanguage === 'bn';
   const num = (n: number | string) => (bn ? toBn(String(n)) : String(n));
   const big = (n: number) => num(n.toLocaleString('en-US'));
 
-  const items: { icon: LucideIcon; text: string }[] = [];
+  const items: { icon: LucideIcon; text: string; strong?: boolean }[] = [];
+  // "Verified seller" (super-admin-new.md Step 12): Regantify checked who runs this store. First, and shown even when no reputation figure is on.
+  if (verified) {
+    items.push({
+      icon: BadgeCheck,
+      strong: true,
+      text: bn ? `যাচাই করা বিক্রেতা${verified.dbid ? ` · DBID ${verified.dbid}` : ''}` : `Verified seller${verified.dbid ? ` · DBID ${verified.dbid}` : ''}`,
+    });
+  }
+  if (!reputation) return <Strip items={items} />;
   if (reputation.orders) items.push({ icon: PackageCheck, text: bn ? `${big(reputation.orders)}+ অর্ডার ডেলিভারি হয়েছে` : `${big(reputation.orders)}+ orders delivered` });
   if (reputation.rating) {
     items.push({
@@ -35,13 +45,16 @@ export function ReputationStrip() {
     });
   }
   if (reputation.since) items.push({ icon: CalendarDays, text: bn ? `${num(reputation.since)} সাল থেকে আছি` : `Serving since ${reputation.since}` });
-  if (items.length === 0) return null;
+  return <Strip items={items} />;
+}
 
+function Strip({ items }: { items: { icon: LucideIcon; text: string; strong?: boolean }[] }) {
+  if (items.length === 0) return null;
   return (
     <ul className="m-0 mx-auto flex max-w-6xl list-none flex-wrap items-center justify-center gap-x-6 gap-y-2 border-b border-line px-4 py-4 sm:px-6">
-      {items.map(({ icon: Icon, text }) => (
+      {items.map(({ icon: Icon, text, strong }) => (
         <li key={text} className="flex items-center gap-2 text-[13px] font-medium text-ink">
-          <Icon size={16} className="shrink-0 text-muted" aria-hidden />
+          <Icon size={16} className={`shrink-0 ${strong ? 'text-emerald-600' : 'text-muted'}`} aria-hidden />
           {text}
         </li>
       ))}

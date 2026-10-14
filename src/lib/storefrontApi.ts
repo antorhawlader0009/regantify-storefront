@@ -84,6 +84,8 @@ export interface StorefrontInfo {
   theme: StoreTheme;
   /** Shop and support hours (TellMe idea 73), StorePal only; null = none set. */
   businessHours?: Record<string, { open: boolean; from: string; to: string }> | null;
+  /** "Verified seller" (super-admin-new.md Step 12): Super Admin approved the store's verification. StorePal only; `dbid` is its public DBID, if given. */
+  verifiedSeller?: { since: string; dbid: string | null } | null;
   // Store > Logo — replaces the plain-text storeName wordmark wherever
   // a theme's header/footer shows it, when set. Nullable: a vendor who
   // hasn't uploaded one yet keeps the existing text-wordmark fallback.
