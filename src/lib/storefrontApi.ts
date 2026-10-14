@@ -275,6 +275,8 @@ export interface StorefrontDesignSettings {
   headerPhoneEnabled?: boolean;
   headerPhoneLabel?: string | null;
   headerPhone?: string | null;
+  headerLogoSize?: 'SMALL' | 'MEDIUM' | 'LARGE';
+  headerShowCartTotal?: boolean;
   mobileMenu: StorefrontMenuItem[];
   // Store > Design > Customize (the home page). Empty = StorePal's own order and its three built-in highlights.
   homeSections: { id: string; enabled: boolean }[];

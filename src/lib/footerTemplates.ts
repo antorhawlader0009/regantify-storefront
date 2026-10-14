@@ -28,13 +28,13 @@ export const FOOTER_TEMPLATES: Record<string, FooterTemplateDef> = {
     columns: ['logo', 'menu', 'info', 'about'],
     logoCarriesAbout: true,
     background: 'band',
-    supportsSubscribe: true,
+    supportsSubscribe: false,
   },
   STOREFRONT: {
     columns: ['logo', 'menu', 'info', 'about'],
     logoCarriesAbout: false,
     background: 'white',
-    supportsSubscribe: true,
+    supportsSubscribe: false,
   },
   MINIMAL: {
     columns: ['logo', 'menu', 'info'],

@@ -54,17 +54,13 @@ interface StoreHeaderProps {
   chatProductName?: string;
 }
 
-// Store > Design > Site Banner. With nothing saved it's the reference
-// site's top bar: a set of delivery promises scrolling right to left,
-// forever, leaving on the left as the same text comes in on the right (see
-// MarqueeTrack.tsx for how the loop has no seam).
-const ANNOUNCEMENTS = ['Cash On Delivery All Over Bangladesh', 'Guaranteed Pre-order Delivery in 20-25 Days'];
+// Store > Design > Site Banner. It shows only what the seller wrote (or scheduled). It used to fall back to two
+// built-in delivery promises, which made claims on every store that had written nothing; with no text it is now hidden.
 
 // The vendor's banner is their own RichTextEditor HTML, same trust
 // level as Store > Footer's aboutBlurb. "Delete" on the dashboard hides
 // the strip entirely.
 function SiteBanner() {
-  const t = useStoreText();
   const design = useStorePalDesign();
   // Scheduled banners (TellMe idea 110): the one whose time is on now replaces the usual banner. Decided here in the browser, from the
   // time of the visit, because the store's page is cached and a start or an end must not wait for the cache. Until the page has loaded, and
@@ -91,19 +87,18 @@ function SiteBanner() {
   // white-space: pre-wrap), so the banner must preserve whitespace too or
   // the vendor's spacing collapses to one space. `pre` keeps the marquee
   // on one line; the static strip can still wrap.
-  const items: { key: string; node: React.ReactNode }[] = html
-    ? [
-        {
-          key: 'vendor',
-          node: (
-            <span
-              className={`${marquee ? 'whitespace-pre' : 'whitespace-pre-wrap'} [&_p]:m-0 [&_p]:inline [&_p+p]:ml-16`}
-              dangerouslySetInnerHTML={{ __html: html }}
-            />
-          ),
-        },
-      ]
-    : ANNOUNCEMENTS.map((text) => ({ key: text, node: t(text) }));
+  if (!html || !html.trim()) return null;
+  const items: { key: string; node: React.ReactNode }[] = [
+    {
+      key: 'vendor',
+      node: (
+        <span
+          className={`${marquee ? 'whitespace-pre' : 'whitespace-pre-wrap'} [&_p]:m-0 [&_p]:inline [&_p+p]:ml-16`}
+          dangerouslySetInnerHTML={{ __html: html }}
+        />
+      ),
+    },
+  ];
   return (
     <div
       className="bg-canvas overflow-hidden border-b border-line"
@@ -234,6 +229,12 @@ export function StoreHeader({
   const hasTopMenu = design.headerLeftMenu.length > 0 || design.headerRightMenu.length > 0;
   const hasSiteMenu = design.siteMenu.length > 0;
   const hasMobileMenu = design.mobileMenu.length > 0;
+  // Store > Design > Header Editor: logo size (MEDIUM is the old fixed size) and the cart total beside the bag.
+  const logoBox = { SMALL: 'h-7 w-24', MEDIUM: 'h-9 w-32', LARGE: 'h-12 w-44' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'h-9 w-32';
+  const logoText = { SMALL: 'text-xl', MEDIUM: 'text-2xl', LARGE: 'text-3xl' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'text-2xl';
+  const cartTotal = useCartStore((s) =>
+    s.lines.filter((l) => l.subdomain === subdomain).reduce((sum, l) => sum + l.unitPrice * l.quantity, 0),
+  );
 
   // Live "type to see matches" dropdown (reference site: typing "shoe"
   // shows matching Categories + a handful of products with thumb/price
@@ -274,6 +275,52 @@ export function StoreHeader({
     return searchIndex.filter((p) => matchesSearchWords(p, draftLower)).slice(0, 6);
   }, [searchIndex, draftLower]);
   const showSuggestions = suggestionsOpen && draftLower.length > 0 && (matchedCategories.length > 0 || matchedProducts.length > 0);
+  // Before anything is typed: the store's categories and its first few products, so an empty search box still helps.
+  const emptyProducts = useMemo(() => (searchIndex ?? []).slice(0, 4), [searchIndex]);
+  const showStarter = suggestionsOpen && draftLower.length === 0 && (categories.length > 0 || emptyProducts.length > 0);
+  const StarterPanel = (
+    <div className="p-3 space-y-3">
+      {categories.length > 0 && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted mb-1.5">{t('Browse categories')}</p>
+          <div className="flex flex-wrap gap-1.5">
+            {categories.slice(0, 8).map((cat) => (
+              <button
+                key={`starter-${cat}`}
+                type="button"
+                onClick={() => {
+                  setSuggestionsOpen(false);
+                  setActiveCategory(cat);
+                }}
+                className="px-2.5 py-1 rounded-full border border-line-strong text-[12.5px] text-ink hover:border-accent hover:text-accent transition-colors"
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+      {emptyProducts.length > 0 && (
+        <div>
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-muted mb-1">{t('Products')}</p>
+          {emptyProducts.map((p) => (
+            <Link
+              key={`starter-p-${p.slug}`}
+              href={`/store/${subdomain}/product/${p.slug}`}
+              onClick={() => setSuggestionsOpen(false)}
+              className="flex items-center gap-3 py-1.5 hover:text-accent"
+            >
+              <span className="relative w-8 h-8 shrink-0 rounded overflow-hidden bg-canvas border border-line">
+                {p.photoUrls[0] && <Image src={p.photoUrls[0]} alt={p.name} fill sizes="32px" className="object-cover" />}
+              </span>
+              <span className="flex-1 min-w-0 text-[13px] text-ink truncate">{p.name}</span>
+              <span className="text-[12.5px] font-semibold text-ink shrink-0">{formatPrice(p.discountPrice ?? p.price)}</span>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
 
   const goToSearch = (value: string) => {
     setSuggestionsOpen(false);
@@ -299,10 +346,12 @@ export function StoreHeader({
   const visibleCategories = categories.slice(0, 9);
   const childrenByCategory = new Map(categoryDetails.map((c) => [c.name, c.children ?? []]));
 
+  // The banner sits above the sticky part, so it scrolls away and only the logo/search/cart stay pinned (a header
+  // with the banner pinned too used up a big share of a phone screen).
   return (
+    <>
+    <SiteBanner />
     <header className="sticky top-0 z-20 bg-surface">
-      <SiteBanner />
-
       {hasTopMenu && (
         <div className="hidden sm:flex max-w-6xl mx-auto px-4 sm:px-6 pt-2.5 items-center justify-between gap-6">
           {[design.headerLeftMenu, design.headerRightMenu].map((menu, side) => (
@@ -334,11 +383,11 @@ export function StoreHeader({
         )}
         <Link href={`/store/${subdomain}`} className="shrink-0">
           {logoUrl ? (
-            <span className="relative block h-9 w-32">
-              <Image src={logoUrl} alt={storeName} fill sizes="128px" className="object-contain object-left" />
+            <span className={`relative block ${logoBox}`}>
+              <Image src={logoUrl} alt={storeName} fill sizes="200px" className="object-contain object-left" />
             </span>
           ) : (
-            <span className="font-display font-extrabold text-2xl text-ink tracking-tight">{storeName}</span>
+            <span className={`font-display font-extrabold ${logoText} text-ink tracking-tight`}>{storeName}</span>
           )}
         </Link>
 
@@ -374,6 +423,11 @@ export function StoreHeader({
             </div>
           </form>
 
+          {showStarter && (
+            <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
+              {StarterPanel}
+            </div>
+          )}
           {showSuggestions && (
             <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
               {matchedCategories.map((cat) => (
@@ -428,6 +482,16 @@ export function StoreHeader({
         )}
 
         <div className="flex items-center gap-4 ml-auto shrink-0">
+          {/* The phone number is a call button on small screens, where the full "Call Us Now" block has no room. */}
+          {design.headerPhoneEnabled && design.headerPhone?.trim() && (
+            <a
+              href={`tel:${design.headerPhone.split(/[,/]/)[0].replace(/[^\d+]/g, '')}`}
+              className="lg:hidden text-ink hover:text-accent transition-colors"
+              aria-label={design.headerPhoneLabel?.trim() || t('Call Us Now')}
+            >
+              <Phone size={21} strokeWidth={1.75} />
+            </a>
+          )}
           {design.cardShowWishlist && (
             <Link
               href={`/store/${subdomain}/wishlist`}
@@ -463,10 +527,13 @@ export function StoreHeader({
               e.preventDefault();
               openCartDrawer();
             }}
-            className="relative text-ink hover:text-accent transition-colors"
+            className="relative flex items-center gap-2 text-ink hover:text-accent transition-colors"
             aria-label="Cart"
           >
             <ShoppingBag size={21} strokeWidth={1.75} />
+            {design.headerShowCartTotal && hydrated && cartCount > 0 && (
+              <span className="hidden sm:inline text-[13px] font-semibold">{formatPrice(cartTotal)}</span>
+            )}
             {hydrated && cartCount > 0 && (
               <span className="absolute -top-2 -right-2 flex items-center justify-center min-w-[18px] h-[18px] px-1 rounded-full bg-ink text-white text-[10px] font-bold">
                 {cartCount}
@@ -504,6 +571,11 @@ export function StoreHeader({
           </div>
         </form>
 
+        {showStarter && (
+          <div className="absolute left-4 right-4 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
+            {StarterPanel}
+          </div>
+        )}
         {showSuggestions && (
           <div className="absolute left-4 right-4 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
             {matchedCategories.map((cat) => (
@@ -659,5 +731,6 @@ export function StoreHeader({
       <CheckoutDialog subdomain={subdomain} />
       <AuthDialog subdomain={subdomain} />
     </header>
+    </>
   );
 }

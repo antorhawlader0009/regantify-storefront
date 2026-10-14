@@ -68,6 +68,33 @@ export async function getStoreHasBlog(subdomain: string): Promise<boolean> {
   }
 }
 
+/**
+ * The payment methods the store's checkout really offers right now (already filtered server-side for enabled,
+ * connected and the platform switch), as short labels for the footer's "We accept" row. Read from the public store
+ * answer's paymentGateways, so the footer can never show a method the shopper can't use. Empty on any failure.
+ */
+export async function getStorePaymentMethods(subdomain: string): Promise<string[]> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${encodeURIComponent(subdomain)}`);
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data.paymentGateways)) return [];
+    const DEFAULT_LABEL: Record<string, string> = {
+      COD: 'Cash on Delivery',
+      ONLINE_PAYMENT: 'Online Payment',
+      SSLCOMMERZ: 'SSLCommerz',
+      BKASH_MERCHANT: 'bKash',
+      VENDOR_PAYSTATION: 'PayStation',
+    };
+    const labels: string[] = data.paymentGateways
+      .map((g: { type: string; displayLabel?: string | null }) => g.displayLabel?.trim() || DEFAULT_LABEL[g.type])
+      .filter((l: string | undefined): l is string => !!l);
+    return Array.from(new Set(labels));
+  } catch {
+    return [];
+  }
+}
+
 export interface StoreSearchProduct {
   slug: string;
   name: string;

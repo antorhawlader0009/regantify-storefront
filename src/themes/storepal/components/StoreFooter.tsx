@@ -3,11 +3,11 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, ChevronDown } from 'lucide-react';
 import { ReputationStrip } from './ReputationStrip';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
-import { getGiftCardSale, getStoreHasBlog, getStoreHasFaq, getStorePages, type StorefrontPageSummary } from '../lib/storeNavApi';
-import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplates';
+import { getGiftCardSale, getStoreHasBlog, getStoreHasFaq, getStorePages, getStorePaymentMethods, type StorefrontPageSummary } from '../lib/storeNavApi';
+import { resolveFooterTemplate } from '@/lib/footerTemplates';
 import { useStoreText } from '../lib/storeText';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { APP_STORE_BADGE, GOOGLE_PLAY_BADGE } from '../lib/appBadges';
@@ -68,6 +68,25 @@ function DeveloperCredit() {
   );
 }
 
+/** A footer link column: always open from the small breakpoint up, a tap-to-open section on phones so the footer stays short. */
+function FooterSection({ title, upper, children }: { title: string; upper?: boolean; children: React.ReactNode }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <div className="border-b border-line sm:border-0 pb-3 sm:pb-0">
+      <button
+        type="button"
+        onClick={() => setOpen((o) => !o)}
+        aria-expanded={open}
+        className="flex w-full items-center justify-between text-left sm:pointer-events-none sm:cursor-default sm:mb-3"
+      >
+        <span className={`text-[15px] font-semibold text-ink ${upper ? 'uppercase' : ''}`}>{title}</span>
+        <ChevronDown size={16} className={`sm:hidden text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
+      </button>
+      <div className={`${open ? 'block mt-3' : 'hidden'} sm:block sm:mt-0`}>{children}</div>
+    </div>
+  );
+}
+
 /** The store's official badge (appBadges.ts), unchanged, linking to the app's page. Both are shown at the same height. */
 function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }) {
   return (
@@ -106,8 +125,8 @@ export function StoreFooter({
   footerConfig: footerConfigProp,
 }: StoreFooterProps) {
   const t = useStoreText();
-  const [email, setEmail] = useState('');
-  const [subscribed, setSubscribed] = useState(false);
+  // The payment methods this store's checkout really offers ("We accept" row).
+  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [fetched, setFetched] = useState<{
     logoUrl?: string | null;
     socialLinks: SocialLinks;
@@ -139,22 +158,13 @@ export function StoreFooter({
     getStoreHasBlog(subdomain).then(setHasBlog);
     getStoreHasFaq(subdomain).then(setHasFaq);
     getGiftCardSale(subdomain).then((c) => setHasGiftCards(!!c?.enabled && c.amounts.length > 0));
+    getStorePaymentMethods(subdomain).then(setPaymentMethods);
   }, [subdomain]);
 
   const socialLinks = socialLinksProp ?? fetched?.socialLinks ?? {};
   const logoUrl = logoUrlProp ?? fetched?.logoUrl ?? null;
   const footerConfig = footerConfigProp !== undefined ? footerConfigProp : fetched?.footerConfig;
   const activePlatforms = PLATFORMS.filter((p) => socialLinks[p.key]?.trim());
-
-  const handleSubscribe = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!email.trim()) return;
-    // No newsletter backend exists yet — this simply acknowledges the
-    // submission client-side, matching the reference site's own
-    // minimal footer (no confirmation email flow shown there either).
-    setSubscribed(true);
-    setEmail('');
-  };
 
   const Logo = logoUrl ? (
     <span className="relative block h-10 w-40 mb-4">
@@ -184,6 +194,23 @@ export function StoreFooter({
     </>
   );
 
+  // "We accept": worked out from the checkout's real payment methods, never typed in by the seller, so it can't
+  // show a method the shopper can't use. A saved footer can switch it off; a store with no saved footer shows it.
+  const paymentVisible = !footerConfig || footerConfig.showPaymentIcons;
+  const PaymentStrip = paymentVisible && paymentMethods.length > 0 && (
+    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
+      <p className="text-[13px] font-semibold text-ink mb-2">{t('We accept')}</p>
+      <div className="flex flex-wrap gap-1.5">
+        {paymentMethods.map((label) => (
+          <span key={label} className="px-2.5 py-1 rounded border border-line-strong bg-surface text-[12px] font-semibold text-ink">
+            {t(label)}
+          </span>
+        ))}
+      </div>
+    </div>
+  );
+  const trackLink = { label: t('Track order'), url: `/store/${subdomain}/orders` };
+
   // Not yet configured — original hardcoded 3-column footer, unchanged
   // from before Store > Footer existed. See this component's own
   // "BACKWARD COMPATIBILITY" doc comment above.
@@ -194,29 +221,14 @@ export function StoreFooter({
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3">
           <div>
             {Logo}
-            <form onSubmit={handleSubscribe} className="flex max-w-xs">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder={t('Your Email')}
-                className="flex-1 px-3.5 py-2.5 text-[13px] bg-surface border border-line-strong rounded-l-md outline-none"
-              />
-              <button
-                type="submit"
-                className="px-4 py-2.5 bg-accent hover:bg-accent-dark text-white text-[13px] font-bold rounded-r-md transition-colors"
-              >
-                subscribe
-              </button>
-            </form>
-            {subscribed && <p className="mt-2 text-[12px] text-success">{t('Thanks for subscribing!')}</p>}
             {SocialIcons}
           </div>
 
-          {(pages.length > 0 || hasBlog || hasFaq || hasGiftCards) && (
-            <div>
-              <p className="text-[15px] font-semibold text-ink mb-3">{t('INFORMATION')}</p>
-              <div className="flex flex-col gap-2.5 text-[13px]">
+          <FooterSection title={t('INFORMATION')}>
+            <div className="flex flex-col gap-2.5 text-[13px]">
+                <Link href={trackLink.url} className="text-accent hover:text-accent-dark transition-colors w-fit">
+                  {trackLink.label}
+                </Link>
                 {pages.map((page) => (
                   <Link
                     key={page.slug}
@@ -241,25 +253,21 @@ export function StoreFooter({
                     {t('Gift cards')}
                   </Link>
                 )}
-              </div>
             </div>
-          )}
+          </FooterSection>
 
-          <div>
-            {aboutBlurb?.trim() ? (
+          {aboutBlurb?.trim() && (
+            <div>
               <div
                 className="text-[13px] text-muted leading-relaxed [&_p]:mb-2 line-clamp-6"
                 // eslint-disable-next-line react/no-danger
                 dangerouslySetInnerHTML={{ __html: aboutBlurb }}
               />
-            ) : (
-              <p className="text-[13px] text-muted leading-relaxed">
-                {storeName} is more than just a store. We&apos;re a lifestyle brand that celebrates individuality and
-                self-expression.
-              </p>
-            )}
-          </div>
+            </div>
+          )}
         </div>
+
+        {PaymentStrip}
 
         <div className="border-t border-line">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[13px] text-muted flex flex-col items-center gap-1 sm:flex-row sm:justify-between">
@@ -281,46 +289,19 @@ export function StoreFooter({
   const LogoColumn = (
     <div>
       {Logo}
-      {def.supportsSubscribe && footerConfig.showSubscribeBlock && (
-        <>
-          <form onSubmit={handleSubscribe} className="flex max-w-xs">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder={t('Your Email')}
-              className="flex-1 px-3.5 py-2.5 text-[13px] bg-surface border border-line-strong rounded-l-md outline-none"
-            />
-            <button
-              type="submit"
-              className="px-4 py-2.5 bg-accent hover:bg-accent-dark text-white text-[13px] font-bold rounded-r-md transition-colors"
-            >
-              subscribe
-            </button>
-          </form>
-          {subscribed && <p className="mt-2 text-[12px] text-success">{t('Thanks for subscribing!')}</p>}
-        </>
-      )}
       {footerConfig.showSocialIcons && SocialIcons}
-      {def.logoCarriesAbout &&
-        (blurbHtml ? (
-          <div
-            className="text-[13px] text-muted leading-relaxed [&_p]:mb-2 line-clamp-6 mt-4"
-            // eslint-disable-next-line react/no-danger
-            dangerouslySetInnerHTML={{ __html: blurbHtml }}
-          />
-        ) : (
-          <p className="text-[13px] text-muted leading-relaxed mt-4">
-            {storeName} is more than just a store. We&apos;re a lifestyle brand that celebrates individuality and
-            self-expression.
-          </p>
-        ))}
+      {def.logoCarriesAbout && blurbHtml && (
+        <div
+          className="text-[13px] text-muted leading-relaxed [&_p]:mb-2 line-clamp-6 mt-4"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: blurbHtml }}
+        />
+      )}
     </div>
   );
 
   const MenuColumn = footerConfig.menuLinks.length > 0 && (
-    <div>
-      <p className="text-[15px] font-semibold text-ink mb-3 uppercase">{footerConfig.menuTitle}</p>
+    <FooterSection title={footerConfig.menuTitle} upper>
       <div className="flex flex-col gap-2.5 text-[13px]">
         {footerConfig.menuLinks.map((link, i) => (
           <Link key={i} href={link.url} className="text-accent hover:text-accent-dark transition-colors w-fit">
@@ -328,7 +309,7 @@ export function StoreFooter({
           </Link>
         ))}
       </div>
-    </div>
+    </FooterSection>
   );
 
   // Falls back to the auto-populated Store > Pages list when the vendor
@@ -338,10 +319,9 @@ export function StoreFooter({
   const infoItems =
     footerConfig.infoLinks.length > 0
       ? footerConfig.infoLinks
-      : [...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : []), ...(hasFaq ? [{ label: t('FAQ'), url: `/store/${subdomain}/faq` }] : [])];
+      : [trackLink, ...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : []), ...(hasFaq ? [{ label: t('FAQ'), url: `/store/${subdomain}/faq` }] : [])];
   const InfoColumn = infoItems.length > 0 && (
-    <div>
-      <p className="text-[15px] font-semibold text-ink mb-3 uppercase">{footerConfig.infoTitle}</p>
+    <FooterSection title={footerConfig.infoTitle} upper>
       <div className="flex flex-col gap-2.5 text-[13px]">
         {infoItems.map((link, i) => (
           <Link key={i} href={link.url} className="text-accent hover:text-accent-dark transition-colors w-fit">
@@ -349,35 +329,16 @@ export function StoreFooter({
           </Link>
         ))}
       </div>
-    </div>
+    </FooterSection>
   );
 
-  const AboutColumn = !def.logoCarriesAbout && (
+  const AboutColumn = !def.logoCarriesAbout && blurbHtml && (
     <div>
-      {blurbHtml ? (
-        <div
-          className="text-[13px] text-muted leading-relaxed [&_p]:mb-2 line-clamp-6"
-          // eslint-disable-next-line react/no-danger
-          dangerouslySetInnerHTML={{ __html: blurbHtml }}
-        />
-      ) : (
-        <p className="text-[13px] text-muted leading-relaxed">
-          {storeName} is more than just a store. We&apos;re a lifestyle brand that celebrates individuality and
-          self-expression.
-        </p>
-      )}
-      {footerConfig.showPaymentIcons && footerConfig.paymentIcons.length > 0 && (
-        <div className="flex flex-wrap gap-1.5 mt-4">
-          {footerConfig.paymentIcons.map((key) => (
-            <span
-              key={key}
-              className="px-2 py-1 rounded border border-line-strong bg-surface text-[10px] font-semibold text-muted"
-            >
-              {PAYMENT_ICON_LABELS[key] ?? key}
-            </span>
-          ))}
-        </div>
-      )}
+      <div
+        className="text-[13px] text-muted leading-relaxed [&_p]:mb-2 line-clamp-6"
+        // eslint-disable-next-line react/no-danger
+        dangerouslySetInnerHTML={{ __html: blurbHtml }}
+      />
     </div>
   );
 
@@ -442,6 +403,8 @@ export function StoreFooter({
           <div key={c}>{columnContent[c]}</div>
         ))}
       </div>
+
+      {PaymentStrip}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
         <BusinessHoursTable />
