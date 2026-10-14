@@ -66,7 +66,7 @@ async function apiError(res: Response, fallback: string): Promise<CheckoutApiErr
 // custom gateway (e.g. SSLCommerz).
 export interface StorePaymentGateway {
   id: string;
-  type: 'COD' | 'ONLINE_PAYMENT' | 'SSLCOMMERZ' | 'BKASH_MERCHANT' | 'VENDOR_PAYSTATION';
+  type: 'COD' | 'ONLINE_PAYMENT' | 'SSLCOMMERZ' | 'BKASH_MERCHANT' | 'VENDOR_PAYSTATION' | 'SHURJOPAY' | 'AAMARPAY' | 'MANUAL_MOBILE';
   displayLabel: string | null;
   // A flat BDT part PLUS a percentage (0-100) of the order total
   // (subtotal + delivery + VAT - coupon + the flat part),
@@ -83,6 +83,9 @@ export interface StorePaymentGateway {
   // sends. When true, useCheckout folds platformChargeAmount into the
   // total silently instead of exposing it as its own line item.
   feeHidden: boolean;
+  // Manual Mobile Payment (Add-ons, StorePal only): the store's own wallet numbers and instructions. Null for every
+  // other gateway type.
+  manualMobile?: { accounts: { wallet: string; number: string; kind: 'PERSONAL' | 'AGENT' | 'MERCHANT' }[]; instructions: string } | null;
 }
 
 // Settings > Courier Integration > Delivery Charge / Settings > VAT —
@@ -473,6 +476,9 @@ export interface TrackedOrder {
   advanceAmount?: string;
   advanceMethod?: 'ONLINE' | 'MANUAL' | null;
   advancePaidAt?: string | null;
+  // Manual Mobile Payment (Add-ons): the wallet the shopper paid with and whether the store found the money.
+  manualPaymentWallet?: string | null;
+  manualPaymentStatus?: 'PENDING_CHECK' | 'RECEIVED' | 'NOT_RECEIVED' | null;
   /** What the advance was for: DELIVERY, PREORDER, or LINK (a payment link the store sent); null = none. */
   advanceFor?: 'DELIVERY' | 'PREORDER' | 'LINK' | null;
   status: string;

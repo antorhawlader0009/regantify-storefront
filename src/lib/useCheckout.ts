@@ -245,7 +245,9 @@ export function useCheckout(
       }
     : { ...DELIVERY_CHARGE, AROUND_DHAKA: DELIVERY_CHARGE.OUTSIDE_DHAKA, PICKUP: 0 };
   const resolvedVatCharge = vendorCharges?.vatChargeBdt ?? FALLBACK_VAT_CHARGE;
-  const paymentGateways = vendorCharges?.paymentGateways ?? FALLBACK_GATEWAYS;
+  // Manual Mobile Payment needs the TrxID form, which only StorePal's checkout (the one with formRules) has: the
+  // landing-page checkout never offers it.
+  const paymentGateways = (vendorCharges?.paymentGateways ?? FALLBACK_GATEWAYS).filter((g) => g.type !== 'MANUAL_MOBILE' || !!formRules);
 
   // "Payment Method" on checkout — the id of one of paymentGateways above
   // ("COD"/"ONLINE_PAYMENT" for the two built-ins, or a
@@ -258,6 +260,15 @@ export function useCheckout(
   // theme's own UI explicitly switches to something else.
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const selectedGateway = paymentGateways.find((g) => g.id === paymentMethod) ?? paymentGateways.find((g) => g.type === 'COD');
+
+  // Manual Mobile Payment (Add-ons): which of the store's wallets the shopper paid with, from which number, and the
+  // TrxID. The server checks them again (payment-gateways/manual-mobile.ts) and refuses a TrxID used before.
+  const [manualWallet, setManualWallet] = useState('');
+  const [manualSender, setManualSender] = useState('');
+  const [manualTrxId, setManualTrxId] = useState('');
+  const [manualError, setManualError] = useState<string | null>(null);
+  const manualMobile = selectedGateway?.type === 'MANUAL_MOBILE' ? (selectedGateway.manualMobile ?? null) : null;
+  const manualWalletInUse = manualMobile ? (manualMobile.accounts.some((a) => a.wallet === manualWallet) ? manualWallet : (manualMobile.accounts[0]?.wallet ?? '')) : '';
 
   // "Have Coupon?" (see reference checkout screenshot) — a coupon is
   // only ever previewed here (validateCoupon never touches usageCount,
@@ -752,6 +763,18 @@ export function useCheckout(
 
   const handlePlaceOrder = async () => {
     if (!validate()) return;
+    if (manualMobile) {
+      const sender = manualSender.replace(/[\s-]/g, '');
+      if (!/^01[3-9][0-9]{8}$/.test(sender)) {
+        setManualError('Type the 11-digit number you sent the money from.');
+        return;
+      }
+      if (!/^[A-Za-z0-9]{6,30}$/.test(manualTrxId.replace(/\s/g, ''))) {
+        setManualError('Type the transaction ID (TrxID) from your payment message.');
+        return;
+      }
+      setManualError(null);
+    }
     if (areaRefusal) {
       setPlaceError(areaRefusal);
       return;
@@ -830,6 +853,9 @@ export function useCheckout(
         giftCardCode: appliedGiftCard?.code,
         rewardPointsToUse: rewardPointsAmount > 0 ? rewardPointsAmount : undefined,
         paymentMethod,
+        ...(manualMobile
+          ? { manualPayment: { wallet: manualWalletInUse, senderNumber: manualSender.replace(/[\s-]/g, ''), trxId: manualTrxId.replace(/\s/g, '').toUpperCase() } }
+          : {}),
         items: lines.map((l) => ({
           productSlug: l.productSlug,
           productName: l.name,
@@ -879,7 +905,8 @@ export function useCheckout(
         return;
       }
 
-      if (selectedGateway && selectedGateway.type !== 'COD') {
+      // A mobile payment was already sent to the store's own wallet: no gateway page, straight to the thank-you page.
+      if (selectedGateway && selectedGateway.type !== 'COD' && selectedGateway.type !== 'MANUAL_MOBILE') {
         const payment =
           selectedGateway.type === 'ONLINE_PAYMENT'
             ? await initiateOrderPayment(result.orderId)
@@ -1047,6 +1074,21 @@ export function useCheckout(
     onlineOnlyNames,
     paymentMethod,
     setPaymentMethod,
+    // Manual Mobile Payment form (StorePal's CheckoutDialog only); manualMobile is null unless that gateway is picked.
+    manualMobile,
+    manualWallet: manualWalletInUse,
+    setManualWallet,
+    manualSender,
+    setManualSender: (v: string) => {
+      setManualSender(v);
+      setManualError(null);
+    },
+    manualTrxId,
+    setManualTrxId: (v: string) => {
+      setManualTrxId(v.toUpperCase());
+      setManualError(null);
+    },
+    manualError,
     // Delivery charge to pay online before a COD order is placed, with what's left for the courier;
     // null when none applies. Only StorePal's CheckoutDialog renders it.
     codAdvance,

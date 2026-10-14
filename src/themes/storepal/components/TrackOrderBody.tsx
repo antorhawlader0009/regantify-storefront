@@ -280,7 +280,11 @@ export function TrackOrderBody({
           <span>{ui(lang, 'total')}</span>
           <span>{formatPrice(order.total)}</span>
         </div>
-        <p className="mt-1 text-[12px] text-muted">{order.paymentMethod === 'ONLINE_PAYMENT' ? ui(lang, 'paidOnline') : ui(lang, 'cod')}</p>
+        <p className="mt-1 text-[12px] text-muted">{order.manualPaymentStatus && order.paymentMethod !== 'COD'
+            ? `${order.manualPaymentWallet ?? ''} · ${ui(lang, order.manualPaymentStatus === 'RECEIVED' ? 'mobileReceived' : 'mobileChecking')}`
+            : order.paymentMethod === 'COD'
+              ? ui(lang, 'cod')
+              : ui(lang, 'paidOnline')}</p>
         {order.paymentMethod === 'COD' && order.advancePaidAt && Number(order.advanceAmount) > 0 && (
           <div className="mt-2 space-y-1 text-[13px] text-ink">
             <p className="flex items-center justify-between">

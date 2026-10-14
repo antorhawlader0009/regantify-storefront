@@ -159,7 +159,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
               ? 'This order has been cancelled. You are welcome to place a new one any time.'
               : awaitingCodVerification
               ? 'One more step: confirm your order with the code we just texted you.'
-              : order.paymentMethod === 'ONLINE_PAYMENT'
+              : order.manualPaymentStatus && order.paymentMethod !== 'COD'
+                ? `Your order is received. The store will check your ${order.manualPaymentWallet ?? 'mobile'} payment and then send your order.`
+              : order.paymentMethod !== 'COD'
                 ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'
                 : advancePaid > 0
                   ? order.advanceFor === 'LINK'
@@ -304,7 +306,13 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
           <div className="px-5 py-4 border-t border-line bg-canvas flex items-center gap-2 text-[12.5px] text-ink">
             <Package size={14} className="text-accent" />
             Payment Method:{' '}
-            <span className="font-semibold">{order.paymentMethod === 'ONLINE_PAYMENT' ? 'Online Payment' : 'Cash on Delivery'}</span>
+            <span className="font-semibold">
+              {order.manualPaymentStatus && order.paymentMethod !== 'COD'
+                ? `${order.manualPaymentWallet ?? 'Mobile'} payment`
+                : order.paymentMethod === 'COD'
+                  ? 'Cash on Delivery'
+                  : 'Online Payment'}
+            </span>
           </div>
         </div>
 

@@ -33,6 +33,9 @@ const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   SSLCOMMERZ: 'SSLCommerz',
   BKASH_MERCHANT: 'bKash Merchant',
   VENDOR_PAYSTATION: 'PayStation',
+  MANUAL_MOBILE: 'Mobile payment (bKash, Nagad)',
+  SHURJOPAY: 'shurjoPay',
+  AAMARPAY: 'aamarPay',
 };
 
 type Lang = 'bn' | 'en';
@@ -79,6 +82,11 @@ const EN = {
   noOnlineNote: 'This order cannot be placed right now because the store has no online payment. Please contact the store.',
   gatewayLabels: { COD: 'Cash on Delivery', ONLINE_PAYMENT: 'Online Payment' } as Record<string, string>,
   onlineHint: '(bKash, Nagad, cards & more via PayStation)',
+  mmpTitle: (total: string) => `Send ${total} to one of these numbers, then fill in the two boxes below`,
+  mmpKind: { PERSONAL: 'Personal (Send Money)', AGENT: 'Agent (Cash Out)', MERCHANT: 'Merchant (Payment)' } as Record<string, string>,
+  mmpCopy: 'Copy',
+  mmpSender: 'Number you sent from',
+  mmpTrx: 'Transaction ID (TrxID)',
   verifyTitle: 'Verify your phone number',
   verifyBody: (phone: string) => `We sent a 6-digit code to ${phone}. Enter it to place your order.`,
   enterCode: 'Enter code',
@@ -194,6 +202,11 @@ const BN: Copy = {
   noOnlineNote: 'দোকানে অনলাইন পেমেন্ট চালু নেই, তাই এখন এই অর্ডার করা যাচ্ছে না। দোকানের সাথে যোগাযোগ করুন।',
   gatewayLabels: { COD: 'ক্যাশ অন ডেলিভারি', ONLINE_PAYMENT: 'অনলাইন পেমেন্ট' },
   onlineHint: '(পে-স্টেশনের মাধ্যমে বিকাশ, নগদ, কার্ড ও আরও অনেক কিছু)',
+  mmpTitle: (total: string) => `নিচের যেকোনো একটি নম্বরে ${total} পাঠান, তারপর নিচের ঘর দুটি পূরণ করুন`,
+  mmpKind: { PERSONAL: 'পার্সোনাল (সেন্ড মানি)', AGENT: 'এজেন্ট (ক্যাশ আউট)', MERCHANT: 'মার্চেন্ট (পেমেন্ট)' },
+  mmpCopy: 'কপি',
+  mmpSender: 'যে নম্বর থেকে পাঠিয়েছেন',
+  mmpTrx: 'ট্রানজেকশন আইডি (TrxID)',
   verifyTitle: 'আপনার ফোন নম্বর যাচাই করুন',
   verifyBody: (phone) => `${phone} নম্বরে একটি ৬ সংখ্যার কোড পাঠানো হয়েছে। অর্ডার করতে কোডটি দিন।`,
   enterCode: 'কোড দিন',
@@ -353,6 +366,14 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     onlineOnlyNames,
     paymentMethod,
     setPaymentMethod,
+    manualMobile,
+    manualWallet,
+    setManualWallet,
+    manualSender,
+    setManualSender,
+    manualTrxId,
+    setManualTrxId,
+    manualError,
     codAdvance,
     aroundDhaka,
     pickup,
@@ -1111,6 +1132,65 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </label>
                 ))}
               </div>
+              {/* Manual Mobile Payment (Add-ons): send the total to one of the store's numbers, then type the sender
+                  number and the TrxID. The store checks its wallet before sending the order. */}
+              {manualMobile && (
+                <div className="mt-4 rounded-md border border-line bg-white p-3.5">
+                  <p className="m-0 text-[13px] font-semibold text-ink">{t.mmpTitle(formatPrice(visibleGrandTotal))}</p>
+                  <div className="mt-2.5 space-y-1.5">
+                    {manualMobile.accounts.map((a) => (
+                      <label key={a.wallet + a.number} className="flex items-center gap-2.5 rounded-md border border-line px-3 py-2 text-[13px] text-ink cursor-pointer">
+                        <input
+                          type="radio"
+                          name="mmp-wallet"
+                          checked={manualWallet === a.wallet}
+                          onChange={() => setManualWallet(a.wallet)}
+                          className="accent-accent w-4 h-4"
+                        />
+                        <span className="font-semibold">{a.wallet}</span>
+                        <span className="tabular-nums">{a.number}</span>
+                        <span className="text-[11px] text-muted">{t.mmpKind[a.kind]}</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            void navigator.clipboard?.writeText(a.number).catch(() => undefined);
+                          }}
+                          className="ml-auto text-[11.5px] font-semibold text-accent"
+                        >
+                          {t.mmpCopy}
+                        </button>
+                      </label>
+                    ))}
+                  </div>
+                  {manualMobile.instructions && <p className="m-0 mt-2.5 whitespace-pre-line text-[12.5px] text-muted">{manualMobile.instructions}</p>}
+                  <div className="mt-3 grid gap-2.5 sm:grid-cols-2">
+                    <label className="block">
+                      <span className="block text-[12px] font-medium text-ink mb-1">{t.mmpSender}</span>
+                      <input
+                        type="tel"
+                        inputMode="numeric"
+                        value={manualSender}
+                        onChange={(e) => setManualSender(e.target.value)}
+                        placeholder="01XXXXXXXXX"
+                        className="w-full rounded-md border border-line px-3 py-2 text-[13.5px] text-ink outline-none focus:border-ink"
+                      />
+                    </label>
+                    <label className="block">
+                      <span className="block text-[12px] font-medium text-ink mb-1">{t.mmpTrx}</span>
+                      <input
+                        type="text"
+                        autoCapitalize="characters"
+                        value={manualTrxId}
+                        onChange={(e) => setManualTrxId(e.target.value)}
+                        placeholder="8N7A2B3C4D"
+                        className="w-full rounded-md border border-line px-3 py-2 text-[13.5px] uppercase text-ink outline-none focus:border-ink"
+                      />
+                    </label>
+                  </div>
+                  {manualError && <p className="m-0 mt-2 text-[12px] text-accent">{manualError}</p>}
+                </div>
+              )}
               {codBlocked && (
                 <p className="m-0 mt-3 text-[12.5px] text-muted">
                   {paymentGateways.some((g) => g.type !== 'COD') ? t.onlineOnlyNote(onlineOnlyNames.slice(0, 3).join(', ')) : t.noOnlineNote}

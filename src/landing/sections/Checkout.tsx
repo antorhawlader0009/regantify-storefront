@@ -31,6 +31,9 @@ const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   SSLCOMMERZ: 'SSLCommerz',
   BKASH_MERCHANT: 'bKash Merchant',
   VENDOR_PAYSTATION: 'PayStation',
+  MANUAL_MOBILE: 'Mobile payment',
+  SHURJOPAY: 'shurjoPay',
+  AAMARPAY: 'aamarPay',
 };
 
 const INPUT_CLASS =

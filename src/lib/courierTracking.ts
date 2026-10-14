@@ -6,7 +6,7 @@ export type CourierTrackingStage = 'booked' | 'picked_up' | 'in_transit' | 'out_
 
 export interface CourierTracking {
   // MANUAL: own delivery or a courier with no integration (tracking-plan.md Step 6).
-  provider: 'PATHAO' | 'STEADFAST' | 'REDX' | 'MANUAL';
+  provider: 'PATHAO' | 'STEADFAST' | 'REDX' | 'CARRYBEE' | 'MANUAL';
   providerName: string;
   /** Empty for a manual delivery with no tracking ID (an own rider). */
   trackingId: string;

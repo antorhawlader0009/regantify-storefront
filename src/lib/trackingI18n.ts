@@ -56,6 +56,8 @@ export type UiKey =
   | 'items'
   | 'total'
   | 'paidOnline'
+  | 'mobileChecking'
+  | 'mobileReceived'
   | 'cod'
   | 'paidInAdvance'
   | 'dueOnDelivery'
@@ -154,6 +156,8 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     items: 'Items',
     total: 'Total',
     paidOnline: 'Paid online',
+    mobileChecking: 'Paid by mobile, the store is checking',
+    mobileReceived: 'Paid by mobile, received',
     cod: 'Cash on delivery',
     paidInAdvance: 'Paid in advance',
     dueOnDelivery: 'Pay on delivery',
@@ -250,6 +254,8 @@ const UI: Record<TrackLang, Record<UiKey, string>> = {
     items: 'পণ্যসমূহ',
     total: 'মোট',
     paidOnline: 'অনলাইনে পরিশোধিত',
+    mobileChecking: 'মোবাইলে পরিশোধিত, দোকান যাচাই করছে',
+    mobileReceived: 'মোবাইলে পরিশোধিত, পাওয়া গেছে',
     cod: 'ক্যাশ অন ডেলিভারি',
     paidInAdvance: 'আগেই পরিশোধিত',
     dueOnDelivery: 'ডেলিভারির সময় পরিশোধ',
