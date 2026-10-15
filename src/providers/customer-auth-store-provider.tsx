@@ -3,7 +3,7 @@
 import { type ReactNode, createContext, useContext, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 import { type CustomerAuthStore, createCustomerAuthStore } from '@/stores/customer-auth-store';
-import { refreshCustomerSession, customerLogout as apiLogout } from '@/lib/customerAuthApi';
+import { getShopperStore, refreshCustomerSession, customerLogout as apiLogout } from '@/lib/customerAuthApi';
 import { clearShopperData } from '@/lib/clearShopperData';
 
 export type CustomerAuthStoreApi = ReturnType<typeof createCustomerAuthStore>;
@@ -37,8 +37,16 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
       // token. If refresh fails (cookie missing/expired), the persisted
       // profile is cleared too, so the UI doesn't keep claiming the
       // shopper is logged in when they no longer have a valid session.
-      const { customer } = store.getState();
-      if (!customer) {
+      const { customer, subdomain } = store.getState();
+      const current = getShopperStore();
+      if (!customer || !current) {
+        setHydrated(true);
+        return;
+      }
+      // A sign-in belongs to the store it was made at (server security F-46): on another store's page (path-based
+      // addresses share one browser origin) it is dropped, not refreshed.
+      if (subdomain !== current) {
+        store.getState().clearSession();
         setHydrated(true);
         return;
       }

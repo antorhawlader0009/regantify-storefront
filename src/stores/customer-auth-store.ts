@@ -1,6 +1,6 @@
 import { createStore } from 'zustand/vanilla';
 import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Customer } from '@/lib/customerAuthApi';
+import { getShopperStore, type Customer } from '@/lib/customerAuthApi';
 
 export interface CustomerAuthState {
   customer: Customer | null;
@@ -12,6 +12,9 @@ export interface CustomerAuthState {
   // cookie (see refreshCustomerSession) to silently re-establish a
   // session if one is still valid.
   accessToken: string | null;
+  // The store this sign-in was made at (server security F-46: one sign-in per store). On a page of another store the
+  // session is not used and is cleared.
+  subdomain: string | null;
 }
 
 export interface CustomerAuthActions {
@@ -22,7 +25,7 @@ export interface CustomerAuthActions {
 
 export type CustomerAuthStore = CustomerAuthState & CustomerAuthActions;
 
-export const defaultInitState: CustomerAuthState = { customer: null, accessToken: null };
+export const defaultInitState: CustomerAuthState = { customer: null, accessToken: null, subdomain: null };
 
 // Store factory — called fresh per request via CustomerAuthProvider, same
 // reasoning as createCartStore: never at module scope, or one shopper's
@@ -32,12 +35,12 @@ export const createCustomerAuthStore = (initState: CustomerAuthState = defaultIn
     persist(
       (set) => ({
         ...initState,
-        setSession: (customer, accessToken) => set({ customer, accessToken }),
+        setSession: (customer, accessToken) => set({ customer, accessToken, subdomain: getShopperStore() }),
         // Refreshes the persisted profile in place after Account > Edit
         // Profile saves — the access token is untouched, since a
         // profile edit doesn't invalidate the current session.
         updateCustomer: (customer) => set({ customer }),
-        clearSession: () => set({ customer: null, accessToken: null }),
+        clearSession: () => set({ customer: null, accessToken: null, subdomain: null }),
       }),
       {
         name: 'regantify-customer',
@@ -45,7 +48,7 @@ export const createCustomerAuthStore = (initState: CustomerAuthState = defaultIn
         skipHydration: true,
         // Only the customer profile survives a reload — see the
         // accessToken comment above for why the token itself doesn't.
-        partialize: (state) => ({ customer: state.customer }),
+        partialize: (state) => ({ customer: state.customer, subdomain: state.subdomain }),
       },
     ),
   );

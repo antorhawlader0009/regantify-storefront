@@ -40,8 +40,13 @@ function rewriteToStore(request: NextRequest, subdomain: string) {
   const url = request.nextUrl.clone();
 
   // Someone already hit /store/:subdomain directly (the store's own links are written that way) — don't double-rewrite,
-  // but it is still the store's own address, so its canonical link must be the clean form.
-  if (url.pathname.startsWith('/store/')) return NextResponse.next({ request: { headers } });
+  // but it is still the store's own address, so its canonical link must be the clean form. Only THIS store's path: a
+  // store's address must never serve another store's pages (that store's Custom Code would run on this store's origin,
+  // with its localStorage and its shoppers). /store/<other>/... is rewritten under this store, where it 404s.
+  if (url.pathname.startsWith('/store/')) {
+    const segment = url.pathname.split('/')[2]?.toLowerCase() ?? '';
+    if (segment === subdomain.toLowerCase()) return NextResponse.next({ request: { headers } });
+  }
 
   url.pathname = `/store/${subdomain}${url.pathname}`;
   return NextResponse.rewrite(url, { request: { headers } });

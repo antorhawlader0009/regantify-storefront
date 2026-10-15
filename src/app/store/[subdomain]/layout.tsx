@@ -3,6 +3,7 @@ import { getStoreInfo, siteUrl, StoreNotFoundError, type StorefrontLmsForms } fr
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
+import { ShopperStoreScope } from '@/components/ShopperStoreScope';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { PopupCampaigns } from '@/themes/storepal/components/PopupCampaigns';
 import { RecentBuyersPopup } from '@/themes/storepal/components/RecentBuyersPopup';
@@ -200,6 +201,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       style={brandStyle}
     >
       {fontHref && <link rel="stylesheet" href={fontHref} />}
+      {/* Which store a shopper's sign-in is for (security F-46). Renders nothing. */}
+      <ShopperStoreScope subdomain={subdomain} />
       {/* Monthly Visit tracking (PLAN.md Step 5) — mounted here, not
           inside any theme's own tree, so every theme is counted equally.
           Renders nothing; see VisitBeacon's own doc comment. Only for a

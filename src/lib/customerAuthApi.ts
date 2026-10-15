@@ -13,6 +13,24 @@ function apiOrigin(): string {
   return `${window.location.protocol}//${window.location.hostname}:4000`;
 }
 
+// The store this page belongs to (set by ShopperStoreScope in the store layout). A shopper account is platform-wide,
+// but every sign-in is for ONE store (server security F-46): sign-in and refresh say which store, and the server checks
+// it is the store whose page is asking. A sign-in at one store never works at another.
+let shopperStore: string | null = null;
+
+export function setShopperStore(subdomain: string | null): void {
+  shopperStore = subdomain ? subdomain.toLowerCase() : null;
+}
+
+export function getShopperStore(): string | null {
+  return shopperStore;
+}
+
+function storeOrThrow(): string {
+  if (!shopperStore) throw new Error('Please open the store to sign in.');
+  return shopperStore;
+}
+
 export interface Customer {
   id: string;
   phone: string;
@@ -122,12 +140,12 @@ export function resendSignupOtp(
 
 /** Step 2 of signup — verifies the code and creates the account, returning a full session. */
 export function verifyCustomerSignup(phone: string, code: string) {
-  return post<AuthResult>('/v1/customer-auth/signup/verify-otp', { phone, code });
+  return post<AuthResult>('/v1/customer-auth/signup/verify-otp', { phone, code, subdomain: storeOrThrow() });
 }
 
 /** "Email Login" — identifier can be either an email or a phone number (see CustomerLoginDto). */
 export function customerLogin(identifier: string, password: string) {
-  return post<AuthResult>('/v1/customer-auth/login', { identifier, password });
+  return post<AuthResult>('/v1/customer-auth/login', { identifier, password, subdomain: storeOrThrow() });
 }
 
 /** "OTP Login" — step 1: sends a login code to an existing account's phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
@@ -140,7 +158,7 @@ export function otpLoginSend(phone: string, subdomain?: string) {
 
 /** "OTP Login" — step 2: verifies the code and returns a full session. */
 export function otpLoginVerify(phone: string, code: string) {
-  return post<AuthResult>('/v1/customer-auth/otp-login/verify', { phone, code });
+  return post<AuthResult>('/v1/customer-auth/otp-login/verify', { phone, code, subdomain: storeOrThrow() });
 }
 
 /** "Change Password" (forgot-password) — step 1: texts a reset code to the account's phone. */
@@ -164,10 +182,14 @@ export function resetPassword(resetToken: string, password: string) {
   return post<{ message: string }>('/v1/customer-auth/forgot-password/reset', { resetToken, password });
 }
 
+/** Renews this store's sign-in from this store's own refresh cookie (one per store). */
 export async function refreshCustomerSession(): Promise<AuthResult> {
+  if (!shopperStore) throw new Error('Session expired.');
   const res = await fetch(`${apiOrigin()}/v1/customer-auth/refresh`, {
     method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
     credentials: 'include',
+    body: JSON.stringify({ subdomain: shopperStore }),
   });
   if (!res.ok) {
     throw new Error('Session expired.');
