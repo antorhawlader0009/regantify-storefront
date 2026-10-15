@@ -35,6 +35,7 @@ const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   VENDOR_PAYSTATION: 'PayStation',
   MANUAL_MOBILE: 'Mobile payment (bKash, Nagad)',
   SHURJOPAY: 'shurjoPay',
+  EPS: 'EPS (cards, bKash, Nagad)',
   AAMARPAY: 'aamarPay',
 };
 

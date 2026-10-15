@@ -28,8 +28,8 @@ const HANDOFF_KEY = 'regantify-last-order';
 // initiateForOrder's callback_url), so the prefix is what decides which
 // pair of reconcile/status endpoints to poll.
 function isCustomGatewayInvoice(invoiceNumber: string): boolean {
-  // RGF-SSL- SSLCommerz, RGF-SPY- shurjoPay: both are the store's own gateways (VendorGatewayTransaction).
-  return invoiceNumber.startsWith('RGF-SSL-') || invoiceNumber.startsWith('RGF-SPY-');
+  // RGF-SSL- SSLCommerz, RGF-SPY- shurjoPay, RGF-EPS- EPS: all are the store's own gateways (VendorGatewayTransaction).
+  return invoiceNumber.startsWith('RGF-SSL-') || invoiceNumber.startsWith('RGF-SPY-') || invoiceNumber.startsWith('RGF-EPS-');
 }
 
 /**
