@@ -85,6 +85,10 @@ export async function getStorePaymentMethods(subdomain: string): Promise<string[
       SSLCOMMERZ: 'SSLCommerz',
       BKASH_MERCHANT: 'bKash',
       VENDOR_PAYSTATION: 'PayStation',
+      SHURJOPAY: 'shurjoPay',
+      EPS: 'EPS',
+      AAMARPAY: 'aamarPay',
+      PORTWALLET: 'PortWallet',
     };
     const labels: string[] = data.paymentGateways
       .map((g: { type: string; displayLabel?: string | null }) => g.displayLabel?.trim() || DEFAULT_LABEL[g.type])

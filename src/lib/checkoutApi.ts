@@ -66,7 +66,7 @@ async function apiError(res: Response, fallback: string): Promise<CheckoutApiErr
 // custom gateway (e.g. SSLCommerz).
 export interface StorePaymentGateway {
   id: string;
-  type: 'COD' | 'ONLINE_PAYMENT' | 'SSLCOMMERZ' | 'BKASH_MERCHANT' | 'VENDOR_PAYSTATION' | 'SHURJOPAY' | 'EPS' | 'AAMARPAY' | 'MANUAL_MOBILE';
+  type: 'COD' | 'ONLINE_PAYMENT' | 'SSLCOMMERZ' | 'BKASH_MERCHANT' | 'VENDOR_PAYSTATION' | 'SHURJOPAY' | 'EPS' | 'AAMARPAY' | 'MANUAL_MOBILE' | 'PORTWALLET';
   displayLabel: string | null;
   // A flat BDT part PLUS a percentage (0-100) of the order total
   // (subtotal + delivery + VAT - coupon + the flat part),

@@ -31,12 +31,13 @@ const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   COD: 'Cash on Delivery',
   ONLINE_PAYMENT: 'Online Payment',
   SSLCOMMERZ: 'SSLCommerz',
-  BKASH_MERCHANT: 'bKash Merchant',
+  BKASH_MERCHANT: 'bKash',
   VENDOR_PAYSTATION: 'PayStation',
   MANUAL_MOBILE: 'Mobile payment (bKash, Nagad)',
   SHURJOPAY: 'shurjoPay',
   EPS: 'EPS (cards, bKash, Nagad)',
   AAMARPAY: 'aamarPay',
+  PORTWALLET: 'PortWallet',
 };
 
 type Lang = 'bn' | 'en';
