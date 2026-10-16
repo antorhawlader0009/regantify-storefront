@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { headers } from 'next/headers';
 import { getStoreProducts, StoreNotFoundError, type StorefrontProduct } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 // Store > Integrations > Facebook Pixel's Catalog Feed, at
 // {store}/feed/facebook-catalog (the dashboard shows this URL). The vendor
@@ -39,11 +40,12 @@ const COLUMNS = [
 type Row = Partial<Record<(typeof COLUMNS)[number], string>>;
 
 export async function GET(_request: Request, { params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = await params;
+  // The plain subdomain out of the internal segment (lib/storeAddress.ts, PERFORMANCE-PLAN.md Step 8).
+  const subdomain = storeSubdomain((await params).subdomain);
 
   let data;
   try {
-    data = await getStoreProducts(subdomain);
+    data = await getStoreProducts(subdomain, { full: true }); // descriptions and variation photos go into the feed
   } catch (err) {
     if (err instanceof StoreNotFoundError) return new NextResponse('Not found', { status: 404 });
     throw err;

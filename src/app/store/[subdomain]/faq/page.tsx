@@ -5,13 +5,14 @@ import { resolveTheme } from '@/lib/theme';
 import { safeJsonLd } from '@/lib/safeJsonLd';
 import { FaqView } from '@/themes/storepal/views/FaqView';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   try {
     const { store } = await getStoreFaq(subdomain);
     const path = `/store/${subdomain}/faq`;
@@ -25,7 +26,7 @@ const plain = (html: string) => html.replace(/<[^>]*>/g, ' ').replace(/&nbsp;/g,
 
 // Store > Content > FAQ (TellMe idea 122). StorePal only: any other theme is a 404. The page carries FAQPage structured data so Google can show the answers.
 export default async function FaqPage({ params }: PageProps) {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   let data;
   try {
     data = await getStoreFaq(subdomain);

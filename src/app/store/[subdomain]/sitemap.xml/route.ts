@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getSitemapData, getStoreBlog, getStoreFaq, siteUrl } from '@/lib/storefrontApi';
+import { decodeStoreSegment } from '@/lib/storeAddress';
 
 // One store's sitemap. On a store's own address (/sitemap.xml on {sub}.ROOT_DOMAIN or a custom domain) the middleware rewrites
 // here, and every URL below is the clean public form of that page on the same address the store is reached on (siteUrl).
@@ -28,7 +29,8 @@ interface Entry {
 }
 
 export async function GET(_request: Request, { params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = await params;
+  // The address the request came in on travels in the internal segment (lib/storeAddress.ts, PERFORMANCE-PLAN.md Step 8).
+  const { subdomain, address } = decodeStoreSegment((await params).subdomain);
 
   const data = await getSitemapData(subdomain).catch(() => null);
   if (!data || !data.indexable) return new NextResponse('Not found', { status: 404 });
@@ -39,7 +41,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
     getStoreFaq(subdomain).catch(() => ({ items: [] as unknown[] })),
   ]);
 
-  const url = (path: string) => siteUrl(`/store/${subdomain}${path}`);
+  const url = (path: string) => siteUrl(`/store/${subdomain}${path}`, address);
   const newest = data.products.map((p) => p.updatedAt).sort().at(-1) ?? null;
 
   const entries: Entry[] = [

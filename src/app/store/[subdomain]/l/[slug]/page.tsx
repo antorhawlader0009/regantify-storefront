@@ -10,6 +10,12 @@ import {
 import { LandingPageView } from '@/landing/LandingPageView';
 import { StoreChrome } from '@/landing/StoreChrome';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
+
+// Rendered on the first visit and then kept, like the rest of the store (PERFORMANCE-PLAN.md Step 8, see the store layout).
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -26,7 +32,7 @@ function isHomepageSentinel(slug: string) {
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   if (isHomepageSentinel(slug)) return { title: 'Not found' };
 
   try {
@@ -57,7 +63,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  * normal theme chrome via StoreChrome.
  */
 export default async function LandingPagePage({ params }: PageProps) {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   if (isHomepageSentinel(slug)) notFound();
 
   let data;

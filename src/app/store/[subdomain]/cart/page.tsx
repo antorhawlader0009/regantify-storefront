@@ -5,13 +5,14 @@ import { resolveTheme } from '@/lib/theme';
 import { CartView as MediumCartView } from '@/themes/medium/views/CartView';
 import { CartView as MinimalCartView } from '@/themes/minimal/views/CartView';
 import { CartView as StorepalCartView } from '@/themes/storepal/views/CartView';
+import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   try {
     const { store } = await getStoreProducts(subdomain);
     return { title: { absolute: `Your Cart — ${store.storeName}` } };
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function CartPage({ params }: PageProps) {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
 
   let data;
   try {

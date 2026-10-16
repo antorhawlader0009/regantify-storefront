@@ -4,13 +4,19 @@ import { getStoreBlogPost, getStoreProducts, StoreBlogPostNotFoundError, StoreNo
 import { resolveTheme } from '@/lib/theme';
 import { BlogPostView } from '@/themes/storepal/views/BlogPostView';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
+
+// Rendered on the first visit and then kept, like the rest of the store (PERFORMANCE-PLAN.md Step 8, see the store layout).
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   try {
     const { store, post } = await getStoreBlogPost(subdomain, slug);
     const path = `/store/${subdomain}/blog/${slug}`;
@@ -27,7 +33,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // One Store > Magazine post (TellMe idea 106). StorePal only; a draft, a scheduled post and any other theme are a 404.
 export default async function BlogPostPage({ params }: PageProps) {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   let data;
   try {
     data = await getStoreBlogPost(subdomain, slug);

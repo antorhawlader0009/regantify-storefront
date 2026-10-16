@@ -5,9 +5,10 @@ import { useStoreTheme } from '@/providers/theme-provider';
 import { OrdersView as MediumOrdersView } from '@/themes/medium/views/OrdersView';
 import { OrdersView as MinimalOrdersView } from '@/themes/minimal/views/OrdersView';
 import { TrackLookupView } from '@/themes/storepal/views/TrackLookupView';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 export default function TrackOrderPage({ params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = use(params);
+  const subdomain = storeSubdomain(use(params).subdomain);
   const theme = useStoreTheme();
 
   // StorePal has its own tracking screen (tracking-plan.md Step 4): the order number + phone

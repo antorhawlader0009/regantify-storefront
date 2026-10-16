@@ -4,13 +4,14 @@ import { getStoreBlog, getStoreProducts, StoreNotFoundError, siteUrl } from '@/l
 import { resolveTheme } from '@/lib/theme';
 import { BlogListView } from '@/themes/storepal/views/BlogListView';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   try {
     const { store } = await getStoreBlog(subdomain, 1);
     const path = `/store/${subdomain}/blog`;
@@ -22,7 +23,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // Store > Magazine's list (TellMe idea 106). StorePal only: any other theme is a 404.
 export default async function BlogPage({ params }: PageProps) {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   let data;
   try {
     data = await getStoreBlog(subdomain);

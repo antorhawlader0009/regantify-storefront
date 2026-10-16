@@ -3,16 +3,15 @@ import { getStoreInfo, siteUrl, StoreNotFoundError, type StorefrontLmsForms } fr
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
+import { WebVitalsBeacon } from '@/components/WebVitalsBeacon';
 import { ShopperStoreScope } from '@/components/ShopperStoreScope';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
-import { PopupCampaigns } from '@/themes/storepal/components/PopupCampaigns';
-import { RecentBuyersPopup } from '@/themes/storepal/components/RecentBuyersPopup';
 import { StoreAwayBanner } from '@/themes/storepal/components/StoreAwayBanner';
 import type { StorefrontStoreAway } from '@/lib/storeAway';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import type { BusinessHours } from '@/lib/businessHours';
-import { CompareBar } from '@/themes/storepal/components/CompareBar';
+import { LazyCompareBar, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
 import { WishlistSync } from '@/themes/storepal/components/WishlistSync';
 import { MetaPixel } from '@/components/MetaPixel';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
@@ -28,6 +27,19 @@ import type {
   StorefrontPopupCampaign,
   StorefrontTiktokPixel,
 } from '@/lib/storefrontApi';
+import { storeParams } from '@/lib/storeRequest';
+
+// PERFORMANCE-PLAN.md Step 8: a store page reads no request data any more (the address travels in the path, see
+// lib/storeAddress.ts), so Next keeps the rendered page and serves it again for up to a minute, the same window as the
+// data it shows. A vendor's edit clears it at once through /api/revalidate (revalidateTag on the store's tags). Pages
+// that read the request (tracking/payment links, the home page's query view) are still rendered every time.
+export const revalidate = 60;
+
+// No store is built ahead of time; each page is rendered on its first visit and then kept (Step 8). Next only keeps the
+// pages of a dynamic route when the route lists its params, so it lists none.
+export function generateStaticParams() {
+  return [];
+}
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -45,7 +57,7 @@ interface LayoutProps {
  * platform default" contract as this field's schema comment.
  */
 export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   try {
     const store = await getStoreInfo(subdomain);
     const metadata: Metadata = {};
@@ -127,7 +139,7 @@ function googleFontsHref(fontNames: (string | null | undefined)[]): string | nul
  * div, never blocks rendering.
  */
 export default async function StoreLayout({ children, params }: LayoutProps) {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
 
   let theme = resolveTheme('MEDIUM');
   let storeExists = false;
@@ -200,6 +212,10 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       data-layout={theme === 'STOREPAL' && designSettings?.layoutType === 'EXTENDED' ? 'extended' : undefined}
       style={brandStyle}
     >
+      {/* A vendor-picked font: open the connection to Google Fonts early (PERFORMANCE-PLAN.md Step 11); `display=swap` is in
+          the address, so text shows at once in the theme font and swaps when the font arrives. */}
+      {fontHref && <link rel="preconnect" href="https://fonts.googleapis.com" />}
+      {fontHref && <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />}
       {fontHref && <link rel="stylesheet" href={fontHref} />}
       {/* Which store a shopper's sign-in is for (security F-46). Renders nothing. */}
       <ShopperStoreScope subdomain={subdomain} />
@@ -208,6 +224,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           Renders nothing; see VisitBeacon's own doc comment. Only for a
           store that actually resolved — see storeExists above. */}
       {storeExists && <VisitBeacon subdomain={subdomain} />}
+      {/* Real shoppers' page speed for Super Admin > System status (PERFORMANCE-PLAN.md Step 1). Renders nothing. */}
+      {storeExists && <WebVitalsBeacon subdomain={subdomain} />}
       {/* Store > Integrations > Facebook Pixel — StorePal only, like GDPR
           Prompt below (landing pages included, since they render inside
           this layout). Waits for GDPR consent when the prompt is on. See
@@ -252,9 +270,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         {theme === 'STOREPAL' ? (
           <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms} verifiedSeller={verifiedSeller}>
             <WishlistSync subdomain={subdomain} />
-            <CompareBar subdomain={subdomain} />
+            <LazyCompareBar subdomain={subdomain} />
             {/* "Someone bought" popup (TellMe idea 123): off unless the store turned it on; real orders only. */}
-            <RecentBuyersPopup subdomain={subdomain} />
+            <LazyRecentBuyersPopup subdomain={subdomain} />
             {/* Store > Store Away (holiday mode): a strip above every page while the store is away. */}
             {storeAway && <StoreAwayBanner away={storeAway} />}
             {children}
@@ -269,7 +287,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       {/* Marketing > Campaigns > Popup — StorePal only, like the GDPR Prompt. Which popup shows where, when
           and to whom is worked out in the browser; see PopupCampaigns.tsx. */}
       {storeExists && theme === 'STOREPAL' && popupCampaigns.length > 0 && (
-        <PopupCampaigns subdomain={subdomain} popups={popupCampaigns} accentColor={accentColor ?? null} />
+        <LazyPopupCampaigns subdomain={subdomain} popups={popupCampaigns} accentColor={accentColor ?? null} />
       )}
       {/* Store > Design > Custom CSS / Head Scripts / JavaScript Code —
           StorePal only, like GDPR above. The CSS is server-rendered after

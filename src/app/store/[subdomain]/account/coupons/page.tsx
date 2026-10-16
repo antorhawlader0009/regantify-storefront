@@ -2,6 +2,7 @@
 
 import { use } from 'react';
 import { CouponsView } from '@/themes/storepal/views/account/CouponsView';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 // "Your Coupons" — new in this task, no Medium/Minimal equivalent exists
 // yet (see StorePal theme's own build notes), so this route isn't
@@ -10,6 +11,6 @@ import { CouponsView } from '@/themes/storepal/views/account/CouponsView';
 // selected, the same way a brand-new feature with only one theme's
 // design to go on would.
 export default function CustomerCouponsPage({ params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = use(params);
+  const subdomain = storeSubdomain(use(params).subdomain);
   return <CouponsView subdomain={subdomain} />;
 }

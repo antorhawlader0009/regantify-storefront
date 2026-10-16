@@ -4,13 +4,19 @@ import { getStoreCollection, StoreNotFoundError, CollectionNotFoundError, siteUr
 import { resolveTheme } from '@/lib/theme';
 import { CollectionView } from '@/themes/storepal/views/CollectionView';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
+
+// Rendered on the first visit and then kept, like the rest of the store (PERFORMANCE-PLAN.md Step 8, see the store layout).
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   try {
     const { collection, store } = await getStoreCollection(subdomain, slug);
     const description = `Shop the ${collection.name} collection from ${store.storeName}.`;
@@ -28,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 // Collections (hand-picked or by rules, TellMe idea 72) are built for StorePal; other themes 404 here.
 export default async function CollectionPage({ params }: PageProps) {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   let data;
   try {
     data = await getStoreCollection(subdomain, slug);

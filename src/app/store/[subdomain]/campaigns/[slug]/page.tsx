@@ -5,13 +5,19 @@ import { resolveTheme } from '@/lib/theme';
 import { CampaignView as MediumCampaignView } from '@/themes/medium/views/CampaignView';
 import { CampaignView as StorepalCampaignView } from '@/themes/storepal/views/CampaignView';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
+
+// Rendered on the first visit and then kept, like the rest of the store (PERFORMANCE-PLAN.md Step 8, see the store layout).
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   try {
     const { campaign, store } = await getStoreCampaign(subdomain, slug);
     const description = `Shop the ${campaign.name} campaign from ${store.storeName}.`;
@@ -31,7 +37,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // Minimal genuinely 404s here rather than falling back to some improvised
 // Minimal rendering, since this was deliberately never built for Minimal.
 export default async function CampaignPage({ params }: PageProps) {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
 
   let data;
   try {

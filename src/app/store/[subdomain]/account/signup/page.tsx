@@ -5,9 +5,10 @@ import { useStoreTheme } from '@/providers/theme-provider';
 import { SignupView as MediumSignupView } from '@/themes/medium/views/account/SignupView';
 import { SignupView as MinimalSignupView } from '@/themes/minimal/views/account/SignupView';
 import { SignupView as StorepalSignupView } from '@/themes/storepal/views/account/SignupView';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 export default function CustomerSignupPage({ params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = use(params);
+  const subdomain = storeSubdomain(use(params).subdomain);
   const theme = useStoreTheme();
 
   if (theme === 'MINIMAL') return <MinimalSignupView subdomain={subdomain} />;

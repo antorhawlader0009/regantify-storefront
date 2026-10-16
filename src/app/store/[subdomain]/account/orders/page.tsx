@@ -5,9 +5,10 @@ import { useStoreTheme } from '@/providers/theme-provider';
 import { AccountOrdersView as MediumAccountOrdersView } from '@/themes/medium/views/account/AccountOrdersView';
 import { AccountOrdersView as MinimalAccountOrdersView } from '@/themes/minimal/views/account/AccountOrdersView';
 import { AccountOrdersView as StorepalAccountOrdersView } from '@/themes/storepal/views/account/AccountOrdersView';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 export default function CustomerOrdersPage({ params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = use(params);
+  const subdomain = storeSubdomain(use(params).subdomain);
   const theme = useStoreTheme();
 
   if (theme === 'MINIMAL') return <MinimalAccountOrdersView subdomain={subdomain} />;

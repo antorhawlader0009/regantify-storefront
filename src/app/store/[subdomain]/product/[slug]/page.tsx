@@ -15,6 +15,12 @@ import { ProductView as MediumProductView } from '@/themes/medium/views/ProductV
 import { ProductView as MinimalProductView } from '@/themes/minimal/views/ProductView';
 import { ProductView as StorepalProductView } from '@/themes/storepal/views/ProductView';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
+
+// Rendered on the first visit and then kept, like the rest of the store (PERFORMANCE-PLAN.md Step 8, see the store layout).
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
@@ -28,7 +34,7 @@ interface PageProps {
 // fields the vendor already fills in on Add Product — no extra SEO work
 // for them, it's automatic the moment they save a product.
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   try {
     const { product, store } = await getStoreProduct(subdomain, slug);
     const title = product.metaTitle?.trim() || product.name;
@@ -51,7 +57,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export default async function ProductPage({ params }: PageProps) {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
 
   let data;
   try {

@@ -27,20 +27,35 @@ export function CustomCodeInjector({ subdomain, code }: { subdomain: string; cod
     if (injectedStores.has(subdomain)) return;
     injectedStores.add(subdomain);
 
-    void (async () => {
-      const head = code.headScripts?.trim();
-      if (head) {
-        if (head.startsWith('<')) await injectHtml(head, document.head);
-        else injectInlineScript(head, document.head, 'head');
-      }
-      for (const s of code.headJs) injectInlineScript(s.code, document.head, s.id);
-      for (const s of code.bodyJs) injectInlineScript(s.code, document.body, s.id);
-    })();
+    const run = () =>
+      void (async () => {
+        const head = code.headScripts?.trim();
+        if (head) {
+          if (head.startsWith('<')) await injectHtml(head, document.head);
+          else injectInlineScript(head, document.head, 'head');
+        }
+        for (const s of code.headJs) injectInlineScript(s.code, document.head, s.id);
+        for (const s of code.bodyJs) injectInlineScript(s.code, document.body, s.id);
+      })();
+    // PERFORMANCE-PLAN.md Step 11: once the page has loaded and the browser has a quiet moment (at most 2 s later), so a
+    // heavy snippet doesn't slow the first tap. Same order and same page as before, just a little later.
+    whenPageIdle(run);
     // Runs once per store per page load by design; see injectedStores.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain]);
 
   return null;
+}
+
+/** Calls `fn` after the window's load event, in the browser's next idle moment (or after 2 s at most). */
+function whenPageIdle(fn: () => void) {
+  const idle = () => {
+    const w = window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number };
+    if (w.requestIdleCallback) w.requestIdleCallback(fn, { timeout: 2_000 });
+    else window.setTimeout(fn, 1);
+  };
+  if (document.readyState === 'complete') idle();
+  else window.addEventListener('load', idle, { once: true });
 }
 
 async function injectHtml(html: string, target: HTMLElement) {

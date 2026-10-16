@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getStoreFaq, getStoreProducts, StoreNotFoundError } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { ReportStoreView } from '@/themes/storepal/views/ReportStoreView';
+import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
@@ -14,7 +15,7 @@ export const metadata: Metadata = { title: 'Report this store', robots: { index:
 // "Report this store" (super-admin-plan.md Step 17). StorePal only: any other theme is a 404, like the FAQ and the magazine.
 // The FAQ call is only used to read the store's name and theme (it is cached with the other store pages).
 export default async function ReportPage({ params }: PageProps) {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   let data;
   try {
     data = await getStoreFaq(subdomain);

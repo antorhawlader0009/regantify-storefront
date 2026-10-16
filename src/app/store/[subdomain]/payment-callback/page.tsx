@@ -1,8 +1,9 @@
 'use client';
 
-import { use } from 'react';
+import { Suspense, use } from 'react';
 import { useStoreTheme } from '@/providers/theme-provider';
 import { PaymentCallbackView } from '@/themes/storepal/views/PaymentCallbackView';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 // Only StorePal's checkout offers "Online Payment" (see
 // themes/storepal/views/CheckoutView.tsx's Payment Method choice) — so
@@ -13,7 +14,7 @@ import { PaymentCallbackView } from '@/themes/storepal/views/PaymentCallbackView
 // case a stale bookmark/back-navigation from a since-changed theme ever
 // lands here under a different theme.
 export default function PaymentCallbackPage({ params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = use(params);
+  const subdomain = storeSubdomain(use(params).subdomain);
   const theme = useStoreTheme();
 
   if (theme !== 'STOREPAL') {
@@ -23,5 +24,11 @@ export default function PaymentCallbackPage({ params }: { params: Promise<{ subd
     return null;
   }
 
-  return <PaymentCallbackView subdomain={subdomain} />;
+  // The view reads the address bar's query (useSearchParams), which needs a Suspense boundary now that the page can be
+  // rendered once and kept (PERFORMANCE-PLAN.md Step 8).
+  return (
+    <Suspense fallback={null}>
+      <PaymentCallbackView subdomain={subdomain} />
+    </Suspense>
+  );
 }

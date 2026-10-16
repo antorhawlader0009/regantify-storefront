@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getStoreInfo, siteUrl } from '@/lib/storefrontApi';
+import { decodeStoreSegment } from '@/lib/storeAddress';
 
 // One store's robots.txt. On a store's own address (/robots.txt on {sub}.ROOT_DOMAIN or a custom domain) the middleware
 // rewrites here, so every store answers with its own rules and a Sitemap line that names ITS address. Before this the
@@ -14,7 +15,8 @@ import { getStoreInfo, siteUrl } from '@/lib/storefrontApi';
 const BLOCKED = ['checkout', 'payment-callback', 'account', 't/', 'pay/', 'r/', 'cart-link/'];
 
 export async function GET(_request: Request, { params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = await params;
+  // The address the request came in on travels in the internal segment (lib/storeAddress.ts, PERFORMANCE-PLAN.md Step 8).
+  const { subdomain, address } = decodeStoreSegment((await params).subdomain);
   const store = await getStoreInfo(subdomain).catch(() => null);
   if (!store) return new NextResponse('Not found', { status: 404 });
 
@@ -27,7 +29,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
       // Both forms of the address: /checkout and /store/{sub}/checkout.
       lines.push(`Disallow: /${segment}`, `Disallow: /store/*/${segment}`);
     }
-    lines.push('', `Sitemap: ${await siteUrl(`/store/${subdomain}/sitemap.xml`)}`);
+    lines.push('', `Sitemap: ${await siteUrl(`/store/${subdomain}/sitemap.xml`, address)}`);
   }
   return new NextResponse(`${lines.join('\n')}\n`, { headers: { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'public, max-age=300' } });
 }

@@ -8,6 +8,8 @@
 
 import type { TrackedOrder } from '@/lib/checkoutApi';
 import type { StorefrontStoreAway } from '@/lib/storeAway';
+import type { StoreAddress } from '@/lib/storeAddress';
+import { currentStoreAddress } from '@/lib/storeRequest';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
@@ -625,23 +627,35 @@ export {
 // the real request Host header (see next/headers) rather than assuming
 // ROOT_DOMAIN, since a custom domain never matches ROOT_DOMAIN at all
 // (see middleware.ts's separate resolve-domain path for those).
-export async function siteUrl(path: string): Promise<string> {
-  const { headers } = await import('next/headers');
-  const h = await headers();
-  const host = h.get('host');
-  if (!host) return path;
-  const proto = h.get('x-forwarded-proto') ?? 'http';
+export async function siteUrl(path: string, address?: StoreAddress | null): Promise<string> {
+  // PERFORMANCE-PLAN.md Step 8: the address the shopper used comes from the internal path (lib/storeAddress.ts), passed in
+  // by a route handler or remembered by storeParams() for this page render, so the page doesn't read the request and can be
+  // kept by Next's cache. Only an unknown host (or a page that never called storeParams) still reads the request.
+  const known = address !== undefined ? address : currentStoreAddress();
+  let origin: string;
+  let clean: boolean;
+  if (known) {
+    origin = known.origin;
+    clean = known.clean;
+  } else {
+    const { headers } = await import('next/headers');
+    const h = await headers();
+    const host = h.get('host');
+    if (!host) return path;
+    origin = `${h.get('x-forwarded-proto') ?? 'http'}://${host}`;
+    clean = h.get('x-store-clean') === '1';
+  }
   // A store reached on its own address ({sub}.ROOT_DOMAIN or a custom domain, marked by middleware.ts) has one clean public form of
   // every page: /product/x, never /store/{sub}/product/x. Pages build their paths in the long form, so cut the prefix off here;
   // that way canonical links, Open Graph URLs, JSON-LD and the sitemap all agree on a single address per page.
   const m = /^\/store\/([^/]+)(\/.*)?$/.exec(path);
-  if (m && h.get('x-store-clean') === '1') {
+  if (m && clean) {
     // The vendor may prefer their custom domain on every address the store answers on (Store > SEO).
     const store = await getStoreInfo(m[1]).catch(() => null);
-    const base = store?.customDomain && store.seo?.preferCustomDomain ? `https://${store.customDomain}` : `${proto}://${host}`;
+    const base = store?.customDomain && store.seo?.preferCustomDomain ? `https://${store.customDomain}` : origin;
     return `${base}${m[2] ?? '/'}`;
   }
-  return `${proto}://${host}${path}`;
+  return `${origin}${path}`;
 }
 
 /** Everything a search engine may index on this store (the sitemap's data). Null when the store does not exist. */
@@ -658,8 +672,16 @@ async function fetchJson<T>(path: string, tags: string[]): Promise<T | null> {
   if (!res.ok) {
     throw new Error(`Storefront API request failed: ${res.status} ${res.statusText} (${path})`);
   }
+  // PERFORMANCE-PLAN.md Step 9: Next's data cache does not keep an answer over 2 MB, so such a store's data is fetched
+  // again on every page view. Say so in the log before a store gets there.
+  const size = Number(res.headers.get('content-length') ?? 0);
+  if (size > LARGE_ANSWER_BYTES) {
+    console.warn(`[storefrontApi] ${path} answered ${(size / 1_048_576).toFixed(2)} MB; over 2 MB it is no longer cached.`);
+  }
   return res.json() as Promise<T>;
 }
+
+const LARGE_ANSWER_BYTES = 1.5 * 1_048_576;
 
 /**
  * One order by its private tracking-link token (tracking-plan.md Step 1), for
@@ -686,8 +708,14 @@ export async function getTrackedOrderByLink(subdomain: string, token: string): P
   return res.json() as Promise<TrackedOrder>;
 }
 
-export async function getStoreProducts(subdomain: string): Promise<StorefrontListData> {
-  const data = await fetchJson<StorefrontListData>(`/v1/store/${subdomain}/products`, [`store:${subdomain}`]);
+/**
+ * The store's public product list. Pages get the lighter list answer (`?view=list`, PERFORMANCE-PLAN.md Step 9: no long
+ * description, info tabs, SEO texts, variation photos, personalization or price-break fields, which only the product page
+ * shows and which it reads from its own call). `full: true` is for the one reader that needs them (the Facebook feed).
+ */
+export async function getStoreProducts(subdomain: string, options: { full?: boolean } = {}): Promise<StorefrontListData> {
+  const path = options.full ? `/v1/store/${subdomain}/products` : `/v1/store/${subdomain}/products?view=list`;
+  const data = await fetchJson<StorefrontListData>(path, [`store:${subdomain}`]);
   if (!data) throw new StoreNotFoundError(subdomain);
   return data;
 }

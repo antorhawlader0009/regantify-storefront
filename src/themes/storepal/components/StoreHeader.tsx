@@ -12,7 +12,7 @@ import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
 import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi';
 import { formatPrice } from '../lib/formatPrice';
 import { ChatBubble } from './ChatBubble';
-import { AiAssistantWidget } from './AiAssistantWidget';
+import { LazyAiAssistantWidget } from './LazyWidgets';
 import { CartDrawer } from './CartDrawer';
 import { CheckoutDialog } from './CheckoutDialog';
 import { AuthDialog } from './AuthDialog';
@@ -734,7 +734,7 @@ export function StoreHeader({
       )}
 
       <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
-      <AiAssistantWidget subdomain={subdomain} />
+      <LazyAiAssistantWidget subdomain={subdomain} />
       <CartDrawer subdomain={subdomain} />
       <CheckoutDialog subdomain={subdomain} />
       <AuthDialog subdomain={subdomain} />

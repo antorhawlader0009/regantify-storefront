@@ -3,6 +3,7 @@
 import { use } from 'react';
 import { useStoreTheme } from '@/providers/theme-provider';
 import { ThankYouView } from '@/themes/storepal/views/ThankYouView';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 // Only StorePal's checkout redirects here (see useCheckout.ts's
 // post-order router.push) — Medium/Minimal still redirect straight to
@@ -12,7 +13,7 @@ import { ThankYouView } from '@/themes/storepal/views/ThankYouView';
 // (falls back to /orders) in case a stale bookmark/back-navigation from
 // a since-changed theme ever lands here under a different theme.
 export default function ThankYouPage({ params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = use(params);
+  const subdomain = storeSubdomain(use(params).subdomain);
   const theme = useStoreTheme();
 
   if (theme !== 'STOREPAL') {

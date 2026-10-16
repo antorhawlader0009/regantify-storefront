@@ -6,13 +6,19 @@ import { PageView as MediumPageView } from '@/themes/medium/views/PageView';
 import { PageView as MinimalPageView } from '@/themes/minimal/views/PageView';
 import { PageView as StorepalPageView } from '@/themes/storepal/views/PageView';
 import { socialMeta } from '@/lib/shareMeta';
+import { storeParams } from '@/lib/storeRequest';
+
+// Rendered on the first visit and then kept, like the rest of the store (PERFORMANCE-PLAN.md Step 8, see the store layout).
+export function generateStaticParams() {
+  return [];
+}
 
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
   try {
     const { store, page } = await getStorePage(subdomain, slug);
     const canonicalPath = `/store/${subdomain}/page/${slug}`;
@@ -34,7 +40,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // other page uses purely to give each theme's own StoreHeader its
 // category nav, exactly like the cart/checkout pages already do.
 export default async function StorePagePage({ params }: PageProps) {
-  const { subdomain, slug } = await params;
+  const { subdomain, slug } = await storeParams(params);
 
   let pageData;
   try {

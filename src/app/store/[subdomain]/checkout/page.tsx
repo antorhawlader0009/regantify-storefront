@@ -5,9 +5,10 @@ import { useStoreTheme } from '@/providers/theme-provider';
 import { CheckoutView as MediumCheckoutView } from '@/themes/medium/views/CheckoutView';
 import { CheckoutView as MinimalCheckoutView } from '@/themes/minimal/views/CheckoutView';
 import { CheckoutView as StorepalCheckoutView } from '@/themes/storepal/views/CheckoutView';
+import { storeSubdomain } from '@/lib/storeAddress';
 
 export default function CheckoutPage({ params }: { params: Promise<{ subdomain: string }> }) {
-  const { subdomain } = use(params);
+  const subdomain = storeSubdomain(use(params).subdomain);
   const theme = useStoreTheme();
 
   if (theme === 'MINIMAL') return <MinimalCheckoutView subdomain={subdomain} />;

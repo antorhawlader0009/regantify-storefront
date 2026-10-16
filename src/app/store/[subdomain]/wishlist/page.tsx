@@ -3,13 +3,14 @@ import { notFound } from 'next/navigation';
 import { getStoreProducts, StoreNotFoundError } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { WishlistView } from '@/themes/storepal/views/WishlistView';
+import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
   try {
     const { store } = await getStoreProducts(subdomain);
     return { title: { absolute: `Wishlist — ${store.storeName}` }, robots: { index: false } };
@@ -21,7 +22,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 // Store > Design > Product Card's wishlist — StorePal only by design, so
 // every other theme gets a 404 here.
 export default async function WishlistPage({ params }: PageProps) {
-  const { subdomain } = await params;
+  const { subdomain } = await storeParams(params);
 
   let data;
   try {
