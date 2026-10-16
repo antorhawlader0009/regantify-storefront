@@ -38,7 +38,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       product.metaDescription?.trim() ||
       product.summary?.trim() ||
       `Buy ${product.name} from ${store.storeName}. Fast delivery, cash on delivery available.`;
-    const canonicalPath = `/store/${subdomain}/product/${product.slug}`;
+    // The short product address /p/<slug> is the public one (2026-10-16); /product/<slug> still opens and points here.
+    const canonicalPath = `/store/${subdomain}/p/${product.slug}`;
 
     return {
       title,
@@ -92,7 +93,7 @@ export default async function ProductPage({ params }: PageProps) {
     ? Math.min(...product.variants.map((v) => Number(v.discountPrice ?? v.listPrice ?? product.price)))
     : Number(product.discountPrice ?? product.price);
 
-  const productUrl = await siteUrl(`/store/${subdomain}/product/${product.slug}`);
+  const productUrl = await siteUrl(`/store/${subdomain}/p/${product.slug}`);
   const homeUrl = await siteUrl(`/store/${subdomain}`);
 
   // Return window, from the product's own policy or the store's default (Stock Settings): only said when the vendor set one.

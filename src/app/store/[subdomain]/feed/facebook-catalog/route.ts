@@ -190,5 +190,5 @@ async function productUrlBuilder(subdomain: string): Promise<(slug: string) => s
   const isLocal = /^(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)$/.test(host) || host.endsWith('.local');
   const isRootDomain = !!ROOT_DOMAIN && (host === ROOT_DOMAIN || host === `www.${ROOT_DOMAIN}`);
   const prefix = isLocal || isRootDomain || !host ? `/store/${subdomain}` : '';
-  return (slug) => `${proto}://${hostHeader}${prefix}/product/${encodeURIComponent(slug)}`;
+  return (slug) => `${proto}://${hostHeader}${prefix}/p/${encodeURIComponent(slug)}`;
 }

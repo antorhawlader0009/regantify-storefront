@@ -48,7 +48,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
     { loc: await url(''), lastmod: day(newest) },
     ...(faq.items.length > 0 ? [{ loc: await url('/faq'), lastmod: null }] : []),
     ...(await Promise.all(blog.posts.map(async (b) => ({ loc: await url(`/blog/${b.slug}`), lastmod: day(b.publishedAt) })))),
-    ...(await Promise.all(data.products.map(async (p) => ({ loc: await url(`/product/${p.slug}`), lastmod: day(p.updatedAt), images: p.photos })))),
+    ...(await Promise.all(data.products.map(async (p) => ({ loc: await url(`/p/${p.slug}`), lastmod: day(p.updatedAt), images: p.photos })))),
     ...(await Promise.all(data.pages.map(async (p) => ({ loc: await url(`/page/${p.slug}`), lastmod: day(p.updatedAt) })))),
     ...(await Promise.all(data.landingPages.map(async (p) => ({ loc: await url(`/l/${p.slug}`), lastmod: day(p.updatedAt) })))),
     ...(await Promise.all(data.collections.map(async (p) => ({ loc: await url(`/collection/${p.slug}`), lastmod: day(p.updatedAt) })))),
