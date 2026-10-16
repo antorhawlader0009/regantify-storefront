@@ -42,6 +42,9 @@ export interface CartLine {
   // them, and carts saved before these fields existed don't have them.
   productId?: string;
   variantId?: string;
+  // Reseller system (RESELLER-plan.md Steps 5 and 17): the supplier key of a product this store resells (StorefrontProduct.resaleGroup).
+  // A cart may mix them with the store's own products; checkout shows each supplier's part apart and the server makes one order per part.
+  resaleGroup?: string;
 }
 
 // Fired on window after every addLine, with the added line (including its

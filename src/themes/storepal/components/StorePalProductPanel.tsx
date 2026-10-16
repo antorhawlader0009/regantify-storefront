@@ -247,6 +247,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     subdomain,
     storeName,
     productSlug: product.slug,
+    resaleGroup: product.resaleGroup ?? undefined,
     name: product.name,
     image: activePhotoUrl,
     // The price without a step; the cart store lowers it to the break price for the product's total pieces (applyBreaks).

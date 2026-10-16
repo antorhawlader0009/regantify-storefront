@@ -210,8 +210,19 @@ export function useCheckout(
   // null otherwise); a zone the shopper can't be offered counts as Outside Dhaka, so a saved "around" choice
   // from another store's checkout never prices or sends a zone this checkout doesn't show.
   const aroundDhaka = vendorCharges?.aroundDhaka ?? null;
+  // Reseller system (RESELLER-plan.md Step 5): a cart of products this store resells is shipped by the supplier with its courier, so
+  // no pickup at this shop, no express, no gift wrap, cash on delivery only, and the supplier's delivery charges (from the preview below).
+  const resaleCart = lines.some((l) => !!l.resaleGroup);
+  // Step 17: a cart with the store's own products and resold ones (or several suppliers') becomes one order per part. The main part (the
+  // store's own products, else the first supplier's) is checked out as before; each other part is its own order: its goods plus its
+  // supplier's delivery charge, shown apart (extraParts) and added to the total.
+  const ownLines = lines.filter((l) => !l.resaleGroup);
+  const mainGroup = ownLines.length > 0 ? '' : (lines[0]?.resaleGroup ?? '');
+  const mainLines = lines.filter((l) => (l.resaleGroup ?? '') === mainGroup);
+  const mainIsResale = mainGroup !== '';
+  const otherGroups = [...new Set(lines.map((l) => l.resaleGroup ?? ''))].filter((g) => g !== mainGroup);
   // Store pickup (TellMe idea 46) follows the same rule: offered only while on, else it counts as Outside Dhaka.
-  const pickup = vendorCharges?.pickup ?? null;
+  const pickup = resaleCart ? null : (vendorCharges?.pickup ?? null);
   // Preferred delivery day (TellMe idea 50): optional, kept apart from the saved form so an old pick never lingers; a day
   // the store no longer offers counts as none.
   const preferredDays = vendorCharges?.preferredDays ?? null;
@@ -463,11 +474,23 @@ export function useCheckout(
   }, [hydrated, subdomain, discountCartKey]);
 
   const storeName = lines[0]?.storeName ?? '';
-  const subtotal = lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+  const subtotal = mainLines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
   // Heavy cart (TellMe idea 58): the server's own number per zone, added to the zone's charge. A free-shipping coupon or
   // discount waives both (effectiveDeliveryCharge below).
   const weightExtra = lines.length > 0 && zone !== 'PICKUP' ? (automaticDiscounts?.weightExtra?.[zone] ?? 0) : 0;
-  const deliveryCharge = lines.length > 0 ? resolvedDeliveryCharge[zone] + weightExtra : 0;
+  const resaleInfo = automaticDiscounts?.resale ?? null;
+  // Kept for older themes: a mixed cart is no longer refused (Step 17).
+  const resaleMixed = false;
+  const mainPart = mainIsResale ? resaleInfo?.parts?.find((pt) => pt.group === mainGroup) : undefined;
+  const zoneCharge = mainIsResale && zone !== 'PICKUP' ? (mainPart?.deliveryCharges[zone] ?? resaleInfo?.deliveryCharges?.[zone] ?? resolvedDeliveryCharge[zone]) : resolvedDeliveryCharge[zone];
+  const extraParts = otherGroups.map((g) => {
+    const part = resaleInfo?.parts?.find((pt) => pt.group === g);
+    const goods = lines.filter((l) => (l.resaleGroup ?? '') === g).reduce((n, l) => n + l.unitPrice * l.quantity, 0);
+    const delivery = zone !== 'PICKUP' && part ? part.deliveryCharges[zone] : 0;
+    return { group: g, supplierName: part?.supplierName ?? '', goods, delivery, total: goods + delivery };
+  });
+  const extraPartsTotal = extraParts.reduce((n, pt) => n + pt.total, 0);
+  const deliveryCharge = lines.length > 0 ? zoneCharge + weightExtra : 0;
   // Express delivery (TellMe idea 132): a second choice for the zones the store runs it in, until its cut-off (Dhaka time). The shopper's
   // pick only counts while it is offered, so a zone change or the cut-off passing quietly puts it back to standard. The server judges it again.
   const [speedPick, setSpeedPick] = useState<'STANDARD' | 'EXPRESS'>('STANDARD');
@@ -477,14 +500,14 @@ export function useCheckout(
     return d.getUTCHours() * 60 + d.getUTCMinutes();
   })();
   const expressOffered =
-    !!expressInfo && lines.length > 0 && zone !== 'PICKUP' && expressInfo.zones.includes(zone) && (expressInfo.cutoffMinutes === null || dhakaMinutesNow < expressInfo.cutoffMinutes);
+    !!expressInfo && !resaleCart && lines.length > 0 && zone !== 'PICKUP' && expressInfo.zones.includes(zone) && (expressInfo.cutoffMinutes === null || dhakaMinutesNow < expressInfo.cutoffMinutes);
   const expressSelected = expressOffered && speedPick === 'EXPRESS';
   const expressCharge = expressSelected && expressInfo ? expressInfo.charge : 0;
   // Gift option (TellMe idea 57): the shopper's tick, message and "hide prices"; the wrap charge is the store's.
   const [isGift, setIsGift] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
   const [hidePrices, setHidePrices] = useState(false);
-  const giftOption = vendorCharges?.giftOption ?? null;
+  const giftOption = resaleCart ? null : (vendorCharges?.giftOption ?? null);
   const giftWrapCharge = isGift && giftOption && lines.length > 0 ? giftOption.charge : 0;
   // Minimum order (TellMe idea 56): the goods total before discounts; the button waits until it is reached.
   const minOrderAmount = vendorCharges?.minOrderAmount ?? null;
@@ -502,7 +525,8 @@ export function useCheckout(
   // VAT — a flat fee applied to every order regardless of payment method
   // (see Vendor.vatChargeBdt's own schema comment). Zero whenever the
   // cart is empty, same as deliveryCharge above.
-  const vatAmount = lines.length > 0 ? resolvedVatCharge : 0;
+  // A resale cart carries no VAT (the supplier's order has none in version 1, RESELLER-plan.md Step 6).
+  const vatAmount = lines.length > 0 && !mainIsResale ? resolvedVatCharge : 0;
   // FREE_SHIPPING waives the delivery charge instead of discounting the
   // subtotal — same split OrdersService.create's own coupon handling
   // makes server-side, so the number shown here always matches what
@@ -522,10 +546,20 @@ export function useCheckout(
     if (selectedGateway?.type === 'COD') setPaymentMethod((onlineGateways.find((g) => g.type === 'ONLINE_PAYMENT') ?? onlineGateways[0]).id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [codBlocked, selectedGateway?.type, paymentGateways.length]);
+  // A resale cart is cash on delivery, or (Step 18) the platform's online payment when the preview allows it for a one-supplier cart.
+  const resaleOnline = resaleCart && mainIsResale && otherGroups.length === 0 && !!resaleInfo?.onlinePayment;
+  const resaleGatewayOk = (type: string | undefined) => type === 'COD' || (resaleOnline && type === 'ONLINE_PAYMENT');
+  useEffect(() => {
+    if (!resaleCart || resaleGatewayOk(selectedGateway?.type)) return;
+    const cod = paymentGateways.find((g) => g.type === 'COD');
+    if (cod) setPaymentMethod(cod.id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [resaleCart, resaleOnline, selectedGateway?.type, paymentGateways.length]);
   const autoDiscount = discountsReset ? null : (automaticDiscounts?.discount ?? null);
   const autoFreeShipping = discountsReset ? null : (automaticDiscounts?.freeShipping ?? null);
   const automaticDiscountAmount = Math.max(0, Math.min(autoDiscount?.discountAmount ?? 0, subtotal - couponDiscount));
-  const totalDiscount = couponDiscount + automaticDiscountAmount;
+  // Step 16: on a resale order the reseller's coupon and discount come out of its earning, so never more than that earning.
+  const totalDiscount = mainIsResale ? Math.min(couponDiscount + automaticDiscountAmount, resaleInfo?.maxDiscount ?? 0) : couponDiscount + automaticDiscountAmount;
   // A free-delivery coupon or discount waives the normal charge; the express extra stays unless the store waives it too.
   const freeDelivery = couponFreeShipping || !!autoFreeShipping;
   const effectiveDeliveryCharge = freeDelivery ? (expressSelected && expressInfo && !expressInfo.waivedByFree ? expressCharge : 0) : deliveryCharge + expressCharge;
@@ -548,8 +582,9 @@ export function useCheckout(
   const platformChargeFlat = selectedGateway ? Number(selectedGateway.platformChargeBdt) : 0;
   const platformChargeBase =
     Math.max(0, subtotal + effectiveDeliveryCharge + vatAmount + giftWrapCharge - totalDiscount) + platformChargeFlat;
+  // A resale cart has no platform charge for the shopper: the supplier pays its own fee (RESELLER-plan.md Step 6).
   const platformChargeAmount =
-    lines.length > 0 && selectedGateway
+    lines.length > 0 && selectedGateway && !mainIsResale
       ? Math.round(
           (platformChargeFlat + (platformChargeBase * Number(selectedGateway.platformChargePercent)) / 100) * 100,
         ) / 100
@@ -605,7 +640,8 @@ export function useCheckout(
   // Null on every other payment method and on Medium/Minimal (the server never reports codAdvance there).
   // Two reasons to pay up front, sharing one payment: the delivery charge, and a share of the pre-order products.
   // The larger of the two is taken, never both (the server does the same).
-  const codAdvanceRule = selectedGateway?.type === 'COD' ? (vendorCharges?.codAdvance ?? null) : null;
+  // A resale order follows the supplier's advance rule (Step 18), never the store's own.
+  const codAdvanceRule = selectedGateway?.type === 'COD' ? (mainIsResale ? (resaleInfo?.codAdvance ?? null) : (vendorCharges?.codAdvance ?? null)) : null;
   const deliveryAdvanceAmount =
     codAdvanceRule && codAdvanceRule.delivery !== false && (codAdvanceRule.minOrder === null || subtotal >= codAdvanceRule.minOrder)
       ? Math.round(Math.min(effectiveDeliveryCharge, grandTotal) * 100) / 100
@@ -671,7 +707,8 @@ export function useCheckout(
         subdomain,
         code,
         form.phone.trim(),
-        lines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity })),
+        // A coupon applies to the main part only (Step 17).
+        mainLines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity })),
       );
       setAppliedCoupon(result);
     } catch (err) {
@@ -774,6 +811,10 @@ export function useCheckout(
         return;
       }
       setManualError(null);
+    }
+    if (resaleMixed) {
+      setPlaceError('Some products in your cart ship from a different seller. Please order them separately.');
+      return;
     }
     if (areaRefusal) {
       setPlaceError(areaRefusal);
@@ -1004,8 +1045,11 @@ export function useCheckout(
     // Medium/Minimal only ever render grandTotal (no hide-fee UI exists
     // there), which is correct: neither breaks out platformChargeAmount
     // as its own line regardless, so there's nothing to hide further.
-    grandTotal,
-    visibleGrandTotal,
+    // Step 17: the other parts (each its own order) are added to what the shopper sees and pays on delivery.
+    grandTotal: grandTotal + extraPartsTotal,
+    visibleGrandTotal: visibleGrandTotal + extraPartsTotal,
+    extraParts,
+    mainLines,
     updateField,
     botTrap,
     setBotTrap,
@@ -1069,7 +1113,11 @@ export function useCheckout(
     // StorePal's CheckoutView renders one radio per entry; Medium/Minimal
     // ignore this entirely (unchanged JSX), same as paymentMethod/
     // setPaymentMethod below.
-    paymentGateways,
+    // A resale cart offers cash on delivery only (RESELLER-plan.md Step 5).
+    paymentGateways: resaleCart ? paymentGateways.filter((g) => resaleGatewayOk(g.type)) : paymentGateways,
+    // Reseller system: the cart holds resold products / breaks the one-seller rule (placing the order is refused then).
+    resaleCart,
+    resaleMixed,
     codBlocked,
     onlineOnlyNames,
     paymentMethod,

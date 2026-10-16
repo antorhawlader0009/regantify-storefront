@@ -106,6 +106,7 @@ export function ProductPurchasePanel({ subdomain, storeName, product }: ProductP
     subdomain,
     storeName,
     productSlug: product.slug,
+    resaleGroup: product.resaleGroup ?? undefined,
     name: product.name,
     image: activePhotoUrl,
     unitPrice: Number(displayPrice),

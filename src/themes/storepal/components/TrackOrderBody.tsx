@@ -241,6 +241,32 @@ export function TrackOrderBody({
         </p>
       )}
 
+      {/* Reseller system Step 17: the same checkout became several orders (other sellers ship some products); each has its own page. */}
+      {(order.groupParts?.length ?? 0) > 0 && (
+        <section className="rounded-md border border-line bg-canvas px-3.5 py-3 text-[13px] text-ink">
+          <p className="m-0 font-semibold">
+            {lang === 'bn' ? `আপনার কেনাকাটা ${(order.groupParts?.length ?? 0) + 1}টা আলাদা পার্সেলে আসছে` : `Your purchase comes in ${(order.groupParts?.length ?? 0) + 1} separate parcels`}
+          </p>
+          <ul className="m-0 mt-2 list-none space-y-2 p-0">
+            {order.groupParts!.map((pt) => (
+              <li key={pt.orderRef} className="flex flex-wrap items-baseline justify-between gap-2">
+                <span className="min-w-0">
+                  {subdomain && pt.trackingToken ? (
+                    <a href={`/store/${subdomain}/t/${pt.trackingToken}`} className="font-semibold text-accent underline">
+                      {pt.orderRef}
+                    </a>
+                  ) : (
+                    <span className="font-semibold">{pt.orderRef}</span>
+                  )}
+                  <span className="block text-[12px] text-muted">{pt.items.join(', ')}</span>
+                </span>
+                <span className="font-semibold">৳{pt.total.toLocaleString('en-US')}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
+
       {subdomain && onOrderChanged && <RescheduleCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 
       {subdomain && onOrderChanged && <EditAddressCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}

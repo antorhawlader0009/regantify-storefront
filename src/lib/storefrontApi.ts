@@ -455,6 +455,8 @@ export interface StorefrontProduct {
   isPreOrder: boolean;
   /** Price on request (StorePal hides the price and Buy). Absent from older API responses. */
   quoteOnly?: boolean;
+  /** Reseller system (RESELLER-plan.md Step 5): set on a product this store resells for a supplier, an opaque key per supplier. The cart keeps one supplier's products per order and nothing else. */
+  resaleGroup?: string | null;
   /** Fewest a shopper may order in one cart line; null = no minimum. */
   minOrderQuantity?: number | null;
   /** Bundle / combo (TellMe idea 51): what the set holds and what the parts cost one by one. Its stock is the fewest sets they allow. */

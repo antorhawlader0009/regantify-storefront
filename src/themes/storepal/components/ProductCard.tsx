@@ -30,6 +30,8 @@ import { preOrderDateText } from '../lib/preOrderDate';
 // inline Add to Cart / Buy Now only works for it; lean cards send those
 // buttons to the product page instead.
 interface CardProduct {
+  /** Reseller system: the supplier key of a product this store resells (the cart keeps one seller per order). */
+  resaleGroup?: string | null;
   // For the Meta pixel (cart line / AddToWishlist); every caller passes it,
   // but it's optional so a lean shape without it still type-checks.
   id?: string;
@@ -150,6 +152,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       subdomain,
       storeName: storeName!,
       productSlug: product.slug,
+      resaleGroup: product.resaleGroup ?? undefined,
       name: product.name,
       image: product.photoUrls[0],
       unitPrice: Number(displayPrice),

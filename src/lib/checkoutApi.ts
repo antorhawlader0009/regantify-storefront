@@ -309,6 +309,25 @@ export interface AutomaticDiscounts {
   weightExtra?: { DHAKA: number; AROUND_DHAKA: number; OUTSIDE_DHAKA: number } | null;
   /** Names of cart products that must be paid online (TellMe idea 126); Cash on Delivery is off while there are any. */
   onlineOnly?: string[];
+  /**
+   * Reseller system (RESELLER-plan.md Step 5): set when the cart holds products this store resells. The supplier ships, so its delivery
+   * charges count; cash on delivery only, no discounts. `mixed` = the cart breaks the one-seller rule (deliveryCharges is then null).
+   */
+  resale?: {
+    mixed: boolean;
+    codOnly: boolean;
+    /** Step 18: a one-supplier cart may be paid online (the money is held until delivery). */
+    onlinePayment?: boolean;
+    /** Step 18: the supplier's COD advance rule, used instead of the store's own for this cart. */
+    codAdvance?: { minOrder: number | null; delivery?: boolean; preOrderPercent?: number | null } | null;
+    deliveryCharges: { DHAKA: number; AROUND_DHAKA: number; OUTSIDE_DHAKA: number } | null;
+    /** Step 17: the store's own products are in the cart too. */
+    hasOwn?: boolean;
+    /** Step 17: each supplier's part (matched to cart lines by `group`), with its own delivery charges. */
+    parts?: Array<{ group: string; supplierName: string; slugs: string[]; deliveryCharges: { DHAKA: number; AROUND_DHAKA: number; OUTSIDE_DHAKA: number } }>;
+    /** Step 16: the most the store's coupon and discount can take off a resale order (the reseller's earning). */
+    maxDiscount?: number;
+  } | null;
 }
 
 /**
@@ -462,6 +481,8 @@ export interface TrackedOrder {
   preferredDeliveryDate?: string | null;
   /** The parcel was split into this many orders (TellMe idea 59); 0 = never split. */
   splitParts?: number;
+  /** Reseller system Step 17: the other orders of the same checkout (parcels from other sellers, or the store's own). */
+  groupParts?: Array<{ orderRef: string; trackingToken: string | null; total: number; status: string; items: string[]; shipsSeparately: boolean }>;
   // Public order number (tracking-plan.md Step 2); null on an order the backfill has not reached.
   publicCode?: string | null;
   // Private tracking link token (tracking-plan.md Step 1): /store/{sub}/t/{token}. Null on

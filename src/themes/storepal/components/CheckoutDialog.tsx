@@ -313,6 +313,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     vatAmount,
     visiblePlatformChargeAmount,
     visibleGrandTotal,
+    extraParts,
     updateField,
     botTrap,
     setBotTrap,
@@ -894,6 +895,16 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 <span className="font-semibold text-accent">{formatPrice(deliveryCharge)}</span>
               </div>
               {weightExtra > 0 && deliveryCharge > 0 && <p className="m-0 -mt-1 text-[11.5px] text-muted">{t.heavyExtra(formatPrice(weightExtra))}</p>}
+              {/* Reseller system Step 17: products that ship separately from another seller, each its own parcel and delivery charge. */}
+              {extraParts.map((pt) => (
+                <div key={pt.group} className="flex justify-between gap-3">
+                  <span className="text-ink">
+                    {lang === 'bn' ? `আলাদা পার্সেল${pt.supplierName ? ` (${pt.supplierName})` : ''}` : `Separate parcel${pt.supplierName ? ` from ${pt.supplierName}` : ''}`}
+                    <span className="block text-[11.5px] text-muted">{formatPrice(pt.goods)} + {lang === 'bn' ? 'ডেলিভারি' : 'delivery'} {formatPrice(pt.delivery)}</span>
+                  </span>
+                  <span className="font-semibold text-accent">{formatPrice(pt.total)}</span>
+                </div>
+              ))}
               {expectedDeliveryDate && (
                 <div className="flex justify-between">
                   <span className="text-ink">{t.expectedBy}</span>
