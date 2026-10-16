@@ -29,17 +29,11 @@ import type {
 } from '@/lib/storefrontApi';
 import { storeParams } from '@/lib/storeRequest';
 
-// PERFORMANCE-PLAN.md Step 8: a store page reads no request data any more (the address travels in the path, see
-// lib/storeAddress.ts), so Next keeps the rendered page and serves it again for up to a minute, the same window as the
-// data it shows. A vendor's edit clears it at once through /api/revalidate (revalidateTag on the store's tags). Pages
-// that read the request (tracking/payment links, the home page's query view) are still rendered every time.
-export const revalidate = 60;
-
-// No store is built ahead of time; each page is rendered on its first visit and then kept (Step 8). Next only keeps the
-// pages of a dynamic route when the route lists its params, so it lists none.
-export function generateStaticParams() {
-  return [];
-}
+// PERFORMANCE-PLAN.md Step 8: store pages are rendered on every request (the data they show is cached 60 s per fetch).
+// Keeping the rendered page (empty generateStaticParams + revalidate) was tried on 2026-10-16 and taken out the same day:
+// a long-form link (/store/{sub}/product/x) was then rendered as a prebuilt page, where the headers' nuqs search box
+// (useSearchParams with no <Suspense>) fails, and product clicks showed a 500. Wrap the query-reading parts in
+// <Suspense> and test both address forms before turning it on again.
 
 interface LayoutProps {
   children: React.ReactNode;
