@@ -63,7 +63,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   chatButtonProductMessage: true,
   productShareEnabled: true,
   socialProofDays: 0,
-  wishlistAlertsEnabled: false,
+  wishlistAlertsEnabled: true,
 };
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);

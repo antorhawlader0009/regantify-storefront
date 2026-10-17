@@ -84,6 +84,13 @@ const BN: Record<string, string> = {
   Wishlist: 'পছন্দের তালিকা',
   'Your wishlist is empty': 'আপনার পছন্দের তালিকা খালি',
   'Tap the heart on any product to save it here.': 'যেকোনো পণ্যের হার্ট চাপলে এখানে জমা হবে।',
+  Product: 'পণ্য',
+  Price: 'দাম',
+  Action: 'অ্যাকশন',
+  'Clear wishlist': 'তালিকা খালি করুন',
+  'Choose an option first': 'আগে একটি অপশন বেছে নিন',
+  'Added ✓': 'যোগ হয়েছে ✓',
+  'Select options': 'অপশন বেছে নিন',
   // Product questions
   Questions: 'প্রশ্ন',
   'Ask a question': 'প্রশ্ন করুন',

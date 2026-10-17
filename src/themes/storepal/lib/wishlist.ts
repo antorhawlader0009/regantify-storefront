@@ -81,5 +81,9 @@ export function useWishlist(subdomain: string) {
     },
     [subdomain, accessToken],
   );
-  return { slugs, has: (slug: string) => slugs.includes(slug), toggle };
+  const clear = useCallback(() => {
+    write(subdomain, []);
+    if (accessToken) void syncServerWishlist(accessToken, subdomain, []).catch(() => undefined);
+  }, [subdomain, accessToken]);
+  return { slugs, has: (slug: string) => slugs.includes(slug), toggle, clear };
 }
