@@ -30,7 +30,7 @@ export function TextSection({ props }: { props: TextProps }) {
 export function ImageSection({ props }: { props: ImageProps }) {
   if (!props.imageUrl) return null;
   const img = (
-    // eslint-disable-next-line @next/next/no-img-element -- arbitrary vendor-supplied Cloudinary URL, not a static/known asset
+    // eslint-disable-next-line @next/next/no-img-element -- arbitrary vendor-supplied picture URL, not a static/known asset
     <img
       src={props.imageUrl}
       alt={props.alt || ''}

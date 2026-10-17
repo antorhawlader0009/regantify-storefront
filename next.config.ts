@@ -21,26 +21,15 @@ const nextConfig: NextConfig = {
     ];
   },
   images: {
-    // PERFORMANCE-PLAN.md Step 3: an optimized photo is kept 4 hours instead of Next 15's 60 seconds, so the VPS
-    // doesn't resize the same photo again every minute. Cloudinary's secure_url carries a version (v123...), so a
-    // replaced photo gets a new address and is never served stale. (/_next/static is already "immutable" by default.)
+    // An optimized photo is kept 4 hours. Photos come from R2 with a fixed name per size (src/lib/imageLoader.ts), so a replaced
+    // picture (store logo) gets a new address (?v=) and is never served stale.
     minimumCacheTTL: 14400,
-    // PERFORMANCE-PLAN.md Step 10: photos are resized by Cloudinary, not by this server (src/lib/cloudinaryLoader.ts).
-    // Fewer width steps than Next's default, so each photo makes fewer resized copies on Cloudinary (each new one uses a
-    // little of the account's monthly transformation allowance); the browser still picks the nearest one.
+    // Photos are saved in R2 in a few widths, not resized by this server (src/lib/imageLoader.ts). The widths below are the ones
+    // next/image asks for; each is rounded up to the nearest saved width.
     loader: 'custom',
-    loaderFile: './src/lib/cloudinaryLoader.ts',
+    loaderFile: './src/lib/imageLoader.ts',
     deviceSizes: [640, 828, 1080, 1200, 1920],
     imageSizes: [48, 96, 128, 256, 384],
-    // Product photos are uploaded to Cloudinary by the vendor dashboard
-    // (see server/src/upload/cloudinary.service.ts) — allow-list its
-    // delivery host so next/image can optimize them.
-    remotePatterns: [
-      {
-        protocol: 'https',
-        hostname: 'res.cloudinary.com',
-      },
-    ],
   },
 };
 

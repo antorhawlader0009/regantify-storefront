@@ -34,7 +34,7 @@ export interface SubmitReviewInput {
   rating: number;
   customerName: string;
   customerEmail?: string;
-  // "Upload Photos" — already-uploaded Cloudinary URLs (see
+  // "Upload Photos" — already-uploaded picture URLs (see
   // SubmitReviewDto's own comment on the backend). Only the StorePal
   // theme's review form currently offers a photo upload control.
   photos?: string[];
