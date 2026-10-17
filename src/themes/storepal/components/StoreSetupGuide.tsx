@@ -1,9 +1,11 @@
 import type { ReactNode } from 'react';
 import type { StorefrontSetupGuide } from '@/lib/storefrontApi';
+import { STORE_SETUP_ID } from '@/components/store-preview/emptyStore';
 
 /**
- * What a brand-new StorePal store shows while it has no public product:
- * a short "get your store ready" board instead of an empty shop. Every card
+ * The owner's "get your store ready" board, shown under the drawn sample shop
+ * (EmptyStorePreview, store-empty-preview.md) while the store has no public
+ * product; the "opening soon" bar links down to it. Every card
  * opens the matching page of the vendor's dashboard (`setup.dashboardUrl`);
  * a card whose job is already done (`setup.done`) is left out, and the whole
  * board disappears the moment the first product is public (HomeView only
@@ -123,12 +125,12 @@ export function StoreSetupGuide({ storeName, setup }: { storeName: string; setup
   const done = setup?.done;
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-10 sm:px-6 sm:py-14">
+    <section id={STORE_SETUP_ID} className="mx-auto max-w-4xl scroll-mt-24 px-4 py-10 sm:px-6 sm:py-14">
       <div className="mb-8 text-center">
-        <p className="m-0 text-[12px] font-semibold uppercase tracking-wider text-muted">Opening soon</p>
-        <h1 className="mt-1 mb-2 text-[24px] font-bold text-ink sm:text-[28px]">{storeName} is almost ready</h1>
+        <p className="m-0 text-[12px] font-semibold uppercase tracking-wider text-muted">For the store owner</p>
+        <h2 className="mt-1 mb-2 text-[22px] font-bold text-ink sm:text-[26px]">Finish setting up {storeName}</h2>
         <p className="m-0 text-[14px] text-muted">
-          The store opens as soon as the first product is added. These steps are for the store owner.
+          Shoppers see the sample products above until the first product is added. Each step opens your dashboard.
         </p>
       </div>
 
@@ -184,6 +186,6 @@ export function StoreSetupGuide({ storeName, setup }: { storeName: string; setup
           )}
         </div>
       )}
-    </main>
+    </section>
   );
 }

@@ -22,6 +22,8 @@ import { CampaignsStrip } from '../components/CampaignsStrip';
 import { HomeHighlights } from '../components/HomeHighlights';
 import { TrustStrip } from '../components/TrustStrip';
 import { StoreSetupGuide } from '../components/StoreSetupGuide';
+import { OpeningSoonBar, PlaceholderHero, PlaceholderProductGrid } from '../components/EmptyStorePreview';
+import { isEmptyStorePreview } from '@/components/store-preview/emptyStore';
 import { useStorePalDesign } from '../lib/designSettings';
 import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
@@ -235,8 +237,25 @@ export function HomeView({
   }, [searchQuery]);
 
   const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
-  // Nothing to sell yet (the server sends `setup` only then): the setup guide replaces the shop.
-  const showSetup = !isFiltered && products.length === 0 && Boolean(setup);
+  // Nothing to sell yet (the server sends `setup` only then): the shop shows drawn sample products, Shopify style
+  // (store-empty-preview.md), with the owner's setup board under them.
+  const showPreview = isEmptyStorePreview({ productCount: products.length, isFiltered, setup });
+  // A website cover still makes the real hero; an empty store has no category covers (they come from its products).
+  const hasRealHero = Boolean(siteCoverUrl) || categoryDetails.some((c) => Boolean(c.coverPhotoUrl));
+  // The samples sit where the store's own product rows would: Top Selling, else the category rows, else the end.
+  const previewGridAt = homeSections.includes('TOP_SELLING')
+    ? 'TOP_SELLING'
+    : homeSections.includes('CATEGORY_SECTIONS')
+      ? 'CATEGORY_SECTIONS'
+      : 'END';
+  const previewBlock = (
+    <>
+      <div className={HOME_WRAP}>
+        <PlaceholderProductGrid />
+      </div>
+      <StoreSetupGuide storeName={storeName} setup={setup} />
+    </>
+  );
   const grouped = !isFiltered ? groupByCategory(products) : null;
 
   // The store's own order (pinned products first, then newest first).
@@ -284,6 +303,8 @@ export function HomeView({
         categoryDetails={categoryDetails}
       />
 
+      {showPreview && <OpeningSoonBar />}
+
       {couponBannerCode && (
         <div className="bg-success-bg text-success text-[13px] font-medium">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
@@ -299,9 +320,7 @@ export function HomeView({
       )}
 
 
-      {showSetup && <StoreSetupGuide storeName={storeName} setup={setup} />}
-
-      {!showSetup && (isFiltered || products.length === 0) && (
+      {!showPreview && (isFiltered || products.length === 0) && (
         <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
           {isFiltered && (
             <div className="mb-4">
@@ -409,12 +428,17 @@ export function HomeView({
         </main>
       )}
 
-      {!isFiltered && !showSetup && (
+      {!isFiltered && (
         <div>
           {homeSections.map((id) => {
+            if (showPreview && id === previewGridAt) return <Fragment key={id}>{previewBlock}</Fragment>;
             switch (id) {
               case 'HERO':
-                return <HeroBanner key={id} subdomain={subdomain} categoryDetails={categoryDetails} siteCoverUrl={siteCoverUrl} siteCoverOnly={siteCoverOnly} />;
+                return showPreview && !hasRealHero ? (
+                  <PlaceholderHero key={id} storeName={storeName} />
+                ) : (
+                  <HeroBanner key={id} subdomain={subdomain} categoryDetails={categoryDetails} siteCoverUrl={siteCoverUrl} siteCoverOnly={siteCoverOnly} />
+                );
               case 'FLASH_SALE':
                 return (
                   <div key={id} className={HOME_WRAP}>
@@ -538,13 +562,14 @@ export function HomeView({
                 return null;
             }
           })}
+          {showPreview && previewGridAt === 'END' && previewBlock}
         </div>
       )}
 
-      {!isFiltered && !showSetup && <TrustStrip where="home" />}
+      {!isFiltered && <TrustStrip where="home" />}
 
       {/* Not while searching or browsing a category: the results are what the shopper is after. */}
-      {!isFiltered && !showSetup && <RecentlyViewed subdomain={subdomain} storeName={storeName} />}
+      {!isFiltered && !showPreview && <RecentlyViewed subdomain={subdomain} storeName={storeName} />}
 
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
     </div>

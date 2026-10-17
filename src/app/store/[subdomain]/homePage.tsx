@@ -245,7 +245,7 @@ export async function HomePage({ params, query }: HomeProps) {
               categoryDetails={categoryDetails}
               siteCoverUrl={store.brandSiteCoverUrl}
               siteCoverOnly={store.brandSiteCoverOnly}
-              // A store with no public product yet shows the setup guide instead of an empty shop.
+              // A store with no public product yet shows the drawn sample shop and the setup steps (store-empty-preview.md).
               setup={data.setup}
               // "Create custom link for this coupon" — only StorePal
               // reads this (see [[theme-scope-storepal-only]]);
