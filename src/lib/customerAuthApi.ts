@@ -33,7 +33,8 @@ function storeOrThrow(): string {
 
 export interface Customer {
   id: string;
-  phone: string;
+  // Null for an account made with "Login with Google by Regantify": Google gives no phone; the shopper types one at checkout.
+  phone: string | null;
   fullName: string;
   email?: string | null;
   address?: string | null;
@@ -195,6 +196,36 @@ export async function refreshCustomerSession(): Promise<AuthResult> {
     throw new Error('Session expired.');
   }
   return res.json();
+}
+
+export interface RegantifyConnectConfig {
+  /** The central Regantify sign-in page is set up on the server. */
+  enabled: boolean;
+  /** Its Google sign-in is set up too. */
+  google: boolean;
+  /** The central page's base address, e.g. https://accounts.example.com. */
+  url: string | null;
+}
+
+let connectConfig: Promise<RegantifyConnectConfig> | null = null;
+
+/** Whether the store shows "Login with Google by Regantify" (asked once per page load). */
+export function getRegantifyConnectConfig(): Promise<RegantifyConnectConfig> {
+  connectConfig ??= fetch(`${apiOrigin()}/v1/shopper-connect/config`)
+    .then((r) => (r.ok ? r.json() : { enabled: false, google: false, url: null }))
+    .catch(() => ({ enabled: false, google: false, url: null }));
+  return connectConfig;
+}
+
+/** The address of the central Regantify sign-in page for this store, coming back to `returnTo` (this page) afterwards. */
+export function regantifyConnectUrl(base: string, subdomain: string, returnTo: string): string {
+  const params = new URLSearchParams({ store: subdomain, return: returnTo });
+  return `${base.replace(/\/$/, '')}/login?${params.toString()}`;
+}
+
+/** Swaps the central page's one-time code (?rgf_login=...) for this store's sign-in. */
+export function connectLogin(code: string): Promise<AuthResult> {
+  return post<AuthResult>('/v1/customer-auth/connect-login', { subdomain: storeOrThrow(), code });
 }
 
 export async function customerLogout(accessToken: string): Promise<void> {

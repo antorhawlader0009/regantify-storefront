@@ -123,6 +123,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
               <label className="block text-[13px] font-medium text-ink mb-1.5">Phone</label>
               <input
                 value={customer?.phone ?? ''}
+                placeholder="Signed in with Google"
                 disabled
                 className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] text-muted cursor-not-allowed"
               />

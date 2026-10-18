@@ -109,6 +109,18 @@ function rewriteToShop(request: NextRequest) {
   return NextResponse.rewrite(url, { request: { headers } });
 }
 
+// The central Regantify sign-in page for shoppers (server customer-auth/shopper-connect): accounts.ROOT_DOMAIN serves app/regantify, the same
+// pages as /regantify on a local address. "accounts" is a reserved store address on the server. Nothing else is served on that host.
+const ACCOUNTS_SUBDOMAIN = 'accounts';
+
+function rewriteToAccounts(request: NextRequest) {
+  const headers = withCleanMark(request, false);
+  const url = request.nextUrl.clone();
+  const path = url.pathname;
+  if (path !== '/regantify' && !path.startsWith('/regantify/')) url.pathname = `/regantify${path === '/' ? '' : path}`;
+  return NextResponse.rewrite(url, { request: { headers } });
+}
+
 /** Any other host: a /store/:subdomain path gets its address segment (kept per host only for known hosts). */
 function passThrough(request: NextRequest, host: string) {
   const headers = withCleanMark(request, false);
@@ -145,6 +157,7 @@ async function route(request: NextRequest): Promise<NextResponse> {
     // "www" (and the root domain itself) is never a vendor store.
     if (!subdomain || subdomain === 'www') return passThrough(request, host);
     if (subdomain === SHOP_SUBDOMAIN) return rewriteToShop(request);
+    if (subdomain === ACCOUNTS_SUBDOMAIN) return rewriteToAccounts(request);
     return rewriteToStore(request, subdomain);
   }
 
@@ -178,6 +191,15 @@ export async function middleware(request: NextRequest) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
   } else if (params.has('q') || params.has('coupon')) {
     response.headers.set('X-Robots-Tag', 'noindex, follow');
+  }
+
+  // The central sign-in page shows a shopper's saved addresses: it may never be shown inside another site's frame, nor listed.
+  const host0 = request.headers.get('host')?.toLowerCase().split(':')[0] ?? '';
+  if (request.nextUrl.pathname.startsWith('/regantify') || (!!ROOT_DOMAIN && host0 === `${ACCOUNTS_SUBDOMAIN}.${ROOT_DOMAIN}`)) {
+    response.headers.set('X-Frame-Options', 'DENY');
+    response.headers.set('Content-Security-Policy', "frame-ancestors 'none'");
+    response.headers.set('X-Robots-Tag', 'noindex, nofollow');
+    response.headers.set('Referrer-Policy', 'no-referrer');
   }
 
   // Regantify Shop, Step 15: a link into the Shop from a store (?from=<subdomain>) is remembered for a day, so that store's products come first

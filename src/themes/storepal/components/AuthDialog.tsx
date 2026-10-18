@@ -15,6 +15,7 @@ import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { trackMetaCompleteRegistration } from '@/lib/metaPixelEvents';
 import { trackSignUp } from '@/lib/ecommerceEvents';
 import { useAuthDialog, type AuthDialogMode } from '../lib/authDialog';
+import { RegantifySignInButton } from './RegantifySignIn';
 
 const RESEND_SECONDS = 30;
 
@@ -568,6 +569,7 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
           {copy.title}
         </h2>
         <p className="mb-5 mt-1 text-[13.5px] text-muted">{copy.subtitle}</p>
+        {mode !== 'forgot' && <RegantifySignInButton subdomain={subdomain} />}
         {mode === 'login' && <LoginForm onDone={close} />}
         {mode === 'signup' && <SignupForm subdomain={subdomain} onDone={close} />}
         {mode === 'forgot' && <ForgotForm subdomain={subdomain} />}

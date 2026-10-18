@@ -14,6 +14,7 @@ import {
 import { suggestZone } from '@/lib/deliveryZone';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
+import { BringAddressesLink } from '../../components/RegantifySignIn';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 import { BdAddressPicker } from '@/components/BdAddressPicker';
 
@@ -170,6 +171,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
       <p className="text-[13px] text-muted mb-5">
         Save up to {max} addresses. At checkout, tap one to fill in the address and the delivery charge.
       </p>
+      <BringAddressesLink subdomain={subdomain} />
 
       {error && <p className="text-[12.5px] text-accent mb-3">{error}</p>}
 

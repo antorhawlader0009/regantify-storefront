@@ -409,7 +409,7 @@ export function useCheckout(
         ? {
             ...prev,
             fullName: customer.fullName,
-            phone: customer.phone,
+            phone: customer.phone ?? '',
             address: customer.address ?? '',
             zone: customer.deliveryZone ?? prev.zone,
           }
