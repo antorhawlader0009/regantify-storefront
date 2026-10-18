@@ -1032,3 +1032,31 @@ export async function submitStoreReport(subdomain: string, body: { reason: Store
     throw new Error(message || 'Could not send your report. Please try again.');
   }
 }
+
+export interface StoreContactPage {
+  enabled: boolean;
+  intro: string;
+  whatsapp: { label: string; url: string } | null;
+  phone: { label: string; url: string } | null;
+  basedIn: string | null;
+}
+
+/** The StorePal /contact page's cards and intro (cached with the other store pages; the store's save revalidates it). */
+export async function getStoreContact(subdomain: string): Promise<StoreContactPage | null> {
+  return fetchJson<StoreContactPage>(`/v1/store/${subdomain}/contact`, [`store:${subdomain}`]);
+}
+
+/** A shopper's message from the /contact page, sent from the browser (no account). */
+export async function sendContactMessage(subdomain: string, body: { name: string; phone: string; email?: string; message: string }): Promise<void> {
+  const origin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? `${window.location.protocol}//${window.location.hostname}:4000`;
+  const res = await fetch(`${origin}/v1/store/${encodeURIComponent(subdomain)}/contact`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  if (!res.ok) {
+    const data = await res.json().catch(() => null);
+    const message = Array.isArray(data?.message) ? data.message[0] : data?.message;
+    throw new Error(message || 'Could not send your message. Please try again.');
+  }
+}

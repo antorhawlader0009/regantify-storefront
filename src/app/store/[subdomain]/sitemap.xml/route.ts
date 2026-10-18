@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSitemapData, getStoreBlog, getStoreFaq, siteUrl } from '@/lib/storefrontApi';
+import { getSitemapData, getStoreBlog, getStoreContact, getStoreFaq, siteUrl } from '@/lib/storefrontApi';
 import { decodeStoreSegment } from '@/lib/storeAddress';
 
 // One store's sitemap. On a store's own address (/sitemap.xml on {sub}.ROOT_DOMAIN or a custom domain) the middleware rewrites
@@ -36,9 +36,10 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
   if (!data || !data.indexable) return new NextResponse('Not found', { status: 404 });
 
   // Store > Magazine posts and the FAQ (StorePal only; both lists are empty on any other theme).
-  const [blog, faq] = await Promise.all([
+  const [blog, faq, contact] = await Promise.all([
     getStoreBlog(subdomain, 48).catch(() => ({ posts: [] as { slug: string; publishedAt: string }[] })),
     getStoreFaq(subdomain).catch(() => ({ items: [] as unknown[] })),
+    getStoreContact(subdomain).catch(() => null),
   ]);
 
   const url = (path: string) => siteUrl(`/store/${subdomain}${path}`, address);
@@ -47,6 +48,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
   const entries: Entry[] = [
     { loc: await url(''), lastmod: day(newest) },
     ...(faq.items.length > 0 ? [{ loc: await url('/faq'), lastmod: null }] : []),
+    ...(contact?.enabled && 'store' in faq && faq.store.theme === 'STOREPAL' ? [{ loc: await url('/contact'), lastmod: null }] : []),
     ...(await Promise.all(blog.posts.map(async (b) => ({ loc: await url(`/blog/${b.slug}`), lastmod: day(b.publishedAt) })))),
     ...(await Promise.all(data.products.map(async (p) => ({ loc: await url(`/p/${p.slug}`), lastmod: day(p.updatedAt), images: p.photos })))),
     ...(await Promise.all(data.pages.map(async (p) => ({ loc: await url(`/page/${p.slug}`), lastmod: day(p.updatedAt) })))),

@@ -56,6 +56,18 @@ export async function getStoreHasFaq(subdomain: string): Promise<boolean> {
   }
 }
 
+/** Whether the store's contact page is on, for the footer's "Contact us" link. */
+export async function getStoreHasContact(subdomain: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/contact`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return data.enabled === true;
+  } catch {
+    return false;
+  }
+}
+
 /** Whether the store has a published Magazine post (TellMe idea 106), for the footer's "Magazine" link. */
 export async function getStoreHasBlog(subdomain: string): Promise<boolean> {
   try {

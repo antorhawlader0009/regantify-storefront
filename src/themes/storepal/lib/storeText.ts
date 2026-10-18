@@ -165,6 +165,21 @@ const BN: Record<string, string> = {
   Add: 'যোগ করুন',
   'Reward points': 'রিওয়ার্ড পয়েন্ট',
   'Use them at checkout. 1 point = ৳1.': 'চেকআউটে ব্যবহার করুন। ১ পয়েন্ট = ১ টাকা।',
+  // Contact page
+  'Contact us': 'যোগাযোগ',
+  'Mobile number': 'মোবাইল নম্বর',
+  Email: 'ইমেইল',
+  '(optional)': '(ঐচ্ছিক)',
+  Message: 'বার্তা',
+  "Include your order number if it's about an order": 'অর্ডার নিয়ে হলে অর্ডার নম্বরটি লিখুন',
+  'Send message': 'বার্তা পাঠান',
+  'WhatsApp, fastest reply': 'হোয়াটসঅ্যাপ, সবচেয়ে দ্রুত উত্তর',
+  'Call us': 'কল করুন',
+  'Based in': 'আমাদের ঠিকানা',
+  'Thank you. We got your message.': 'ধন্যবাদ। আপনার বার্তা পেয়েছি।',
+  'We will get back to you soon.': 'আমরা শীঘ্রই যোগাযোগ করব।',
+  'Send another message': 'আরেকটি বার্তা পাঠান',
+  'Have a question? Write to us and we will get back to you.': 'কোনো প্রশ্ন আছে? লিখে পাঠান, আমরা উত্তর দেব।',
 };
 
 /** Bangla digits for numbers shown inside a Bangla label. */
