@@ -92,6 +92,23 @@ function rewriteToStore(request: NextRequest, subdomain: string) {
   return NextResponse.rewrite(storeUrl(request, subdomain, { clean: true, origin: originOf(request) }, rest), { request: { headers } });
 }
 
+// The Regantify Shop (SHOP-plan.md Step 7): shop.ROOT_DOMAIN is the platform's marketplace, not a store. "shop" is a reserved store
+// address (BUILT_IN_RESERVED_SUBDOMAINS on the server), so no store can ever be called that.
+const SHOP_SUBDOMAIN = 'shop';
+
+/**
+ * shop.ROOT_DOMAIN serves app/shop: "/" is the Shop home, "/search" its search and so on. The Shop's own links are written as /shop/...
+ * (so the same pages work at /shop on a local or LAN address, where there are no subdomains); a path already under /shop is kept as it is.
+ * Anything else on this host, a /store/... path included, lands under /shop and 404s: the Shop's address must never serve a store's pages.
+ */
+function rewriteToShop(request: NextRequest) {
+  const headers = withCleanMark(request, false);
+  const url = request.nextUrl.clone();
+  const path = url.pathname;
+  if (path !== '/shop' && !path.startsWith('/shop/')) url.pathname = `/shop${path === '/' ? '' : path}`;
+  return NextResponse.rewrite(url, { request: { headers } });
+}
+
 /** Any other host: a /store/:subdomain path gets its address segment (kept per host only for known hosts). */
 function passThrough(request: NextRequest, host: string) {
   const headers = withCleanMark(request, false);
@@ -127,6 +144,7 @@ async function route(request: NextRequest): Promise<NextResponse> {
     const subdomain = host.slice(0, -(ROOT_DOMAIN.length + 1));
     // "www" (and the root domain itself) is never a vendor store.
     if (!subdomain || subdomain === 'www') return passThrough(request, host);
+    if (subdomain === SHOP_SUBDOMAIN) return rewriteToShop(request);
     return rewriteToStore(request, subdomain);
   }
 
@@ -161,8 +179,19 @@ export async function middleware(request: NextRequest) {
   } else if (params.has('q') || params.has('coupon')) {
     response.headers.set('X-Robots-Tag', 'noindex, follow');
   }
+
+  // Regantify Shop, Step 15: a link into the Shop from a store (?from=<subdomain>) is remembered for a day, so that store's products come first
+  // in the Shop's search (app/shop/search reads it). Only a valid store address is kept; anything else is ignored.
+  const from = params.get('from')?.trim().toLowerCase();
+  const host = request.headers.get('host')?.toLowerCase().split(':')[0] ?? '';
+  const onShop = request.nextUrl.pathname === '/shop' || request.nextUrl.pathname.startsWith('/shop/') || (!!ROOT_DOMAIN && host === `${SHOP_SUBDOMAIN}.${ROOT_DOMAIN}`);
+  if (onShop && from && /^[a-z0-9-]{1,63}$/.test(from)) {
+    response.cookies.set(SHOP_FROM_COOKIE, from, { maxAge: 86_400, path: '/', sameSite: 'lax', httpOnly: true });
+  }
   return response;
 }
+
+const SHOP_FROM_COOKIE = 'shop_from';
 
 export const config = {
   // Skip Next.js internals and the favicon — only rewrite page requests. robots.txt and sitemap.xml go through too:
