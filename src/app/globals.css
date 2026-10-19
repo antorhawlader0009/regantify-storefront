@@ -228,3 +228,9 @@ body {
 *::-webkit-scrollbar {
   display: none; /* Chrome, Safari, new Edge */
 }
+
+/* Quick add sheet (components/QuickAddSheet.tsx): rises from the bottom on a phone. */
+@keyframes quickadd-in {
+  from { transform: translateY(24px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

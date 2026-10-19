@@ -1,5 +1,6 @@
 import type { CourierTracking } from './courierTracking';
 import type { StorefrontStoreAway } from './storeAway';
+import type { PrepaidRule } from './prepaidDiscount';
 
 // Client-side (browser) fetch helper — used only by the checkout page,
 // which is a Client Component (needs cart state from localStorage) and
@@ -130,6 +131,8 @@ export interface StoreDeliveryCharges {
   deliveryArea?: { mode: 'ONLY' | 'EXCEPT'; districts: string[]; message: string | null } | null;
   /** Minimum order (TellMe idea 56): the smallest goods total allowed; null = none. */
   minOrderAmount?: number | null;
+  /** Discount for paying online (lib/prepaidDiscount.ts); null while the store has it off. */
+  prepaidDiscount?: PrepaidRule | null;
   /** Gift option (TellMe idea 57, StorePal only): the wrap charge; null while off. */
   giftOption?: { charge: number } | null;
   // Store > Store Away (holiday mode), StorePal only; null while open. See lib/storeAway.ts.
@@ -557,6 +560,8 @@ export interface TrackedOrder {
   // Whether the shopper may cancel this order themselves right now (server: orders/customer-cancel.ts).
   // Absent on the "My orders" list and on older answers.
   customerCancel?: { allowed: boolean };
+  // "Pay now online and save" on a COD order: the saving and what paying now costs; null/absent when not offered.
+  prepaidOffer?: { saving: number; payNow: number } | null;
   // Whether the shopper may correct their delivery details right now ("Fix my address").
   customerEdit?: { allowed: boolean };
   // "How was the delivery?" (TellMe idea 89): asked once on a Completed online order; `rating` once given.
@@ -580,6 +585,13 @@ export async function fetchTrackedOrderByLink(subdomain: string, token: string):
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}`, { cache: 'no-store' });
   if (!res.ok) throw new Error('Could not refresh the order.');
   return res.json() as Promise<TrackedOrder>;
+}
+
+/** "Pay now online and save" on a COD order (tracking token as proof): the answer is the pay page to open. */
+export async function startPrepaidSwitch(subdomain: string, token: string): Promise<{ payPath: string }> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/pay-online`, { method: 'POST' });
+  if (!res.ok) throw await apiError(res, 'Could not start the payment. Please try again.');
+  return res.json() as Promise<{ payPath: string }>;
 }
 
 /** The shopper cancels their own order (tracking token as proof). Returns the order as it is now. */

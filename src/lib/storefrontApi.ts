@@ -426,6 +426,12 @@ export interface StorefrontSizeGuide {
   note: string | null;
 }
 
+/** Colour circles on a product card (server storefront/card-swatches.ts); only on the product list answer. */
+export interface StorefrontCardSwatches {
+  option: string;
+  items: Array<{ value: string; photoUrl: string | null }>;
+}
+
 /** A product video (YouTube, Facebook, Instagram, TikTok or an .mp4), as the server worked it out. */
 export interface StorefrontProductVideo {
   platform: 'YOUTUBE' | 'FACEBOOK' | 'INSTAGRAM' | 'TIKTOK' | 'FILE';
@@ -463,6 +469,8 @@ export interface StorefrontProduct {
   videoUrl?: string | null;
   /** The product video ready to play (server products/product-video.ts); only on the full product answer. */
   video?: StorefrontProductVideo | null;
+  /** Colour circles for the card; only on the product list answer. */
+  swatches?: StorefrontCardSwatches | null;
   price: string;
   discountPrice?: string | null;
   isPreOrder: boolean;

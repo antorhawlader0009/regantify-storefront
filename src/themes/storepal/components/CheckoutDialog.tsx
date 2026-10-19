@@ -84,6 +84,8 @@ const EN = {
   noOnlineNote: 'This order cannot be placed right now because the store has no online payment. Please contact the store.',
   gatewayLabels: { COD: 'Cash on Delivery', ONLINE_PAYMENT: 'Online Payment' } as Record<string, string>,
   onlineHint: '(bKash, Nagad, cards & more via PayStation)',
+  prepaidSave: (amount: string) => `Save ${amount}`,
+  prepaidLine: 'Online payment discount',
   mmpTitle: (total: string) => `Send ${total} to one of these numbers, then fill in the two boxes below`,
   mmpKind: { PERSONAL: 'Personal (Send Money)', AGENT: 'Agent (Cash Out)', MERCHANT: 'Merchant (Payment)' } as Record<string, string>,
   mmpCopy: 'Copy',
@@ -204,6 +206,8 @@ const BN: Copy = {
   noOnlineNote: 'দোকানে অনলাইন পেমেন্ট চালু নেই, তাই এখন এই অর্ডার করা যাচ্ছে না। দোকানের সাথে যোগাযোগ করুন।',
   gatewayLabels: { COD: 'ক্যাশ অন ডেলিভারি', ONLINE_PAYMENT: 'অনলাইন পেমেন্ট' },
   onlineHint: '(পে-স্টেশনের মাধ্যমে বিকাশ, নগদ, কার্ড ও আরও অনেক কিছু)',
+  prepaidSave: (amount: string) => `${amount} সাশ্রয়`,
+  prepaidLine: 'অনলাইন পেমেন্ট ছাড়',
   mmpTitle: (total: string) => `নিচের যেকোনো একটি নম্বরে ${total} পাঠান, তারপর নিচের ঘর দুটি পূরণ করুন`,
   mmpKind: { PERSONAL: 'পার্সোনাল (সেন্ড মানি)', AGENT: 'এজেন্ট (ক্যাশ আউট)', MERCHANT: 'মার্চেন্ট (পেমেন্ট)' },
   mmpCopy: 'কপি',
@@ -345,6 +349,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     setCouponCode,
     appliedCoupon,
     automaticDiscount,
+    prepaidSaving,
+    prepaidDiscountAmount,
     automaticFreeShipping,
     freeGifts,
     rewards,
@@ -962,6 +968,15 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </span>
                 </div>
               )}
+              {prepaidDiscountAmount > 0 && (
+                <div className="flex justify-between text-success">
+                  <span className="flex items-center gap-1">
+                    <Tag size={12} />
+                    {t.prepaidLine}
+                  </span>
+                  <span className="font-semibold">-{formatPrice(prepaidDiscountAmount)}</span>
+                </div>
+              )}
               {/* Marketing > Discounts — applied automatically, no code. */}
               {automaticDiscount && (
                 <div className="flex justify-between text-success">
@@ -1141,6 +1156,12 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     {gateway.displayLabel ?? t.gatewayLabels[gateway.type] ?? DEFAULT_GATEWAY_LABELS[gateway.type]}
                     {gateway.type === 'ONLINE_PAYMENT' && (
                       <span className="text-[11px] text-muted font-normal">{t.onlineHint}</span>
+                    )}
+                    {/* Discount for paying online: shown on every online choice, before Cash on Delivery is picked. */}
+                    {gateway.type !== 'COD' && prepaidSaving > 0 && (
+                      <span className="ml-auto shrink-0 rounded-full bg-success/10 px-2 py-0.5 text-[11px] font-semibold text-success">
+                        {t.prepaidSave(formatPrice(prepaidSaving))}
+                      </span>
                     )}
                   </label>
                 ))}

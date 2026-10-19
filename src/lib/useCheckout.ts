@@ -22,6 +22,7 @@ import { gaAdContext } from '@/lib/googleAnalytics';
 import { tiktokAdContext } from '@/lib/tiktokPixel';
 import { captureTrafficSource } from '@/lib/trafficSource';
 import { stillAway, type StorefrontStoreAway } from '@/lib/storeAway';
+import { prepaidDiscountFor, type PrepaidRule } from '@/lib/prepaidDiscount';
 import {
   placeOrder,
   syncIncompleteOrder,
@@ -171,6 +172,7 @@ export function useCheckout(
     preferredDays: string[] | null;
     hasSlots: boolean;
     minOrderAmount: number | null;
+    prepaidDiscount: PrepaidRule | null;
     giftOption: { charge: number } | null;
     deliveryArea: { mode: 'ONLY' | 'EXCEPT'; districts: string[]; message: string | null } | null;
     dailyLimit: { limit: number; remaining: number } | null;
@@ -195,6 +197,7 @@ export function useCheckout(
         preferredDays: charges.preferredDelivery?.days ?? null,
         hasSlots: (charges.preferredDelivery?.slots?.length ?? 0) > 0,
         minOrderAmount: charges.minOrderAmount ?? null,
+        prepaidDiscount: charges.prepaidDiscount ?? null,
         giftOption: charges.giftOption ?? null,
         deliveryArea: charges.deliveryArea ?? null,
         dailyLimit: charges.dailyLimit ?? null,
@@ -559,7 +562,12 @@ export function useCheckout(
   const autoFreeShipping = discountsReset ? null : (automaticDiscounts?.freeShipping ?? null);
   const automaticDiscountAmount = Math.max(0, Math.min(autoDiscount?.discountAmount ?? 0, subtotal - couponDiscount));
   // Step 16: on a resale order the reseller's coupon and discount come out of its earning, so never more than that earning.
-  const totalDiscount = mainIsResale ? Math.min(couponDiscount + automaticDiscountAmount, resaleInfo?.maxDiscount ?? 0) : couponDiscount + automaticDiscountAmount;
+  const baseDiscount = mainIsResale ? Math.min(couponDiscount + automaticDiscountAmount, resaleInfo?.maxDiscount ?? 0) : couponDiscount + automaticDiscountAmount;
+  // Discount for paying online (lib/prepaidDiscount.ts, same rule as OrdersService.create): what any online choice saves,
+  // shown on the payment options, and taken off while one is picked. Never on a resale cart (cash on delivery only).
+  const prepaidSaving = mainIsResale ? 0 : prepaidDiscountFor(vendorCharges?.prepaidDiscount, subtotal - couponDiscount - automaticDiscountAmount);
+  const prepaidDiscountAmount = selectedGateway && selectedGateway.type !== 'COD' ? prepaidSaving : 0;
+  const totalDiscount = baseDiscount + prepaidDiscountAmount;
   // A free-delivery coupon or discount waives the normal charge; the express extra stays unless the store waives it too.
   const freeDelivery = couponFreeShipping || !!autoFreeShipping;
   const effectiveDeliveryCharge = freeDelivery ? (expressSelected && expressInfo && !expressInfo.waivedByFree ? expressCharge : 0) : deliveryCharge + expressCharge;
@@ -1086,6 +1094,10 @@ export function useCheckout(
     // money discount's name + capped amount, and the free-shipping
     // discount's name (delivery is already 0 when set).
     automaticDiscount: autoDiscount && automaticDiscountAmount > 0 ? { name: autoDiscount.name, amount: automaticDiscountAmount } : null,
+    // Discount for paying online: `prepaidSaving` is what an online choice saves (for the payment options' "Save ৳X"),
+    // `prepaidDiscountAmount` what is taken off now (0 while Cash on Delivery is picked).
+    prepaidSaving,
+    prepaidDiscountAmount,
     automaticFreeShipping: autoFreeShipping && !couponFreeShipping ? { name: autoFreeShipping.name } : null,
     // Free gifts the order will carry as price-0 lines (a coupon that resets discounts does not take them away).
     freeGifts: automaticDiscounts?.gifts ?? [],

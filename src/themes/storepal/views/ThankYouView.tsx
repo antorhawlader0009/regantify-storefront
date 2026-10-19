@@ -17,6 +17,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { CodOrderVerification } from '../components/CodOrderVerification';
 import { CancelOrderCard } from '../components/CancelOrderCard';
+import { PrepaidOfferCard } from '@/components/PrepaidOfferCard';
 import { EditAddressCard } from '../components/EditAddressCard';
 import { useStorePalDesign } from '../lib/designSettings';
 import { trackMetaPurchase } from '@/lib/metaPixelEvents';
@@ -178,6 +179,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
         {/* "Cancel my order" while the store hasn't started on it (the server decides, see CancelOrderCard). */}
         {!awaitingCodVerification && (
           <div className="mb-6 space-y-3">
+            {order.prepaidOffer && order.trackingToken && (
+              <PrepaidOfferCard subdomain={subdomain} token={order.trackingToken} offer={order.prepaidOffer} lang={storeLanguage === 'bn' ? 'bn' : 'en'} />
+            )}
             <EditAddressCard
               subdomain={subdomain}
               order={order}

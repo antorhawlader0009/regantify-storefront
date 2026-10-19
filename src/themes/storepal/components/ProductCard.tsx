@@ -20,6 +20,9 @@ import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
 import { useStoreText } from '../lib/storeText';
 import { preOrderDateText } from '../lib/preOrderDate';
+import { CardSwatches } from '@/components/CardSwatches';
+import { QuickAddSheet } from '@/components/QuickAddSheet';
+import type { StorefrontCardSwatches } from '@/lib/storefrontApi';
 
 // Minimal shape ProductCard actually reads — satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
@@ -63,6 +66,8 @@ interface CardProduct {
   stockQuantity?: number | null;
   summary?: string | null;
   videoUrl?: string | null;
+  /** Colour circles (list answer only). */
+  swatches?: StorefrontCardSwatches | null;
 }
 
 interface ProductCardProps {
@@ -99,6 +104,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
   const [hovering, setHovering] = useState(false);
+  // Colour circles (shared CardSwatches): the photo of the colour pointed at replaces the card's picture.
+  const [swatchPhoto, setSwatchPhoto] = useState<string | null>(null);
+  // Quick add (shared QuickAddSheet): sizes and colours picked on the card instead of the product page.
+  const [sheetOpen, setSheetOpen] = useState(false);
 
   const href = `/store/${subdomain}/product/${product.slug}`;
   const outOfStock = isOutOfStock(product);
@@ -114,6 +123,19 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   // else — including backorder, whose confirm popup lives on the product
   // page — goes to the product page.
   const canBuyInline = fullData && !outOfStock && (!hasVariations || showOptions);
+  // A product with variations whose choices aren't on the card opens the quick add sheet instead.
+  const quickAdd = fullData && !outOfStock && hasVariations && !showOptions;
+  const photoFor = (option: string, value: string) =>
+    product.swatches?.option === option ? (product.swatches.items.find((s) => s.value === value)?.photoUrl ?? null) : null;
+  const chosenPhoto = options.map((o) => (selected[o.name] ? photoFor(o.name, selected[o.name]) : null)).find(Boolean) ?? null;
+  const isAvailable = (option: string, value: string) =>
+    product.isPreOrder ||
+    product.variants.some(
+      (v) =>
+        v.optionValues?.[option] === value &&
+        v.stock > 0 &&
+        options.every((o) => o.name === option || !selected[o.name] || v.optionValues?.[o.name] === selected[o.name]),
+    );
 
   const matchedVariant =
     options.length > 0 && options.every((o) => selected[o.name])
@@ -135,8 +157,13 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         ? product.price
         : null;
 
-  const purchase = (kind: 'add' | 'buy') => {
-    if (!canBuyInline) {
+  const purchase = (kind: 'add' | 'buy', fromSheet = false) => {
+    if (!canBuyInline && !(fromSheet && quickAdd)) {
+      if (quickAdd) {
+        setVariantWarning(false);
+        setSheetOpen(true);
+        return;
+      }
       router.push(href);
       return;
     }
@@ -154,7 +181,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       productSlug: product.slug,
       resaleGroup: product.resaleGroup ?? undefined,
       name: product.name,
-      image: product.photoUrls[0],
+      image: chosenPhoto ?? product.photoUrls[0],
       unitPrice: Number(displayPrice),
       originalUnitPrice: originalPrice ? Number(originalPrice) : undefined,
       quantity: Math.max(product.minOrderQuantity ?? 1, product.quantityStep ?? 1),
@@ -165,6 +192,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       productId: product.id,
       variantId: matchedVariant?.id,
     });
+    setSheetOpen(false);
     if (kind === 'buy') {
       openCheckout();
       return;
@@ -178,8 +206,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   // Product for one with variations. Merged with the explicit toggles so
   // the same button never shows twice.
   const comingSoon = !!product.comingSoon;
-  const showView = !quoteOnly && (design.cardShowViewButton || (design.cardShowDefaultButton && hasVariations));
-  const showAddToCart = !quoteOnly && !comingSoon && (design.cardShowAddToCart || (design.cardShowDefaultButton && !hasVariations));
+  // With quick add, a product with variations gets Add to Cart too (it opens the sheet); View Product stays for the rest.
+  const showView = !quoteOnly && (design.cardShowViewButton || (design.cardShowDefaultButton && hasVariations && !quickAdd));
+  const showAddToCart =
+    !quoteOnly && !comingSoon && (design.cardShowAddToCart || (design.cardShowDefaultButton && (!hasVariations || quickAdd)));
   const showBuyNow = !quoteOnly && !comingSoon && design.cardShowBuyNow;
 
   const video = design.cardShowVideo && product.videoUrl ? videoEmbed(product.videoUrl) : null;
@@ -202,7 +232,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         <Link href={href} className="absolute inset-0 block">
           {product.photoUrls[0] ? (
             <Image
-              src={product.photoUrls[0]}
+              src={swatchPhoto ?? product.photoUrls[0]}
               alt={product.name}
               fill
               sizes="(max-width: 640px) 50vw, 260px"
@@ -277,6 +307,17 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         >
           {product.name}
         </Link>
+
+        {product.swatches && !quoteOnly && !showOptions && (
+          <CardSwatches
+            swatches={product.swatches}
+            active={selected[product.swatches.option]}
+            onPick={(value, photoUrl) => {
+              setSelected((prev) => ({ ...prev, [product.swatches!.option]: value }));
+              if (photoUrl) setSwatchPhoto(photoUrl);
+            }}
+          />
+        )}
 
         {design.cardShowSummary && product.summary && (
           <p className="text-[12px] text-muted leading-snug line-clamp-2">{product.summary}</p>
@@ -415,6 +456,36 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
           )}
         </div>
       </div>
+
+      {quickAdd && (
+        <QuickAddSheet
+          open={sheetOpen}
+          onClose={() => setSheetOpen(false)}
+          name={product.name}
+          image={product.photoUrls[0]}
+          price={formatPrice(displayPrice)}
+          originalPrice={originalPrice ? formatPrice(originalPrice) : null}
+          options={options}
+          selected={selected}
+          onSelect={(option, value) => {
+            setSelected((prev) => ({ ...prev, [option]: value }));
+            setVariantWarning(false);
+          }}
+          isAvailable={isAvailable}
+          photoFor={photoFor}
+          note={lowStockText}
+          warning={
+            variantWarning
+              ? t('Select an option first.')
+              : matchedVariant && matchedVariant.stock <= 0 && !product.isPreOrder
+                ? t('Out of Stock')
+                : null
+          }
+          labels={{ addToCart: t('Add to Cart'), buyNow: showBuyNow ? t('Buy Now') : undefined, close: t('Close') }}
+          onAdd={() => purchase('add', true)}
+          onBuy={showBuyNow ? () => purchase('buy', true) : undefined}
+        />
+      )}
     </div>
   );
 }

@@ -11,6 +11,7 @@ import { formatPrice } from '../lib/formatPrice';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { isFinishedOrder } from '@/lib/useLiveOrder';
 import { CancelOrderCard } from './CancelOrderCard';
+import { PrepaidOfferCard } from '@/components/PrepaidOfferCard';
 import { DeliveryRatingCard } from './DeliveryRatingCard';
 import { ReviewProductsCard } from './ReviewProductsCard';
 import { HeardFromCard } from './HeardFromCard';
@@ -265,6 +266,10 @@ export function TrackOrderBody({
             ))}
           </ul>
         </section>
+      )}
+
+      {subdomain && order.prepaidOffer && order.trackingToken && (
+        <PrepaidOfferCard subdomain={subdomain} token={order.trackingToken} offer={order.prepaidOffer} lang={lang} />
       )}
 
       {subdomain && onOrderChanged && <RescheduleCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}

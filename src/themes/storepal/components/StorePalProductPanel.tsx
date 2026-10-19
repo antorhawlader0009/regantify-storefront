@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { CheckCircle2, Check, Minus, Plus, Truck, ShieldCheck, Banknote, PlayCircle } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { ProductVideo } from '@/components/ProductVideo';
+import { HoverZoom, PhotoViewer } from '@/components/ProductImageViewer';
 import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText } from '../lib/storeText';
@@ -96,6 +97,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const outOfStock = isOutOfStock(product);
 
   const [activePhoto, setActivePhoto] = useState(0);
+  // Full-screen photo viewer (shared PhotoViewer); null = closed.
+  const [viewerIndex, setViewerIndex] = useState<number | null>(null);
   const [selected, setSelected] = useState<Record<string, string>>({});
   // Product.minOrderQuantity: the picker starts there and never goes below it.
   // Sold in packs (TellMe idea 102): +/- move one pack; the first quantity is one pack at least.
@@ -346,7 +349,12 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
       {/* Gallery */}
       <div>
         <div className={sideGallery ? `flex gap-3 items-start ${display.galleryStyle === 'LEFT' ? 'flex-row-reverse' : ''}` : ''}>
-        <div className={`relative bg-canvas border border-line rounded-lg overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : 'aspect-square'}`}>
+        <HoverZoom
+          src={activePhotoUrl}
+          onOpen={() => setViewerIndex(activePhoto)}
+          label={t('Open photo')}
+          className={`bg-canvas border border-line rounded-lg overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : 'aspect-square'}`}
+        >
           {activePhotoUrl ? (
             <Image
               key={activePhotoUrl}
@@ -363,11 +371,22 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             </div>
           )}
           {displayOriginalPrice && (
-            <span className="absolute top-3 left-3 bg-accent text-white text-[12px] font-bold px-2.5 py-1 rounded shadow-sm">
+            <span className="absolute top-3 left-3 z-[3] pointer-events-none bg-accent text-white text-[12px] font-bold px-2.5 py-1 rounded shadow-sm">
               -{percentOff}%
             </span>
           )}
-        </div>
+        </HoverZoom>
+        <PhotoViewer
+          photos={allPhotos}
+          index={viewerIndex}
+          onIndexChange={(k) => {
+            setViewerIndex(k);
+            setActivePhoto(k);
+          }}
+          onClose={() => setViewerIndex(null)}
+          title={product.name}
+          labels={{ close: t('Close'), previous: t('Previous photo'), next: t('Next photo'), zoomIn: t('Zoom in'), zoomOut: t('Zoom out') }}
+        />
         {allPhotos.length > 1 && (
           <div className={sideGallery ? 'flex flex-col gap-2 shrink-0 max-h-[520px] overflow-y-auto p-0.5' : 'flex gap-2 flex-wrap'}>
             {allPhotos.map((url, i) => (
