@@ -6,6 +6,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { CheckCircle2, Check, Minus, Plus, Truck, ShieldCheck, Banknote, PlayCircle } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
+import { ProductVideo } from '@/components/ProductVideo';
 import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText } from '../lib/storeText';
@@ -383,16 +384,29 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           </div>
         )}
         </div>
-        {product.videoUrl && (
-          <a
-            href={product.videoUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-1.5 mt-3 text-[12.5px] text-accent font-semibold hover:text-accent-dark"
-          >
-            <PlayCircle size={15} />
-            {t('Watch product video')}
-          </a>
+        {product.video ? (
+          <div className="mt-4">
+            <p className="mb-2 text-[13px] font-semibold text-ink">{t('Product video')}</p>
+            <ProductVideo
+              video={product.video}
+              fallbackPoster={product.photoUrls[0] ?? null}
+              title={product.name}
+              className="text-accent"
+              labels={{ play: t('Play product video'), watchOn: (platform) => t('Watch on {platform}').replace('{platform}', platform) }}
+            />
+          </div>
+        ) : (
+          product.videoUrl && (
+            <a
+              href={product.videoUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 mt-3 text-[12.5px] text-accent font-semibold hover:text-accent-dark"
+            >
+              <PlayCircle size={15} />
+              {t('Watch product video')}
+            </a>
+          )
         )}
       </div>
 

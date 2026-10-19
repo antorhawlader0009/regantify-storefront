@@ -426,6 +426,17 @@ export interface StorefrontSizeGuide {
   note: string | null;
 }
 
+/** A product video (YouTube, Facebook, Instagram, TikTok or an .mp4), as the server worked it out. */
+export interface StorefrontProductVideo {
+  platform: 'YOUTUBE' | 'FACEBOOK' | 'INSTAGRAM' | 'TIKTOK' | 'FILE';
+  /** WIDE 16:9, TALL 9:16 (Shorts, TikTok, reels). */
+  shape: 'WIDE' | 'TALL';
+  /** The player to load on tap; null = a short link not worked out yet (show a plain link). */
+  embedUrl: string | null;
+  watchUrl: string;
+  thumbUrl: string | null;
+}
+
 export interface StorefrontProduct {
   id: string;
   /** The store's own badge ("New", "Hot"); already empty once its end time has passed. StorePal shows it. */
@@ -450,6 +461,8 @@ export interface StorefrontProduct {
   photoSize: string;
   photoUrls: string[];
   videoUrl?: string | null;
+  /** The product video ready to play (server products/product-video.ts); only on the full product answer. */
+  video?: StorefrontProductVideo | null;
   price: string;
   discountPrice?: string | null;
   isPreOrder: boolean;
