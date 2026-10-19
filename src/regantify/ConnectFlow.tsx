@@ -108,6 +108,17 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
         setStoreName(t.store.name);
         setGoogle(cfg.google);
         sessionStorage.setItem(TRIP_KEY, JSON.stringify({ store, storeName: t.store.name, returnTo } satisfies Trip));
+        // The store's "Login with Google" button: straight on to Google, no choice screen. If Google can't start, the choice screen shows the error.
+        if (params.get('via') === 'google' && cfg.google) {
+          connectApi
+            .googleStart(store, returnTo)
+            .then(({ url }) => window.location.assign(url))
+            .catch((err: Error) => {
+              setError(err.message);
+              setStep({ kind: 'choose' });
+            });
+          return;
+        }
         setStep({ kind: 'choose' });
       })
       .catch((err: Error) => setStep({ kind: 'error', message: err.message }));
@@ -165,7 +176,7 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
         <span className="rgf-handoff-mark">R</span>
       </div>
 
-      {step.kind === 'loading' && <p className="rgf-lede">Opening your Regantify sign-in…</p>}
+      {step.kind === 'loading' && <p className="rgf-lede">{params.get('via') === 'google' ? 'Opening Google sign-in…' : 'Opening your Regantify sign-in…'}</p>}
 
       {step.kind === 'error' && (
         <>

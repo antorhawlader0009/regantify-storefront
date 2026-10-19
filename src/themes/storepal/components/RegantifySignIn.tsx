@@ -33,17 +33,24 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
   }, []);
   if (!cfg?.enabled || !cfg.url) return null;
   const go = () => {
-    window.location.assign(regantifyConnectUrl(cfg.url!, subdomain, window.location.href));
+    window.location.assign(regantifyConnectUrl(cfg.url!, subdomain, window.location.href, cfg.google ? 'google' : undefined));
   };
   return (
     <div className="mb-5">
       <button
         type="button"
         onClick={go}
-        className="flex h-12 w-full items-center justify-center gap-3 rounded-lg border border-line-strong bg-white text-[14.5px] font-semibold text-ink transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex min-h-12 w-full items-center justify-center gap-3 py-1.5 rounded-lg border border-line-strong bg-white text-[14.5px] font-semibold text-ink transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {cfg.google ? <GoogleMark /> : null}
-        {cfg.google ? 'Login with Google by Regantify' : 'Continue with your Regantify account'}
+        {cfg.google ? (
+          <span className="flex flex-col items-start leading-tight">
+            <span>Login with Google</span>
+            <span className="text-[11px] font-normal text-muted">by Regantify</span>
+          </span>
+        ) : (
+          'Continue with your Regantify account'
+        )}
       </button>
       <p className="mt-2 text-center text-[12px] text-muted">Your addresses from other Regantify stores can come along.</p>
       <div className="mt-5 flex items-center gap-3 text-[12px] text-muted">

@@ -218,8 +218,10 @@ export function getRegantifyConnectConfig(): Promise<RegantifyConnectConfig> {
 }
 
 /** The address of the central Regantify sign-in page for this store, coming back to `returnTo` (this page) afterwards. */
-export function regantifyConnectUrl(base: string, subdomain: string, returnTo: string): string {
+export function regantifyConnectUrl(base: string, subdomain: string, returnTo: string, via?: 'google'): string {
   const params = new URLSearchParams({ store: subdomain, return: returnTo });
+  // via=google: the central page goes straight on to Google instead of showing its sign-in choices.
+  if (via) params.set('via', via);
   return `${base.replace(/\/$/, '')}/login?${params.toString()}`;
 }
 
