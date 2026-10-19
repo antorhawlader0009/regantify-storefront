@@ -492,7 +492,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
 }
 
 const COPY: Record<AuthDialogMode, { title: string; subtitle: string }> = {
-  login: { title: 'Log in', subtitle: 'See your orders and check out faster.' },
+  login: { title: 'Log in', subtitle: '' },
   signup: { title: 'Create your account', subtitle: 'Track orders and save your address for next time.' },
   forgot: { title: 'Reset your password', subtitle: 'We will text a code to your phone so you can set a new one.' },
 };
@@ -568,7 +568,7 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
         <h2 id={titleId} className="pr-8 text-[22px] font-bold leading-tight text-ink">
           {copy.title}
         </h2>
-        <p className="mb-5 mt-1 text-[13.5px] text-muted">{copy.subtitle}</p>
+        {copy.subtitle ? <p className="mb-5 mt-1 text-[13.5px] text-muted">{copy.subtitle}</p> : <div className="mb-5" />}
         {mode !== 'forgot' && <RegantifySignInButton subdomain={subdomain} />}
         {mode === 'login' && <LoginForm onDone={close} />}
         {mode === 'signup' && <SignupForm subdomain={subdomain} onDone={close} />}

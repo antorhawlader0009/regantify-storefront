@@ -57,7 +57,6 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
           <span className="text-[14.5px] font-semibold">Continue with your Regantify account</span>
         )}
       </button>
-      <p className="mt-2 text-center text-[12px] text-muted">Your addresses from other Regantify stores can come along.</p>
       <div className="mt-5 flex items-center gap-3 text-[12px] text-muted">
         <span className="h-px flex-1 bg-line" />
         or
