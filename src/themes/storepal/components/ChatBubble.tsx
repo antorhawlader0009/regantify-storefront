@@ -5,6 +5,7 @@ import { useEffect, useState, type MouseEvent } from 'react';
 import { isOpenNow, nextOpening, timeLabel, type BusinessHours } from '@/lib/businessHours';
 import type { SocialLinks } from '@/lib/socialLinksApi';
 import { useCartDrawer } from '../lib/cartDrawer';
+import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
 import { useBusinessHours, useStorePalDesign } from '../lib/designSettings';
 import { bnDigits, useStoreText } from '../lib/storeText';
 
@@ -65,6 +66,9 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
   const pathname = usePathname() ?? '';
   // Steps over to the left edge while the slide-in cart is open, back when it closes.
   const cartOpen = useCartDrawer((s) => s.open);
+  const onLeft = design.chatButtonSide === 'LEFT';
+  // Slides off its own side while the shopper scrolls down, back on scroll up.
+  const { hidden: scrolledAway, reveal } = useFloatingHidden(cartOpen && !onLeft);
 
   if (design.chatButtonEnabled === false) return null;
   const pages = design.chatButtonPages ?? ['HOME', 'PRODUCT', 'OTHER'];
@@ -77,7 +81,7 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
 
   // Outside the shop hours (TellMe idea 73) the bubble says so and when we answer again; the chat still opens.
   const closedNote = hoursNote(hours, design.storeLanguage);
-  const left = design.chatButtonSide === 'LEFT';
+  const left = onLeft;
   const prefill = !messenger && kind === 'PRODUCT' && !!productName && design.chatButtonProductMessage !== false;
 
   // The product link is read when tapped, so it is the address the shopper is really on.
@@ -90,7 +94,7 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
 
   return (
     <>
-    {closedNote && closedNow && (
+    {closedNote && closedNow && !scrolledAway && (
       <p
         className={`fixed bottom-[4.8rem] ${left ? 'left-5' : 'right-5'} z-30 m-0 max-w-[15rem] rounded-md bg-ink px-3 py-2 text-[12px] leading-snug text-white shadow-lg`}
         role="status"
@@ -107,7 +111,15 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
       className={`fixed bottom-5 ${left ? 'left-5' : 'right-5'} z-30 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none ${
         messenger ? 'bg-[#0084FF] hover:bg-[#0074e0]' : 'bg-[#25D366] hover:bg-[#20bd5a]'
       }`}
-      style={{ transform: cartOpen && !left ? 'translateX(calc(-100vw + 5.5rem))' : undefined }}
+      onFocus={reveal}
+      style={{
+        transform:
+          cartOpen && !left
+            ? 'translateX(calc(-100vw + 5.5rem))'
+            : scrolledAway
+              ? floatingHideTransform(left ? 'left' : 'right')
+              : undefined,
+      }}
     >
       {messenger ? (
         <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">

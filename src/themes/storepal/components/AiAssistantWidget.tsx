@@ -7,6 +7,7 @@ import { Bot, Send, X, Loader2 } from 'lucide-react';
 import { ChatUnavailableError, getChatAvailable, sendChatMessage, type ChatTurn, type ChatProductRef } from '@/lib/chatApi';
 import { formatPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
+import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -91,6 +92,8 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
 
   // Both the bubble and the open panel step over to the left edge while the slide-in cart is open.
   const cartOpen = useCartDrawer((s) => s.open);
+  // Slides off to the right while the shopper scrolls down, back on scroll up (never while the chat is open).
+  const { hidden: scrolledAway, reveal } = useFloatingHidden(open || cartOpen);
 
   // Ran out mid-chat: keep the open panel (with its polite note) until the
   // shopper closes it, then hide the bubble too.
@@ -102,7 +105,14 @@ export function AiAssistantWidget({ subdomain }: { subdomain: string }) {
         onClick={() => setOpen((v) => !v)}
         aria-label={open ? 'Close assistant' : 'Chat with our assistant'}
         className="fixed bottom-[76px] right-5 z-30 w-12 h-12 rounded-full bg-accent hover:bg-accent-dark shadow-lg flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none"
-        style={{ transform: cartOpen ? 'translateX(calc(-100vw + 5.5rem))' : undefined }}
+        onFocus={reveal}
+        style={{
+          transform: cartOpen
+            ? 'translateX(calc(-100vw + 5.5rem))'
+            : scrolledAway
+              ? floatingHideTransform('right')
+              : undefined,
+        }}
       >
         {open ? <X size={22} className="text-white" /> : <Bot size={24} className="text-white" />}
       </button>
