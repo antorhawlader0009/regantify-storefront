@@ -15,6 +15,14 @@ type Step =
 
 // Kept for the trip to Google and back: where to send the shopper if they cancel there.
 const TRIP_KEY = 'rgf-connect-trip';
+
+// The waiting screens stay up at least this long, so the shopper sees where they are going instead of a flash. A slower answer waits no extra.
+const GOOGLE_WAIT_MS = 1500;
+const GOING_WAIT_MS = 1000;
+
+function atLeast<T>(ms: number, work: Promise<T>): Promise<T> {
+  return Promise.all([work, new Promise((r) => setTimeout(r, ms))]).then(([v]) => v);
+}
 interface Trip {
   store: string;
   storeName: string;
@@ -67,7 +75,7 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
     setError(null);
     try {
       setStep({ kind: 'going', storeName: answer.store.name });
-      const { redirect } = await connectApi.finish(answer.connectToken, ids);
+      const { redirect } = await atLeast(GOING_WAIT_MS, connectApi.finish(answer.connectToken, ids));
       sessionStorage.removeItem(TRIP_KEY);
       window.location.replace(redirect);
     } catch (err) {
@@ -110,8 +118,7 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
         sessionStorage.setItem(TRIP_KEY, JSON.stringify({ store, storeName: t.store.name, returnTo } satisfies Trip));
         // The store's "Login with Google" button: straight on to Google, no choice screen. If Google can't start, the choice screen shows the error.
         if (params.get('via') === 'google' && cfg.google) {
-          connectApi
-            .googleStart(store, returnTo)
+          atLeast(GOOGLE_WAIT_MS, connectApi.googleStart(store, returnTo))
             .then(({ url }) => window.location.assign(url))
             .catch((err: Error) => {
               setError(err.message);
