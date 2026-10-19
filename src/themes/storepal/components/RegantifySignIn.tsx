@@ -40,16 +40,21 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
       <button
         type="button"
         onClick={go}
-        className="flex min-h-12 w-full items-center justify-center gap-3 py-1.5 rounded-lg border border-line-strong bg-white text-[14.5px] font-semibold text-ink transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="relative flex h-[52px] w-full items-center justify-center rounded-lg border border-line-strong bg-white px-12 text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-colors hover:border-ink/25 hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        {cfg.google ? <GoogleMark /> : null}
+        {/* Google's pattern: the mark pinned to the left edge, the words centred on the whole button. */}
         {cfg.google ? (
-          <span className="flex flex-col items-start leading-tight">
-            <span>Login with Google</span>
-            <span className="text-[11px] font-normal text-muted">by Regantify</span>
+          <span className="absolute left-4 top-1/2 -translate-y-1/2">
+            <GoogleMark size={20} />
+          </span>
+        ) : null}
+        {cfg.google ? (
+          <span className="flex flex-col items-center">
+            <span className="text-[15px] font-semibold leading-[1.15]">Login with Google</span>
+            <span className="mt-0.5 text-[11px] font-medium leading-none text-muted">by Regantify</span>
           </span>
         ) : (
-          'Continue with your Regantify account'
+          <span className="text-[14.5px] font-semibold">Continue with your Regantify account</span>
         )}
       </button>
       <p className="mt-2 text-center text-[12px] text-muted">Your addresses from other Regantify stores can come along.</p>
