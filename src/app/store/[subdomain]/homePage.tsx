@@ -6,6 +6,7 @@ import {
   getStoreCampaigns,
   getStoreBlog,
   getStoreFaq,
+  getStoreSocialFeed,
   getStoreLandingPage,
   LandingPageNotFoundError,
   StoreNotFoundError,
@@ -229,6 +230,8 @@ export async function HomePage({ params, query }: HomeProps) {
           const blog = await getStoreBlog(subdomain, 5).catch(() => ({ posts: [], total: 0 }));
           // Store FAQ (TellMe idea 122): the questions for the home section; none on any hiccup.
           const faq = await getStoreFaq(subdomain).catch(() => ({ items: [] }));
+          // Social Feed (SOCIAL-FEED-plan.md): the YouTube channel and newest videos; nothing on any hiccup.
+          const socialFeed = await getStoreSocialFeed(subdomain).catch(() => null);
           return (
             <StorepalHomeView
               {...viewProps}
@@ -240,6 +243,7 @@ export async function HomePage({ params, query }: HomeProps) {
               footerConfig={store.footerConfig}
               campaigns={campaigns}
               faqItems={faq.items}
+              socialFeed={socialFeed}
               blogPosts={blog.posts}
               blogTotal={blog.total}
               categoryDetails={categoryDetails}

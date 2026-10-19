@@ -1001,6 +1001,37 @@ export async function getStoreFaq(subdomain: string): Promise<{ store: Storefron
   return data;
 }
 
+/** Social Feed (SOCIAL-FEED-plan.md, StorePal only): the store's YouTube channel and its newest videos; `feed` is null while off or empty. */
+export interface StorefrontSocialPost {
+  id: string;
+  platform: 'YOUTUBE';
+  videoId: string;
+  title: string;
+  thumbUrl: string;
+  permalink: string;
+  postedAt: string;
+}
+export interface StorefrontSocialFeed {
+  title: string | null;
+  columns: number;
+  rows: number;
+  showHeader: boolean;
+  account: {
+    platform: 'YOUTUBE';
+    title: string;
+    handle: string | null;
+    avatarUrl: string | null;
+    profileUrl: string;
+    followers: number | null;
+    postsCount: number | null;
+  };
+  posts: StorefrontSocialPost[];
+}
+export async function getStoreSocialFeed(subdomain: string): Promise<StorefrontSocialFeed | null> {
+  const data = await fetchJson<{ feed: StorefrontSocialFeed | null }>(`/v1/store/${subdomain}/social-feed`, [`store:${subdomain}`]);
+  return data?.feed ?? null;
+}
+
 /** "Notify me" on a coming-soon product (TellMe idea 104): the phone joins the waitlist. */
 export async function joinProductWaitlist(subdomain: string, slug: string, phone: string, name?: string, kind: 'COMING' | 'RESTOCK' = 'COMING'): Promise<void> {
   const origin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? `${window.location.protocol}//${window.location.hostname}:4000`;

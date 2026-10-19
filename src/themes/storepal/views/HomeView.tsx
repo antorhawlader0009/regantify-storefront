@@ -31,6 +31,8 @@ import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
 import { useStoreText } from '../lib/storeText';
 import { RecentlyViewed } from '../components/RecentlyViewed';
+import { SocialFeedSection } from '../components/SocialFeedSection';
+import type { StorefrontSocialFeed } from '@/lib/storefrontApi';
 import { matchesSearch as matchesSearchWords } from '../lib/searchMatch';
 
 function groupByCategory(products: StorefrontProduct[]) {
@@ -61,6 +63,8 @@ interface HomeViewProps {
   /** Store > Magazine (TellMe idea 106): the latest posts and how many there are in all. */
   /** Store FAQ (TellMe idea 122): the questions switched on. */
   faqItems?: Array<{ id: string; question: string; answer: string }>;
+  /** Social Feed (SOCIAL-FEED-plan.md): the YouTube channel and newest videos; null while off. */
+  socialFeed?: StorefrontSocialFeed | null;
   blogPosts?: StorefrontBlogCard[];
   blogTotal?: number;
   logoUrl?: string | null;
@@ -108,6 +112,7 @@ export function HomeView({
   socialLinks,
   campaigns = [],
   faqItems = [],
+  socialFeed = null,
   blogPosts = [],
   blogTotal = 0,
   logoUrl,
@@ -528,6 +533,12 @@ export function HomeView({
                 return (
                   <div key={id} className={`${HOME_WRAP} mt-4`}>
                     {faqItems.length > 0 && <FaqSection subdomain={subdomain} items={faqItems} />}
+                  </div>
+                );
+              case 'SOCIAL_FEED':
+                return (
+                  <div key={id} className={`${HOME_WRAP} mt-4`}>
+                    {socialFeed && socialFeed.posts.length > 0 && <SocialFeedSection feed={socialFeed} />}
                   </div>
                 );
               case 'MAGAZINE':
