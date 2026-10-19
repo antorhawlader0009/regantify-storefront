@@ -168,15 +168,38 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
 
   const initial = (storeName.trim()[0] ?? 'S').toUpperCase();
 
+  const viaGoogle = params.get('via') === 'google';
+
   return (
-    <main className="rgf-wrap">
+    <div className="rgf-page">
+      <header className="rgf-brand">
+        <span className="rgf-brand-mark" aria-hidden="true">
+          R
+        </span>
+        Regantify
+      </header>
+      <main className="rgf-wrap">
       <div className="rgf-handoff" aria-hidden="true">
         <span className="rgf-handoff-store">{initial}</span>
         <span className="rgf-handoff-path" />
         <span className="rgf-handoff-mark">R</span>
       </div>
 
-      {step.kind === 'loading' && <p className="rgf-lede">{params.get('via') === 'google' ? 'Opening Google sign-in…' : 'Opening your Regantify sign-in…'}</p>}
+      {step.kind === 'loading' &&
+        (viaGoogle ? (
+          <div className="rgf-wait" role="status">
+            <span className="rgf-spin" aria-hidden="true">
+              <GoogleMark size={24} />
+            </span>
+            <h1 className="rgf-title">Taking you to Google</h1>
+            <p className="rgf-lede">{storeName ? `Sign in there and you’ll come back to ${storeName}.` : 'Sign in there and you’ll come back to the store.'}</p>
+          </div>
+        ) : (
+          <div className="rgf-wait" role="status">
+            <span className="rgf-spin rgf-spin-plain" aria-hidden="true" />
+            <p className="rgf-lede">{mode === 'callback' ? 'Finishing your Google sign-in…' : 'Opening your Regantify sign-in…'}</p>
+          </div>
+        ))}
 
       {step.kind === 'error' && (
         <>
@@ -319,11 +342,20 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
       )}
 
       {step.kind === 'going' && (
-        <>
+        <div className="rgf-wait" role="status">
+          <span className="rgf-spin rgf-spin-plain" aria-hidden="true" />
           <h1 className="rgf-title">Signing you in</h1>
           <p className="rgf-lede">Taking you back to {step.storeName}…</p>
-        </>
+        </div>
       )}
-    </main>
+      </main>
+      <p className="rgf-secure">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+          <rect x="4" y="11" width="16" height="10" rx="2" />
+          <path d="M8 11V7a4 4 0 0 1 8 0v4" />
+        </svg>
+        Secure sign-in for every Regantify store
+      </p>
+    </div>
   );
 }

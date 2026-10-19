@@ -10,8 +10,6 @@
   --rgf-leaf: #e2f1e8;
   --rgf-danger: #b42318;
 
-  min-height: 100vh;
-  min-height: 100dvh;
   background: var(--rgf-paper);
   color: var(--rgf-ink);
   font-family: var(--rgf-font), system-ui, sans-serif;
@@ -20,10 +18,108 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* The page: one card centred on the screen, the Regantify name above it and the secure line below. */
+.rgf-page {
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+  background:
+    radial-gradient(60rem 30rem at 50% -10%, #e3efe7 0%, transparent 70%),
+    var(--rgf-paper);
+}
+.rgf-brand {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.25rem;
+  font-weight: 700;
+  font-size: 1.0625rem;
+  letter-spacing: -0.01em;
+  color: var(--rgf-ink);
+}
+.rgf-brand-mark {
+  display: flex;
+  height: 1.75rem;
+  width: 1.75rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem;
+  background: var(--rgf-forest);
+  color: #fff;
+  font-size: 0.9375rem;
+}
 .rgf-wrap {
-  max-width: 26rem;
-  margin: 0 auto;
-  padding: 2.5rem 1rem 3rem;
+  width: 100%;
+  max-width: 27rem;
+  background: var(--rgf-panel);
+  border: 1px solid var(--rgf-line);
+  border-radius: 1.5rem;
+  padding: 2rem 1.75rem 1.75rem;
+  box-shadow:
+    0 1px 2px rgba(16, 38, 28, 0.04),
+    0 12px 32px -12px rgba(16, 38, 28, 0.14);
+}
+@media (max-width: 480px) {
+  .rgf-page {
+    justify-content: flex-start;
+    padding-top: 1.5rem;
+  }
+  .rgf-wrap {
+    padding: 1.5rem 1.25rem 1.25rem;
+  }
+}
+.rgf-secure {
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  margin: 1.25rem 0 0;
+  color: var(--rgf-muted);
+  font-size: 0.8125rem;
+}
+
+/* Waiting steps (going to Google, signing in): centred, the Google mark inside a turning ring. */
+.rgf-wait {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0.75rem 0 0.5rem;
+  text-align: center;
+}
+.rgf-wait .rgf-lede {
+  margin-bottom: 0;
+}
+.rgf-spin {
+  position: relative;
+  display: flex;
+  height: 4rem;
+  width: 4rem;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.25rem;
+  border-radius: 999px;
+  background: #fff;
+}
+.rgf-spin::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: 999px;
+  border: 3px solid var(--rgf-leaf);
+  border-top-color: var(--rgf-forest);
+  animation: rgf-turn 0.9s linear infinite;
+}
+.rgf-spin-plain {
+  height: 2.75rem;
+  width: 2.75rem;
+}
+@keyframes rgf-turn {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 /* The hand-off: which store the shopper came from, and that this page is Regantify's. */
@@ -73,11 +169,9 @@
   font-size: 0.9375rem;
 }
 
+/* Sits inside the card: no second box. */
 .rgf-panel {
-  background: var(--rgf-panel);
-  border: 1px solid var(--rgf-line);
-  border-radius: 1.25rem;
-  padding: 1.25rem;
+  background: transparent;
 }
 
 .rgf-btn {
@@ -296,5 +390,8 @@
   .rgf-btn,
   .rgf-slip label {
     transition: none;
+  }
+  .rgf-spin::before {
+    animation: none;
   }
 }
