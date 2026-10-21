@@ -23,6 +23,7 @@ import { tiktokAdContext } from '@/lib/tiktokPixel';
 import { captureTrafficSource } from '@/lib/trafficSource';
 import { stillAway, type StorefrontStoreAway } from '@/lib/storeAway';
 import { prepaidDiscountFor, type PrepaidRule } from '@/lib/prepaidDiscount';
+import { clearInstantHandoff, instantTokenFor } from '@/lib/instantCheckout';
 import {
   placeOrder,
   syncIncompleteOrder,
@@ -898,6 +899,8 @@ export function useCheckout(
         preferredSlotId: preferredSlotId || undefined,
         ...(isGift && giftOption ? { isGift: true, giftMessage: giftMessage.trim() || undefined, hidePricesOnInvoice: hidePrices || undefined } : {}),
         sessionKey: sessionKey || undefined,
+        // Opened from an instant checkout link (lib/instantCheckout.ts): the order marks that link as used.
+        instantCheckoutToken: externalLines ? undefined : instantTokenFor(subdomain),
         couponCode: appliedCoupon?.code,
         giftCardCode: appliedGiftCard?.code,
         rewardPointsToUse: rewardPointsAmount > 0 ? rewardPointsAmount : undefined,
@@ -916,6 +919,7 @@ export function useCheckout(
           quantity: l.quantity,
         })),
       }, authToken);
+      clearInstantHandoff(subdomain);
 
       // Any non-COD gateway: the order now exists (PAYMENT_INITIATED,
       // stock already decremented — see OrdersService.create), but it

@@ -14,6 +14,7 @@ import { preOrderDateText } from '../lib/preOrderDate';
 import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { takePendingCoupon } from '../lib/pendingCoupon';
+import { takeInstantPrefill } from '@/lib/instantCheckout';
 import { useStorePalDesign } from '../lib/designSettings';
 import { loadSavedCheckoutForm, saveCheckoutForm } from '../lib/checkoutFormStorage';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
@@ -484,6 +485,20 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
       const untouched = field === 'zone' ? form.zone === 'DHAKA' : !form[field];
       if (untouched) updateField(field, value);
     });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subdomain, authHydrated]);
+  // Instant checkout link (lib/instantCheckout.ts): the details the shop typed for this customer are put in once, over
+  // anything saved or prefilled above (the link was made for this person), so they only check and press Place order.
+  const instantAppliedRef = useRef(false);
+  useEffect(() => {
+    if (instantAppliedRef.current || !authHydrated) return;
+    instantAppliedRef.current = true;
+    const p = takeInstantPrefill(subdomain);
+    if (!p) return;
+    (['fullName', 'phone', 'address', 'city', 'district'] as const).forEach((field) => {
+      if (p[field]) updateField(field, p[field]);
+    });
+    if (p.zone) updateField('zone', p.zone);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain, authHydrated]);
   useEffect(() => {

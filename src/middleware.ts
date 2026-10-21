@@ -26,7 +26,7 @@ const CLEAN_HEADER = 'x-store-clean';
 
 // Pages that belong to one shopper or to the buying flow and have no business in a search engine. They are marked
 // `noindex` in the response header (rather than only blocked in robots.txt) so a crawler that reaches one is told to drop it.
-const PRIVATE_SEGMENTS = new Set(['cart', 'checkout', 'thank-you', 'account', 'orders', 'wishlist', 'compare', 't', 'pay', 'r', 'cart-link', 'payment-callback']);
+const PRIVATE_SEGMENTS = new Set(['cart', 'checkout', 'thank-you', 'account', 'orders', 'wishlist', 'compare', 't', 'pay', 'r', 'cart-link', 'i', 'payment-callback']);
 
 /** The request's headers with the clean-address mark set or cleared. */
 function withCleanMark(request: NextRequest, clean: boolean): Headers {

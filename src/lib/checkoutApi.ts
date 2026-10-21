@@ -720,6 +720,24 @@ export async function fetchCartRecovery(subdomain: string, token: string): Promi
   return res.json() as Promise<CartRecovery>;
 }
 
+/** An instant checkout link (/i/<token>): the shop's chosen lines at today's price and stock, and the customer's details. */
+export type InstantCheckout =
+  | { status: 'NOT_FOUND' | 'EXPIRED' | 'ORDERED' }
+  | {
+      status: 'OK';
+      customer: { fullName: string; phone: string; address: string; city: string; district: string; zone: 'DHAKA' | 'AROUND_DHAKA' | 'OUTSIDE_DHAKA' | null };
+      couponCode: string | null;
+      expiresAt: string;
+      lines: Extract<CartRecovery, { status: 'OK' }>['lines'];
+      notices: Extract<CartRecovery, { status: 'OK' }>['notices'];
+    };
+
+export async function fetchInstantCheckout(subdomain: string, token: string): Promise<InstantCheckout> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/instant/${encodeURIComponent(token)}`, { cache: 'no-store' });
+  if (!res.ok) return { status: 'NOT_FOUND' };
+  return res.json() as Promise<InstantCheckout>;
+}
+
 /** `reference` is the public order number (a string) or the old numeric serial. */
 export async function trackOrder(subdomain: string, reference: number | string, phone: string): Promise<TrackedOrder> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track-order`, {

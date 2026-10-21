@@ -8,6 +8,17 @@ function apiOrigin(): string {
   return `${window.location.protocol}//${window.location.hostname}:4000`;
 }
 
+import type { ChatOrder } from './chatOrder';
+
+/** The order draft the widget keeps for the whole chat and sends with every message. */
+export interface ChatOrderDraftInput {
+  items: Array<{ slug: string; quantity: number; options: Record<string, string> }>;
+  name?: string;
+  phone?: string;
+  address?: string;
+  district?: string;
+}
+
 export interface ChatTurn {
   role: 'user' | 'assistant';
   content: string;
@@ -23,6 +34,8 @@ export interface ChatProductRef {
 
 export interface ChatReply {
   reply: string;
+  /** The order being taken in the chat (lib/chatOrder.ts), or null when the shopper is only asking. */
+  order?: ChatOrder | null;
   /** Products the assistant actually mentioned/recommended, in relevance order — see StorefrontController.chat. */
   products: ChatProductRef[];
 }
@@ -46,11 +59,11 @@ export async function getChatAvailable(subdomain: string): Promise<boolean> {
   }
 }
 
-export async function sendChatMessage(subdomain: string, message: string, history: ChatTurn[]): Promise<ChatReply> {
+export async function sendChatMessage(subdomain: string, message: string, history: ChatTurn[], order?: ChatOrderDraftInput | null, photoSlugs?: string[]): Promise<ChatReply> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history }),
+    body: JSON.stringify({ message, history, ...(order ? { order } : {}), ...(photoSlugs?.length ? { photoSlugs } : {}) }),
   });
 
   if (!res.ok) {
@@ -63,4 +76,30 @@ export async function sendChatMessage(subdomain: string, message: string, histor
   }
 
   return res.json();
+}
+
+/**
+ * A photo the shopper sends in the chat: shrunk here (512 px JPEG) and matched by the server with the store's own product
+ * photos by picture fingerprint. It is never shown to the AI, so it costs no AI Credits.
+ */
+export async function sendChatPhoto(subdomain: string, file: File): Promise<ChatProductRef[]> {
+  const bitmap = await createImageBitmap(file);
+  const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+  canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+  canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+  const photo = canvas.toDataURL('image/jpeg', 0.75);
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat/photo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ photo }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const msg = Array.isArray(body?.message) ? body.message[0] : body?.message;
+    throw new Error(msg || 'Could not read this photo. Please try another one.');
+  }
+  const body = (await res.json()) as { products: ChatProductRef[] };
+  return body.products;
 }

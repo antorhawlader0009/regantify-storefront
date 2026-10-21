@@ -735,7 +735,7 @@ export function StoreHeader({
       )}
 
       <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
-      <LazyAiAssistantWidget subdomain={subdomain} />
+      <LazyAiAssistantWidget subdomain={subdomain} storeName={storeName} />
       <CartDrawer subdomain={subdomain} />
       <CheckoutDialog subdomain={subdomain} />
       <AuthDialog subdomain={subdomain} />
