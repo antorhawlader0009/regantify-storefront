@@ -13,3 +13,4 @@ export const LazyCompareBar = dynamic(() => import('./CompareBar').then((m) => m
 export const LazyRecentBuyersPopup = dynamic(() => import('./RecentBuyersPopup').then((m) => m.RecentBuyersPopup), { ssr: false });
 export const LazyPopupCampaigns = dynamic(() => import('./PopupCampaigns').then((m) => m.PopupCampaigns), { ssr: false });
 export const LazyAiAssistantWidget = dynamic(() => import('./AiAssistantWidget').then((m) => m.AiAssistantWidget), { ssr: false });
+export const LazyPhotoSearchPanel = dynamic(() => import('./PhotoSearchPanel').then((m) => m.PhotoSearchPanel), { ssr: false });

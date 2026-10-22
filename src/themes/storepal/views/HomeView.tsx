@@ -34,6 +34,7 @@ import { RecentlyViewed } from '../components/RecentlyViewed';
 import { SocialFeedSection } from '../components/SocialFeedSection';
 import type { StorefrontSocialFeed } from '@/lib/storefrontApi';
 import { matchesSearch as matchesSearchWords } from '../lib/searchMatch';
+import { AskAssistantButton } from '../components/AskAssistantButton';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -418,6 +419,11 @@ export function HomeView({
                 <div className="text-center py-20 bg-surface border border-line rounded-lg">
                   <p className="text-lg font-semibold text-ink mb-1.5">{t('No matches')}</p>
                   <p className="text-[13.5px] text-muted">{t('Try adjusting your filters or browsing another category.')}</p>
+                  {search?.trim() && (
+                    <div className="mt-5 flex justify-center px-4">
+                      <AskAssistantButton words={search} />
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">

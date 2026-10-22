@@ -12,7 +12,12 @@ import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
 import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi';
 import { formatPrice } from '../lib/formatPrice';
 import { ChatBubble } from './ChatBubble';
-import { LazyAiAssistantWidget } from './LazyWidgets';
+import { LazyPhotoSearchPanel } from './LazyWidgets';
+import { useHeaderPresence } from '../lib/headerPresence';
+import { PhotoSearchButton } from './PhotoSearchPanel';
+import { imageFromClipboard, usePhotoSearch } from '@/lib/photoSearch';
+import { AskAssistantButton } from './AskAssistantButton';
+import { useAssistantBridge } from '../lib/assistantBridge';
 import { CartDrawer } from './CartDrawer';
 import { CheckoutDialog } from './CheckoutDialog';
 import { AuthDialog } from './AuthDialog';
@@ -196,6 +201,11 @@ export function StoreHeader({
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
   }, []);
+  // The AI chat widget lives in the store layout (a call survives page changes) and shows only while a header is here.
+  useEffect(() => {
+    useHeaderPresence.getState().enter();
+    return () => useHeaderPresence.getState().leave();
+  }, []);
 
   useEffect(() => {
     // Skip the fetch entirely if the caller already gave us everything —
@@ -281,6 +291,22 @@ export function StoreHeader({
     return searchIndex.filter((p) => matchesSearchWords(p, draftLower)).slice(0, 6);
   }, [searchIndex, draftLower]);
   const showSuggestions = suggestionsOpen && draftLower.length > 0 && (matchedCategories.length > 0 || matchedProducts.length > 0);
+  // Typed words that match nothing: offer to ask the AI assistant instead (only while it can answer).
+  const assistantAvailable = useAssistantBridge((s) => s.available);
+  const showAskAssistant =
+    assistantAvailable && suggestionsOpen && draftLower.length > 1 && searchIndex !== null && matchedCategories.length === 0 && matchedProducts.length === 0;
+  const AskAssistantPanel = (
+    <div className="p-3">
+      <p className="text-[12.5px] text-muted mb-2">
+        {t('No product matches')} “{searchDraft.trim()}”
+      </p>
+      <AskAssistantButton
+        words={searchDraft}
+        onAsk={() => setSuggestionsOpen(false)}
+        className="w-full inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-accent text-white text-[13px] font-medium hover:bg-accent-dark transition-colors"
+      />
+    </div>
+  );
   // Before anything is typed: the store's categories and its first few products, so an empty search box still helps.
   const emptyProducts = useMemo(() => (searchIndex ?? []).slice(0, 4), [searchIndex]);
   const showStarter = suggestionsOpen && draftLower.length === 0 && (categories.length > 0 || emptyProducts.length > 0);
@@ -336,6 +362,16 @@ export function StoreHeader({
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     goToSearch(searchDraft);
+  };
+
+  // A picture pasted into the search box searches by photo (lib/photoSearch.ts); pasted text works as before.
+  const searchByPhoto = usePhotoSearch((s) => s.search);
+  const handleSearchPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
+    const file = imageFromClipboard(e);
+    if (!file) return;
+    e.preventDefault();
+    setSuggestionsOpen(false);
+    void searchByPhoto(subdomain, file);
   };
 
   const handleClearSearch = () => {
@@ -408,6 +444,7 @@ export function StoreHeader({
                 value={searchDraft}
                 onChange={(e) => setSearchDraft(e.target.value)}
                 onFocus={() => setSuggestionsOpen(true)}
+                onPaste={handleSearchPaste}
                 placeholder={t('Search Your Product By Product Name, Code…')}
                 className="flex-1 px-4 py-2.5 text-[13.5px] text-ink bg-surface outline-none"
                 autoComplete="off"
@@ -422,6 +459,7 @@ export function StoreHeader({
                   <X size={15} />
                 </button>
               )}
+              <PhotoSearchButton subdomain={subdomain} className="px-3 text-muted hover:text-ink flex items-center justify-center" />
               <button
                 type="submit"
                 className="px-4 bg-ink text-white flex items-center justify-center hover:bg-ink/90 transition-colors"
@@ -435,6 +473,11 @@ export function StoreHeader({
           {showStarter && (
             <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
               {StarterPanel}
+            </div>
+          )}
+          {showAskAssistant && (
+            <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
+              {AskAssistantPanel}
             </div>
           )}
           {showSuggestions && (
@@ -560,6 +603,7 @@ export function StoreHeader({
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
               onFocus={() => setSuggestionsOpen(true)}
+              onPaste={handleSearchPaste}
               placeholder={t('Search products')}
               className="flex-1 px-3.5 py-2.5 text-[13px] text-ink bg-surface outline-none"
               autoComplete="off"
@@ -574,6 +618,7 @@ export function StoreHeader({
                 <X size={14} />
               </button>
             )}
+            <PhotoSearchButton subdomain={subdomain} className="px-2.5 text-muted hover:text-ink flex items-center justify-center" />
             <button type="submit" className="px-3.5 bg-ink text-white flex items-center justify-center" aria-label="Search">
               <Search size={16} />
             </button>
@@ -583,6 +628,11 @@ export function StoreHeader({
         {showStarter && (
           <div className="absolute left-4 right-4 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
             {StarterPanel}
+          </div>
+        )}
+        {showAskAssistant && (
+          <div className="absolute left-4 right-4 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
+            {AskAssistantPanel}
           </div>
         )}
         {showSuggestions && (
@@ -735,7 +785,7 @@ export function StoreHeader({
       )}
 
       <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
-      <LazyAiAssistantWidget subdomain={subdomain} storeName={storeName} />
+      <LazyPhotoSearchPanel subdomain={subdomain} storeName={storeName} />
       <CartDrawer subdomain={subdomain} />
       <CheckoutDialog subdomain={subdomain} />
       <AuthDialog subdomain={subdomain} />

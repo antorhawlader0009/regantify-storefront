@@ -111,7 +111,7 @@ export type CartStore = CartState & CartActions;
 
 export const defaultInitState: CartState = { lines: [], ownerId: null };
 
-function lineId(productSlug: string, selectedOptions: Record<string, string>, customValues?: Record<string, string>): string {
+export function lineId(productSlug: string, selectedOptions: Record<string, string>, customValues?: Record<string, string>): string {
   const custom = customValues && Object.keys(customValues).length > 0
     ? `::c:${Object.entries(customValues).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('|')}`
     : '';

@@ -11,7 +11,7 @@ import type { StorefrontStoreAway } from '@/lib/storeAway';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import type { BusinessHours } from '@/lib/businessHours';
-import { LazyCompareBar, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
+import { LazyAiAssistantWidget, LazyCompareBar, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
 import { WishlistSync } from '@/themes/storepal/components/WishlistSync';
 import { MetaPixel } from '@/components/MetaPixel';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
@@ -155,10 +155,12 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let lmsForms: StorefrontLmsForms | null = null;
   let popupCampaigns: StorefrontPopupCampaign[] = [];
   let storeAway: StorefrontStoreAway | null = null;
+  let storeName = '';
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
     storeExists = true;
+    storeName = store.storeName;
     accentColor = store.accentColor;
     bodyBackgroundColor = store.bodyBackgroundColor;
     headingFont = store.brandHeadingFont;
@@ -270,6 +272,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
             {/* Store > Store Away (holiday mode): a strip above every page while the store is away. */}
             {storeAway && <StoreAwayBanner away={storeAway} />}
             {children}
+            {/* The AI chat widget lives here, not in StoreHeader, so a voice call keeps going when the shopper opens
+                another page (the layout stays mounted). It shows only where a StoreHeader is (headerPresence.ts). */}
+            {storeExists && <LazyAiAssistantWidget subdomain={subdomain} storeName={storeName} />}
           </StorePalDesignProvider>
         ) : (
           children

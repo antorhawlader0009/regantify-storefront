@@ -38,58 +38,106 @@ export interface ChatReply {
   order?: ChatOrder | null;
   /** Products the assistant actually mentioned/recommended, in relevance order — see StorefrontController.chat. */
   products: ChatProductRef[];
+  /** Voice call only: what to do on the shopper's screen (server chat-order.ts cleanActions). */
+  actions?: ChatAction[];
 }
+
+/** A screen action the assistant asks for on a call ("client-side tools"); the browser does it (lib/voice/useVoiceCall.ts). */
+export type ChatAction =
+  | { type: 'search'; query: string }
+  | { type: 'open_product'; slug: string }
+  | { type: 'go_back' | 'show_cart' | 'close_cart' | 'photo_search' | 'hang_up' };
 
 /** Thrown when the store's AI Credit wallet is empty (HTTP 402, code AI_CREDITS_EMPTY; AI_TOKENS_EMPTY from an API older than credits). */
 export class ChatUnavailableError extends Error {}
 
+/** Where a chat photo's text is read (Super Admin > AI Settings): BROWSER = this page reads it, SERVER = POST chat/photo returns it. */
+export type PhotoTextMode = 'BROWSER' | 'SERVER';
+
+/** Where the shopper is when they ask (server StoreChatDto.context). */
+export interface ChatPageContext {
+  productSlug?: string;
+  cart?: { slug: string; quantity: number; options?: Record<string, string> }[];
+}
+
+export interface ChatStatus {
+  available: boolean;
+  photoText: PhotoTextMode;
+  /** The voice call's files on R2 (Piper speaker 8, lib/voice); null = no Piper, the call uses the Google voice only. */
+  voice: string | null;
+}
+
 /**
  * Whether the store can pay for a chat reply right now (ai-token-plan.md
- * Step 5). Any failure reads as "not available", so a broken status call
- * never shows a widget that can't answer.
+ * Step 5), and where a photo's text is read. Any failure reads as "not
+ * available", so a broken status call never shows a widget that can't answer.
  */
-export async function getChatAvailable(subdomain: string): Promise<boolean> {
+export async function getChatStatus(subdomain: string): Promise<ChatStatus> {
   try {
     const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat/status`, { cache: 'no-store' });
-    if (!res.ok) return false;
-    const body = (await res.json()) as { available?: boolean };
-    return body.available === true;
+    if (!res.ok) return { available: false, photoText: 'BROWSER', voice: null };
+    const body = (await res.json()) as { available?: boolean; photoText?: string; voice?: string | null };
+    return {
+      available: body.available === true,
+      photoText: body.photoText === 'SERVER' ? 'SERVER' : 'BROWSER',
+      voice: typeof body.voice === 'string' && /^https?:\/\/.+\/$/.test(body.voice) ? body.voice : null,
+    };
   } catch {
-    return false;
+    return { available: false, photoText: 'BROWSER', voice: null };
   }
 }
 
-export async function sendChatMessage(subdomain: string, message: string, history: ChatTurn[], order?: ChatOrderDraftInput | null, photoSlugs?: string[]): Promise<ChatReply> {
+export async function sendChatMessage(
+  subdomain: string,
+  message: string,
+  history: ChatTurn[],
+  order?: ChatOrderDraftInput | null,
+  photoSlugs?: string[],
+  photoText?: string | null,
+  cards?: { shownSlugs: string[]; selectedSlugs: string[]; voice?: boolean; signal?: AbortSignal; context?: ChatPageContext },
+): Promise<ChatReply> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ message, history, ...(order ? { order } : {}), ...(photoSlugs?.length ? { photoSlugs } : {}) }),
+    signal: cards?.signal,
+    body: JSON.stringify({ message, history, ...(order ? { order } : {}), ...(photoSlugs?.length ? { photoSlugs } : {}), ...(photoText ? { photoText } : {}),
+      // The latest product cards (numbered on screen) and the ones the shopper ticked.
+      ...(cards?.shownSlugs.length ? { shownSlugs: cards.shownSlugs } : {}),
+      ...(cards?.selectedSlugs.length ? { selectedSlugs: cards.selectedSlugs } : {}),
+      // The voice call (lib/voice): the server asks for a short reply in Bangla letters, since it is read aloud.
+      ...(cards?.voice ? { voice: true } : {}),
+      // The product page open now and the cart, so "eita" and "cart e ki ache" work.
+      ...(cards?.context ? { context: cards.context } : {}),
+    }),
   });
 
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     if (res.status === 402 && (body?.code === 'AI_CREDITS_EMPTY' || body?.code === 'AI_TOKENS_EMPTY')) {
-      throw new ChatUnavailableError("The assistant isn't available right now. Please try again later.");
+      throw new ChatUnavailableError('অ্যাসিস্ট্যান্ট এখন উত্তর দিতে পারছে না। একটু পরে আবার চেষ্টা করুন।');
     }
     const msg = Array.isArray(body?.message) ? body.message[0] : body?.message;
-    throw new Error(msg || 'The assistant is temporarily unavailable. Please try again.');
+    throw new Error(msg || 'অ্যাসিস্ট্যান্ট এই মুহূর্তে উত্তর দিতে পারছে না। আবার চেষ্টা করুন।');
   }
 
   return res.json();
 }
 
 /**
- * A photo the shopper sends in the chat: shrunk here (512 px JPEG) and matched by the server with the store's own product
- * photos by picture fingerprint. It is never shown to the AI, so it costs no AI Credits.
+ * A photo the shopper sends in the chat: shrunk here and matched by the server with the store's own product photos by
+ * picture fingerprint. The photo is never shown to the AI. In SERVER mode it is sent bigger (1600 px) and the answer
+ * also carries the text the server read in it (photo-match/photo-text.ts); in BROWSER mode that text is read by
+ * lib/photoText.ts instead and `text` is null.
  */
-export async function sendChatPhoto(subdomain: string, file: File): Promise<ChatProductRef[]> {
+export async function sendChatPhoto(subdomain: string, file: File, mode: PhotoTextMode): Promise<{ products: ChatProductRef[]; text: string | null }> {
+  const side = mode === 'SERVER' ? 1600 : 512;
   const bitmap = await createImageBitmap(file);
-  const scale = Math.min(1, 512 / Math.max(bitmap.width, bitmap.height));
+  const scale = Math.min(1, side / Math.max(bitmap.width, bitmap.height));
   const canvas = document.createElement('canvas');
   canvas.width = Math.max(1, Math.round(bitmap.width * scale));
   canvas.height = Math.max(1, Math.round(bitmap.height * scale));
   canvas.getContext('2d')?.drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-  const photo = canvas.toDataURL('image/jpeg', 0.75);
+  const photo = canvas.toDataURL('image/jpeg', mode === 'SERVER' ? 0.85 : 0.75);
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat/photo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -98,8 +146,8 @@ export async function sendChatPhoto(subdomain: string, file: File): Promise<Chat
   if (!res.ok) {
     const body = await res.json().catch(() => null);
     const msg = Array.isArray(body?.message) ? body.message[0] : body?.message;
-    throw new Error(msg || 'Could not read this photo. Please try another one.');
+    throw new Error(msg || 'ছবিটি পড়া যায়নি। অন্য একটি ছবি দিন।');
   }
-  const body = (await res.json()) as { products: ChatProductRef[] };
-  return body.products;
+  const body = (await res.json()) as { products: ChatProductRef[]; text?: string | null };
+  return { products: body.products, text: body.text ?? null };
 }

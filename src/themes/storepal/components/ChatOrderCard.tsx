@@ -6,7 +6,8 @@ import { isValidBdPhone, type ChatOrder, type ChatOrderDetails } from '@/lib/cha
 /**
  * The order being taken in the store's AI chat (lib/chatOrder.ts): the items, the delivery details (filled by the
  * assistant from the chat, from the shopper's saved details, or typed here), and a Checkout button that opens the store's
- * normal checkout with everything filled in. The order is placed only when the shopper presses Place order there.
+ * normal checkout with everything filled in. The order is placed only when the shopper presses Place order there. Its words
+ * are in Bangla, like the store chat itself (the chat always answers in Bangla script unless the shopper asks for English).
  */
 export function ChatOrderCard({
   order,
@@ -41,10 +42,10 @@ export function ChatOrderCard({
   return (
     <div className="w-full rounded-lg border border-accent/40 bg-canvas p-3 text-[12.5px]">
       <p className="m-0 mb-2 flex items-center gap-1.5 font-semibold text-ink">
-        <ShoppingBag size={14} aria-hidden /> Your order
+        <ShoppingBag size={14} aria-hidden /> আপনার অর্ডার
       </p>
       {order.items.length === 0 ? (
-        <p className="m-0 text-muted">Tell the assistant which product you want.</p>
+        <p className="m-0 text-muted">কোন পণ্যটি চান, অ্যাসিস্ট্যান্টকে বলুন।</p>
       ) : (
         <ul className="m-0 mb-2 list-none space-y-1 p-0">
           {order.items.map((i) => (
@@ -52,16 +53,16 @@ export function ChatOrderCard({
               {i.name}
               {Object.keys(i.options).length > 0 && <span className="text-muted"> · {Object.values(i.options).join(' / ')}</span>}
               <span className="text-muted"> × {i.quantity}</span>
-              {i.missingOptions.length > 0 && <span className="block text-[11px] text-amber-700">Choose {i.missingOptions.join(', ')}</span>}
+              {i.missingOptions.length > 0 && <span className="block text-[11px] text-amber-700">{i.missingOptions.join(', ')} বেছে নিন</span>}
             </li>
           ))}
         </ul>
       )}
       <div className="grid grid-cols-2 gap-1.5">
-        {field('name', 'Name')}
-        {field('phone', 'Phone', '01XXXXXXXXX')}
-        <div className="col-span-2">{field('address', 'Address', 'House, road, area')}</div>
-        {field('district', 'District')}
+        {field('name', 'নাম')}
+        {field('phone', 'মোবাইল নম্বর', '01XXXXXXXXX')}
+        <div className="col-span-2">{field('address', 'ঠিকানা', 'বাসা, রোড, এলাকা')}</div>
+        {field('district', 'জেলা')}
       </div>
       <button
         type="button"
@@ -69,10 +70,10 @@ export function ChatOrderCard({
         disabled={!canCheckout || busy}
         className="mt-2.5 flex w-full items-center justify-center gap-1.5 rounded-md bg-accent px-3 py-2 text-[13px] font-semibold text-white hover:bg-accent-dark disabled:opacity-50"
       >
-        {busy && <Loader2 size={13} className="animate-spin" />} Checkout
+        {busy && <Loader2 size={13} className="animate-spin" />} চেকআউট
       </button>
       <p className="m-0 mt-1.5 text-[10.5px] text-muted">
-        Opens the checkout with all of this filled in. Your order is placed only when you press Place order. Your details are saved for next time.
+        এসব তথ্য দিয়ে চেকআউট খুলবে। সেখানে অর্ডার করার বোতাম চাপলেই কেবল অর্ডার হবে। আপনার তথ্য পরের বারের জন্য রাখা থাকবে।
       </p>
     </div>
   );

@@ -114,6 +114,17 @@ const BN: Record<string, string> = {
   'Thanks! Your question was sent. It will appear here once the store answers it.': 'ধন্যবাদ! আপনার প্রশ্ন পাঠানো হয়েছে। দোকান উত্তর দিলে এখানে দেখা যাবে।',
   // Recently viewed
   'Recently viewed': 'সম্প্রতি দেখেছেন',
+  // Search by photo (lib/photoSearch.ts, components/PhotoSearchPanel.tsx)
+  'Search by photo': 'ছবি দিয়ে খুঁজুন',
+  'Drop the photo to find similar products': 'একই রকম পণ্য খুঁজতে ছবিটি এখানে ছেড়ে দিন',
+  'Looking for this product…': 'পণ্যটি খোঁজা হচ্ছে…',
+  'Products like your photo': 'আপনার ছবির মতো পণ্য',
+  'No similar product found. Try a clearer photo, or type the product name.': 'একই রকম পণ্য পাওয়া যায়নি। আরও পরিষ্কার ছবি দিন, অথবা পণ্যের নাম লিখে খুঁজুন।',
+  'Try another photo': 'অন্য ছবি দিন',
+  'Related products': 'সম্পর্কিত পণ্য',
+  // A search that found nothing (AskAssistantButton.tsx)
+  'Ask our assistant about': 'আমাদের অ্যাসিস্ট্যান্টকে জিজ্ঞেস করুন:',
+  'No product matches': 'কোনো পণ্য মেলেনি:',
   // Shop / home
   'Sort by latest': 'নতুনগুলো আগে',
   'Price: low to high': 'দাম: কম থেকে বেশি',
