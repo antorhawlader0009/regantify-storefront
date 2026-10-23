@@ -690,7 +690,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                   <img src={m.image} alt="Your photo" className="max-w-[60%] max-h-40 rounded-lg border border-line object-cover" />
                 ) : (
                   <div
-                    className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] leading-relaxed ${
+                    className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line ${
                       m.role === 'user' ? 'bg-ink text-white' : 'bg-canvas text-ink border border-line'
                     }`}
                   >

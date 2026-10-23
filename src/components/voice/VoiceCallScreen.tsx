@@ -270,6 +270,20 @@ export function VoiceCallScreen<P extends CallProduct>({
         )}
       </div>
 
+      {/* Phones don't listen while the assistant speaks (its voice came back as the shopper's words), so cutting in is a tap. */}
+      {call.halfDuplex && talking && call.talk === 'speaking' && (
+        <div className="flex justify-center px-4 pb-1">
+          <button
+            type="button"
+            onClick={call.interrupt}
+            className="inline-flex items-center gap-2 rounded-full bg-white/15 px-5 py-2.5 text-[14px] font-medium hover:bg-white/20"
+          >
+            <Mic size={16} />
+            থামিয়ে আমি বলি
+          </button>
+        </div>
+      )}
+
       {checkout && talking && (
         <div className="px-4 pb-1">
           <button

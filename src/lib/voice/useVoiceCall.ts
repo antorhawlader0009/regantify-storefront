@@ -13,7 +13,8 @@
  *   - "Calling..." then "Ringing..." with a ring tone, a pick-up blip, a call timer and a hang-up tone;
  *   - the assistant greets first;
  *   - the shopper can cut in: as soon as two words are heard that aren't the assistant's own voice coming back through
- *     the speaker (isEcho), it stops talking;
+ *     the speaker (isEcho), it stops talking. On a phone (halfDuplex) the microphone hears the loudspeaker far too well
+ *     for that, so listening is held while the assistant speaks and the shopper cuts in with the "stop" button;
  *   - a short "let me check" if the answer takes a moment;
  *   - "can you hear me?" after a long silence, then a polite goodbye;
  *   - the screen stays on during the call.
@@ -79,6 +80,8 @@ const FILLER_AFTER_MS = 1400;
 const ECHO_TAIL_MS = 1500;
 // Speech whose first words came this long after the assistant's voice stopped is the shopper's own, whatever it says.
 const ECHO_START_GRACE_MS = 600;
+// Phones: listening starts again this long after the assistant's voice stops (the speaker's last sound dies away).
+const HOLD_RELEASE_MS = 350;
 const FILLERS = ['আচ্ছা, একটু দেখছি।', 'হুম, এক সেকেন্ড।', 'ঠিক আছে, দেখে বলছি।'];
 /** 0.1 s of silence as a WAV, played during the tap so the browser lets the <audio> element play later (iPhone). */
 function silentWavUrl(): string {
@@ -103,6 +106,17 @@ function silentWavUrl(): string {
 }
 
 const sleep = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
+
+/**
+ * A phone or tablet: speaker and microphone are inches apart and Chrome's speech recognition (Android especially) does
+ * no echo cancellation, so its own voice comes back as words. Then the call talks in turns instead of over each other.
+ */
+function isHalfDuplexDevice(): boolean {
+  if (typeof navigator === 'undefined') return false;
+  if (/Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent)) return true;
+  // iPadOS reports itself as a Mac.
+  return navigator.maxTouchPoints > 1 && typeof matchMedia !== 'undefined' && matchMedia('(pointer: coarse)').matches;
+}
 
 function lowEndDevice(): boolean {
   const nav = navigator as Navigator & { deviceMemory?: number; connection?: { saveData?: boolean; effectiveType?: string } };
@@ -168,6 +182,26 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
   const heardAtRef = useRef(0);
   const wakeRef = useRef<{ release(): Promise<void> } | null>(null);
   const callIdRef = useRef(0);
+  const halfDuplexRef = useRef(false);
+  // How many assistant lines are playing now (a filler and the reply can overlap by a moment).
+  const holdCountRef = useRef(0);
+  /** Phones: no listening while the assistant's voice plays. */
+  const holdListening = () => {
+    if (!halfDuplexRef.current) return;
+    holdCountRef.current++;
+    inputRef.current?.hold(true);
+  };
+  /** Phones: listening again once no line is playing (shortly after, or at once when the shopper stopped it). */
+  const releaseListening = (now = false) => {
+    if (!halfDuplexRef.current) return;
+    holdCountRef.current = Math.max(0, holdCountRef.current - 1);
+    if (holdCountRef.current > 0) return;
+    const go = () => {
+      if (holdCountRef.current === 0) inputRef.current?.hold(false);
+    };
+    if (now) go();
+    else setTimeout(go, HOLD_RELEASE_MS);
+  };
 
   const setPhase = (p: CallPhase) => {
     phaseRef.current = p;
@@ -243,10 +277,13 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     spokenRef.current = { words: new Set([...speechWords(raw), ...speechWords(speakable)]), until: Infinity, endedAt: Infinity };
     caption('assistant', raw);
     setTalk('speaking');
+    holdListening();
     // What the shopper is saying right now is kept (they may have started just as this began); the assistant's own
     // voice coming back is caught by isEcho instead.
     const done = await voice.speak(speakable);
     voiceEnded();
+    // Stopped (the shopper pressed stop, or something else is said instead): listen again at once.
+    releaseListening(!done);
     if (!live(id) || !done) return;
     // What was heard while it spoke (and nobody cut in) was its own voice: dropped, so it can't join the shopper's answer.
     inputRef.current?.clear();
@@ -286,8 +323,12 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
         const line = FILLERS[Math.floor(Math.random() * FILLERS.length)];
         // Its sound coming back through the speaker must not count as the shopper talking.
         spokenRef.current = { words: new Set(speechWords(line)), until: Infinity, endedAt: Infinity };
+        holdListening();
         filler =
-          voiceRef.current?.speak(speakableBangla(line)).finally(voiceEnded) ?? null;
+          voiceRef.current?.speak(speakableBangla(line)).finally(() => {
+            voiceEnded();
+            releaseListening();
+          }) ?? null;
       }
     }, FILLER_AFTER_MS);
 
@@ -467,6 +508,16 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     }
   };
 
+  /** The "stop" button (phones, where talking over the assistant can't be heard): it stops and listens at once. */
+  const interrupt = () => {
+    if (phaseRef.current !== 'connected' || talkRef.current !== 'speaking') return;
+    voiceRef.current?.stop();
+    voiceEnded();
+    inputRef.current?.clear();
+    setTalk('listening');
+    armSilence(callIdRef.current);
+  };
+
   /** Must run inside the tap on the call button (browsers only allow sound and the microphone from a tap). */
   const start = useCallback(async () => {
     if (phaseRef.current !== 'idle') return;
@@ -492,6 +543,8 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     pendingRef.current = '';
     nudgedRef.current = false;
     errorsRef.current = 0;
+    halfDuplexRef.current = isHalfDuplexDevice();
+    holdCountRef.current = 0;
     setPhase('calling');
 
     // Microphone permission first; the stream itself isn't kept (speech recognition opens its own).
@@ -586,6 +639,7 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     phase, talk, seconds, muted, setMuted, lines, products, engine, loadPct, problem, lang, setLang, start, hangUp, close, level,
     camera, cancelCamera, submitPhoto, openCamera: () => openCamera(callIdRef.current), canPhotoSearch: !!options.photoSearch,
     minimized, setMinimized, openProduct: (p: P) => openProduct(callIdRef.current, p),
+    interrupt, halfDuplex: halfDuplexRef.current,
   };
 }
 

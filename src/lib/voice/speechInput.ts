@@ -5,8 +5,10 @@
  * (Whisper and the like) is hundreds of MB for usable Bangla and several seconds per sentence on a phone, so it isn't
  * used. Firefox has no speech recognition: the call button is hidden there (voiceCallSupported).
  *
- * Recognition runs for the whole call, also while the assistant speaks, so the shopper can cut in. Browsers end a
- * session after a pause or a minute; it is started again by itself until stop().
+ * On a computer recognition runs for the whole call, also while the assistant speaks, so the shopper can cut in. On a
+ * phone the loudspeaker sits next to the microphone and the browser's recognition has no echo cancellation, so the
+ * assistant's own voice came back as the shopper's words: there the call holds listening while it speaks (hold()).
+ * Browsers end a session after a pause or a minute; it is started again by itself until stop().
  *
  * An utterance is handed over once the shopper has paused for END_PAUSE_MS after a final result (or for
  * INTERIM_PAUSE_MS with only words in progress, for browsers that are slow to finalise).
@@ -86,6 +88,8 @@ export class SpeechInput {
   private rec: Recognition | null = null;
   private running = false;
   private paused = false;
+  /** Held while the assistant speaks on a phone (separate from mute and the camera's pause). */
+  private held = false;
   private finals = '';
   /** When the first words of the utterance being heard arrived (0 = none yet). */
   private startedAt = 0;
@@ -109,6 +113,15 @@ export class SpeechInput {
     this.paused = paused;
     this.clear();
     if (paused) this.rec?.abort();
+    else if (this.running) this.open();
+  }
+
+  /** Stops listening while the assistant's voice plays (phones), and starts again when it is released. */
+  hold(on: boolean) {
+    if (this.held === on) return;
+    this.held = on;
+    this.clear();
+    if (on) this.rec?.abort();
     else if (this.running) this.open();
   }
 
@@ -139,7 +152,7 @@ export class SpeechInput {
   }
 
   private open() {
-    if (!this.running || this.paused || this.rec) return;
+    if (!this.running || this.paused || this.held || this.rec) return;
     const Ctor = recognitionCtor();
     if (!Ctor) return this.events.onBlocked('no-mic');
     const rec = new Ctor();
@@ -148,7 +161,7 @@ export class SpeechInput {
     rec.interimResults = true;
     rec.maxAlternatives = 1;
     rec.onresult = (e) => {
-      if (this.paused) return;
+      if (this.paused || this.held) return;
       this.restarts = 0;
       let interim = '';
       for (let i = e.resultIndex; i < e.results.length; i++) {
@@ -176,8 +189,8 @@ export class SpeechInput {
     rec.onend = () => {
       if (this.rec === rec) this.rec = null;
       // Words heard just before the session ended are still an utterance.
-      if (this.finals || this.interim) this.flush();
-      if (!this.running || this.paused) return;
+      if (!this.held && (this.finals || this.interim)) this.flush();
+      if (!this.running || this.paused || this.held) return;
       // A browser that ends at once every time (no network): back off instead of spinning.
       const wait = Math.min(2000, 100 * 2 ** this.restarts++);
       setTimeout(() => this.open(), wait);
