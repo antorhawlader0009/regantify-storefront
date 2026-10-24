@@ -189,6 +189,21 @@ const BN: Record<string, string> = {
   Add: 'যোগ করুন',
   'Reward points': 'রিওয়ার্ড পয়েন্ট',
   'Use them at checkout. 1 point = ৳1.': 'চেকআউটে ব্যবহার করুন। ১ পয়েন্ট = ১ টাকা।',
+  // Install as app
+  'Add to your home screen': 'হোম স্ক্রিনে যোগ করুন',
+  'Open the shop like an app, one tap from your home screen.': 'অ্যাপের মতো খুলুন, হোম স্ক্রিন থেকে এক চাপে।',
+  Install: 'যোগ করুন',
+  'Not now': 'এখন না',
+  Tap: 'নিচের',
+  'Share, then': 'শেয়ার চাপুন, তারপর',
+  'Add to Home Screen': 'Add to Home Screen',
+  // Voice search
+  'Search by voice': 'কথা বলে খুঁজুন',
+  Stop: 'থামুন',
+  'Listening… say what you are looking for': 'শুনছি… কী খুঁজছেন বলুন',
+  'Allow the microphone to search by voice.': 'কথা বলে খুঁজতে মাইক্রোফোন চালু করার অনুমতি দিন।',
+  "Didn't catch that. Tap the mic and try again.": 'শোনা যায়নি। মাইকে চেপে আবার বলুন।',
+  'Voice search did not work. Please type instead.': 'কথা বলে খোঁজা কাজ করেনি। লিখে খুঁজুন।',
   // Shop locations
   'Our shops': 'আমাদের দোকান',
   'Visit us at our shops': 'আমাদের দোকানে আসুন',

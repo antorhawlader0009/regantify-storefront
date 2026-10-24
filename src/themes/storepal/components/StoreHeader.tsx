@@ -16,6 +16,8 @@ import { LazyPhotoSearchPanel } from './LazyWidgets';
 import { useHeaderPresence } from '../lib/headerPresence';
 import { PhotoSearchButton } from './PhotoSearchPanel';
 import { imageFromClipboard, usePhotoSearch } from '@/lib/photoSearch';
+import { useVoiceSearch } from '@/lib/voiceSearch';
+import { VoiceSearchButton, VoiceSearchStatus } from './VoiceSearch';
 import { AskAssistantButton } from './AskAssistantButton';
 import { useAssistantBridge } from '../lib/assistantBridge';
 import { CartDrawer } from './CartDrawer';
@@ -379,6 +381,16 @@ export function StoreHeader({
     setSuggestionsOpen(false);
   };
 
+  // Search by voice (lib/voiceSearch.ts): the words fill the box while the shopper talks, then the normal search runs.
+  const voice = useVoiceSearch({
+    onInterim: (text) => setSearchDraft(text),
+    onText: (text) => {
+      setSearchDraft(text);
+      setSuggestionsOpen(false);
+      goToSearch(text);
+    },
+  });
+
   // The category nav is a flat list on the reference site except
   // entries that have real subcategories (Category.parentId, see
   // StorefrontService.getStoreProducts), which open a dropdown of those
@@ -459,6 +471,7 @@ export function StoreHeader({
                   <X size={15} />
                 </button>
               )}
+              <VoiceSearchButton voice={voice} onStart={() => setSuggestionsOpen(false)} className="px-2.5 text-muted hover:text-ink flex items-center justify-center" />
               <PhotoSearchButton subdomain={subdomain} className="px-3 text-muted hover:text-ink flex items-center justify-center" />
               <button
                 type="submit"
@@ -470,6 +483,7 @@ export function StoreHeader({
             </div>
           </form>
 
+          <VoiceSearchStatus voice={voice} />
           {showStarter && (
             <div className="absolute left-0 right-0 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
               {StarterPanel}
@@ -618,6 +632,7 @@ export function StoreHeader({
                 <X size={14} />
               </button>
             )}
+            <VoiceSearchButton voice={voice} onStart={() => setSuggestionsOpen(false)} className="px-2 text-muted hover:text-ink flex items-center justify-center" />
             <PhotoSearchButton subdomain={subdomain} className="px-2.5 text-muted hover:text-ink flex items-center justify-center" />
             <button type="submit" className="px-3.5 bg-ink text-white flex items-center justify-center" aria-label="Search">
               <Search size={16} />
@@ -625,6 +640,7 @@ export function StoreHeader({
           </div>
         </form>
 
+        <VoiceSearchStatus voice={voice} className="left-4 right-4" />
         {showStarter && (
           <div className="absolute left-4 right-4 top-full mt-1 z-30 rounded-lg border border-line bg-surface shadow-lg overflow-hidden">
             {StarterPanel}

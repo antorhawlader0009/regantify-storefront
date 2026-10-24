@@ -18,11 +18,11 @@ interface RecognitionResultLike {
   isFinal: boolean;
   0: { transcript: string };
 }
-interface RecognitionEventLike {
+export interface RecognitionEventLike {
   resultIndex: number;
   results: ArrayLike<RecognitionResultLike>;
 }
-interface Recognition {
+export interface Recognition {
   lang: string;
   continuous: boolean;
   interimResults: boolean;
@@ -35,9 +35,9 @@ interface Recognition {
   stop(): void;
   abort(): void;
 }
-type RecognitionCtor = new () => Recognition;
+export type RecognitionCtor = new () => Recognition;
 
-function recognitionCtor(): RecognitionCtor | null {
+export function recognitionCtor(): RecognitionCtor | null {
   if (typeof window === 'undefined') return null;
   const w = window as unknown as { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;

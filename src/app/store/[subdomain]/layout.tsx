@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { getStoreInfo, siteUrl, StoreNotFoundError, type StorefrontLmsForms } from '@/lib/storefrontApi';
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
@@ -12,6 +12,7 @@ import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjec
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import type { BusinessHours } from '@/lib/businessHours';
 import { LazyAiAssistantWidget, LazyCompareBar, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
+import { InstallAppBanner } from '@/themes/storepal/components/InstallAppBanner';
 import { WishlistSync } from '@/themes/storepal/components/WishlistSync';
 import { MetaPixel } from '@/components/MetaPixel';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
@@ -70,6 +71,17 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
     const metadata: Metadata = {};
     if (store.faviconUrl) metadata.icons = { icon: store.faviconUrl };
 
+    // Install as app: the store's own web manifest and home-screen icon (manifest.webmanifest, app-icon/[size]), on every
+    // template. Built with siteUrl so they are on the address the shopper is using (the store's own one, or the path form).
+    try {
+      const appName = store.designSettings?.appName?.trim() || store.storeName;
+      metadata.manifest = await siteUrl(`/store/${subdomain}/manifest.webmanifest`);
+      metadata.icons = { ...(store.faviconUrl ? { icon: store.faviconUrl } : {}), apple: await siteUrl(`/store/${subdomain}/app-icon/180`) };
+      metadata.appleWebApp = { capable: true, title: appName, statusBarStyle: 'default' };
+    } catch {
+      // No usable host (a build step): no manifest link.
+    }
+
     // Store > SEO. Relative URLs in a page's metadata (share pictures, icons) are resolved against the store's own address; the
     // root layout's base is the platform's root domain, which is the wrong host for a store on its own subdomain or domain.
     try {
@@ -98,6 +110,14 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
   } catch {
     return {};
   }
+}
+
+/** The browser bar's colour on phones (and in the installed app): the store's accent colour. */
+export async function generateViewport({ params }: LayoutProps): Promise<Viewport> {
+  const { subdomain } = await storeParams(params);
+  const store = await getStoreInfo(subdomain).catch(() => null);
+  const color = store?.accentColor && /^#[0-9a-f]{6}$/i.test(store.accentColor) ? store.accentColor : null;
+  return color ? { themeColor: color } : {};
 }
 
 /** Turns a free-text font-family name (Vendor.brandHeadingFont/brandBodyFont) into a Google Fonts stylesheet URL, best-effort — same helper as landing pages' own googleFontsHref (src/landing/LandingPageView.tsx), duplicated rather than shared since the two live in different route trees and this is a two-line pure function. A vendor who types a name Google Fonts doesn't have just gets the theme's own fallback font, never a broken page. */
@@ -290,6 +310,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
             {/* The AI chat widget lives here, not in StoreHeader, so a voice call keeps going when the shopper opens
                 another page (the layout stays mounted). It shows only where a StoreHeader is (headerPresence.ts). */}
             {storeExists && <LazyAiAssistantWidget subdomain={subdomain} storeName={storeName} />}
+            {/* Install as app: not lazy, so its file is loaded early enough to catch the browser's one-time install event. */}
+            {storeExists && <InstallAppBanner subdomain={subdomain} storeName={storeName} />}
           </StorePalDesignProvider>
         ) : (
           children

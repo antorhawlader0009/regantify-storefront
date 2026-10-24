@@ -282,6 +282,9 @@ export interface StorefrontDesignSettings {
   headerPhone?: string | null;
   headerLogoSize?: 'SMALL' | 'MEDIUM' | 'LARGE';
   headerShowCartTotal?: boolean;
+  /** Install as app: the "add to home screen" banner for returning shoppers, and the name under the icon. */
+  appInstallEnabled?: boolean;
+  appName?: string | null;
   headerShowLogo?: boolean;
   headerShowStoreName?: boolean;
   mobileMenu: StorefrontMenuItem[];
