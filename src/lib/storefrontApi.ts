@@ -8,7 +8,7 @@
 
 import type { TrackedOrder } from '@/lib/checkoutApi';
 import type { StorefrontStoreAway } from '@/lib/storeAway';
-import type { StoreAddress } from '@/lib/storeAddress';
+import { storeSubdomain, type StoreAddress } from '@/lib/storeAddress';
 import { currentStoreAddress } from '@/lib/storeRequest';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
@@ -661,12 +661,15 @@ export async function siteUrl(path: string, address?: StoreAddress | null): Prom
     origin = known.origin;
     clean = known.clean;
   } else {
-    const { headers } = await import('next/headers');
-    const h = await headers();
-    const host = h.get('host');
-    if (!host) return path;
-    origin = `${h.get('x-forwarded-proto') ?? 'http'}://${host}`;
-    clean = h.get('x-store-clean') === '1';
+    // A host the middleware didn't recognise (`<sub>~d`) or a render that never called storeParams(). Reading the request
+    // here (as before 2026-10-24) makes a kept store page dynamic at runtime, which Next answers with a 500 ("Page changed
+    // from static to dynamic at runtime"), so name the store's own platform address instead: the address search engines
+    // should index anyway. Without ROOT_DOMAIN (local dev) the path stays relative.
+    const root = process.env.ROOT_DOMAIN?.trim();
+    const segment = /^\/store\/([^/]+)/.exec(path)?.[1];
+    if (!root || !segment) return path;
+    origin = `https://${storeSubdomain(segment)}.${root}`;
+    clean = true;
   }
   // A store reached on its own address ({sub}.ROOT_DOMAIN or a custom domain, marked by middleware.ts) has one clean public form of
   // every page: /product/x, never /store/{sub}/product/x. Pages build their paths in the long form, so cut the prefix off here;

@@ -3,6 +3,9 @@ FROM node:24-bookworm-slim AS builder
 WORKDIR /app
 
 COPY package*.json ./
+# patches/ before npm ci: its postinstall (patch-package) applies them, and the store page cache needs the Next one
+# (patches/next+15.5.28.patch, see the store layout).
+COPY patches ./patches
 RUN npm ci
 
 COPY . .

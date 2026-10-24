@@ -7,6 +7,11 @@ import { socialMeta } from '@/lib/shareMeta';
 import { storeParams } from '@/lib/storeRequest';
 
 
+// Rendered on the first visit and then kept, like the rest of the store (PERFORMANCE-PLAN.md Step 8, see the store layout).
+export function generateStaticParams() {
+  return [];
+}
+
 interface PageProps {
   params: Promise<{ subdomain: string; slug: string }>;
 }

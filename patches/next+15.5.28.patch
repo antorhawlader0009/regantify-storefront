@@ -1,0 +1,28 @@
+diff --git a/node_modules/next/dist/build/templates/app-page.js b/node_modules/next/dist/build/templates/app-page.js
+index c55b73f..7b81a05 100644
+--- a/node_modules/next/dist/build/templates/app-page.js
++++ b/node_modules/next/dist/build/templates/app-page.js
+@@ -173,7 +173,8 @@ async function handler(req, res, ctx) {
+         return null;
+     }
+     const { buildId, query, params, parsedUrl, pageIsDynamic, buildManifest, nextFontManifest, reactLoadableManifest, serverActionsManifest, clientReferenceManifest, subresourceIntegrityManifest, prerenderManifest, isDraftMode, resolvedPathname, revalidateOnlyGenerated, routerServerContext, nextConfig, interceptionRoutePatterns } = prepareResult;
+-    const pathname = parsedUrl.pathname || '/';
++    // Regantify patch (storefront/patches): after a middleware rewrite, match the page against the rewritten path, so a store reached on its own address (/p/x -> /store/<sub>/p/x) is kept by the page cache like the long form.
++    const pathname = (0, _requestmeta.getRequestMeta)(req, 'rewroteURL') || parsedUrl.pathname || '/';
+     const normalizedSrcPage = (0, _apppaths.normalizeAppPath)(srcPage);
+     let { isOnDemandRevalidate } = prepareResult;
+     const prerenderInfo = routeModule.match(pathname, prerenderManifest);
+diff --git a/node_modules/next/dist/esm/build/templates/app-page.js b/node_modules/next/dist/esm/build/templates/app-page.js
+index e40ef19..8e4136f 100644
+--- a/node_modules/next/dist/esm/build/templates/app-page.js
++++ b/node_modules/next/dist/esm/build/templates/app-page.js
+@@ -95,7 +95,8 @@ export async function handler(req, res, ctx) {
+         return null;
+     }
+     const { buildId, query, params, parsedUrl, pageIsDynamic, buildManifest, nextFontManifest, reactLoadableManifest, serverActionsManifest, clientReferenceManifest, subresourceIntegrityManifest, prerenderManifest, isDraftMode, resolvedPathname, revalidateOnlyGenerated, routerServerContext, nextConfig, interceptionRoutePatterns } = prepareResult;
+-    const pathname = parsedUrl.pathname || '/';
++    // Regantify patch (storefront/patches): after a middleware rewrite, match the page against the rewritten path, so a store reached on its own address (/p/x -> /store/<sub>/p/x) is kept by the page cache like the long form.
++    const pathname = getRequestMeta(req, 'rewroteURL') || parsedUrl.pathname || '/';
+     const normalizedSrcPage = normalizeAppPath(srcPage);
+     let { isOnDemandRevalidate } = prepareResult;
+     const prerenderInfo = routeModule.match(pathname, prerenderManifest);

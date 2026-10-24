@@ -28,12 +28,25 @@ import type {
   StorefrontTiktokPixel,
 } from '@/lib/storefrontApi';
 import { storeParams } from '@/lib/storeRequest';
+import { StoreQueryAdapter } from '@/components/StoreQueryAdapter';
 
-// PERFORMANCE-PLAN.md Step 8: store pages are rendered on every request (the data they show is cached 60 s per fetch).
-// Keeping the rendered page (empty generateStaticParams + revalidate) was tried on 2026-10-16 and taken out the same day:
-// a long-form link (/store/{sub}/product/x) was then rendered as a prebuilt page, where the headers' nuqs search box
-// (useSearchParams with no <Suspense>) fails, and product clicks showed a 500. Wrap the query-reading parts in
-// <Suspense> and test both address forms before turning it on again.
+// PERFORMANCE-PLAN.md Step 8: a store page reads no request data (the address travels in the path, see
+// lib/storeAddress.ts), so Next keeps the rendered page and serves it again for up to a minute, the same window as the
+// data it shows. A vendor's edit clears it at once through /api/revalidate (revalidateTag on the store's tags). Pages
+// that read the request (tracking/payment links, the home page's query view) are still rendered every time.
+// First tried 2026-10-16 and taken out the same day: the headers' nuqs search box (useSearchParams with no <Suspense>)
+// failed on a kept page and product clicks showed a 500. On again 2026-10-24 with StoreQueryAdapter below, which reads
+// the query without useSearchParams, so every theme's header works on a kept page without being edited.
+// A store's own address ({sub}.ROOT_DOMAIN, custom domains) is a middleware rewrite, which Next 15.5 does not keep
+// (it matches the page against the address before the rewrite); patches/next+15.5.28.patch fixes that. Updating Next
+// means checking that patch still applies (npm install fails loudly when it doesn't).
+export const revalidate = 60;
+
+// No store is built ahead of time; each page is rendered on its first visit and then kept. Next only keeps the pages of
+// a dynamic route when the route lists its params, so it lists none (every [slug] page below does the same).
+export function generateStaticParams() {
+  return [];
+}
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -201,8 +214,10 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   const fontHref = googleFontsHref([headingFont, bodyFont]);
 
   return (
-    // data-layout: Store > Design > Layout Settings (StorePal only) — see
-    // globals.css for what EXTENDED widens.
+    // The query hook every theme's header uses, safe on a kept page (see StoreQueryAdapter and revalidate above).
+    <StoreQueryAdapter>
+    {/* data-layout: Store > Design > Layout Settings (StorePal only) — see
+        globals.css for what EXTENDED widens. */}
     <div
       data-theme={theme.toLowerCase()}
       data-layout={theme === 'STOREPAL' && designSettings?.layoutType === 'EXTENDED' ? 'extended' : undefined}
@@ -303,5 +318,6 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         <CustomCodeInjector subdomain={subdomain} code={customCode} />
       )}
     </div>
+    </StoreQueryAdapter>
   );
 }
