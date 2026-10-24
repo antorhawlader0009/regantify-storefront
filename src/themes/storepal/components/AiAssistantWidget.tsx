@@ -60,6 +60,8 @@ interface Message {
   image?: string;
   /** The cards the shopper ticked when sending this message ("1. Cotton Panjabi"), shown under it. */
   picks?: string[];
+  /** A complaint the assistant saved for the store: shown as "received", with a Contact page button when the page is on. */
+  complaint?: { contactPage: boolean };
   /** When it was sent or received (ms). The greeting has none, so nothing differs between the server and the browser render. */
   at?: number;
 }
@@ -424,7 +426,14 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         context: pageContext(),
       });
       setPhotoSlugs([]);
-      setMessages((prev) => [...prev, { role: 'assistant', content: res.reply, products: res.products, at: Date.now() }]);
+      setMessages((prev) => [...prev, {
+          role: 'assistant',
+          content: res.reply,
+          products: res.products,
+          ...(res.complaint?.recorded ? { complaint: { contactPage: res.complaint.contactPage } } : {}),
+          at: Date.now(),
+        },
+      ]);
       if (res.order) {
         const o = res.order;
         setOrder(o);
@@ -699,6 +708,27 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                   </div>
                 )}
                 {m.at && <span className="mt-1 text-[10.5px] text-muted">{chatTime(m.at)}</span>}
+
+                {m.complaint && (
+                  <div className="mt-2 w-full max-w-[85%] rounded-lg border border-line bg-white px-3 py-2 text-[12.5px] text-ink">
+                    <span className="flex items-center gap-1.5 font-medium">
+                      <Check className="w-3.5 h-3.5 text-green-600" aria-hidden />
+                      আপনার অভিযোগ দোকানে পৌঁছে গেছে
+                    </span>
+                    {m.complaint.contactPage && (
+                      <>
+                        <span className="block mt-1 text-muted">খুব জরুরি হলে সরাসরি যোগাযোগ করুন:</span>
+                        <Link
+                          href={`/store/${subdomain}/contact`}
+                          className="mt-1.5 inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-1.5 text-[12px] font-medium text-white hover:opacity-90"
+                        >
+                          <Phone className="w-3.5 h-3.5" aria-hidden />
+                          যোগাযোগ পাতা
+                        </Link>
+                      </>
+                    )}
+                  </div>
+                )}
 
                 {m.products && m.products.length > 0 && (
                   <div className="mt-2 flex flex-col gap-1.5 w-full max-w-[85%]">

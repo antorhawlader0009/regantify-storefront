@@ -15,6 +15,7 @@ export interface StoredMessage {
   products?: ChatProductRef[];
   image?: string;
   picks?: string[];
+  complaint?: { contactPage: boolean };
   at?: number;
 }
 

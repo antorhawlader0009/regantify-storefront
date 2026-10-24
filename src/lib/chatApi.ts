@@ -40,6 +40,8 @@ export interface ChatReply {
   products: ChatProductRef[];
   /** Voice call only: what to do on the shopper's screen (server chat-order.ts cleanActions). */
   actions?: ChatAction[];
+  /** The assistant saved a complaint for the store (record_complaint); contactPage = the store's Contact page is on. */
+  complaint?: { recorded: boolean; contactPage: boolean };
 }
 
 /** A screen action the assistant asks for on a call ("client-side tools"); the browser does it (lib/voice/useVoiceCall.ts). */
