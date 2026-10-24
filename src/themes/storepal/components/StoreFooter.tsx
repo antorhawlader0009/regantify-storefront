@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, ChevronDown } from 'lucide-react';
 import { ReputationStrip } from './ReputationStrip';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
-import { getGiftCardSale, getStoreHasBlog, getStoreHasContact, getStoreHasFaq, getStorePages, getStorePaymentMethods, type StorefrontPageSummary } from '../lib/storeNavApi';
+import { getGiftCardSale, getStoreHasBlog, getStoreHasContact, getStoreHasFaq, getStoreHasLocations, getStorePages, getStorePaymentMethods, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate } from '@/lib/footerTemplates';
 import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
@@ -144,6 +144,8 @@ export function StoreFooter({
   const [hasFaq, setHasFaq] = useState(false);
   // Contact page: a "Contact us" link while the store has it on.
   const [hasContact, setHasContact] = useState(false);
+  // Shop Locations: an "Our shops" link once the store has added a shop.
+  const [hasLocations, setHasLocations] = useState(false);
   // Gift cards sold online (TellMe idea 135): a "Gift cards" link while the store sells them.
   const [hasGiftCards, setHasGiftCards] = useState(false);
 
@@ -161,6 +163,7 @@ export function StoreFooter({
     getStoreHasBlog(subdomain).then(setHasBlog);
     getStoreHasFaq(subdomain).then(setHasFaq);
     getStoreHasContact(subdomain).then(setHasContact);
+    getStoreHasLocations(subdomain).then(setHasLocations);
     getGiftCardSale(subdomain).then((c) => setHasGiftCards(!!c?.enabled && c.amounts.length > 0));
     getStorePaymentMethods(subdomain).then(setPaymentMethods);
   }, [subdomain]);
@@ -266,6 +269,11 @@ export function StoreFooter({
                     {t('Contact us')}
                   </Link>
                 )}
+                {hasLocations && (
+                  <Link href={`/store/${subdomain}/locations`} className="text-accent hover:text-accent-dark transition-colors w-fit">
+                    {t('Our shops')}
+                  </Link>
+                )}
                 {hasGiftCards && (
                   <Link href={`/store/${subdomain}/gift-card`} className="text-accent hover:text-accent-dark transition-colors w-fit">
                     {t('Gift cards')}
@@ -337,7 +345,7 @@ export function StoreFooter({
   const infoItems =
     footerConfig.infoLinks.length > 0
       ? footerConfig.infoLinks
-      : [trackLink, ...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : []), ...(hasFaq ? [{ label: t('FAQ'), url: `/store/${subdomain}/faq` }] : []), ...(hasContact ? [{ label: t('Contact us'), url: `/store/${subdomain}/contact` }] : [])];
+      : [trackLink, ...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : []), ...(hasFaq ? [{ label: t('FAQ'), url: `/store/${subdomain}/faq` }] : []), ...(hasContact ? [{ label: t('Contact us'), url: `/store/${subdomain}/contact` }] : []), ...(hasLocations ? [{ label: t('Our shops'), url: `/store/${subdomain}/locations` }] : [])];
   const InfoColumn = infoItems.length > 0 && (
     <FooterSection title={footerConfig.infoTitle} upper>
       <div className="flex flex-col gap-2.5 text-[13px]">

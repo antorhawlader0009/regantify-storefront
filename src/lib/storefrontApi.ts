@@ -1025,6 +1025,25 @@ export async function getStoreFaq(subdomain: string): Promise<{ store: Storefron
   return data;
 }
 
+/** One of the store's shops (server shop-locations/). The links are Google's own, ready to open. */
+export interface StoreShopLocation {
+  id: string;
+  name: string;
+  address: string;
+  phone: string | null;
+  hours: string | null;
+  openUrl: string;
+  directionsUrl: string;
+  lat: number | null;
+  lon: number | null;
+}
+
+/** The store's shops for its "Our shops" page; an empty list when none are set. Every template. */
+export async function getStoreLocations(subdomain: string): Promise<StoreShopLocation[]> {
+  const data = await fetchJson<{ items: StoreShopLocation[] }>(`/v1/store/${subdomain}/locations`, [`store:${subdomain}`]);
+  return data?.items ?? [];
+}
+
 /** Social Feed (SOCIAL-FEED-plan.md, StorePal only): the store's YouTube channel and its newest videos; `feed` is null while off or empty. */
 export interface StorefrontSocialPost {
   id: string;

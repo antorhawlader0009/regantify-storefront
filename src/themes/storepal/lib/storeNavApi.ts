@@ -56,6 +56,18 @@ export async function getStoreHasFaq(subdomain: string): Promise<boolean> {
   }
 }
 
+/** Whether the store has added a shop location, for the footer's "Our shops" link. */
+export async function getStoreHasLocations(subdomain: string): Promise<boolean> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/locations`);
+    if (!res.ok) return false;
+    const data = await res.json();
+    return Array.isArray(data.items) && data.items.length > 0;
+  } catch {
+    return false;
+  }
+}
+
 /** Whether the store's contact page is on, for the footer's "Contact us" link. */
 export async function getStoreHasContact(subdomain: string): Promise<boolean> {
   try {

@@ -189,6 +189,12 @@ const BN: Record<string, string> = {
   Add: 'যোগ করুন',
   'Reward points': 'রিওয়ার্ড পয়েন্ট',
   'Use them at checkout. 1 point = ৳1.': 'চেকআউটে ব্যবহার করুন। ১ পয়েন্ট = ১ টাকা।',
+  // Shop locations
+  'Our shops': 'আমাদের দোকান',
+  'Visit us at our shops': 'আমাদের দোকানে আসুন',
+  'Open in Google Maps': 'গুগল ম্যাপে দেখুন',
+  Directions: 'রাস্তা দেখুন',
+  Call: 'কল করুন',
   // Contact page
   'Contact us': 'যোগাযোগ',
   'Mobile number': 'মোবাইল নম্বর',
