@@ -80,7 +80,7 @@ export function VoiceCallScreen<P extends CallProduct>({
   const ringing = call.phase === 'calling' || call.phase === 'ringing';
   const talking = call.phase === 'connected';
   const status = call.phase === 'calling' ? 'কল করা হচ্ছে…' : call.phase === 'ringing' ? 'রিং হচ্ছে…' : call.phase === 'ended' ? 'কল শেষ' : bnDigits(clock(call.seconds));
-  const talkLabel = call.muted ? 'মাইক বন্ধ' : call.talk === 'thinking' ? 'দেখছি…' : call.talk === 'speaking' ? 'বলছি…' : 'শুনছি…';
+  const talkLabel = call.muted ? 'মাইক বন্ধ' : call.talk === 'thinking' ? 'ভাবছি…' : call.talk === 'speaking' ? 'বলছি…' : 'শুনছি…';
 
   const avatar = (size: 'big' | 'small') => (
     <div className={`relative flex shrink-0 items-center justify-center ${size === 'big' ? 'h-36 w-36' : 'h-14 w-14'}`}>

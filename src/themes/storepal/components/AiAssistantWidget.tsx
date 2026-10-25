@@ -11,6 +11,7 @@ import {
   getChatStatus,
   sendChatMessage,
   sendChatPhoto,
+  type ChatLive,
   type ChatPageContext,
   type ChatReply,
   type ChatTurn,
@@ -377,7 +378,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   // the shopper's own unsent text in the box is left alone then.
   // `voice`: a turn of the voice call (useVoiceCall): sent even while an earlier reply is still on its way, the reply is
   // returned to be spoken, and a failure is thrown to the call instead of written into the chat.
-  const handleSend = async (e?: React.FormEvent, asked?: string, voice?: { signal: AbortSignal }): Promise<ChatReply | null> => {
+  const handleSend = async (e?: React.FormEvent, asked?: string, voice?: { signal: AbortSignal; live?: ChatLive }): Promise<ChatReply | null> => {
     e?.preventDefault();
     const ticked = selection?.slugs ?? [];
     // Ticked cards can be sent without typing anything.
@@ -424,6 +425,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         voice: !!voice,
         signal: voice?.signal,
         context: pageContext(),
+        // The call speaks the reply's sentences as they arrive (POST chat/stream).
+        live: voice?.live,
       });
       setPhotoSlugs([]);
       setMessages((prev) => [...prev, {
@@ -472,8 +475,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const call = useVoiceCall<ChatProductRef>({
     base: voiceBase,
     storeName,
-    send: async (text, signal) => {
-      const res = await sendRef.current(undefined, text, { signal });
+    send: async (text, signal, live) => {
+      const res = await sendRef.current(undefined, text, { signal, live });
       if (!res) throw new Error('no reply');
       return { reply: res.reply, products: res.products, actions: res.actions };
     },

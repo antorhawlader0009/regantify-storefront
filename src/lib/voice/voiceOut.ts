@@ -70,6 +70,19 @@ export function googleVoiceUrls(text: string): string[] {
   return out.map((q) => `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=${encodeURIComponent(q)}`);
 }
 
+/** A reply spoken while it is still arriving (VoiceOut.stream). */
+export interface VoiceStream {
+  /** More speakable text: each piece is made at once and played after the ones before it. */
+  push(text: string): void;
+  /** Nothing more will come: `done` resolves once the last piece has played. */
+  end(): void;
+  /** True when everything pushed was said, false when stop() cut it. */
+  done: Promise<boolean>;
+}
+
+/** A job number the worker never cancels (cancelPiper drops only lower ones): lines made ahead of time. */
+const KEEP_GEN = Number.MAX_SAFE_INTEGER;
+
 export class VoiceOut {
   engine: VoiceEngine;
   private gen = 0;
@@ -78,6 +91,10 @@ export class VoiceOut {
   private levelBuf: Uint8Array<ArrayBuffer>;
   private googlePlaying = false;
   private slowPieces = 0;
+  /** Piper audio made ahead of time for lines said often (the call's fillers), by speakable piece. */
+  private ready = new Map<string, PiperAudio>();
+  /** Wakes a waiting stream (stop() must end it, not leave it waiting for pieces that never come). */
+  private wakeStream: (() => void) | null = null;
 
   constructor(
     private ctx: AudioContext,
@@ -117,6 +134,9 @@ export class VoiceOut {
   /** Stops speaking at once; pieces still being made are dropped. */
   stop() {
     this.gen++;
+    const wake = this.wakeStream;
+    this.wakeStream = null;
+    wake?.();
     cancelPiper(this.gen);
     try {
       this.source?.stop();
@@ -189,6 +209,112 @@ export class VoiceOut {
       return gen === this.gen;
     }
     return gen === this.gen;
+  }
+
+  /**
+   * Makes a line's Piper audio ahead of time, so it plays with no wait later (stream() takes it from here). Only on
+   * Piper, one piece at a time; the caller asks only while the call is quiet, since the worker does one job at a time.
+   */
+  async prepare(text: string): Promise<void> {
+    if (this.engine !== 'piper' || !this.base || !isPiperReady()) return;
+    for (const piece of speechChunks(text)) {
+      if (this.ready.has(piece)) continue;
+      try {
+        this.ready.set(piece, await synthesizePiper(this.base, piece, KEEP_GEN));
+      } catch {
+        return;
+      }
+      if (this.engine !== 'piper') return;
+    }
+  }
+
+  /**
+   * Speaks a reply that is still arriving: push() pieces as they come (each is made at once, in the worker's order),
+   * they play back to back, end() when no more will come. stop() cuts it like speak(). The same late / slow / failed
+   * rules as speak() switch the rest of the call to Google.
+   */
+  stream(onStart?: () => void): VoiceStream {
+    this.stop();
+    const gen = this.gen;
+    const queue: { piece: string; job: Promise<PiperAudio> | null; cached: boolean }[] = [];
+    let ended = false;
+    let wait: (() => void) | null = null;
+    const nudge = () => {
+      const w = wait;
+      wait = null;
+      w?.();
+    };
+    this.wakeStream = nudge;
+    let started = false;
+    const begin = () => {
+      if (!started) {
+        started = true;
+        onStart?.();
+      }
+    };
+
+    const push = (text: string) => {
+      if (gen !== this.gen || ended) return;
+      for (const piece of speechChunks(text)) {
+        const ready = this.engine === 'piper' ? this.ready.get(piece) : undefined;
+        const job = ready ? Promise.resolve(ready) : this.engine === 'piper' && this.base ? synthesizePiper(this.base, piece, gen) : null;
+        job?.catch(() => undefined); // handled where awaited
+        queue.push({ piece, job, cached: !!ready });
+      }
+      nudge();
+    };
+    const end = () => {
+      ended = true;
+      nudge();
+    };
+
+    const done = (async (): Promise<boolean> => {
+      let i = 0;
+      for (;;) {
+        if (gen !== this.gen) return false;
+        if (i >= queue.length) {
+          if (ended) return true;
+          await new Promise<void>((r) => (wait = r));
+          continue;
+        }
+        const { piece, job, cached } = queue[i++];
+        if (this.engine === 'piper' && job) {
+          const audio = await Promise.race([job.catch(() => null), new Promise<'late'>((r) => setTimeout(() => r('late'), LATE_MS))]);
+          if (gen !== this.gen) return false;
+          if (audio !== 'late' && audio !== null) {
+            const secs = audio.pcm.length / audio.sampleRate;
+            // Slower than real time (only judged on pieces made just now): the pieces after this would leave gaps.
+            if (!cached && audio.ms / 1000 > secs * 1.1 && ++this.slowPieces >= 2) {
+              markSlow();
+              this.fallback('slow');
+            }
+            begin();
+            if (!(await this.playPcm(audio, gen))) return false;
+            continue;
+          }
+          this.fallback(audio === 'late' ? 'late' : 'failed');
+          // The pieces after this one are said by Google too: drop their Piper jobs still waiting.
+          cancelPiper(gen + 1);
+        }
+        // Google says this piece (and, from now on, the ones after it).
+        const google = await this.playGoogle([piece], gen, begin);
+        if (google === 'stopped') return false;
+        if (google !== 'done' && this.base && isPiperReady()) {
+          // Google failed: Piper says it if it got ready meanwhile.
+          this.engine = 'piper';
+          const audio = await synthesizePiper(this.base, piece, gen).catch(() => null);
+          if (gen !== this.gen) return false;
+          if (audio) {
+            begin();
+            if (!(await this.playPcm(audio, gen))) return false;
+          }
+        }
+      }
+    })();
+    void done.finally(() => {
+      if (this.wakeStream === nudge) this.wakeStream = null;
+    });
+    return { push, end, done };
   }
 
   private playPcm(a: PiperAudio, gen: number): Promise<boolean> {

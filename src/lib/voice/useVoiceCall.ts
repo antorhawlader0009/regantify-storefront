@@ -6,8 +6,9 @@
  * screen (components/voice/VoiceCallScreen.tsx) and passes its chat's send function.
  *
  * One turn: the browser's speech recognition hears the shopper (speechInput.ts) -> the chat's own send (the server's
- * normal chat route with `voice: true`, so it answers short and in Bangla letters, and the turn is kept in the chat) ->
- * the reply is made speakable (banglaSpeech.ts) and spoken (voiceOut.ts: Piper, or Google when Piper is late).
+ * streamed chat route, POST chat/stream, with `voice: true`, so it answers short and in Bangla letters, and the turn is
+ * kept in the chat) -> each finished sentence is made speakable (banglaSpeech.ts) and spoken as soon as it arrives
+ * (voiceOut.ts stream(): Piper, or Google when Piper is late), so the first words come while the rest is being written.
  *
  * What makes it feel like a call:
  *   - "Calling..." then "Ringing..." with a ring tone, a pick-up blip, a call timer and a hang-up tone;
@@ -15,7 +16,8 @@
  *   - the shopper can cut in: as soon as two words are heard that aren't the assistant's own voice coming back through
  *     the speaker (isEcho), it stops talking. On a phone (halfDuplex) the microphone hears the loudspeaker far too well
  *     for that, so listening is held while the assistant speaks and the shopper cuts in with the "stop" button;
- *   - a short "let me check" if the answer takes a moment;
+ *   - while the answer hasn't started, a natural line about what was asked, then about any lookup, then "almost ready"
+ *     (fillers.ts; made ahead while the call is quiet so they play at once);
  *   - "can you hear me?" after a long silence, then a polite goodbye;
  *   - the screen stays on during the call.
  */
@@ -24,9 +26,10 @@ import { speakableBangla, speechWords } from './banglaSpeech';
 import { playConnect, playHangup, startRingback } from './callSounds';
 import { SpeechInput } from './speechInput';
 import { idlePiper, loadPiper } from './piperVoice';
-import { deviceIsSlow, VoiceOut, type VoiceEngine } from './voiceOut';
+import { deviceIsSlow, VoiceOut, type VoiceEngine, type VoiceStream } from './voiceOut';
 import { pickProduct, wantsBack, wantsCloseCart, wantsHangUp, wantsOpen, wantsPhotoSearch, wantsShowCart } from './voiceIntents';
-import type { ChatAction } from '../chatApi';
+import { firstFiller, linesToPrepare, stillFiller, toolFiller } from './fillers';
+import type { ChatAction, ChatLive } from '../chatApi';
 
 export interface CallLine {
   who: 'shopper' | 'assistant';
@@ -53,8 +56,11 @@ export interface VoiceCallOptions<P extends CallProductRef> {
   /** The voice files' folder on R2 (from chat status), or null: then only the Google voice is used. */
   base: string | null;
   storeName: string;
-  /** Sends what the shopper said as a chat message (voice mode) and returns the assistant's reply. */
-  send: (text: string, signal: AbortSignal) => Promise<VoiceTurn<P>>;
+  /**
+   * Sends what the shopper said as a chat message (voice mode) and returns the assistant's reply. `live` hears the
+   * reply's finished pieces while it is still being written (POST chat/stream), so the call starts speaking early.
+   */
+  send: (text: string, signal: AbortSignal, live: ChatLive) => Promise<VoiceTurn<P>>;
   /** Puts the spoken greeting into the chat too, so the AI knows it already greeted. */
   onGreeting?: (text: string) => void;
   /**
@@ -76,13 +82,25 @@ export interface VoiceCallOptions<P extends CallProductRef> {
 const MIN_RING_MS = 3600; // about one ring, even when the voice is ready at once
 const MAX_RING_MS = 14000; // then the call connects anyway, on the Google voice
 const SILENCE_MS = 20000;
-const FILLER_AFTER_MS = 1400;
+// No part of the answer has come by then: a line about what the shopper asked (fillers.ts), then "almost ready" lines.
+const FIRST_FILLER_MS = 1100;
+const STILL_FILLER_MS = 4000;
+const MAX_FILLERS = 3;
 const ECHO_TAIL_MS = 1500;
 // Speech whose first words came this long after the assistant's voice stopped is the shopper's own, whatever it says.
 const ECHO_START_GRACE_MS = 600;
 // Phones: listening starts again this long after the assistant's voice stops (the speaker's last sound dies away).
 const HOLD_RELEASE_MS = 350;
-const FILLERS = ['আচ্ছা, একটু দেখছি।', 'হুম, এক সেকেন্ড।', 'ঠিক আছে, দেখে বলছি।'];
+
+/** What is left of the finished reply after the pieces already spoken (compared without spaces, since pieces are trimmed). */
+function remainderAfter(full: string, said: string): string {
+  if (!said) return full;
+  const target = said.replace(/\s+/g, '').length;
+  let count = 0;
+  let i = 0;
+  for (; i < full.length && count < target; i++) if (!/\s/.test(full[i])) count++;
+  return full.slice(i).trim();
+}
 /** 0.1 s of silence as a WAV, played during the tap so the browser lets the <audio> element play later (iPhone). */
 function silentWavUrl(): string {
   const rate = 8000;
@@ -168,6 +186,8 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
   const inputRef = useRef<SpeechInput | null>(null);
   const stopRingRef = useRef<(() => void) | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  // Counts turns: an older turn's answer that arrives late (the shopper already cut in and asked again) is never spoken.
+  const turnSeqRef = useRef(0);
   const pendingRef = useRef('');
   // The words the assistant is saying or just said; endedAt = when its voice stopped (Infinity while it plays), until = endedAt + the echo tail.
   const spokenRef = useRef<{ words: Set<string>; until: number; endedAt: number }>({ words: new Set(), until: 0, endedAt: 0 });
@@ -306,6 +326,10 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     }, nudgedRef.current ? 15000 : SILENCE_MS);
   };
 
+  // One shopper turn. The answer is streamed (POST chat/stream): each finished sentence is spoken as soon as it arrives,
+  // so the first words come while the rest is still being written. Until then, natural lines about what was asked fill
+  // the wait (fillers.ts), and a line about the lookup when the AI checks something (delivery, an order...). Fillers and
+  // the answer go through one VoiceStream, so they never talk over each other: the answer follows the line being said.
   // `openAfter`: the shopper asked to open a product the call couldn't pick by itself; the AI's answer names it.
   const turn = async (id: number, text: string, openAfter = false) => {
     if (!live(id)) return;
@@ -315,56 +339,150 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     setTalk('thinking');
     const ac = new AbortController();
     abortRef.current = ac;
+    const seq = ++turnSeqRef.current;
+    // `cut`: the shopper stopped this turn's voice (cut in, or the stop button); the rest of its answer stays unspoken.
+    const out: { stream: VoiceStream | null; cut: boolean } = { stream: null, cut: false };
+    // Still this turn's to speak: the call goes on, no newer turn, no camera, not cut, and the shopper didn't keep talking.
+    const mine = () =>
+      live(id) && seq === turnSeqRef.current && !ac.signal.aborted && !cameraRef.current && !pendingRef.current && !out.cut;
+    let answerStarted = false;
+    let said = '';
+    let fillers = 0;
+    let toolSaid = false;
+    const heard = new Set<string>();
+    const addWords = (line: string, speakable: string) => {
+      for (const w of [...speechWords(line), ...speechWords(speakable)]) heard.add(w);
+    };
+    const openOut = (): VoiceStream | null => {
+      if (out.stream) return out.stream;
+      const voice = voiceRef.current;
+      if (!voice) return null;
+      // Its sound coming back through the speaker must not count as the shopper talking.
+      spokenRef.current = { words: heard, until: Infinity, endedAt: Infinity };
+      holdListening();
+      const s = voice.stream();
+      out.stream = s;
+      // Stopped before the end (barge-in, the stop button, a newer line): the microphone is given back at once, once.
+      void s.done.then((ok) => {
+        if (ok) return;
+        out.cut = true;
+        voiceEnded();
+        releaseListening(true);
+      });
+      return s;
+    };
+    let stillTimer: ReturnType<typeof setInterval> | undefined;
+    let firstTimer: ReturnType<typeof setTimeout> | undefined;
+    const stopFillers = () => {
+      clearTimeout(firstTimer);
+      clearInterval(stillTimer);
+    };
+    const sayFiller = (line: string | null) => {
+      if (!line || answerStarted || fillers >= MAX_FILLERS || !mine()) return;
+      const s = openOut();
+      if (!s) return;
+      fillers++;
+      const speakable = speakableBangla(line);
+      addWords(line, speakable);
+      s.push(speakable);
+    };
+    const sayPiece = (piece: string) => {
+      if (!mine() || openAfter) return;
+      const s = openOut();
+      if (!s) return;
+      answerStarted = true;
+      stopFillers();
+      // The shopper may cut in from now on (barge-in), as on any spoken answer.
+      setTalk('speaking');
+      said = said ? `${said} ${piece}` : piece;
+      caption('assistant', said);
+      const speakable = speakableBangla(piece);
+      addWords(piece, speakable);
+      s.push(speakable);
+    };
+    firstTimer = setTimeout(() => {
+      sayFiller(firstFiller(text));
+      stillTimer = setInterval(() => sayFiller(stillFiller()), STILL_FILLER_MS);
+    }, FIRST_FILLER_MS);
+    const listeners: ChatLive = {
+      onSay: sayPiece,
+      onTool: (name) => {
+        if (toolSaid) return;
+        toolSaid = true;
+        sayFiller(toolFiller(name));
+      },
+    };
 
-    // "Let me check" when the answer takes a moment; the reply waits for it to finish instead of cutting it.
-    let filler: Promise<unknown> | null = null;
-    const fillerTimer = setTimeout(() => {
-      if (live(id) && talkRef.current === 'thinking' && Math.random() < 0.7) {
-        const line = FILLERS[Math.floor(Math.random() * FILLERS.length)];
-        // Its sound coming back through the speaker must not count as the shopper talking.
-        spokenRef.current = { words: new Set(speechWords(line)), until: Infinity, endedAt: Infinity };
-        holdListening();
-        filler =
-          voiceRef.current?.speak(speakableBangla(line)).finally(() => {
-            voiceEnded();
-            releaseListening();
-          }) ?? null;
+    // Says `rest` after what the stream already holds, waits for it all, then listens again (or runs `then`).
+    const finish = async (full: string, rest: string, then?: () => void) => {
+      const s = out.stream!;
+      if (rest) {
+        const speakable = speakableBangla(rest);
+        addWords(rest, speakable);
+        s.push(speakable);
       }
-    }, FILLER_AFTER_MS);
+      if (out.cut) return;
+      caption('assistant', full);
+      setTalk('speaking');
+      s.end();
+      // A cut stream already gave the microphone back (openOut).
+      if (!(await s.done)) return;
+      voiceEnded();
+      releaseListening();
+      if (!live(id)) return;
+      // What was heard while it spoke (and nobody cut in) was its own voice: dropped, so it can't join the shopper's answer.
+      inputRef.current?.clear();
+      setTalk('listening');
+      if (then) then();
+      else armSilence(id);
+    };
+    // Cuts a filler still playing (the answer won't be spoken); openOut's handler gives the microphone back.
+    const drop = () => {
+      if (out.stream && !out.cut) voiceRef.current?.stop();
+    };
 
     let result: VoiceTurn<P> | null = null;
     try {
-      result = await opts.current.send(text, ac.signal);
+      result = await opts.current.send(text, ac.signal, listeners);
       errorsRef.current = 0;
     } catch {
       if (ac.signal.aborted) return;
       errorsRef.current++;
     } finally {
-      clearTimeout(fillerTimer);
+      stopFillers();
     }
-    if (!live(id) || ac.signal.aborted) return;
-    if (filler) await Promise.race([filler, sleep(2500)]);
-    if (!live(id)) return;
+    if (!live(id) || ac.signal.aborted || seq !== turnSeqRef.current) return;
     // The shopper opened the camera while this answer was on its way: it stays in the chat, unspoken.
-    if (cameraRef.current) return;
+    if (cameraRef.current) return drop();
 
     // The shopper kept talking while we waited: answer that instead (this reply stays in the chat).
     if (pendingRef.current) {
       const next = pendingRef.current;
       pendingRef.current = '';
+      drop();
       return turn(id, next);
     }
     if (!result) {
-      if (errorsRef.current >= 2) return speak(id, 'দুঃখিত, এই মুহূর্তে উত্তর দিতে পারছি না। একটু পরে আবার কল করবেন।', () => hangUp());
-      return speak(id, 'দুঃখিত, একটু সমস্যা হলো। আরেকবার বলবেন?');
+      const giveUp = errorsRef.current >= 2;
+      const line = giveUp ? 'দুঃখিত, এই মুহূর্তে উত্তর দিতে পারছি না। একটু পরে আবার কল করবেন।' : 'দুঃখিত, একটু সমস্যা হলো। আরেকবার বলবেন?';
+      const then = giveUp ? () => hangUp() : undefined;
+      if (out.stream) return finish(line, line, then);
+      return speak(id, line, then);
     }
     if (result.products.length) setProducts(result.products);
+    // What the stream hasn't said yet: the whole reply when nothing of it came early.
+    const rest = remainderAfter(result.reply, said);
     // Client-side tools: the AI decided what to do on the screen, the page does it, then the answer is spoken.
     let after: (() => void) | undefined;
     for (const a of result.actions ?? []) {
       if (a.type === 'open_product') {
         const p = result.products.find((x) => x.slug === a.slug) ?? productsRef.current.find((x) => x.slug === a.slug);
-        if (p) return openProduct(id, p, result.reply);
+        if (p) {
+          if (!out.stream) return openProduct(id, p, result.reply);
+          opts.current.onOpenProduct?.(p.slug);
+          setMinimized(true);
+          return finish(result.reply, rest);
+        }
       } else if (a.type === 'search') {
         opts.current.navigate?.search(a.query);
         setMinimized(true);
@@ -382,8 +500,27 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
         after = () => hangUp();
       }
     }
-    if (openAfter && result.products.length) return openProduct(id, result.products[0], result.reply);
+    if (openAfter && result.products.length) {
+      if (!out.stream) return openProduct(id, result.products[0], result.reply);
+      opts.current.onOpenProduct?.(result.products[0].slug);
+      setMinimized(true);
+      return finish(result.reply, rest);
+    }
+    if (out.stream) return finish(result.reply, rest, after);
     await speak(id, result.reply, after);
+  };
+
+  /**
+   * After the greeting, while the call is quiet, the filler lines are made ahead (VoiceOut.prepare), so the first line of
+   * a wait plays at once. It waits whenever the assistant is thinking or talking: the voice worker does one job at a
+   * time, and a reply must not queue behind this.
+   */
+  const prepareFillers = async (id: number) => {
+    for (const line of linesToPrepare()) {
+      while (live(id) && talkRef.current !== 'listening') await sleep(800);
+      if (!live(id)) return;
+      await voiceRef.current?.prepare(speakableBangla(line));
+    }
   };
 
   // Photo search: the camera opens in the call (a page may open the camera without a tap, but not the file picker).
@@ -609,6 +746,7 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     const greeting = `আসসালামু আলাইকুম! ${opts.current.storeName} থেকে বলছি। বলুন, কীভাবে সাহায্য করতে পারি?`;
     opts.current.onGreeting?.(greeting);
     await speak(id, greeting);
+    void prepareFillers(id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [hangUp, lang]);
 

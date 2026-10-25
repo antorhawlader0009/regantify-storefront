@@ -96,9 +96,18 @@ export async function sendChatMessage(
   order?: ChatOrderDraftInput | null,
   photoSlugs?: string[],
   photoText?: string | null,
-  cards?: { shownSlugs: string[]; selectedSlugs: string[]; voice?: boolean; signal?: AbortSignal; context?: ChatPageContext },
+  cards?: {
+    shownSlugs: string[];
+    selectedSlugs: string[];
+    voice?: boolean;
+    signal?: AbortSignal;
+    context?: ChatPageContext;
+    /** The voice call: the reply's finished pieces as they are written (POST chat/stream), and each lookup the AI makes. */
+    live?: ChatLive;
+  },
 ): Promise<ChatReply> {
-  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat`, {
+  const streamed = !!cards?.voice && !!cards.live;
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat${streamed ? '/stream' : ''}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     signal: cards?.signal,
@@ -113,16 +122,70 @@ export async function sendChatMessage(
     }),
   });
 
-  if (!res.ok) {
-    const body = await res.json().catch(() => null);
-    if (res.status === 402 && (body?.code === 'AI_CREDITS_EMPTY' || body?.code === 'AI_TOKENS_EMPTY')) {
-      throw new ChatUnavailableError('অ্যাসিস্ট্যান্ট এখন উত্তর দিতে পারছে না। একটু পরে আবার চেষ্টা করুন।');
-    }
-    const msg = Array.isArray(body?.message) ? body.message[0] : body?.message;
-    throw new Error(msg || 'অ্যাসিস্ট্যান্ট এই মুহূর্তে উত্তর দিতে পারছে না। আবার চেষ্টা করুন।');
-  }
-
+  if (!res.ok) throw chatError(res.status, await res.json().catch(() => null));
+  if (streamed && res.body) return readChatStream(res.body, cards!.live!);
   return res.json();
+}
+
+/** Listeners for a streamed (voice call) chat turn. */
+export interface ChatLive {
+  /** A finished piece of the spoken reply (a sentence, or the first clause of a long first sentence), in order. */
+  onSay: (text: string) => void;
+  /** The AI is looking something up (delivery_info, order_status, product_details, search_products, record_complaint). */
+  onTool?: (name: string) => void;
+}
+
+type StreamEvent =
+  | { t: 'say'; text: string }
+  | { t: 'tool'; name: string }
+  | { t: 'done'; data: ChatReply }
+  | { t: 'error'; status: number; body: { code?: string; message?: string | string[] } | null };
+
+function chatError(status: number, body: { code?: string; message?: string | string[] } | null): Error {
+  if (status === 402 && (body?.code === 'AI_CREDITS_EMPTY' || body?.code === 'AI_TOKENS_EMPTY')) {
+    return new ChatUnavailableError('অ্যাসিস্ট্যান্ট এখন উত্তর দিতে পারছে না। একটু পরে আবার চেষ্টা করুন।');
+  }
+  const msg = Array.isArray(body?.message) ? body.message[0] : body?.message;
+  return new Error(msg || 'অ্যাসিস্ট্যান্ট এই মুহূর্তে উত্তর দিতে পারছে না। আবার চেষ্টা করুন।');
+}
+
+/** Reads POST chat/stream: one JSON object per line (server StorefrontController.chatStream). */
+async function readChatStream(body: ReadableStream<Uint8Array>, live: ChatLive): Promise<ChatReply> {
+  const reader = body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+  const handle = (line: string): ChatReply | null => {
+    if (!line.trim()) return null;
+    let event: StreamEvent;
+    try {
+      event = JSON.parse(line) as StreamEvent;
+    } catch {
+      return null;
+    }
+    if (event.t === 'say') live.onSay(event.text);
+    else if (event.t === 'tool') live.onTool?.(event.name);
+    else if (event.t === 'done') return event.data;
+    else if (event.t === 'error') throw chatError(event.status, event.body);
+    return null;
+  };
+  for (;;) {
+    const { value, done } = await reader.read();
+    buffer += decoder.decode(value, { stream: !done });
+    let nl: number;
+    while ((nl = buffer.indexOf('\n')) >= 0) {
+      const result = handle(buffer.slice(0, nl));
+      buffer = buffer.slice(nl + 1);
+      if (result) {
+        void reader.cancel().catch(() => undefined);
+        return result;
+      }
+    }
+    if (done) {
+      const result = handle(buffer);
+      if (result) return result;
+      throw new Error('অ্যাসিস্ট্যান্টের উত্তর মাঝপথে থেমে গেছে। আবার বলবেন?');
+    }
+  }
 }
 
 /**
