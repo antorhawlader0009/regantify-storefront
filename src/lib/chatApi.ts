@@ -48,6 +48,9 @@ export interface ChatReply {
 export type ChatAction =
   | { type: 'search'; query: string }
   | { type: 'open_product'; slug: string }
+  /** Cart changes (any line of this store's cart, also ones added before the call); options narrow it to one size/colour. */
+  | { type: 'remove_from_cart'; slug: string; options?: Record<string, string> }
+  | { type: 'cart_quantity'; slug: string; quantity: number; options?: Record<string, string> }
   | { type: 'go_back' | 'show_cart' | 'close_cart' | 'photo_search' | 'hang_up' };
 
 /** Thrown when the store's AI Credit wallet is empty (HTTP 402, code AI_CREDITS_EMPTY; AI_TOKENS_EMPTY from an API older than credits). */

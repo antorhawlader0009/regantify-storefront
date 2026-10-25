@@ -7,12 +7,13 @@
  *
  * While ringing the avatar is big in the middle. Once talking it shrinks into a header row, and the rest is ONE vertical
  * scroll area: the captions, then the products the assistant is showing (one product big, several as a list). A product
- * opens in this tab (the widget lives in the store layout, so the call goes on) and the call shrinks to a bar at the top.
+ * opens in this tab (the widget lives in the store layout, so the call goes on) and the call shrinks to a round chat head
+ * (CallChatHead) that the shopper can drag anywhere.
  *
  * Shared by every template: the template passes the call, the store name, the cart summary and its checkout.
  */
-import { useEffect, useRef } from 'react';
-import { Mic, MicOff, PhoneOff, Loader2, ShoppingBag, Camera, ChevronRight, Maximize2, Minimize2 } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Mic, MicOff, PhoneOff, Loader2, ShoppingBag, Camera, ChevronRight, Minimize2 } from 'lucide-react';
 import type { VoiceCall } from '@/lib/voice/useVoiceCall';
 import { CallCamera } from './CallCamera';
 
@@ -29,6 +30,176 @@ const clock = (s: number) => `${two(Math.floor(s / 60))}:${two(s % 60)}`;
 const BN = '০১২৩৪৫৬৭৮৯';
 const bnDigits = (s: string) => s.replace(/\d/g, (d) => BN[Number(d)]);
 const taka = (v: number | string) => `৳${bnDigits(Number(v).toLocaleString('en-IN'))}`;
+
+const HEAD = 64; // the chat head's size, px
+const EDGE = 10; // its gap to the screen edge when it snaps
+const TAP_MOVE = 8; // moved less than this: a tap, not a drag
+const POS_KEY = 'regantify-call-head';
+
+/** Where the head sits: x is the left edge (snapped left or right), y the top; kept for the tab (sessionStorage). */
+function savedPos(): { x: number; y: number } | null {
+  try {
+    const p = JSON.parse(sessionStorage.getItem(POS_KEY) ?? 'null') as { x: number; y: number } | null;
+    return p && typeof p.x === 'number' && typeof p.y === 'number' ? p : null;
+  } catch {
+    return null;
+  }
+}
+
+function clampPos(x: number, y: number) {
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  return { x: Math.min(Math.max(EDGE, x), w - HEAD - EDGE), y: Math.min(Math.max(EDGE + 40, y), h - HEAD - 70) };
+}
+
+/**
+ * The minimised call as a chat head (the user's request, 2026-10-25): a round button with the store's initial that pulses
+ * while the assistant talks, the call timer under it, and a mute mark. Drag with a finger or mouse (pointer events, so
+ * the page doesn't scroll while dragging); on release it snaps to the nearer side. While dragging, a red circle at the
+ * bottom appears: dropping the head on it ends the call. A tap (barely moved) opens the full call screen again.
+ */
+function CallChatHead<P extends CallProduct>({
+  call,
+  storeName,
+  initial,
+  status,
+  talkLabel,
+}: {
+  call: VoiceCall<P>;
+  storeName: string;
+  initial: string;
+  status: string;
+  talkLabel: string;
+}) {
+  const [pos, setPos] = useState<{ x: number; y: number }>(() => {
+    const p = typeof window === 'undefined' ? null : savedPos();
+    if (p) return clampPos(p.x, p.y);
+    return typeof window === 'undefined' ? { x: 0, y: 120 } : clampPos(window.innerWidth - HEAD - EDGE, window.innerHeight * 0.28);
+  });
+  const [dragging, setDragging] = useState(false);
+  const [overEnd, setOverEnd] = useState(false);
+  const drag = useRef<{ id: number; dx: number; dy: number; sx: number; sy: number; moved: boolean } | null>(null);
+  const headRef = useRef<HTMLButtonElement>(null);
+  const ringRef = useRef<HTMLSpanElement>(null);
+
+  // The ring follows the assistant's voice, like the big avatar.
+  useEffect(() => {
+    let raf = 0;
+    let smooth = 0;
+    const frame = () => {
+      smooth = smooth * 0.75 + call.level() * 0.25;
+      if (ringRef.current) ringRef.current.style.transform = `scale(${1 + smooth * 0.5})`;
+      raf = requestAnimationFrame(frame);
+    };
+    raf = requestAnimationFrame(frame);
+    return () => cancelAnimationFrame(raf);
+  }, [call.level]);
+
+  // Stays on screen when the phone turns or the window is resized.
+  useEffect(() => {
+    const onResize = () => setPos((p) => clampPos(p.x > window.innerWidth / 2 ? window.innerWidth : 0, p.y));
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+
+  const endZone = () => ({ x: window.innerWidth / 2, y: window.innerHeight - 80 });
+  const nearEnd = (x: number, y: number) => {
+    const z = endZone();
+    return Math.hypot(x + HEAD / 2 - z.x, y + HEAD / 2 - z.y) < 70;
+  };
+
+  const onDown = (e: React.PointerEvent) => {
+    headRef.current?.setPointerCapture(e.pointerId);
+    drag.current = { id: e.pointerId, dx: e.clientX - pos.x, dy: e.clientY - pos.y, sx: e.clientX, sy: e.clientY, moved: false };
+  };
+  const onMove = (e: React.PointerEvent) => {
+    const d = drag.current;
+    if (!d || d.id !== e.pointerId) return;
+    if (!d.moved && Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < TAP_MOVE) return;
+    if (!d.moved) {
+      d.moved = true;
+      setDragging(true);
+    }
+    const x = e.clientX - d.dx;
+    const y = e.clientY - d.dy;
+    setPos({ x, y });
+    setOverEnd(nearEnd(x, y));
+  };
+  const onUp = (e: React.PointerEvent) => {
+    const d = drag.current;
+    drag.current = null;
+    if (!d || d.id !== e.pointerId) return;
+    if (!d.moved) {
+      call.setMinimized(false);
+      return;
+    }
+    setDragging(false);
+    setOverEnd(false);
+    const x = e.clientX - d.dx;
+    const y = e.clientY - d.dy;
+    if (nearEnd(x, y)) {
+      call.hangUp();
+      return;
+    }
+    // Snap to the nearer side, like a chat head.
+    const snapped = clampPos(x + HEAD / 2 < window.innerWidth / 2 ? 0 : window.innerWidth, y);
+    setPos(snapped);
+    try {
+      sessionStorage.setItem(POS_KEY, JSON.stringify(snapped));
+    } catch {
+      /* private mode */
+    }
+  };
+
+  return (
+    <>
+      {dragging && (
+        <div className="pointer-events-none fixed inset-x-0 bottom-0 z-[59] flex h-40 items-end justify-center bg-gradient-to-t from-black/45 to-transparent pb-10" aria-hidden>
+          <span
+            className={`flex items-center justify-center rounded-full bg-[#f15c6d] text-white shadow-xl transition-transform duration-150 ${overEnd ? 'h-[76px] w-[76px] scale-110' : 'h-14 w-14'}`}
+          >
+            <PhoneOff size={overEnd ? 28 : 22} />
+          </span>
+        </div>
+      )}
+      <div
+        className={`fixed z-[60] flex flex-col items-center ${dragging ? '' : 'transition-[left,top] duration-200 ease-out'}`}
+        style={{ left: pos.x, top: pos.y, width: HEAD }}
+      >
+        <button
+          ref={headRef}
+          type="button"
+          onPointerDown={onDown}
+          onPointerMove={onMove}
+          onPointerUp={onUp}
+          onPointerCancel={onUp}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              call.setMinimized(false);
+            }
+          }}
+          aria-label={`Voice call with ${storeName}, ${status}, ${talkLabel}. Tap to open, drag to move.`}
+          className={`relative flex items-center justify-center rounded-full bg-[#00a884] text-[24px] font-semibold text-white shadow-2xl ring-2 ring-white/80 focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-white ${dragging ? 'cursor-grabbing' : 'cursor-pointer'}`}
+          style={{ width: HEAD, height: HEAD, touchAction: 'none', opacity: overEnd ? 0.6 : 1 }}
+        >
+          <span ref={ringRef} className="pointer-events-none absolute inset-0 rounded-full bg-[#00a884]/40 transition-transform duration-75" aria-hidden />
+          <span className="relative">{initial}</span>
+          {call.muted && (
+            <span className="absolute -right-1 -top-1 flex h-6 w-6 items-center justify-center rounded-full bg-white text-[#f15c6d] shadow" aria-hidden>
+              <MicOff size={13} />
+            </span>
+          )}
+        </button>
+        {!dragging && (
+          <span className="mt-1.5 rounded-full bg-black/70 px-2 py-0.5 text-[11px] font-medium tabular-nums text-white shadow" aria-hidden>
+            {status}
+          </span>
+        )}
+      </div>
+    </>
+  );
+}
 
 export function VoiceCallScreen<P extends CallProduct>({
   call,
@@ -95,42 +266,10 @@ export function VoiceCallScreen<P extends CallProduct>({
     </div>
   );
 
-  // Shrunk to a bar at the top while a product page opened from the call is being looked at (like a minimised phone
-  // call); a tap on it brings the full screen back.
+  // Shrunk while the shopper looks at a page opened from the call: a round chat head, like Messenger's, that can be
+  // dragged anywhere with a finger; a tap brings the full screen back, dropping it on the red circle ends the call.
   if (call.minimized && talking && !call.camera) {
-    return (
-      <div
-        role="dialog"
-        aria-label={`Voice call with ${storeName}, minimised`}
-        className="fixed left-1/2 top-[max(env(safe-area-inset-top),10px)] z-[60] flex w-[min(420px,calc(100vw-16px))] -translate-x-1/2 items-center gap-2 rounded-full bg-[#00a884] py-1.5 pl-1.5 pr-1.5 text-white shadow-2xl"
-      >
-        <button type="button" onClick={() => call.setMinimized(false)} aria-label="Open the call" className="flex min-w-0 flex-1 items-center gap-2.5 text-left">
-          <span className="relative flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-white/20 text-[15px] font-semibold">
-            {call.talk === 'speaking' && <span className="absolute inset-0 animate-ping rounded-full bg-white/30" />}
-            {initial}
-          </span>
-          <span className="min-w-0 flex-1">
-            <span className="block truncate text-[13.5px] font-semibold leading-tight">{storeName}</span>
-            <span className="block text-[11.5px] leading-tight text-white/85">
-              {status} · {talkLabel}
-            </span>
-          </span>
-          <Maximize2 size={16} className="shrink-0 text-white/85" />
-        </button>
-        <button
-          type="button"
-          onClick={() => call.setMuted(!call.muted)}
-          aria-pressed={call.muted}
-          aria-label={call.muted ? 'Unmute' : 'Mute'}
-          className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-full ${call.muted ? 'bg-white text-[#00a884]' : 'bg-white/20'}`}
-        >
-          {call.muted ? <MicOff size={17} /> : <Mic size={17} />}
-        </button>
-        <button type="button" onClick={() => call.hangUp()} aria-label="End call" className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#f15c6d]">
-          <PhoneOff size={17} />
-        </button>
-      </div>
-    );
+    return <CallChatHead call={call} storeName={storeName} initial={initial} status={status} talkLabel={talkLabel} />;
   }
 
   return (

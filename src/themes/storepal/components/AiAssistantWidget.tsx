@@ -453,6 +453,34 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
           at: Date.now(),
         },
       ]);
+      // A call's cart changes ("cart theke eita bad dao"): applied to the real cart first, on any line of this store (also
+      // what was there before the call), and taken out of the order, so the sync below can't put a removed item back.
+      const cartChanges = voice ? (res.actions ?? []).filter((a) => a.type === 'remove_from_cart' || a.type === 'cart_quantity') : [];
+      if (cartChanges.length) {
+        const fits = (a: { slug: string; options?: Record<string, string> }, slug: string, opts: Record<string, string>) =>
+          a.slug === slug && Object.entries(a.options ?? {}).every(([k, v]) => opts[k] === v);
+        for (const a of cartChanges) {
+          for (const line of myLinesRef.current.filter((l) => fits(a, l.productSlug, l.selectedOptions))) {
+            if (a.type === 'remove_from_cart') {
+              removeLine(line.id);
+              callLinesRef.current.delete(line.id);
+            } else if (a.type === 'cart_quantity') {
+              setQuantity(line.id, a.quantity);
+              if (callLinesRef.current.has(line.id)) callLinesRef.current.set(line.id, a.quantity);
+            }
+          }
+        }
+        const base = res.order ?? order;
+        if (base) {
+          const items = base.items
+            .filter((i) => !cartChanges.some((a) => a.type === 'remove_from_cart' && fits(a, i.slug, i.options)))
+            .map((i) => {
+              const q = cartChanges.find((a) => a.type === 'cart_quantity' && fits(a, i.slug, i.options));
+              return q && q.type === 'cart_quantity' ? { ...i, quantity: q.quantity } : i;
+            });
+          res.order = { ...base, items };
+        }
+      }
       if (res.order) {
         const o = res.order;
         setOrder(o);
