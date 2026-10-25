@@ -24,6 +24,7 @@ import type { SharedCart } from '@/lib/checkoutApi';
 type SharedLine = Extract<SharedCart, { status: 'OK' }>['lines'][number];
 import { useVoiceCall } from '@/lib/voice/useVoiceCall';
 import { voiceCallSupported } from '@/lib/voice/speechInput';
+import { prefetchVoice } from '@/lib/voice/voicePrefetch';
 import { VoiceCallScreen } from '@/components/voice/VoiceCallScreen';
 import { readPhotoText } from '@/lib/photoText';
 import { rememberDetails, rememberedDetails, type ChatOrder, type ChatOrderDetails } from '@/lib/chatOrder';
@@ -110,8 +111,21 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const [photoMode, setPhotoMode] = useState<PhotoTextMode>('BROWSER');
   // The voice call (lib/voice): its files' folder on R2 (from /chat/status), and whether this browser can do it at all.
   const [voiceBase, setVoiceBase] = useState<string | null>(null);
+  // Super Admin's voice model (a file in that folder): downloaded ahead and used once complete (lib/voice/voiceModelCache.ts).
+  const [voiceModel, setVoiceModel] = useState('model.onnx');
   const [canCall, setCanCall] = useState(false);
+  // The store offers the call (the owner's switch in AI Usages, from /chat/status).
+  const [voiceOn, setVoiceOn] = useState(false);
   useEffect(() => setCanCall(voiceCallSupported()), []);
+  // A shared call link (the dashboard's "Voice call link": the store's address with #call): the page opens with a card
+  // inviting the shopper to call. The call itself needs their tap (browsers allow the microphone and sound only after
+  // one). The #call is removed from the address at once, so a refresh or a copied address doesn't ask again.
+  const [callInvite, setCallInvite] = useState(false);
+  useEffect(() => {
+    if (window.location.hash !== '#call') return;
+    setCallInvite(true);
+    window.history.replaceState(window.history.state, '', window.location.pathname + window.location.search);
+  }, []);
   // Cards the shopper ticked: which message's cards, and which slugs. Sent with the next message (numbered, like on
   // screen) so the assistant knows exactly which products are meant.
   const [selection, setSelection] = useState<{ msg: number; slugs: string[] } | null>(null);
@@ -333,6 +347,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       setBridgeAvailable(status.available);
       setPhotoMode(status.photoText);
       setVoiceBase(status.voice);
+      setVoiceModel(status.voiceModel);
+      setVoiceOn(status.voiceCall);
     });
     return () => {
       cancelled = true;
@@ -474,6 +490,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   photoRef.current = handlePhoto;
   const call = useVoiceCall<ChatProductRef>({
     base: voiceBase,
+    model: voiceModel,
     storeName,
     send: async (text, signal, live) => {
       const res = await sendRef.current(undefined, text, { signal, live });
@@ -588,6 +605,83 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const { hidden: scrolledAway, reveal } = useFloatingHidden(open || cartOpen);
   // Mounted once in the store layout: shown only on pages that have the store header (headerPresence.ts).
   const headerHere = useHeaderPresence((s) => s.count > 0);
+  // The call is offered: this browser can do it, the store has it on, and the chat can answer.
+  const callable = canCall && voiceOn && available === true;
+  // The shopper opened the assistant (or a call link): the voice files start downloading quietly in the background
+  // (lib/voice/voicePrefetch.ts), so a call later doesn't wait for them.
+  useEffect(() => {
+    if ((open || callInvite) && callable) prefetchVoice(voiceBase, voiceModel);
+  }, [open, callInvite, callable, voiceBase, voiceModel]);
+
+  // A call link opened where the store doesn't offer the call (switched off): the chat opens instead, quietly.
+  useEffect(() => {
+    if (!callInvite || available === null) return;
+    if (available !== true) setCallInvite(false);
+    else if (canCall && !voiceOn) {
+      setCallInvite(false);
+      setOpen(true);
+    }
+  }, [callInvite, available, canCall, voiceOn]);
+  const [linkCopied, setLinkCopied] = useState(false);
+  const callInviteCard = callInvite && available === true && call.phase === 'idle' && (callable || !canCall) && (
+    <div className="fixed inset-0 z-40 flex items-end sm:items-center justify-center bg-black/40 p-4" role="dialog" aria-modal="true" aria-labelledby="call-invite-title">
+      <div className="w-full max-w-sm rounded-2xl bg-surface p-6 text-center shadow-xl">
+        <span className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-green-600 text-white" aria-hidden>
+          <Phone size={28} />
+        </span>
+        <h2 id="call-invite-title" className="text-[17px] font-semibold text-ink">
+          {storeName}
+        </h2>
+        {callable ? (
+          <>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
+              আমাদের সহকারীর সাথে কথা বলুন। পণ্য, দাম, ডেলিভারি যা খুশি জিজ্ঞেস করুন, চাইলে অর্ডারও করতে পারবেন।
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                setCallInvite(false);
+                startCall();
+              }}
+              className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-green-600 text-[15px] font-semibold text-white hover:bg-green-700"
+            >
+              <Phone size={18} />
+              কল করুন
+            </button>
+            <p className="mt-2 text-[11.5px] text-muted">মাইক্রোফোন চালু করার অনুমতি চাইবে।</p>
+          </>
+        ) : (
+          <>
+            <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
+              এই ব্রাউজারে কল করা যায় না। লিংকটা কপি করে Chrome-এ খুলুন, অথবা চ্যাটে লিখে জিজ্ঞেস করুন।
+            </p>
+            <button
+              type="button"
+              onClick={() => {
+                void navigator.clipboard
+                  ?.writeText(`${window.location.origin}${window.location.pathname}#call`)
+                  .then(() => setLinkCopied(true))
+                  .catch(() => undefined);
+              }}
+              className="mt-5 inline-flex h-11 w-full items-center justify-center rounded-xl bg-ink text-[14px] font-semibold text-white hover:opacity-90"
+            >
+              {linkCopied ? 'লিংক কপি হয়েছে' : 'লিংক কপি করুন'}
+            </button>
+          </>
+        )}
+        <button
+          type="button"
+          onClick={() => {
+            setCallInvite(false);
+            setOpen(true);
+          }}
+          className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-xl text-[13.5px] font-medium text-ink hover:bg-canvas"
+        >
+          চ্যাটে লিখুন
+        </button>
+      </div>
+    </div>
+  );
 
   // Ran out mid-chat: keep the open panel (with its polite note) until the
   // shopper closes it, then hide the bubble too.
@@ -599,6 +693,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   return (
     <>
       {voiceCallScreen}
+      {callInviteCard}
       {/* The round bubble only opens the chat; while it is open, the close button is in the panel's header. */}
       {!open && call.phase === 'idle' && (
       <button
@@ -626,7 +721,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
           <div className="flex items-center gap-2 px-4 py-3 border-b border-line bg-ink text-white shrink-0">
             <Bot size={18} />
             <span className="flex-1 text-[13.5px] font-semibold">শপিং অ্যাসিস্ট্যান্ট</span>
-            {canCall && available === true && (
+            {callable && (
               <button
                 type="button"
                 onClick={startCall}
@@ -771,7 +866,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                 )}
               </div>
             ))}
-            {canCall && available === true && messages.length === 1 && !sending && (
+            {callable && messages.length === 1 && !sending && (
               <button
                 type="button"
                 onClick={startCall}

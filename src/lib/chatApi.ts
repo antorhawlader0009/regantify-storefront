@@ -67,6 +67,10 @@ export interface ChatStatus {
   photoText: PhotoTextMode;
   /** The voice call's files on R2 (Piper speaker 8, lib/voice); null = no Piper, the call uses the Google voice only. */
   voice: string | null;
+  /** The store offers the voice call (the owner can switch it off in AI Usages). */
+  voiceCall: boolean;
+  /** The voice model file in `voice` Super Admin chose (e.g. "models/int4.onnx"); "model.onnx" from an API older than the choice. */
+  voiceModel: string;
 }
 
 /**
@@ -77,15 +81,19 @@ export interface ChatStatus {
 export async function getChatStatus(subdomain: string): Promise<ChatStatus> {
   try {
     const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat/status`, { cache: 'no-store' });
-    if (!res.ok) return { available: false, photoText: 'BROWSER', voice: null };
-    const body = (await res.json()) as { available?: boolean; photoText?: string; voice?: string | null };
+    if (!res.ok) return { available: false, photoText: 'BROWSER', voice: null, voiceCall: false, voiceModel: 'model.onnx' };
+    const body = (await res.json()) as { available?: boolean; photoText?: string; voice?: string | null; voiceCall?: boolean; voiceModel?: string };
     return {
       available: body.available === true,
       photoText: body.photoText === 'SERVER' ? 'SERVER' : 'BROWSER',
       voice: typeof body.voice === 'string' && /^https?:\/\/.+\/$/.test(body.voice) ? body.voice : null,
+      // An API older than the switch doesn't send it: the call stays offered, as before.
+      voiceCall: body.voiceCall !== false,
+      // A plain relative .onnx path inside the voice folder; anything else means the original model.
+      voiceModel: typeof body.voiceModel === 'string' && /^[\w-]+(\/[\w.-]+)*\.onnx$/.test(body.voiceModel) ? body.voiceModel : 'model.onnx',
     };
   } catch {
-    return { available: false, photoText: 'BROWSER', voice: null };
+    return { available: false, photoText: 'BROWSER', voice: null, voiceCall: false, voiceModel: 'model.onnx' };
   }
 }
 

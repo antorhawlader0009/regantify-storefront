@@ -14,6 +14,17 @@ const IDLE_MS = 3 * 60 * 1000;
 
 let worker: Worker | null = null;
 let workerBase = '';
+/** The model file the next worker loads (setPiperModel), and the one the running worker has. */
+let modelFile = 'model.onnx';
+let workerModel = '';
+
+/**
+ * Which model file in the voice folder to load (voiceModelCache.ts chooseVoiceModel picks it per call). A different
+ * one than the running worker's starts a fresh worker on the next request.
+ */
+export function setPiperModel(file: string) {
+  modelFile = file || 'model.onnx';
+}
 let ready: Promise<void> | null = null;
 let readyDone = false;
 let idleTimer: ReturnType<typeof setTimeout> | null = null;
@@ -21,12 +32,13 @@ let nextId = 1;
 const pending = new Map<number, { resolve: (v: unknown) => void; reject: (e: Error) => void; onProgress?: (p: number) => void }>();
 
 function getWorker(base: string): Worker {
-  if (worker && workerBase === base) return worker;
-  // Only an old worker for another folder is stopped (stopPiper also fails what it was still doing).
+  if (worker && workerBase === base && workerModel === modelFile) return worker;
+  // Only an old worker for another folder or model is stopped (stopPiper also fails what it was still doing).
   if (worker) stopPiper();
   worker = new Worker(new URL('./piperWorker.ts', import.meta.url));
   workerBase = base;
-  worker.postMessage({ type: 'init', base });
+  workerModel = modelFile;
+  worker.postMessage({ type: 'init', base, model: modelFile });
   worker.onmessage = (e: MessageEvent) => {
     const { id, type } = e.data as { id: number; type: string };
     if (type === 'log') {
@@ -61,7 +73,7 @@ function request<T>(base: string, msg: Record<string, unknown>, onProgress?: (p:
 
 /** Downloads (or reads from cache) and warms up the voice. Resolves once it can speak. */
 export function loadPiper(base: string, onProgress?: (p: number) => void): Promise<void> {
-  if (ready && workerBase === base) return ready;
+  if (ready && workerBase === base && workerModel === modelFile) return ready;
   readyDone = false;
   ready = request<boolean>(base, { type: 'preload' }, onProgress).then(() => {
     readyDone = true;

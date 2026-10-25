@@ -25,7 +25,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { speakableBangla, speechWords } from './banglaSpeech';
 import { playConnect, playHangup, startRingback } from './callSounds';
 import { SpeechInput } from './speechInput';
-import { idlePiper, loadPiper } from './piperVoice';
+import { idlePiper, loadPiper, setPiperModel } from './piperVoice';
+import { chooseVoiceModel } from './voiceModelCache';
 import { deviceIsSlow, VoiceOut, type VoiceEngine, type VoiceStream } from './voiceOut';
 import { pickProduct, wantsBack, wantsCloseCart, wantsHangUp, wantsOpen, wantsPhotoSearch, wantsShowCart } from './voiceIntents';
 import { firstFiller, linesToPrepare, stillFiller, toolFiller } from './fillers';
@@ -55,6 +56,8 @@ export interface CallProductRef {
 export interface VoiceCallOptions<P extends CallProductRef> {
   /** The voice files' folder on R2 (from chat status), or null: then only the Google voice is used. */
   base: string | null;
+  /** The voice model file in that folder Super Admin chose (chat status `voiceModel`). */
+  model?: string;
   storeName: string;
   /**
    * Sends what the shopper said as a chat message (voice mode) and returns the assistant's reply. `live` hears the
@@ -698,6 +701,10 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
 
     const base = opts.current.base;
     const tryPiper = !!base && !deviceIsSlow() && !lowEndDevice();
+    // Super Admin's model if this browser has it, else the model it already has (kept until the new one has fully
+    // downloaded in the background, voicePrefetch.ts), else the chosen one, downloaded now.
+    if (tryPiper) setPiperModel(await chooseVoiceModel(base!, opts.current.model ?? 'model.onnx'));
+    if (callIdRef.current !== id) return;
     const piper = tryPiper ? loadPiper(base!, (p) => setLoadPct(p)) : null;
     // Not an error for the shopper (the call goes on with Google's voice), but the reason helps whoever looks at the console.
     piper?.catch((e: Error) => console.warn(`[voice] Piper voice not used: ${e.message}`));

@@ -51,6 +51,9 @@ export function voiceCallSupported(): boolean {
 const END_PAUSE_MS = 700;
 const INTERIM_PAUSE_MS = 1600;
 const UNFINISHED_PAUSE_MS = 1600;
+// A phone number being said: people say it in groups and pause between them ("০১৭১২ ... ৩৪৫ ... ৬৭৮"), and a shopper
+// reading it off a slip pauses longer. Until all its digits are heard, the turn waits this long after each group.
+const PHONE_PAUSE_MS = 4000;
 
 // Words a sentence doesn't end on: hearing one last means the shopper is still thinking, not done.
 const UNFINISHED_WORDS = new Set(
@@ -61,12 +64,54 @@ const UNFINISHED_WORDS = new Set(
 );
 const DIGIT_WORD = /^([0-9০-৯]+|শূন্য|এক|দুই|তিন|চার|পাঁচ|ছয়|সাত|আট|নয়|ডাবল|zero|one|two|three|four|five|six|seven|eight|nine|double)$/u;
 
+/** Spoken digit words, Bangla and English (as the browser writes them), to their digit. */
+const DIGIT_OF: Record<string, string> = {
+  শূন্য: '0', জিরো: '0', zero: '0', এক: '1', ওয়ান: '1', one: '1', দুই: '2', টু: '2', two: '2', তিন: '3', থ্রি: '3', three: '3',
+  চার: '4', ফোর: '4', four: '4', পাঁচ: '5', ফাইভ: '5', five: '5', ছয়: '6', সিক্স: '6', six: '6', সাত: '7', সেভেন: '7', seven: '7',
+  আট: '8', এইট: '8', eight: '8', নয়: '9', নাইন: '9', nine: '9',
+};
+const REPEAT_OF: Record<string, number> = { ডাবল: 2, double: 2, ট্রিপল: 3, triple: 3 };
+
+/**
+ * The digits of a phone number in what was heard so far: digits written as digits (Bangla or Latin), spoken digit words
+ * and "ডাবল ৫" / "double five". Only a run that looks like a phone number counts: it starts with 0 or 88, or the
+ * shopper said "নাম্বার", "ফোন", "মোবাইল", "number", "phone", so a price ("১২০০ টাকা") or a count is never mistaken for one.
+ */
+export function spokenPhoneDigits(text: string): string {
+  const words = text.normalize('NFC').toLowerCase().replace(/[০-৯]/g, (d) => String('০১২৩৪৫৬৭৮৯'.indexOf(d))).split(/[\s,।.?!+\-]+/u).filter(Boolean);
+  let digits = '';
+  let repeat = 1;
+  for (const w of words) {
+    if (REPEAT_OF[w]) {
+      repeat = REPEAT_OF[w];
+      continue;
+    }
+    const d = /^\d+$/.test(w) ? w : DIGIT_OF[w];
+    if (d) digits += d.length === 1 ? d.repeat(repeat) : d;
+    else if (digits.length >= 3) break; // the number ended (words after it, like "আমার নাম...")
+    else digits = ''; // digits before other words were a count or a price, not the number
+    repeat = 1;
+  }
+  const askedPhone = /নাম্বার|নম্বর|নাম্বারটা|ফোন|মোবাইল|number|phone|mobile/u.test(text.toLowerCase());
+  return /^(0|88)/.test(digits) || (askedPhone && digits.length >= 3) ? digits : '';
+}
+
+/** A Bangladeshi mobile number has been started but not finished (under 11 digits, 13 with 88 in front). */
+function phoneUnfinished(text: string): boolean {
+  const digits = spokenPhoneDigits(text);
+  if (digits.length < 2) return false;
+  const need = digits.startsWith('88') ? 13 : 11;
+  return digits.length < need;
+}
+
 /**
  * How long a pause ends the shopper's turn. A plain silence timer cuts people off mid-thought, so the words matter too
  * (the idea of "semantic endpointing"): a sentence ending on "and", "মানে", "আমার..." or a phone number being said in
  * groups ("০১৭১২ ... ৩৪৫") gets more time, a finished one is answered quickly.
  */
 function pauseAfter(text: string, interim: boolean): number {
+  // First, because the browser often writes "।" after a group of digits, which would otherwise look like a finished sentence.
+  if (phoneUnfinished(text)) return PHONE_PAUSE_MS;
   const words = text.normalize('NFC').toLowerCase().replace(/[?।!.,]+$/u, '').split(/\s+/).filter(Boolean);
   const last = words[words.length - 1] ?? '';
   if (/[?।!]\s*$/u.test(text)) return END_PAUSE_MS;
@@ -188,11 +233,21 @@ export class SpeechInput {
     };
     rec.onend = () => {
       if (this.rec === rec) this.rec = null;
-      // Words heard just before the session ended are still an utterance.
-      if (!this.held && (this.finals || this.interim)) this.flush();
+      // A phone number half said when the browser ended the session on a pause (phones do that): keep what was heard and
+      // listen again at once, so the rest of the number joins it; the pause timer still ends the turn if nothing comes.
+      const heard = `${this.finals} ${this.interim}`.trim();
+      const midNumber = !this.held && !!heard && phoneUnfinished(heard);
+      if (midNumber) {
+        // Interim words are not repeated by the next session, so they are kept as final.
+        this.finals = heard;
+        this.interim = '';
+      } else if (!this.held && heard) {
+        // Words heard just before the session ended are still an utterance.
+        this.flush();
+      }
       if (!this.running || this.paused || this.held) return;
-      // A browser that ends at once every time (no network): back off instead of spinning.
-      const wait = Math.min(2000, 100 * 2 ** this.restarts++);
+      // A browser that ends at once every time (no network): back off instead of spinning (not mid-number: the shopper is talking).
+      const wait = midNumber ? 0 : Math.min(2000, 100 * 2 ** this.restarts++);
       setTimeout(() => this.open(), wait);
     };
     this.rec = rec;

@@ -40,6 +40,8 @@ const ctx = self as unknown as WorkerScope;
 const MODEL_CACHE = 'regantify-voice';
 
 let base = '';
+/** The model file inside `base` (Super Admin's choice, or the one this browser already has: voiceModelCache.ts). */
+let modelFile = 'model.onnx';
 let config: Promise<PiperConfig> | null = null;
 let session: Promise<OrtSession> | null = null;
 let phonemizer: Promise<PhonemizerModule> | null = null;
@@ -67,7 +69,7 @@ function loadConfig(): Promise<PiperConfig> {
 
 /** The model bytes: Cache Storage first, else the CDN (with progress), then kept in Cache Storage. */
 async function modelBytes(onProgress: (p: number) => void): Promise<Uint8Array> {
-  const url = `${base}model.onnx`;
+  const url = `${base}${modelFile}`;
   const cache = await caches.open(MODEL_CACHE).catch(() => null);
   const hit = await cache?.match(url);
   if (hit) {
@@ -76,6 +78,8 @@ async function modelBytes(onProgress: (p: number) => void): Promise<Uint8Array> 
   }
   const res = await fetch(url);
   if (!res.ok || !res.body) throw new Error(`voice model ${res.status}`);
+  // The smaller models are sent Brotli-compressed: Content-Length is then the compressed size and more bytes arrive
+  // than it says, so progress is capped at 99 until the end.
   const total = Number(res.headers.get('content-length')) || 0;
   const reader = res.body.getReader();
   let bytes = new Uint8Array(total || 32 * 1048576);
@@ -91,11 +95,13 @@ async function modelBytes(onProgress: (p: number) => void): Promise<Uint8Array> 
     }
     bytes.set(value, loaded);
     loaded += value.length;
-    const pct = total ? Math.floor((loaded / total) * 100) : 0;
+    const pct = total ? Math.min(99, Math.floor((loaded / total) * 100)) : 0;
     if (pct !== lastPct) onProgress((lastPct = pct));
   }
   if (loaded !== bytes.length) bytes = bytes.slice(0, loaded);
-  // Older copies of this voice are dropped when the folder version changes.
+  onProgress(100);
+  // Copies from an older voice folder are dropped; switching between models of this folder is voicePrefetch.ts's job
+  // (the old one stays until the new one is complete).
   if (cache) {
     for (const key of await cache.keys()) if (!key.url.startsWith(base)) await cache.delete(key);
     await cache
@@ -213,6 +219,7 @@ ctx.onmessage = (e: MessageEvent) => {
   const { id, type, text, rate } = e.data as { id?: number; type: string; text?: string; rate?: number; base?: string };
   if (type === 'init') {
     base = (e.data as { base: string }).base;
+    modelFile = (e.data as { model?: string }).model || 'model.onnx';
     return;
   }
   // The shopper cut in: pieces queued before this are dropped instead of made (handled at once, not queued).
