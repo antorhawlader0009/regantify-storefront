@@ -235,7 +235,11 @@ ctx.onmessage = (e: MessageEvent) => {
         await Promise.all([loadConfig(), loadModel((p) => ctx.postMessage({ id, type: 'progress', value: p })), getPhonemizer()]);
         // A first tiny run warms ONNX Runtime up, so the greeting isn't the slow one.
         await synthesize('হ্যালো', 1);
-        ctx.postMessage({ id, type: 'done', result: true });
+        // Then a short sentence measures this device: seconds of work per second of speech (rtf). Above 1 the voice
+        // can't keep up with itself, and the call uses Google's voice from the start (useVoiceCall.ts).
+        const probe = await synthesize('জি, বলুন কীভাবে সাহায্য করতে পারি।', 1);
+        const rtf = probe.ms / 1000 / Math.max(0.1, probe.pcm.length / probe.sampleRate);
+        ctx.postMessage({ id, type: 'done', result: { rtf } });
       } else if (type === 'synth') {
         const r = await synthesize(text ?? '', rate ?? 1);
         ctx.postMessage({ id, type: 'done', result: r }, [r.pcm.buffer]);

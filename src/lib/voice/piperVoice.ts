@@ -71,11 +71,22 @@ function request<T>(base: string, msg: Record<string, unknown>, onProgress?: (p:
   });
 }
 
+/**
+ * How fast this device made the warm-up sentence: seconds of work per second of speech (null until measured). Above 1
+ * the voice can't keep up, so the call uses Google's voice instead (useVoiceCall.ts).
+ */
+let measuredRtf: number | null = null;
+export function piperSpeed(): number | null {
+  return measuredRtf;
+}
+
 /** Downloads (or reads from cache) and warms up the voice. Resolves once it can speak. */
 export function loadPiper(base: string, onProgress?: (p: number) => void): Promise<void> {
   if (ready && workerBase === base && workerModel === modelFile) return ready;
   readyDone = false;
-  ready = request<boolean>(base, { type: 'preload' }, onProgress).then(() => {
+  measuredRtf = null;
+  ready = request<{ rtf?: number } | boolean>(base, { type: 'preload' }, onProgress).then((r) => {
+    measuredRtf = typeof r === 'object' && r && typeof r.rtf === 'number' ? r.rtf : null;
     readyDone = true;
   });
   ready.catch(() => (ready = null));

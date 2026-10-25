@@ -30,7 +30,8 @@ export function deviceIsSlow(): boolean {
     return false;
   }
 }
-function markSlow() {
+/** This device can't make the voice fast enough: the next calls (for 3 days) start on Google's voice. */
+export function markSlow() {
   try {
     localStorage.setItem(SLOW_KEY, String(Date.now() + SLOW_DAYS * 86_400_000));
   } catch {
@@ -68,6 +69,48 @@ export function googleVoiceUrls(text: string): string[] {
   }
   if (cur) out.push(cur);
   return out.map((q) => `https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=bn&q=${encodeURIComponent(q)}`);
+}
+
+/**
+ * Makes the Piper voice louder and clearer on a phone's loudspeaker (the user's request, 2026-10-25: as loud as a phone
+ * call). A web page can't pick the earpiece or play through two speakers at once: the phone sends page sound to one
+ * output (phones with stereo speakers already use the earpiece as the second one). So instead:
+ *   - a peak around 3 kHz, where speech is understood and small speakers are weak;
+ *   - a compressor that lifts the quiet parts of speech, then make-up gain (about +6 dB louder overall);
+ *   - a limiter at the end, so the louder voice never clips into a crackle.
+ * Google's voice plays through an <audio> element (its files have no CORS), so it can't go through this chain.
+ * Returns the chain's input.
+ */
+function loudVoiceChain(ctx: AudioContext): AudioNode {
+  const presence = ctx.createBiquadFilter();
+  presence.type = 'peaking';
+  presence.frequency.value = 3000;
+  presence.Q.value = 0.9;
+  presence.gain.value = 4;
+
+  const lowCut = ctx.createBiquadFilter();
+  lowCut.type = 'highpass'; // a phone speaker can't play the lowest notes; they only eat loudness
+  lowCut.frequency.value = 120;
+
+  const comp = ctx.createDynamicsCompressor();
+  comp.threshold.value = -26;
+  comp.knee.value = 10;
+  comp.ratio.value = 4;
+  comp.attack.value = 0.003;
+  comp.release.value = 0.2;
+
+  const makeup = ctx.createGain();
+  makeup.gain.value = 2;
+
+  const limiter = ctx.createDynamicsCompressor();
+  limiter.threshold.value = -1.5;
+  limiter.knee.value = 0;
+  limiter.ratio.value = 20;
+  limiter.attack.value = 0.001;
+  limiter.release.value = 0.1;
+
+  lowCut.connect(presence).connect(comp).connect(makeup).connect(limiter).connect(ctx.destination);
+  return lowCut;
 }
 
 /** A reply spoken while it is still arriving (VoiceOut.stream). */
@@ -110,7 +153,7 @@ export class VoiceOut {
     this.engine = engine;
     this.analyser = ctx.createAnalyser();
     this.analyser.fftSize = 512;
-    this.analyser.connect(ctx.destination);
+    this.analyser.connect(loudVoiceChain(ctx));
     this.levelBuf = new Uint8Array(new ArrayBuffer(this.analyser.fftSize));
   }
 

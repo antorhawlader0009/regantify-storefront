@@ -25,9 +25,9 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { speakableBangla, speechWords } from './banglaSpeech';
 import { playConnect, playHangup, startRingback } from './callSounds';
 import { SpeechInput } from './speechInput';
-import { idlePiper, loadPiper, setPiperModel } from './piperVoice';
+import { idlePiper, loadPiper, piperSpeed, setPiperModel, stopPiper } from './piperVoice';
 import { chooseVoiceModel } from './voiceModelCache';
-import { deviceIsSlow, VoiceOut, type VoiceEngine, type VoiceStream } from './voiceOut';
+import { deviceIsSlow, markSlow, VoiceOut, type VoiceEngine, type VoiceStream } from './voiceOut';
 import { pickProduct, wantsBack, wantsCloseCart, wantsHangUp, wantsOpen, wantsPhotoSearch, wantsShowCart } from './voiceIntents';
 import { firstFiller, linesToPrepare, stillFiller, toolFiller } from './fillers';
 import type { ChatAction, ChatLive } from '../chatApi';
@@ -84,6 +84,9 @@ export interface VoiceCallOptions<P extends CallProductRef> {
 
 const MIN_RING_MS = 3600; // about one ring, even when the voice is ready at once
 const MAX_RING_MS = 14000; // then the call connects anyway, on the Google voice
+// Seconds of work per second of speech above which this device uses Google's voice (a little headroom below 1: the
+// next sentence is made while one plays, and the phone is doing other work too).
+const MAX_PIPER_RTF = 0.85;
 const SILENCE_MS = 20000;
 // No part of the answer has come by then: a line about what the shopper asked (fillers.ts), then "almost ready" lines.
 const FIRST_FILLER_MS = 1100;
@@ -723,8 +726,19 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     }
 
     const piperOk = piper ? Promise.race([piper.then(() => true, () => false), sleep(MAX_RING_MS).then(() => false)]) : Promise.resolve(false);
-    const [, ok] = await Promise.all([sleep(MIN_RING_MS), piperOk]);
+    const [, loaded] = await Promise.all([sleep(MIN_RING_MS), piperOk]);
     if (callIdRef.current !== id) return;
+    // The warm-up measured this device (piperWorker.ts): a phone that makes speech slower than it plays would leave
+    // gaps and keep the phone busy, so the call starts on Google's voice instead, the voice worker is closed (its memory
+    // goes back), and the next calls for 3 days skip it.
+    const speed = piperSpeed();
+    const tooSlow = loaded && speed !== null && speed > MAX_PIPER_RTF;
+    if (tooSlow) {
+      console.warn(`[voice] this device makes speech at ${speed!.toFixed(2)}x real time: using Google's voice`);
+      markSlow();
+      stopPiper();
+    }
+    const ok = loaded && !tooSlow;
 
     stopRingRef.current?.();
     stopRingRef.current = null;
