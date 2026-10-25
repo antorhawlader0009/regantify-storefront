@@ -26,6 +26,7 @@ import {
   trackTiktokEvent,
 } from './tiktokPixel';
 import { normalizeBdPhone } from './metaPixel';
+import { sendCustomCodeEvent } from './customCodeEvents';
 
 const CURRENCY = 'BDT';
 
@@ -62,6 +63,8 @@ function tiktokProperties(params: Record<string, unknown>): Record<string, unkno
 
 /** One event to every destination; each decides for itself whether it's on. */
 function emit(name: string, params: Record<string, unknown>, ecommerce = true) {
+  // The store's own custom code (Store > Design > Custom Code), always: lib/customCodeEvents.ts.
+  sendCustomCodeEvent(name, params);
   trackGaEvent(name, params);
   pushGtmEvent(name, params, { ecommerce });
   const tiktokEvent = TIKTOK_EVENTS[name];
@@ -187,7 +190,7 @@ export function trackAddPaymentInfo(lines: CartLine[], paymentType: string, coup
 }
 
 // Per destination, so one being blocked (no consent yet) doesn't stop the others.
-const purchaseSentKey = (destination: 'ga' | 'gtm' | 'tiktok', orderId: string) =>
+const purchaseSentKey = (destination: 'ga' | 'gtm' | 'tiktok' | 'custom', orderId: string) =>
   `storepal:${destination}-purchase:${orderId}`;
 
 function alreadySent(key: string): boolean {
@@ -236,6 +239,12 @@ export async function trackPurchase(order: TrackedOrder) {
       index,
     })),
   };
+
+  const customKey = purchaseSentKey('custom', order.id);
+  if (!alreadySent(customKey)) {
+    sendCustomCodeEvent('purchase', params);
+    markSent(customKey);
+  }
 
   const gaKey = purchaseSentKey('ga', order.id);
   if (browserSendsGaPurchase() && !alreadySent(gaKey) && trackGaEvent('purchase', params)) markSent(gaKey);

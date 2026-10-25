@@ -347,7 +347,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   return (
     <>
       {/* Gallery */}
-      <div>
+      <div data-rg="product-gallery">
         <div className={sideGallery ? `flex gap-3 items-start ${display.galleryStyle === 'LEFT' ? 'flex-row-reverse' : ''}` : ''}>
         <HoverZoom
           src={activePhotoUrl}
@@ -441,7 +441,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         )}
         {product.brand && <span className="text-[11.5px] text-muted uppercase tracking-wider font-medium">{product.brand}</span>}
         <div className="flex items-start justify-between gap-3">
-          <h1 className="mt-1 mb-2.5 text-[19px] sm:text-[22px] font-bold leading-snug text-ink tracking-tight">{product.name}</h1>
+          <h1 data-rg="product-title" className="mt-1 mb-2.5 text-[19px] sm:text-[22px] font-bold leading-snug text-ink tracking-tight">{product.name}</h1>
           {titleExtra}
         </div>
 
@@ -468,7 +468,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         {/* Boxed price panel — a soft accent-tinted background makes this
             the clear visual anchor of the page, matching how established
             BD e-commerce product pages foreground the price block. */}
-        <div className="bg-accent-light border border-accent/15 rounded-lg p-4 mb-4">
+        <div data-rg="product-price" className="bg-accent-light border border-accent/15 rounded-lg p-4 mb-4">
           <div className="flex gap-2.5 items-baseline flex-wrap">
             <span className="text-[28px] font-bold text-accent tracking-tight">{formatPrice(breakApplied ? brokenPrice : displayPrice)}</span>
             {product.unitLabel && <span className="text-muted text-[14px]">/ {product.unitLabel}</span>}
@@ -648,10 +648,11 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           {minQty > 1 && <p className="text-[12px] text-muted mt-1.5">{t('Minimum order:')} {minQty}</p>}
         </div>
 
-        <div className="flex gap-2.5">
+        <div data-rg="product-buttons" className="flex gap-2.5">
           <button
             disabled={!canPurchase}
             onClick={handleAddToCart}
+            data-rg="add-to-cart"
             className={`flex-1 py-3 rounded-md border-2 border-ink text-ink text-[13px] font-bold transition-all ${
               canPurchase ? 'hover:bg-ink hover:text-white' : 'opacity-40 cursor-not-allowed'
             }`}
@@ -661,6 +662,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           <button
             disabled={!canPurchase}
             onClick={handleBuyNow}
+            data-rg="buy-now"
             className={`flex-1 py-3 rounded-md text-[13px] font-bold transition-colors shadow-sm ${
               canPurchase ? 'bg-accent hover:bg-accent-dark text-white' : 'bg-line text-muted cursor-not-allowed shadow-none'
             }`}
@@ -684,7 +686,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         )}
         {leadSlots?.after}
 
-        {product.summary && <p className="text-[13px] text-muted leading-relaxed mt-5">{product.summary}</p>}
+        {product.summary && <p data-rg="product-summary" className="text-[13px] text-muted leading-relaxed mt-5">{product.summary}</p>}
 
         {product.weight && (
           <p className="text-[11.5px] text-muted mt-3">
@@ -695,7 +697,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
 
       {/* Sticky mobile bar (not when a store form replaces Buy) */}
       {!leadSlots?.purchase && (
-      <div className="storefront-sticky-bar fixed bottom-0 left-0 right-0 bg-surface border-t border-line px-4 py-2.5 hidden gap-2.5 shadow-popover">
+      <div data-rg="mobile-buy-bar" className="storefront-sticky-bar fixed bottom-0 left-0 right-0 bg-surface border-t border-line px-4 py-2.5 hidden gap-2.5 shadow-popover">
         <button
           disabled={!canPurchase}
           onClick={handleAddToCart}

@@ -9,6 +9,7 @@ import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { StoreAwayBanner } from '@/themes/storepal/components/StoreAwayBanner';
 import type { StorefrontStoreAway } from '@/lib/storeAway';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
+import { StoreCodeHooks } from '@/components/StoreCodeHooks';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import type { BusinessHours } from '@/lib/businessHours';
 import { LazyAiAssistantWidget, LazyCompareBar, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
@@ -330,6 +331,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           the page so it wins over theme styles at equal specificity and
           never flashes unstyled; a literal "</style" in it is escaped so
           it can't close the tag early. Scripts go through the injector. */}
+      {/* The page type on <html>, window.Regantify and the shop events custom code can use (StorePal, like the code itself). */}
+      {theme === 'STOREPAL' && <StoreCodeHooks subdomain={subdomain} />}
       {theme === 'STOREPAL' && customCode?.customCss && (
         <style
           data-store-custom="css"

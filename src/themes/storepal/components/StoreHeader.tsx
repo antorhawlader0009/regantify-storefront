@@ -109,6 +109,7 @@ function SiteBanner() {
   ];
   return (
     <div
+      data-rg="announcement-bar"
       className="bg-canvas overflow-hidden border-b border-line"
       style={background ? { backgroundColor: background } : undefined}
     >
@@ -405,11 +406,11 @@ export function StoreHeader({
   return (
     <>
     <SiteBanner />
-    <header className="sticky top-0 z-20 bg-surface">
+    <header data-rg="header" className="sticky top-0 z-20 bg-surface">
       {hasTopMenu && (
         <div className="hidden sm:flex max-w-6xl mx-auto px-4 sm:px-6 pt-2.5 items-center justify-between gap-6">
           {[design.headerLeftMenu, design.headerRightMenu].map((menu, side) => (
-            <nav key={side} className="flex items-center gap-5 flex-wrap">
+            <nav key={side} data-rg="top-menu" className="flex items-center gap-5 flex-wrap">
               {menu.map((item) => (
                 <MenuLink
                   key={item.id}
@@ -435,7 +436,7 @@ export function StoreHeader({
             <Menu size={22} />
           </button>
         )}
-        <Link href={`/store/${subdomain}`} className="min-w-0 flex items-center gap-2.5 sm:shrink-0">
+        <Link href={`/store/${subdomain}`} data-rg="logo" className="min-w-0 flex items-center gap-2.5 sm:shrink-0">
           {showLogo && (
             <span className={`relative block shrink-0 ${logoBox}`}>
               <Image src={logoUrl!} alt={storeName} fill sizes="200px" className="object-contain object-left" />
@@ -448,7 +449,7 @@ export function StoreHeader({
           )}
         </Link>
 
-        <div ref={searchBoxRef} className="hidden sm:block relative flex-1 max-w-2xl">
+        <div ref={searchBoxRef} data-rg="search" className="hidden sm:block relative flex-1 max-w-2xl">
           <form onSubmit={handleSearchSubmit} className="flex w-full">
             <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
               <input
@@ -595,6 +596,7 @@ export function StoreHeader({
             }}
             className="relative flex items-center gap-2 text-ink hover:text-accent transition-colors"
             aria-label="Cart"
+            data-rg="cart-button"
           >
             <ShoppingBag size={21} strokeWidth={1.75} />
             {design.headerShowCartTotal && hydrated && cartCount > 0 && (
@@ -609,7 +611,7 @@ export function StoreHeader({
         </div>
       </div>
 
-      <div ref={mobileSearchBoxRef} className="sm:hidden relative px-4 pb-3">
+      <div ref={mobileSearchBoxRef} data-rg="search" className="sm:hidden relative px-4 pb-3">
         <form onSubmit={handleSearchSubmit} className="flex w-full">
           <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
             <input
@@ -694,7 +696,7 @@ export function StoreHeader({
           larger screens; phones keep the strip. */}
       {hasSiteMenu && (
         <div className="hidden sm:block border-t border-line">
-          <nav className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
+          <nav data-rg="menu" className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
             {design.siteMenu.map((item) => (
               <MenuLink
                 key={item.id}

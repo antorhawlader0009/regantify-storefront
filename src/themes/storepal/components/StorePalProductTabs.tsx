@@ -74,7 +74,7 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
   }, [subdomain, slug, sort]);
 
   return (
-    <div className="p-4 sm:p-6">
+    <div data-rg="product-tabs" className="p-4 sm:p-6">
       <div className="flex gap-6 border-b border-line mb-4 overflow-x-auto whitespace-nowrap">
         {['description', ...extraTabs.map((_, i) => `info:${i}`), 'reviews', 'questions'].map((tab) => (
           <button

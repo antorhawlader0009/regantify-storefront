@@ -108,6 +108,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
         role="dialog"
         aria-modal="true"
         aria-label="Shopping cart"
+        data-rg="cart-drawer"
         className={`absolute right-0 top-0 flex h-full w-full flex-col bg-canvas shadow-2xl transition-transform ease-out motion-reduce:transition-none sm:w-[420px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ transitionDuration: `${SLIDE_MS}ms` }}
       >
@@ -237,6 +238,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                   closeDrawer();
                   openCheckout();
                 }}
+                data-rg="checkout-button"
                 className="flex h-12 w-full items-center justify-center rounded-lg bg-accent text-[14.5px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 {t('Checkout')}

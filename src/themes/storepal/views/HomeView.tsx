@@ -441,7 +441,10 @@ export function HomeView({
 
       {!isFiltered && (
         <div>
-          {homeSections.map((id) => {
+          {/* Each home section sits in a box with a stable name (data-rg-section), for Store > Custom Code. */}
+          {homeSections.map((id) => (
+            <div key={id} data-rg-section={id.toLowerCase().replace(/_/g, '-')}>
+            {(() => {
             if (showPreview && id === previewGridAt) return <Fragment key={id}>{previewBlock}</Fragment>;
             switch (id) {
               case 'HERO':
@@ -578,7 +581,9 @@ export function HomeView({
               default:
                 return null;
             }
-          })}
+            })()}
+            </div>
+          ))}
           {showPreview && previewGridAt === 'END' && previewBlock}
         </div>
       )}

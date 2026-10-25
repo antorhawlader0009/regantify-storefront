@@ -232,7 +232,7 @@ export function StoreFooter({
   // "BACKWARD COMPATIBILITY" doc comment above.
   if (!footerConfig) {
     return (
-      <footer className="bg-canvas border-t border-line mt-8">
+      <footer data-rg="footer" className="bg-canvas border-t border-line mt-8">
         <ReputationStrip />
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3">
           <div>
@@ -422,7 +422,7 @@ export function StoreFooter({
     ];
 
   return (
-    <footer className={`${def.background === 'band' ? 'bg-canvas' : 'bg-surface'} border-t border-line mt-8`}>
+    <footer data-rg="footer" className={`${def.background === 'band' ? 'bg-canvas' : 'bg-surface'} border-t border-line mt-8`}>
       <ReputationStrip />
       <div className={`max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 ${gridColsClass}`}>
         {visibleColumns.map((c) => (

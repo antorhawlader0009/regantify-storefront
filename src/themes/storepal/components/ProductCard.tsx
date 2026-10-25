@@ -218,6 +218,8 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
 
   return (
     <div
+      data-rg="product-card"
+      data-rg-product={product.slug}
       className={`flex flex-col overflow-hidden ${
         design.cardDisplayAsCard
           ? 'bg-surface border border-line rounded-md shadow-card hover:shadow-card-hover transition-shadow'
@@ -303,6 +305,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       <div className={`flex flex-col gap-1.5 flex-1 ${design.cardDisplayAsCard ? 'p-3' : 'pt-2.5'}`}>
         <Link
           href={href}
+          data-rg="product-card-title"
           className="text-[13px] font-semibold text-ink uppercase tracking-tight leading-snug line-clamp-2 min-h-[2.4em] hover:text-accent transition-colors"
         >
           {product.name}
@@ -347,7 +350,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         ) : quoteOnly ? (
           <p className="text-[13.5px] font-bold text-ink">{t('Price on request')}</p>
         ) : (
-          <div className="flex gap-2 items-baseline flex-wrap">
+          <div data-rg="product-card-price" className="flex gap-2 items-baseline flex-wrap">
             {originalPrice && <span className="text-muted line-through text-[12.5px]">{formatPrice(originalPrice)}</span>}
             <span className="font-bold text-[15px] text-accent">{formatPrice(displayPrice)}</span>
             {product.unitLabel && <span className="text-muted text-[12px]"> / {product.unitLabel}</span>}
@@ -408,6 +411,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
                 <button
                   type="button"
                   onClick={() => purchase('add')}
+                  data-rg="product-card-add-to-cart"
                   className="flex-1 flex items-center justify-center gap-1 py-2 rounded-md border border-ink text-[12.5px] font-semibold text-ink hover:bg-ink hover:text-white transition-colors"
                 >
                   {added ? (
@@ -423,6 +427,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
                 <button
                   type="button"
                   onClick={() => purchase('buy')}
+                  data-rg="product-card-buy-now"
                   className="flex-1 py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-semibold transition-colors"
                 >
                   {t('Buy Now')}

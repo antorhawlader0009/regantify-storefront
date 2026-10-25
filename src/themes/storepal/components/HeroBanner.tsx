@@ -99,7 +99,7 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
   );
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
+    <section data-rg="hero" className="max-w-6xl mx-auto px-4 sm:px-6 pt-6">
       {/* Fixed aspect ratio, the SAME ratio on every screen size (mobile,
           tablet, desktop, ultra-wide) — matches the reference site's
           own slider, which never changes shape, only scales with the

@@ -107,6 +107,7 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
       target="_blank"
       rel="noopener noreferrer"
       aria-label={messenger ? 'Chat on Messenger' : 'Chat on WhatsApp'}
+      data-rg="chat-button"
       onClick={onClick}
       className={`fixed bottom-5 ${left ? 'left-5' : 'right-5'} z-30 w-12 h-12 rounded-full shadow-lg flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none ${
         messenger ? 'bg-[#0084FF] hover:bg-[#0074e0]' : 'bg-[#25D366] hover:bg-[#20bd5a]'
