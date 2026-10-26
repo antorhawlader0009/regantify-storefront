@@ -4,8 +4,8 @@ import { Clock } from 'lucide-react';
 import { DEFAULT_PLACEHOLDER_PALETTE, PlaceholderArt } from '@/components/store-preview/PlaceholderArt';
 import { SAMPLE_PRODUCTS, SAMPLE_PRODUCTS_ID, STORE_SETUP_ID } from '@/components/store-preview/emptyStore';
 import { useStorePalDesign } from '../lib/designSettings';
-import { useStoreText } from '../lib/storeText';
-import { formatPrice } from '../lib/formatPrice';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 
 /**
  * StorePal's look for a store with no product yet (store-empty-preview.md): a thin "opening soon" bar, an
@@ -59,6 +59,7 @@ export function PlaceholderHero({ storeName }: { storeName: string }) {
 
 /** A StorePal product card with a drawing, "Product title" and a sample price. Follows the card style and image shape set in Store > Design. */
 function SampleCard({ art, price, className }: { art: (typeof SAMPLE_PRODUCTS)[number]['art']; price: number; className: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const design = useStorePalDesign();
   const asCard = design.cardDisplayAsCard;

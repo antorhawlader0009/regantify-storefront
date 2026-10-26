@@ -2,9 +2,9 @@
 
 import { useMemo, useState } from 'react';
 import { ChevronDown, SlidersHorizontal, X } from 'lucide-react';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
-import { useStoreText } from '../lib/storeText';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 
 export interface ProductFilterState {
   minPrice: number;
@@ -61,6 +61,7 @@ function FilterSection({ title, defaultOpen = true, children }: { title: string;
  * in-memory list rather than round-tripping to the API.
  */
 export function ProductFilters({ products, value, onChange, bounds, categoryOptions }: ProductFiltersProps) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const derivedCategories = useMemo(
     () => Array.from(new Set(products.map((p) => p.category).filter((c): c is string => Boolean(c)))).sort(),

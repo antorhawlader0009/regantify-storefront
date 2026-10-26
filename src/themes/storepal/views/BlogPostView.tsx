@@ -4,6 +4,7 @@ import type { StorefrontBlogCard, StorefrontBlogPost } from '@/lib/storefrontApi
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { blogDate } from '../components/MagazineSection';
+import { useStoreText } from '../lib/storeText';
 
 interface BlogPostViewProps {
   subdomain: string;
@@ -15,6 +16,7 @@ interface BlogPostViewProps {
 
 /** One magazine post (TellMe idea 106): date and author, title, cover, text and tags, with the other latest posts beside it. */
 export function BlogPostView({ subdomain, storeName, categories, post, others }: BlogPostViewProps) {
+  const t = useStoreText();
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
@@ -49,7 +51,7 @@ export function BlogPostView({ subdomain, storeName, categories, post, others }:
 
         {others.length > 0 && (
           <aside>
-            <h2 className="mb-4 inline-block border-b-2 border-accent pb-2 text-[16px] font-bold uppercase">Featured post</h2>
+            <h2 className="mb-4 inline-block border-b-2 border-accent pb-2 text-[16px] font-bold uppercase">{t('Featured post')}</h2>
             <ul className="divide-y divide-dashed divide-line">
               {others.map((o) => (
                 <li key={o.slug}>

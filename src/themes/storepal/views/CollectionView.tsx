@@ -3,6 +3,7 @@ import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
+import { useStoreText } from '../lib/storeText';
 
 interface CollectionViewProps {
   subdomain: string;
@@ -17,6 +18,7 @@ interface CollectionViewProps {
  * collection the server finds the products when the page is opened, so what shows is always what the rules match now.
  */
 export function CollectionView({ subdomain, storeName, categories, collection, products }: CollectionViewProps) {
+  const t = useStoreText();
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
@@ -39,8 +41,8 @@ export function CollectionView({ subdomain, storeName, categories, collection, p
         )}
         {products.length === 0 ? (
           <div className="text-center py-20 bg-surface border border-line">
-            <p className="text-lg font-semibold text-ink mb-1.5">Nothing here yet</p>
-            <p className="text-[13.5px] text-muted">No products in this collection right now. Check back soon.</p>
+            <p className="text-lg font-semibold text-ink mb-1.5">{t('Nothing here yet')}</p>
+            <p className="text-[13.5px] text-muted">{t('No products in this collection right now. Check back soon.')}</p>
           </div>
         ) : (
           <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">

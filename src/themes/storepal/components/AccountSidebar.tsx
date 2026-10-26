@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCustomerLogout } from '@/providers/customer-auth-store-provider';
+import { useStoreText } from '../lib/storeText';
 
 interface AccountSidebarProps {
   subdomain: string;
@@ -24,6 +25,7 @@ const NAV_ITEMS: { label: string; href: (subdomain: string) => string }[] = [
 ];
 
 export function AccountSidebar({ subdomain }: AccountSidebarProps) {
+  const t = useStoreText();
   const pathname = usePathname();
   const logout = useCustomerLogout();
 
@@ -40,12 +42,12 @@ export function AccountSidebar({ subdomain }: AccountSidebarProps) {
               active ? 'text-accent font-semibold' : 'text-ink hover:text-accent'
             }`}
           >
-            {item.label}
+            {t(item.label)}
           </Link>
         );
       })}
       <button onClick={logout} className="px-1 py-2 text-[14px] text-ink hover:text-accent transition-colors text-left">
-        Log Out
+        {t('Log Out')}
       </button>
     </nav>
   );

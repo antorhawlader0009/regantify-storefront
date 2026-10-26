@@ -8,6 +8,7 @@ import { getStoreDeliveryCharges } from '@/lib/checkoutApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
+import { useStoreText } from '../../lib/storeText';
 
 // Frozen fallback until the vendor's real Settings > Courier
 // Integration > Delivery Charge values load — same reasoning/values as
@@ -19,6 +20,7 @@ const FALLBACK_DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
 
 /** Account > Edit Profile — same sidebar layout as the other account pages. */
 export function ProfileView({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const storeName = useStoreDisplayName(subdomain);
   const hydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
@@ -61,7 +63,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
         setZone((profile.deliveryZone as 'DHAKA' | 'OUTSIDE_DHAKA' | 'AROUND_DHAKA' | null) ?? 'DHAKA');
         setLoaded(true);
       })
-      .catch((err) => setLoadError(err instanceof Error ? err.message : 'Could not load your profile.'));
+      .catch((err) => setLoadError(err instanceof Error ? err.message : t('Could not load your profile.')));
   }, [hydrated, accessToken]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -69,7 +71,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
     setSaveError(null);
     setSaved(false);
     if (!fullName.trim()) {
-      setSaveError('Enter your full name.');
+      setSaveError(t('Enter your full name.'));
       return;
     }
     if (!accessToken) return;
@@ -85,7 +87,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
       updateCustomer(updated);
       setSaved(true);
     } catch (err) {
-      setSaveError(err instanceof Error ? err.message : 'Could not save your profile.');
+      setSaveError(err instanceof Error ? err.message : t('Could not save your profile.'));
     } finally {
       setSaving(false);
     }
@@ -96,12 +98,12 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
       <AccountLayout subdomain={subdomain} storeName={storeName}>
         <div className="bg-surface border border-line rounded-lg p-6 text-center">
           <User size={26} className="mx-auto text-muted mb-3" />
-          <p className="text-[14px] text-ink font-semibold mb-1">Log in to edit your profile</p>
+          <p className="text-[14px] text-ink font-semibold mb-1">{t('Log in to edit your profile')}</p>
           <Link
             href={`/store/${subdomain}/account/login`}
             className="inline-block mt-3 px-5 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13px] font-bold transition-colors"
           >
-            Log in
+            {t('Log in')}
           </Link>
         </div>
       </AccountLayout>
@@ -110,7 +112,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
 
   return (
     <AccountLayout subdomain={subdomain} storeName={storeName}>
-      <h1 className="text-[22px] font-bold text-ink mb-5">Edit Profile</h1>
+      <h1 className="text-[22px] font-bold text-ink mb-5">{t('Edit Profile')}</h1>
 
       <div className="bg-surface border border-line rounded-lg p-5 sm:p-6 max-w-lg">
         {loadError && <div className="text-[13px] text-accent mb-4">{loadError}</div>}
@@ -120,17 +122,17 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
         ) : loaded ? (
           <form onSubmit={handleSubmit} className="space-y-4">
             <div>
-              <label className="block text-[13px] font-medium text-ink mb-1.5">Phone</label>
+              <label className="block text-[13px] font-medium text-ink mb-1.5">{t('Phone')}</label>
               <input
                 value={customer?.phone ?? ''}
-                placeholder="Signed in with Google"
+                placeholder={t('Signed in with Google')}
                 disabled
                 className="w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] text-muted cursor-not-allowed"
               />
             </div>
 
             <div>
-              <label className="block text-[13px] font-medium text-ink mb-1.5">Full Name</label>
+              <label className="block text-[13px] font-medium text-ink mb-1.5">{t('Full Name')}</label>
               <input
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value.slice(0, 100))}
@@ -140,7 +142,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
             </div>
 
             <div>
-              <label className="block text-[13px] font-medium text-ink mb-1.5">Email (optional)</label>
+              <label className="block text-[13px] font-medium text-ink mb-1.5">{t('Email (optional)')}</label>
               <input
                 type="email"
                 value={email}
@@ -151,7 +153,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
             </div>
 
             <div>
-              <label className="block text-[13px] font-medium text-ink mb-1.5">Delivery Address (optional)</label>
+              <label className="block text-[13px] font-medium text-ink mb-1.5">{t('Delivery Address (optional)')}</label>
               <textarea
                 value={address}
                 onChange={(e) => setAddress(e.target.value.slice(0, 300))}
@@ -162,7 +164,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
             </div>
 
             <div>
-              <p className="text-[13px] font-medium text-ink mb-2">Delivery Area</p>
+              <p className="text-[13px] font-medium text-ink mb-2">{t('Delivery Area')}</p>
               <div className="flex gap-2">
                 {(aroundCharge !== null ? (['DHAKA', 'AROUND_DHAKA', 'OUTSIDE_DHAKA'] as const) : (['DHAKA', 'OUTSIDE_DHAKA'] as const)).map((z) => (
                   <button
@@ -174,10 +176,10 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
                     }`}
                   >
                     {z === 'DHAKA'
-                      ? `Inside Dhaka — ৳${deliveryCharge.DHAKA}`
+                      ? `${t('Inside Dhaka')} — ৳${deliveryCharge.DHAKA}`
                       : z === 'AROUND_DHAKA'
-                        ? `Around Dhaka — ৳${aroundCharge ?? deliveryCharge.OUTSIDE_DHAKA}`
-                        : `Outside Dhaka — ৳${deliveryCharge.OUTSIDE_DHAKA}`}
+                        ? `${t('Around Dhaka')} — ৳${aroundCharge ?? deliveryCharge.OUTSIDE_DHAKA}`
+                        : `${t('Outside Dhaka')} — ৳${deliveryCharge.OUTSIDE_DHAKA}`}
                   </button>
                 ))}
               </div>
@@ -187,7 +189,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
             {saved && (
               <p className="flex items-center gap-1.5 text-[12.5px] text-success font-medium">
                 <Check size={13} />
-                Profile saved.
+                {t('Profile saved.')}
               </p>
             )}
 
@@ -196,7 +198,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
               disabled={saving}
               className="px-6 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors"
             >
-              {saving ? 'Saving…' : 'Save Profile'}
+              {saving ? t('Saving…') : t('Save Profile')}
             </button>
           </form>
         ) : null}

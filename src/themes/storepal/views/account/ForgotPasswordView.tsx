@@ -6,6 +6,8 @@ import { forgotPasswordSendOtp, forgotPasswordVerifyOtp, resetPassword } from '@
 import { StoreHeader } from '../../components/StoreHeader';
 import { StoreFooter } from '../../components/StoreFooter';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
+import { useStoreText } from '../../lib/storeText';
+import { phoneInput } from '@/lib/phoneInput';
 
 type Step = 'phone' | 'otp' | 'reset' | 'done';
 
@@ -16,6 +18,7 @@ type Step = 'phone' | 'otp' | 'reset' | 'done';
  * CustomerAuthService.forgotPasswordSendOtp/verifyOtp/resetPassword.
  */
 export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const router = useRouter();
   const storeName = useStoreDisplayName(subdomain);
 
@@ -31,7 +34,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     setError(null);
     if (!phone.trim()) {
-      setError('Enter your phone number.');
+      setError(t('Enter your phone number.'));
       return;
     }
     setLoading(true);
@@ -39,7 +42,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
       await forgotPasswordSendOtp(phone.trim(), subdomain);
       setStep('otp');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send the code.');
+      setError(err instanceof Error ? err.message : t('Could not send the code.'));
     } finally {
       setLoading(false);
     }
@@ -49,7 +52,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     setError(null);
     if (!code.trim()) {
-      setError('Enter the code sent to your phone.');
+      setError(t('Enter the code sent to your phone.'));
       return;
     }
     setLoading(true);
@@ -58,7 +61,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
       setResetToken(result.resetToken);
       setStep('reset');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not verify that code.');
+      setError(err instanceof Error ? err.message : t('Could not verify that code.'));
     } finally {
       setLoading(false);
     }
@@ -68,7 +71,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     setError(null);
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t('Password must be at least 6 characters.'));
       return;
     }
     setLoading(true);
@@ -76,7 +79,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
       await resetPassword(resetToken, newPassword);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not reset your password.');
+      setError(err instanceof Error ? err.message : t('Could not reset your password.'));
     } finally {
       setLoading(false);
     }
@@ -88,15 +91,15 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
 
       <main className="max-w-md mx-auto px-4 sm:px-6 py-12 flex-1 w-full">
         <div className="bg-surface border border-line rounded-lg p-6 sm:p-7">
-          <h1 className="text-[24px] font-bold text-ink mb-5">Change Password</h1>
+          <h1 className="text-[24px] font-bold text-ink mb-5">{t('Change Password')}</h1>
 
           {step === 'phone' && (
             <form onSubmit={handleSend} className="space-y-3.5">
               <div>
-                <label className="block text-[13px] font-medium text-ink mb-1.5">Phone number</label>
+                <label className="block text-[13px] font-medium text-ink mb-1.5">{t('Phone number')}</label>
                 <input
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value.slice(0, 30))}
+                  onChange={(e) => setPhone(phoneInput(e.target.value).slice(0, 30))}
                   placeholder="01XXXXXXXXX"
                   inputMode="tel"
                   autoComplete="tel"
@@ -111,14 +114,14 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
                 disabled={loading}
                 className="w-full py-3 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors"
               >
-                {loading ? 'Sending…' : 'Send'}
+                {loading ? t('Sending…') : t('Send')}
               </button>
             </form>
           )}
 
           {step === 'otp' && (
             <form onSubmit={handleVerify} className="space-y-3.5">
-              <p className="text-[13px] text-muted">We sent a 6-digit code by SMS to {phone}.</p>
+              <p className="text-[13px] text-muted">{t('We sent a 6-digit code by SMS to {phone}.').replace('{phone}', phone)}</p>
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value.slice(0, 6))}
@@ -133,7 +136,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
                 disabled={loading}
                 className="w-full py-3 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors"
               >
-                {loading ? 'Verifying…' : 'Verify'}
+                {loading ? t('Verifying…') : t('Verify')}
               </button>
             </form>
           )}
@@ -141,7 +144,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
           {step === 'reset' && (
             <form onSubmit={handleReset} className="space-y-3.5">
               <div>
-                <label className="block text-[13px] font-medium text-ink mb-1.5">New Password</label>
+                <label className="block text-[13px] font-medium text-ink mb-1.5">{t('New Password')}</label>
                 <input
                   type="password"
                   value={newPassword}
@@ -157,19 +160,19 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
                 disabled={loading}
                 className="w-full py-3 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors"
               >
-                {loading ? 'Saving…' : 'Change Password'}
+                {loading ? t('Saving…') : t('Change Password')}
               </button>
             </form>
           )}
 
           {step === 'done' && (
             <div className="space-y-4">
-              <p className="text-[13.5px] text-ink">Your password has been reset. You can now log in with your new password.</p>
+              <p className="text-[13.5px] text-ink">{t('Your password has been reset. You can now log in with your new password.')}</p>
               <button
                 onClick={() => router.push(`/store/${subdomain}/account/login`)}
                 className="w-full py-3 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold transition-colors"
               >
-                Go to Login
+                {t('Go to Login')}
               </button>
             </div>
           )}

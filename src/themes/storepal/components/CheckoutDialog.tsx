@@ -9,7 +9,7 @@ import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatReturnDay } from '@/lib/storeAway';
 import { suggestZone } from '@/lib/deliveryZone';
 import { BdAddressPicker } from '@/components/BdAddressPicker';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { preOrderDateText } from '../lib/preOrderDate';
 import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
@@ -22,6 +22,8 @@ import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
 import { trackBeginCheckout } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
 import { addressProblem } from '@/lib/addressCheck';
+import { useFormatPrice } from '../lib/storeText';
+import { phoneInput } from '@/lib/phoneInput';
 
 // Fallback label for a gateway row with no vendor-set displayLabel — see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
@@ -292,6 +294,7 @@ const BN: Copy = {
 const COPY: Record<Lang, Copy> = { en: EN, bn: BN };
 
 function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; onClose: () => void; lang: Lang }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = COPY[lang];
   // The store's choices for the optional checkout boxes (TellMe idea 128).
   const design = useStorePalDesign();
@@ -583,7 +586,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </span>
                   <input
                     value={form.phone}
-                    onChange={(e) => updateField('phone', e.target.value)}
+                    onChange={(e) => updateField('phone', phoneInput(e.target.value))}
                     placeholder="01XXXXXXXXX"
                     maxLength={30}
                     className={`flex-1 px-3.5 py-2.5 rounded-r-md text-[13.5px] bg-surface border outline-none transition-colors ${
@@ -602,7 +605,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </label>
                   <input
                     value={form.altPhone}
-                    onChange={(e) => updateField('altPhone', e.target.value)}
+                    onChange={(e) => updateField('altPhone', phoneInput(e.target.value))}
                     placeholder="01XXXXXXXXX"
                     maxLength={30}
                     className={`w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border outline-none transition-colors ${errors.altPhone ? 'border-accent' : 'border-line-strong focus:border-ink'}`}
@@ -1220,7 +1223,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                         type="tel"
                         inputMode="numeric"
                         value={manualSender}
-                        onChange={(e) => setManualSender(e.target.value)}
+                        onChange={(e) => setManualSender(phoneInput(e.target.value))}
                         placeholder="01XXXXXXXXX"
                         className="w-full rounded-md border border-line px-3 py-2 text-[13.5px] text-ink outline-none focus:border-ink"
                       />

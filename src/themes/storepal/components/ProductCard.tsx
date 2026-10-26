@@ -8,7 +8,7 @@ import { Check, Heart } from 'lucide-react';
 import type { StorefrontVariant, StorefrontVariationOption } from '@/lib/storefrontApi';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { SoldRecentLine } from './SoldRecentLine';
 import { useCompare } from '../lib/compare';
 import { lowStockLabel, useLowStock, useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
@@ -18,7 +18,7 @@ import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
 import { trackAddToWishlist } from '@/lib/ecommerceEvents';
-import { useStoreText } from '../lib/storeText';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { preOrderDateText } from '../lib/preOrderDate';
 import { CardSwatches } from '@/components/CardSwatches';
 import { QuickAddSheet } from '@/components/QuickAddSheet';
@@ -86,6 +86,7 @@ interface ProductCardProps {
  * being one click target the way Medium's ProductCard is).
  */
 export function ProductCard({ product, subdomain, storeName }: ProductCardProps) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const design = useStorePalDesign();
   // A price-on-request product hides its price only while requests can reach the store (the product page's rule).
@@ -328,8 +329,8 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
 
         {lowStockText && !quoteOnly && <p className="text-[11.5px] font-semibold text-accent-dark">{lowStockText}</p>}
         {!quoteOnly && <SoldRecentLine product={product} />}
-        {/* Compare (TellMe idea 74): tick up to 3 products. */}
-        {!quoteOnly && (
+        {/* Compare (TellMe idea 74): tick up to 3 products. Only when the store turned it on (IDEA-13, off by default). */}
+        {!quoteOnly && design.compareEnabled === true && (
           <label className="flex w-fit cursor-pointer items-center gap-1.5 text-[11.5px] text-muted">
             <input
               type="checkbox"

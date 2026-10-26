@@ -2,8 +2,8 @@
 
 import { PackageCheck } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
-import { formatPrice } from '../lib/formatPrice';
-import { bnDigits } from '../lib/storeText';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
+import { bnDigits, useFormatPrice } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
 
 /**
@@ -12,6 +12,7 @@ import { useStorePalDesign } from '../lib/designSettings';
  * fewest sets they allow as the product's stock), so "Out of stock" and the quantity limit work as for any product.
  */
 export function BundleIncludes({ product }: { product: StorefrontProduct }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const design = useStorePalDesign();
   const bn = design.storeLanguage === 'bn';
   const bundle = product.bundle;

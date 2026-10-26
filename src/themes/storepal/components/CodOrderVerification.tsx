@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ShieldCheck } from 'lucide-react';
 import { resendCodOrderOtp, verifyCodOrder } from '@/lib/checkoutApi';
+import { useStoreText } from '../lib/storeText';
 
 /**
  * Store > COD Guard "After Checkout" — shown on StorePal's thank-you page
@@ -20,6 +21,7 @@ export function CodOrderVerification({
   orderId: string;
   onVerified: () => void;
 }) {
+  const t = useStoreText();
   const [code, setCode] = useState('');
   const [verifying, setVerifying] = useState(false);
   const [resending, setResending] = useState(false);
@@ -28,7 +30,7 @@ export function CodOrderVerification({
 
   const verify = async () => {
     if (!/^\d{6}$/.test(code)) {
-      setError('Enter the 6-digit code from the SMS.');
+      setError(t('Enter the 6-digit code from the SMS.'));
       return;
     }
     setVerifying(true);
@@ -37,7 +39,7 @@ export function CodOrderVerification({
       const result = await verifyCodOrder(subdomain, orderId, code);
       if (result.codVerificationStatus !== 'PENDING') onVerified();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not verify the code. Please try again.');
+      setError(err instanceof Error ? err.message : t('Could not verify the code. Please try again.'));
     } finally {
       setVerifying(false);
     }
@@ -49,9 +51,9 @@ export function CodOrderVerification({
     setNotice(null);
     try {
       await resendCodOrderOtp(subdomain, orderId);
-      setNotice('A new code is on its way.');
+      setNotice(t('A new code is on its way.'));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not resend the code. Please try again.');
+      setError(err instanceof Error ? err.message : t('Could not resend the code. Please try again.'));
     } finally {
       setResending(false);
     }
@@ -62,10 +64,9 @@ export function CodOrderVerification({
       <div className="flex items-start gap-3">
         <ShieldCheck size={20} className="text-accent shrink-0 mt-0.5" />
         <div className="min-w-0 flex-1">
-          <p className="m-0 text-[14px] font-bold text-ink">Confirm your order</p>
+          <p className="m-0 text-[14px] font-bold text-ink">{t('Confirm your order')}</p>
           <p className="m-0 mt-1 text-[12.5px] text-muted">
-            We sent a 6-digit code to your phone. Enter it to confirm this Cash on Delivery order. Your order is on
-            hold until you do.
+            {t('We sent a 6-digit code to your phone. Enter it to confirm this Cash on Delivery order. Your order is on hold until you do.')}
           </p>
           <div className="mt-3 flex flex-wrap gap-2">
             <input
@@ -77,8 +78,8 @@ export function CodOrderVerification({
                 setCode(e.target.value.replace(/\D/g, '').slice(0, 6));
                 setError(null);
               }}
-              placeholder="Enter code"
-              aria-label="Verification code"
+              placeholder={t('Enter code')}
+              aria-label={t('Verification code')}
               className="w-40 px-3 py-2.5 rounded-md border border-line bg-surface text-[15px] tracking-[0.3em] text-ink focus:outline-none focus:border-accent"
             />
             <button
@@ -87,7 +88,7 @@ export function CodOrderVerification({
               disabled={verifying}
               className="px-5 py-2.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[13px] font-bold disabled:opacity-60 transition-colors"
             >
-              {verifying ? 'Verifying…' : 'Confirm Order'}
+              {verifying ? t('Verifying…') : t('Confirm Order')}
             </button>
           </div>
           {error && <p className="m-0 mt-2 text-[12.5px] text-accent">{error}</p>}
@@ -98,7 +99,7 @@ export function CodOrderVerification({
             disabled={resending}
             className="mt-2 text-[12.5px] font-semibold text-accent underline underline-offset-2 disabled:opacity-60"
           >
-            {resending ? 'Sending…' : 'Resend code'}
+            {resending ? t('Sending…') : t('Resend code')}
           </button>
         </div>
       </div>

@@ -1,8 +1,20 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Stars } from '../../medium/components/Stars';
-import { getProductReviews, submitProductReview, voteReviewHelpful, type ProductReview } from '@/lib/reviewsApi';
+import {
+  getProductReviews,
+  getReviewPhotoEligibility,
+  submitProductReview,
+  submitProductReviewWithPhotos,
+  voteReviewHelpful,
+  type ProductReview,
+} from '@/lib/reviewsApi';
+import { MAX_REVIEW_PHOTOS, shrinkReviewPhoto } from '@/lib/reviewPhotos';
+import { variantUrl } from '@/lib/imageVariants';
+import { PhotoViewer } from '@/components/ProductImageViewer';
+import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
+import { useAuthDialog } from '../lib/authDialog';
 import { getProductQuestions, type ProductQuestion } from '@/lib/questionsApi';
 import { useStoreText } from '../lib/storeText';
 import { ProductQuestionsTab } from './ProductQuestionsTab';
@@ -33,6 +45,8 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
 
   // "Most helpful" or "Newest" (TellMe idea 99); and the tracking token from a "Review your products" link (?order=...) that proves a purchase.
   const [sort, setSort] = useState<'newest' | 'helpful'>('newest');
+  // A review's photos open full screen (shared PhotoViewer); null = closed.
+  const [viewer, setViewer] = useState<{ photos: string[]; index: number } | null>(null);
   const [orderToken, setOrderToken] = useState<string | undefined>(undefined);
   useEffect(() => {
     const token = new URLSearchParams(window.location.search).get('order');
@@ -146,8 +160,16 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
                   {r.photos.length > 0 && (
                     <div className="flex gap-2 mt-2">
                       {r.photos.map((url, i) => (
-                        // eslint-disable-next-line @next/next/no-img-element -- small user-submitted review photos, not worth next/image's overhead here
-                        <img key={i} src={url} alt="" className="w-14 h-14 rounded object-cover border border-line" />
+                        <button
+                          key={i}
+                          type="button"
+                          onClick={() => setViewer({ photos: r.photos.map((u) => variantUrl(u, 1280) ?? u), index: i })}
+                          aria-label={t('Photos from this review')}
+                          className="rounded overflow-hidden border border-line"
+                        >
+                          {/* eslint-disable-next-line @next/next/no-img-element -- the small saved copy (about 15 KB), not the full photo */}
+                          <img src={variantUrl(url, 160) ?? url} alt="" loading="lazy" className="w-16 h-16 object-cover" />
+                        </button>
                       ))}
                     </div>
                   )}
@@ -172,6 +194,15 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
             </div>
           )}
 
+          <PhotoViewer
+            photos={viewer?.photos ?? []}
+            index={viewer ? viewer.index : null}
+            onIndexChange={(k) => setViewer((v) => (v ? { ...v, index: k } : v))}
+            onClose={() => setViewer(null)}
+            title={t('Photos from this review')}
+            labels={{ close: t('Close'), previous: t('Previous photo'), next: t('Next photo'), zoomIn: t('Zoom in'), zoomOut: t('Zoom out') }}
+          />
+
           <WriteReviewForm subdomain={subdomain} slug={slug} orderToken={orderToken} />
         </div>
       )}
@@ -190,6 +221,57 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
+  // Photos (TellMe idea 2): only for a shopper signed in here whose own account bought this product; the server checks again on submit.
+  const t = useStoreText();
+  const customer = useCustomerAuthStore((s) => s.customer);
+  const accessToken = useCustomerAuthStore((s) => s.accessToken);
+  const openLogin = useAuthDialog((s) => s.openLogin);
+  const [canAddPhotos, setCanAddPhotos] = useState(false);
+  const [photos, setPhotos] = useState<{ blob: Blob; preview: string }[]>([]);
+  const [shrinking, setShrinking] = useState(false);
+  useEffect(() => {
+    if (!open || !accessToken) {
+      setCanAddPhotos(false);
+      return;
+    }
+    let live = true;
+    void getReviewPhotoEligibility(subdomain, slug, accessToken).then((r) => {
+      if (live) setCanAddPhotos(r.canAddPhotos);
+    });
+    return () => {
+      live = false;
+    };
+  }, [open, accessToken, subdomain, slug]);
+  useEffect(() => {
+    if (open && !name && customer?.fullName) setName(customer.fullName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fill the name once when the form opens, never over what was typed
+  }, [open, customer?.fullName]);
+  // Local previews are freed when the form goes away.
+  const photosRef = useRef(photos);
+  photosRef.current = photos;
+  useEffect(() => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview)), []);
+
+  const addPhotos = async (files: File[]) => {
+    setError(null);
+    setShrinking(true);
+    const next = [...photos];
+    for (const file of files) {
+      if (next.length >= MAX_REVIEW_PHOTOS) break;
+      const blob = await shrinkReviewPhoto(file);
+      if (!blob) {
+        setError(t('Could not open that picture. Please try another photo.'));
+        continue;
+      }
+      next.push({ blob, preview: URL.createObjectURL(blob) });
+    }
+    setPhotos(next);
+    setShrinking(false);
+  };
+  const removePhoto = (i: number) => {
+    URL.revokeObjectURL(photos[i].preview);
+    setPhotos(photos.filter((_, k) => k !== i));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
@@ -199,14 +281,19 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
     }
     setSubmitting(true);
     try {
-      await submitProductReview(subdomain, slug, {
+      const input = {
         title: title.trim(),
         content: content.trim() || undefined,
         rating,
         customerName: name.trim(),
         customerEmail: email.trim() || undefined,
         orderToken,
-      });
+      };
+      if (photos.length > 0 && canAddPhotos && accessToken) {
+        await submitProductReviewWithPhotos(subdomain, slug, input, photos.map((p) => p.blob), accessToken);
+      } else {
+        await submitProductReview(subdomain, slug, input);
+      }
       setSubmitted(true);
       setOpen(false);
     } catch (err) {
@@ -283,12 +370,62 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
         />
       </div>
 
+      {canAddPhotos ? (
+        <div>
+          <p className="text-[12px] text-muted mb-1.5">{t('You bought this. Add up to 2 photos of what you got.')}</p>
+          <div className="flex gap-2 items-center">
+            {photos.map((p, i) => (
+              <div key={p.preview} className="relative">
+                {/* eslint-disable-next-line @next/next/no-img-element -- a local preview of the shrunk photo */}
+                <img src={p.preview} alt="" className="w-16 h-16 rounded object-cover border border-line" />
+                <button
+                  type="button"
+                  onClick={() => removePhoto(i)}
+                  aria-label={t('Remove photo')}
+                  className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-ink text-white text-[11px] leading-5 text-center"
+                >
+                  ×
+                </button>
+              </div>
+            ))}
+            {photos.length < MAX_REVIEW_PHOTOS && (
+              <label
+                className={`w-16 h-16 rounded border border-dashed border-line flex flex-col items-center justify-center text-[10.5px] text-muted text-center cursor-pointer hover:border-ink ${shrinking ? 'opacity-60 pointer-events-none' : ''}`}
+              >
+                <span className="text-[18px] leading-none">+</span>
+                {t('Add photos')}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  className="hidden"
+                  onChange={(e) => {
+                    const picked = Array.from(e.target.files ?? []);
+                    e.target.value = '';
+                    void addPhotos(picked);
+                  }}
+                />
+              </label>
+            )}
+          </div>
+        </div>
+      ) : accessToken ? (
+        <p className="text-[12px] text-muted">{t('Photos can be added by customers who bought this with their account.')}</p>
+      ) : (
+        <p className="text-[12px] text-muted">
+          {t('Bought this with your account? Sign in to add photos.')}{' '}
+          <button type="button" onClick={openLogin} className="font-semibold text-ink underline">
+            {t('Sign in')}
+          </button>
+        </p>
+      )}
+
       {error && <p className="text-[12px] text-accent">{error}</p>}
 
       <div className="flex gap-2">
         <button
           type="submit"
-          disabled={submitting}
+          disabled={submitting || shrinking}
           className="px-4 py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-bold disabled:opacity-60 shadow-sm transition-colors"
         >
           {submitting ? 'Submitting…' : 'Submit review'}

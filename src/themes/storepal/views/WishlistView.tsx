@@ -6,14 +6,14 @@ import type { StoreFooterConfig } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { useWishlist } from '../lib/wishlist';
-import { useStoreText } from '../lib/storeText';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { ShoppingBag, X } from 'lucide-react';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { getServerWishlist, setWishlistNotify } from '@/lib/customerAuthApi';
@@ -46,6 +46,7 @@ interface WishlistRowProps {
 
 /** One saved product: picture, name and option pickers, today's price, Add to Cart and a remove button. */
 function WishlistRow({ product, subdomain, storeName, alertsOn, notifying, onToggleNotify, onRemove }: WishlistRowProps) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const design = useStorePalDesign();
   const bn = design.storeLanguage === 'bn';
@@ -215,7 +216,7 @@ export function WishlistView({
       const r = await setWishlistNotify(accessToken, subdomain, slug, !notify[slug]);
       setNotify(Object.fromEntries(r.items.map((i) => [i.slug, i.notifyDrop])));
     } catch (err) {
-      setAlertError(err instanceof Error ? err.message : 'Could not change the alert.');
+      setAlertError(err instanceof Error ? err.message : t('Could not change the alert.'));
     }
   };
   const saved = slugs

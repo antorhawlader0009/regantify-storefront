@@ -5,8 +5,9 @@ import { useShallow } from 'zustand/react/shallow';
 import { Gift, Tag, Truck } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { previewDiscounts, fetchDiscountOffers, type AutomaticDiscounts, type DiscountOffer } from '@/lib/checkoutApi';
-import { formatPrice } from '@/lib/productDisplay';
+import { formatPrice as plainPrice } from '@/lib/productDisplay';
 import { isStoreWide, offerBenefit } from '../lib/offers';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 
 /**
  * Marketing > Discounts on the StorePal cart page: the automatic discount (or
@@ -20,6 +21,8 @@ import { isStoreWide, offerBenefit } from '../lib/offers';
  * quantity, since those can't be judged from the cart total alone).
  */
 export function CartOffers({ subdomain }: { subdomain: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
+  const t = useStoreText();
   const hydrated = useCartHydrated();
   const lines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));
   const [offers, setOffers] = useState<AutomaticDiscounts | null>(null);
@@ -86,7 +89,7 @@ export function CartOffers({ subdomain }: { subdomain: string }) {
             <Tag size={14} aria-hidden />
             {discount.name}
           </span>
-          <span className="font-bold">You save {formatPrice(discount.discountAmount)}</span>
+          <span className="font-bold">{t('You save')} {formatPrice(discount.discountAmount)}</span>
         </p>
       )}
       {freeShipping && (
@@ -103,7 +106,7 @@ export function CartOffers({ subdomain }: { subdomain: string }) {
         </p>
       ))}
       {(discount || freeShipping || gifts.length > 0) && (
-        <p className="text-[12px] opacity-80">Applied automatically at checkout. Have a coupon code? Add it there.</p>
+        <p className="text-[12px] opacity-80">{t('Applied automatically at checkout. Have a coupon code? Add it there.')}</p>
       )}
     </div>
   );

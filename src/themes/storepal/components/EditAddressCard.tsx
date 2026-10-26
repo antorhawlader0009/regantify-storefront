@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MapPin } from 'lucide-react';
 import { editOrderAddressByLink, type TrackedOrder } from '@/lib/checkoutApi';
 import { ui, type TrackLang } from '@/lib/trackingI18n';
+import { phoneInput } from '@/lib/phoneInput';
 
 /**
  * "Fix my address" on the tracking page and the thank-you page (TellMe idea 21). The server decides whether it is
@@ -107,7 +108,7 @@ export function EditAddressCard({
               type="tel"
               inputMode="tel"
               value={phoneAlt}
-              onChange={(e) => setPhoneAlt(e.target.value)}
+              onChange={(e) => setPhoneAlt(phoneInput(e.target.value))}
               maxLength={20}
               className={`${input} mt-1 font-normal`}
             />

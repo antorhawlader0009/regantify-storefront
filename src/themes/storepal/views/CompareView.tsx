@@ -10,9 +10,10 @@ import { isOutOfStock } from '@/lib/productDisplay';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { useCompare } from '../lib/compare';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { resolvePolicy, policyLines } from '../lib/policy';
 import { useStorePalDesign } from '../lib/designSettings';
+import { useFormatPrice } from '../lib/storeText';
 
 interface CompareViewProps {
   subdomain: string;
@@ -31,6 +32,7 @@ interface CompareViewProps {
  * specification field yet.
  */
 export function CompareView({ subdomain, storeName, categories, categoryDetails, logoUrl, footerConfig, stockSettings }: CompareViewProps) {
+  const formatPrice = useFormatPrice(plainPrice);
   const design = useStorePalDesign();
   const bn = design.storeLanguage === 'bn';
   const { slugs, toggle, clear } = useCompare(subdomain);

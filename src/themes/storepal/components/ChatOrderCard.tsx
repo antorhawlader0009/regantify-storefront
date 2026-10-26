@@ -2,6 +2,7 @@
 
 import { Loader2, ShoppingBag } from 'lucide-react';
 import { isValidBdPhone, type ChatOrder, type ChatOrderDetails } from '@/lib/chatOrder';
+import { phoneInput } from '@/lib/phoneInput';
 
 /**
  * The order being taken in the store's AI chat (lib/chatOrder.ts): the items, the delivery details (filled by the
@@ -31,7 +32,7 @@ export function ChatOrderCard({
       <input
         value={details[key]}
         placeholder={placeholder}
-        onChange={(e) => onDetails({ ...details, [key]: e.target.value })}
+        onChange={(e) => onDetails({ ...details, [key]: key === 'phone' ? phoneInput(e.target.value) : e.target.value })}
         className={`mt-0.5 w-full rounded-md border px-2 py-1.5 text-[12.5px] text-ink bg-surface outline-none focus:border-accent ${
           key === 'phone' && details.phone && !phoneOk ? 'border-red-400' : 'border-line-strong'
         }`}

@@ -17,6 +17,8 @@ import { AccountLayout } from '../../components/AccountLayout';
 import { BringAddressesLink } from '../../components/RegantifySignIn';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 import { BdAddressPicker } from '@/components/BdAddressPicker';
+import { useStoreText } from '../../lib/storeText';
+import { phoneInput } from '@/lib/phoneInput';
 
 const ZONE_LABEL: Record<SavedAddress['deliveryZone'], string> = {
   DHAKA: 'Inside Dhaka',
@@ -46,6 +48,7 @@ const BLANK: Draft = { label: '', recipientName: '', phone: '', district: '', ci
  * one here never changes an old order. (The page keeps the old Change Address route, /account/address.)
  */
 export function ChangeAddressView({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const storeName = useStoreDisplayName(subdomain);
   const hydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
@@ -68,7 +71,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
         setAddresses(r.addresses);
         setMax(r.max);
       })
-      .catch((err) => !cancelled && setError(err instanceof Error ? err.message : 'Could not load your addresses.'));
+      .catch((err) => !cancelled && setError(err instanceof Error ? err.message : t('Could not load your addresses.')));
     return () => {
       cancelled = true;
     };
@@ -104,10 +107,10 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     if (!accessToken || !editing) return;
     setError(null);
-    if (!draft.label.trim()) return setError('Give this address a name, like Home or Office.');
-    if (draft.recipientName.trim().length < 2) return setError('Enter the receiver’s name.');
-    if (!/^(\+?880|0)1[3-9]\d{8}$/.test(draft.phone.trim())) return setError('Enter a valid 11-digit phone number.');
-    if (draft.address.trim().length < 3) return setError('Enter the full address.');
+    if (!draft.label.trim()) return setError(t('Give this address a name, like Home or Office.'));
+    if (draft.recipientName.trim().length < 2) return setError(t('Enter the receiver’s name.'));
+    if (!/^(\+?880|0)1[3-9]\d{8}$/.test(draft.phone.trim())) return setError(t('Enter a valid 11-digit phone number.'));
+    if (draft.address.trim().length < 3) return setError(t('Enter the full address.'));
     const body: SavedAddressInput = {
       label: draft.label.trim(),
       recipientName: draft.recipientName.trim(),
@@ -123,7 +126,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
       apply(editing === 'new' ? await createMyAddress(accessToken, body) : await updateMyAddressById(accessToken, editing, body));
       setEditing(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not save the address.');
+      setError(err instanceof Error ? err.message : t('Could not save the address.'));
     } finally {
       setSaving(false);
     }
@@ -134,17 +137,17 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
     try {
       apply(await updateMyAddressById(accessToken, a.id, { isDefault: true }));
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not change the default address.');
+      setError(err instanceof Error ? err.message : t('Could not change the default address.'));
     }
   };
 
   const remove = async (a: SavedAddress) => {
-    if (!accessToken || !window.confirm(`Delete "${a.label}"?`)) return;
+    if (!accessToken || !window.confirm(t('Delete "{name}"?').replace('{name}', a.label))) return;
     try {
       apply(await deleteMyAddress(accessToken, a.id));
       if (editing === a.id) setEditing(null);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not delete the address.');
+      setError(err instanceof Error ? err.message : t('Could not delete the address.'));
     }
   };
 
@@ -153,12 +156,12 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
       <AccountLayout subdomain={subdomain} storeName={storeName}>
         <div className="bg-surface border border-line rounded-lg p-6 text-center">
           <MapPin size={26} className="mx-auto text-muted mb-3" />
-          <p className="text-[14px] text-ink font-semibold mb-1">Log in to manage your addresses</p>
+          <p className="text-[14px] text-ink font-semibold mb-1">{t('Log in to manage your addresses')}</p>
           <Link
             href={`/store/${subdomain}/account/login`}
             className="inline-block mt-3 px-5 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13px] font-bold transition-colors"
           >
-            Log in
+            {t('Log in')}
           </Link>
         </div>
       </AccountLayout>
@@ -167,7 +170,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
 
   return (
     <AccountLayout subdomain={subdomain} storeName={storeName}>
-      <h1 className="text-[22px] font-bold text-ink mb-1">My Addresses</h1>
+      <h1 className="text-[22px] font-bold text-ink mb-1">{t('My Addresses')}</h1>
       <p className="text-[13px] text-muted mb-5">
         Save up to {max} addresses. At checkout, tap one to fill in the address and the delivery charge.
       </p>
@@ -180,8 +183,8 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
           <div key={a.id} className="bg-surface border border-line rounded-lg p-4">
             <div className="flex items-center gap-2">
               <p className="m-0 text-[14px] font-bold text-ink">{a.label}</p>
-              {a.isDefault && <span className="rounded bg-ink px-2 py-0.5 text-[11px] font-semibold text-white">Default</span>}
-              <span className="ml-auto text-[12px] text-muted">{ZONE_LABEL[a.deliveryZone]}</span>
+              {a.isDefault && <span className="rounded bg-ink px-2 py-0.5 text-[11px] font-semibold text-white">{t('Default')}</span>}
+              <span className="ml-auto text-[12px] text-muted">{t(ZONE_LABEL[a.deliveryZone])}</span>
             </div>
             <p className="m-0 mt-1.5 text-[13px] text-ink">
               {a.recipientName} · {a.phone}
@@ -191,21 +194,21 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
             </p>
             <div className="mt-3 flex flex-wrap gap-3 text-[13px] font-semibold">
               <button type="button" onClick={() => openEdit(a)} className="text-ink underline underline-offset-2 hover:text-accent">
-                Edit
+                {t('Edit')}
               </button>
               {!a.isDefault && (
                 <button type="button" onClick={() => void makeDefault(a)} className="text-ink underline underline-offset-2 hover:text-accent">
-                  Make default
+                  {t('Make default')}
                 </button>
               )}
               <button type="button" onClick={() => void remove(a)} className="text-accent underline underline-offset-2">
-                Delete
+                {t('Delete')}
               </button>
             </div>
           </div>
         ))}
         {addresses && addresses.length === 0 && editing === null && (
-          <p className="text-[13px] text-muted">You have no saved address yet.</p>
+          <p className="text-[13px] text-muted">{t('You have no saved address yet.')}</p>
         )}
       </div>
 
@@ -215,7 +218,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
           onClick={openNew}
           className="mt-4 px-5 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold transition-colors"
         >
-          Add an address
+          {t('Add an address')}
         </button>
       )}
 
@@ -223,25 +226,25 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
         <div className="mt-4 bg-surface border border-line rounded-lg p-5 sm:p-6 max-w-lg">
           <form onSubmit={save} className="space-y-4">
             <div>
-              <label className={labelClass}>Name this address</label>
+              <label className={labelClass}>{t('Name this address')}</label>
               <input
                 value={draft.label}
                 onChange={(e) => setDraft({ ...draft, label: e.target.value.slice(0, 30) })}
                 maxLength={30}
-                placeholder="Home, Office, Mother's place"
+                placeholder={t('Home, Office, Mother\'s place')}
                 className={inputClass}
               />
             </div>
             <div>
-              <label className={labelClass}>Receiver&apos;s name</label>
+              <label className={labelClass}>{t("Receiver's name")}</label>
               <input value={draft.recipientName} onChange={(e) => setDraft({ ...draft, recipientName: e.target.value.slice(0, 100) })} maxLength={100} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Phone</label>
-              <input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: e.target.value.slice(0, 20) })} placeholder="01XXXXXXXXX" maxLength={20} className={inputClass} />
+              <label className={labelClass}>{t('Phone')}</label>
+              <input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: phoneInput(e.target.value).slice(0, 20) })} placeholder="01XXXXXXXXX" maxLength={20} className={inputClass} />
             </div>
             <div>
-              <label className={labelClass}>Full address</label>
+              <label className={labelClass}>{t('Full address')}</label>
               <textarea
                 value={draft.address}
                 onChange={(e) => setDraft({ ...draft, address: e.target.value.slice(0, 300) })}
@@ -264,28 +267,28 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
               }}
               lang="en"
               labels={{
-                district: 'District',
-                thana: 'City / Thana / Upazila',
-                districtPlaceholder: 'Select district',
-                thanaPlaceholder: 'Select thana / upazila',
-                thanaNeedsDistrict: 'Choose a district first',
-                other: 'Other (type it)',
-                typeDistrict: 'Type your district',
-                typeThana: 'Type your city or thana',
+                district: t('District'),
+                thana: t('City / Thana / Upazila'),
+                districtPlaceholder: t('Select district'),
+                thanaPlaceholder: t('Select thana / upazila'),
+                thanaNeedsDistrict: t('Choose a district first'),
+                other: t('Other (type it)'),
+                typeDistrict: t('Type your district'),
+                typeThana: t('Type your city or thana'),
               }}
               labelClassName={labelClass}
               controlClassName={inputClass}
             />
             <div>
-              <label className={labelClass}>Delivery area</label>
+              <label className={labelClass}>{t('Delivery area')}</label>
               <select
                 value={draft.deliveryZone}
                 onChange={(e) => setDraft({ ...draft, deliveryZone: e.target.value as Draft['deliveryZone'] })}
                 className={inputClass}
               >
-                <option value="DHAKA">{ZONE_LABEL.DHAKA}</option>
-                <option value="AROUND_DHAKA">{ZONE_LABEL.AROUND_DHAKA}</option>
-                <option value="OUTSIDE_DHAKA">{ZONE_LABEL.OUTSIDE_DHAKA}</option>
+                <option value="DHAKA">{t(ZONE_LABEL.DHAKA)}</option>
+                <option value="AROUND_DHAKA">{t(ZONE_LABEL.AROUND_DHAKA)}</option>
+                <option value="OUTSIDE_DHAKA">{t(ZONE_LABEL.OUTSIDE_DHAKA)}</option>
               </select>
             </div>
             <label className="flex cursor-pointer items-center gap-2 text-[13px] text-ink">
@@ -296,7 +299,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
                 onChange={(e) => setDraft({ ...draft, isDefault: e.target.checked })}
                 className="h-4 w-4"
               />
-              Use as my default address
+              {t('Use as my default address')}
             </label>
 
             {error && <p className="text-[12.5px] text-accent">{error}</p>}
@@ -307,7 +310,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
                 disabled={saving}
                 className="px-6 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors"
               >
-                {saving ? 'Saving…' : 'Save address'}
+                {saving ? t('Saving…') : t('Save address')}
               </button>
               <button
                 type="button"
@@ -315,7 +318,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
                 disabled={saving}
                 className="px-6 py-2.5 rounded-md border border-line-strong bg-surface text-ink text-[13.5px] font-bold disabled:opacity-60"
               >
-                Cancel
+                {t('Cancel')}
               </button>
             </div>
           </form>

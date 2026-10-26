@@ -4,9 +4,9 @@ import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Plus } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
-import { formatPrice } from '@/lib/productDisplay';
+import { formatPrice as plainPrice } from '@/lib/productDisplay';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
-import { useStoreText } from '../lib/storeText';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 
 function apiOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL;
@@ -21,6 +21,7 @@ function apiOrigin(): string {
  * the vendor picked nothing or the request fails.
  */
 export function CartAddons({ subdomain }: { subdomain: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const hydrated = useCartHydrated();
   const lines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));

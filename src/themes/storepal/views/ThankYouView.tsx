@@ -8,7 +8,7 @@ import type { TrackedOrder } from '@/lib/checkoutApi';
 import { orderLabel } from '@/lib/orderLabel';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { downloadOrderMemoPdf } from '../lib/orderMemoPdf';
 import { useEffect, useState } from 'react';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
@@ -22,8 +22,11 @@ import { EditAddressCard } from '../components/EditAddressCard';
 import { useStorePalDesign } from '../lib/designSettings';
 import { trackMetaPurchase } from '@/lib/metaPixelEvents';
 import { trackPurchase } from '@/lib/ecommerceEvents';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 
 export function ThankYouView({ subdomain }: { subdomain: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
+  const t = useStoreText();
   const { order, setOrder, loading, justPlaced } = useTrackOrder(subdomain);
   const storeName = useStoreDisplayName(subdomain);
   const { storeLanguage } = useStorePalDesign();
@@ -74,7 +77,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
   if ((loading || hasPendingHandoff) && !order) {
     return (
       <div className="min-h-screen bg-canvas flex items-center justify-center">
-        <p className="text-muted text-[13.5px]">Loading your order…</p>
+        <p className="text-muted text-[13.5px]">{t('Loading your order…')}</p>
       </div>
     );
   }
@@ -85,13 +88,13 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
   if (!order) {
     return (
       <div className="min-h-screen bg-canvas flex flex-col items-center justify-center gap-3 px-4 text-center">
-        <p className="text-ink font-semibold text-[15px]">We couldn&apos;t find a recent order to confirm.</p>
-        <p className="text-muted text-[13px]">Already placed an order? Track it instead.</p>
+        <p className="text-ink font-semibold text-[15px]">{t("We couldn't find a recent order to confirm.")}</p>
+        <p className="text-muted text-[13px]">{t('Already placed an order? Track it instead.')}</p>
         <Link
           href={`/store/${subdomain}/orders`}
           className="mt-2 px-4 py-2 rounded-md bg-ink text-white text-[13px] font-bold"
         >
-          Track Your Order
+          {t('Track Your Order')}
         </Link>
       </div>
     );
@@ -149,26 +152,26 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             </svg>
           </div>
           <h1 className="storepal-fade-up text-[24px] sm:text-[28px] font-bold text-ink mb-2">
-            {codVerificationExpired ? 'Order not confirmed' : cancelled ? 'Order cancelled' : justPlaced ? 'Thank you for your order!' : 'Order confirmed'}
+            {codVerificationExpired ? t('Order not confirmed') : cancelled ? t('Order cancelled') : justPlaced ? t('Thank you for your order!') : t('Order confirmed')}
           </h1>
           <p className="storepal-fade-up text-[13.5px] text-muted max-w-md" style={{ animationDelay: '0.08s' }}>
             {codVerificationExpired
               ? order.status === 'CANCELLED'
-                ? 'The SMS code was not entered in time, so this order was cancelled. You are welcome to place it again.'
-                : 'The SMS code was not entered in time. The store will contact you to confirm this order.'
+                ? t('The SMS code was not entered in time, so this order was cancelled. You are welcome to place it again.')
+                : t('The SMS code was not entered in time. The store will contact you to confirm this order.')
               : cancelled
-              ? 'This order has been cancelled. You are welcome to place a new one any time.'
+              ? t('This order has been cancelled. You are welcome to place a new one any time.')
               : awaitingCodVerification
-              ? 'One more step: confirm your order with the code we just texted you.'
+              ? t('One more step: confirm your order with the code we just texted you.')
               : order.manualPaymentStatus && order.paymentMethod !== 'COD'
                 ? `Your order is received. The store will check your ${order.manualPaymentWallet ?? 'mobile'} payment and then send your order.`
               : order.paymentMethod !== 'COD'
-                ? 'Your payment was received and your order is confirmed. A confirmation call may follow shortly.'
+                ? t('Your payment was received and your order is confirmed. A confirmation call may follow shortly.')
                 : advancePaid > 0
                   ? order.advanceFor === 'LINK'
-                    ? 'Your advance payment was received and your order is confirmed. You pay the rest in cash on delivery.'
-                    : 'Your delivery charge was received and your order is confirmed. You pay the rest in cash on delivery. A confirmation call may follow shortly.'
-                : 'Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.'}
+                    ? t('Your advance payment was received and your order is confirmed. You pay the rest in cash on delivery.')
+                    : t('Your delivery charge was received and your order is confirmed. You pay the rest in cash on delivery. A confirmation call may follow shortly.')
+                : t('Your order has been received and will be delivered with Cash on Delivery. A confirmation call may follow shortly.')}
           </p>
         </div>
 
@@ -197,7 +200,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
         <div className="storepal-fade-up bg-surface border border-line rounded-lg overflow-hidden shadow-card" style={{ animationDelay: '0.16s' }}>
           <div className="flex items-center justify-between gap-3 flex-wrap px-5 py-4 border-b border-line bg-canvas">
             <div>
-              <p className="text-[11px] text-muted uppercase tracking-wide">Order Memo</p>
+              <p className="text-[11px] text-muted uppercase tracking-wide">{t('Order Memo')}</p>
               <p className="text-[17px] font-bold text-ink">{orderLabel(order)}</p>
               {order.estimatedDeliveryDate && (
                 <p className="mt-0.5 text-[12.5px] text-muted">
@@ -206,7 +209,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
               )}
             </div>
             <div className="text-right">
-              <p className="text-[11px] text-muted uppercase tracking-wide">Placed On</p>
+              <p className="text-[11px] text-muted uppercase tracking-wide">{t('Placed On')}</p>
               <p className="text-[13px] font-medium text-ink">{new Date(order.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
@@ -215,7 +218,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             <div className="flex items-start gap-2">
               <MapPin size={15} className="text-accent shrink-0 mt-0.5" />
               <div>
-                <p className="text-[12px] text-muted mb-0.5">Delivery Address</p>
+                <p className="text-[12px] text-muted mb-0.5">{t('Delivery Address')}</p>
                 <p className="text-[13px] text-ink leading-snug">
                   {order.shippingAddress}
                   {order.shippingCity ? `, ${order.shippingCity}` : ''}
@@ -226,7 +229,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             <div className="flex items-start gap-2">
               <Phone size={15} className="text-accent shrink-0 mt-0.5" />
               <div>
-                <p className="text-[12px] text-muted mb-0.5">Customer</p>
+                <p className="text-[12px] text-muted mb-0.5">{t('Customer')}</p>
                 <p className="text-[13px] text-ink leading-snug">{order.customerName}</p>
               </div>
             </div>
@@ -254,16 +257,16 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
 
           <div className="px-5 py-4 border-t border-line space-y-1.5 text-[13px]">
             <div className="flex justify-between text-muted">
-              <span>Subtotal</span>
+              <span>{t('Subtotal')}</span>
               <span>{formatPrice(order.subtotal)}</span>
             </div>
             <div className="flex justify-between text-muted">
-              <span>Delivery Charge</span>
+              <span>{t('Delivery Charge')}</span>
               <span>{formatPrice(order.deliveryCharge)}</span>
             </div>
             {Number(order.vatAmount) > 0 && (
               <div className="flex justify-between text-muted">
-                <span>VAT</span>
+                <span>{t('VAT')}</span>
                 <span>{formatPrice(order.vatAmount)}</span>
               </div>
             )}
@@ -279,28 +282,28 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
                 with `total` excluding it (OrdersService.toCustomerOrder). */}
             {order.paymentMethod !== 'ONLINE_PAYMENT' && Number(order.platformChargeAmount) > 0 && (
               <div className="flex justify-between text-muted">
-                <span>Platform Charge</span>
+                <span>{t('Platform Charge')}</span>
                 <span>{formatPrice(order.platformChargeAmount)}</span>
               </div>
             )}
             {Number(order.discountAmount) > 0 && (
               <div className="flex justify-between text-success">
-                <span>Discount</span>
+                <span>{t('Discount')}</span>
                 <span>-{formatPrice(order.discountAmount)}</span>
               </div>
             )}
             <div className="flex justify-between pt-2 mt-1 border-t border-line text-[16px] font-bold text-ink">
-              <span>Total</span>
+              <span>{t('Total')}</span>
               <span>{formatPrice(order.total)}</span>
             </div>
             {advancePaid > 0 && (
               <>
                 <div className="flex justify-between text-success">
-                  <span>Paid in advance</span>
+                  <span>{t('Paid in advance')}</span>
                   <span>-{formatPrice(advancePaid)}</span>
                 </div>
                 <div className="flex justify-between font-bold text-ink">
-                  <span>Pay on delivery</span>
+                  <span>{t('Pay on delivery')}</span>
                   <span>{formatPrice(Math.max(0, Number(order.total) - advancePaid))}</span>
                 </div>
               </>
@@ -309,13 +312,13 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
 
           <div className="px-5 py-4 border-t border-line bg-canvas flex items-center gap-2 text-[12.5px] text-ink">
             <Package size={14} className="text-accent" />
-            Payment Method:{' '}
+            {t('Payment Method')}:{' '}
             <span className="font-semibold">
               {order.manualPaymentStatus && order.paymentMethod !== 'COD'
-                ? `${order.manualPaymentWallet ?? 'Mobile'} payment`
+                ? `${order.manualPaymentWallet ?? t('Mobile')} ${t('payment')}`
                 : order.paymentMethod === 'COD'
-                  ? 'Cash on Delivery'
-                  : 'Online Payment'}
+                  ? t('Cash on Delivery')
+                  : t('Online Payment')}
             </span>
           </div>
         </div>
@@ -335,13 +338,13 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold transition-colors disabled:opacity-60"
           >
             <Download size={16} />
-            {downloadingMemo ? 'Preparing memo…' : 'Download Memo (PDF)'}
+            {downloadingMemo ? t('Preparing memo…') : t('Download Memo (PDF)')}
           </button>
           <Link
             href={`/store/${subdomain}`}
             className="flex-1 flex items-center justify-center gap-2 py-3 rounded-md border border-line-strong text-ink text-[13.5px] font-bold hover:bg-surface transition-colors"
           >
-            Continue Shopping
+            {t('Continue Shopping')}
             <ArrowRight size={15} />
           </Link>
         </div>
@@ -352,7 +355,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
             href={order.trackingToken ? `/store/${subdomain}/t/${order.trackingToken}` : `/store/${subdomain}/orders`}
             className="text-accent font-medium hover:text-accent-dark"
           >
-            Track it anytime
+            {t('Track it anytime')}
           </Link>
           .
         </p>

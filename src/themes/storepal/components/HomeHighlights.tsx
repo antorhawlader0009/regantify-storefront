@@ -2,6 +2,7 @@
 
 import { useStorePalDesign } from '../lib/designSettings';
 import { highlightIcon } from '../lib/highlightIcons';
+import { useStoreText } from '../lib/storeText';
 
 // What a store shows until its vendor writes its own in Store > Design > Customize.
 // Keep the words in lockstep with the dashboard's DEFAULT_HIGHLIGHTS (client/src/lib/homeSections.ts).
@@ -25,6 +26,7 @@ const ITEM_WIDTH_CLASS = {
  * optional heading sits above. Phones show them one per row.
  */
 export function HomeHighlights() {
+  const t = useStoreText();
   const design = useStorePalDesign();
   const items = design.homeHighlights.length > 0 ? design.homeHighlights : DEFAULT_HIGHLIGHTS;
   const heading = design.homeHighlightsHeading?.trim();
@@ -42,8 +44,8 @@ export function HomeHighlights() {
                 <div className="w-12 h-12 rounded-full bg-accent-light flex items-center justify-center">
                   <Icon size={22} className="text-accent" aria-hidden />
                 </div>
-                <p className="font-bold text-[13.5px] text-ink">{item.title}</p>
-                {item.text && <p className="text-[12.5px] text-muted leading-relaxed max-w-[240px]">{item.text}</p>}
+                <p className="font-bold text-[13.5px] text-ink">{t(item.title)}</p>
+                {item.text && <p className="text-[12.5px] text-muted leading-relaxed max-w-[240px]">{t(item.text)}</p>}
               </div>
             );
           })}

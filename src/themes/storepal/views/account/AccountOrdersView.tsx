@@ -6,8 +6,8 @@ import { useRouter } from 'next/navigation';
 import { Gift, Package, RotateCcw } from 'lucide-react';
 import { listCustomerOrders, fetchBuyAgain, fetchCustomerRewards, type CustomerOrder, type CustomerRewards } from '@/lib/customerAuthApi';
 import { useCartStore } from '@/providers/cart-store-provider';
-import { useStoreText } from '../../lib/storeText';
-import { formatPrice } from '../../lib/formatPrice';
+import { useStoreText, useFormatPrice } from '../../lib/storeText';
+import { formatPrice as plainPrice } from '../../lib/formatPrice';
 import { customerOrderStatusLabel } from '@/lib/orderStatusDisplay';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
@@ -17,6 +17,7 @@ import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 
 /** Account > Orders — matches the reference "Your Orders" (Invoice/Status/Amount) screenshot. Also used as "Dashboard" (see reference "Hi, Name" screenshot), which is the same list with a greeting on top. */
 export function AccountOrdersView({ subdomain }: { subdomain: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const storeName = useStoreDisplayName(subdomain);
   const hydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
@@ -69,7 +70,7 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
       }
       router.push(`/store/${subdomain}/cart`);
     } catch (err) {
-      setAgain({ orderId, text: err instanceof Error ? err.message : 'Could not load that order.' });
+      setAgain({ orderId, text: err instanceof Error ? err.message : t('Could not load that order.') });
     } finally {
       setBusyId(null);
     }
@@ -87,7 +88,7 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
     if (!hydrated || !accessToken) return;
     listCustomerOrders(subdomain, accessToken)
       .then(setOrders)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Could not load your orders.'));
+      .catch((err) => setError(err instanceof Error ? err.message : t('Could not load your orders.')));
   }, [hydrated, accessToken, subdomain]);
 
   if (hydrated && !customer) {
@@ -95,12 +96,12 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
       <AccountLayout subdomain={subdomain} storeName={storeName}>
         <div className="bg-surface border border-line rounded-lg p-6 text-center">
           <Package size={26} className="mx-auto text-muted mb-3" />
-          <p className="text-[14px] text-ink font-semibold mb-1">Log in to see your orders</p>
+          <p className="text-[14px] text-ink font-semibold mb-1">{t('Log in to see your orders')}</p>
           <Link
             href={`/store/${subdomain}/account/login`}
             className="inline-block mt-3 px-5 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13px] font-bold transition-colors"
           >
-            Log in
+            {t('Log in')}
           </Link>
         </div>
       </AccountLayout>
@@ -132,13 +133,13 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
 
         {orders && orders.length === 0 && (
           <div className="p-8 text-center">
-            <p className="text-[13.5px] text-ink font-medium mb-1">No orders yet</p>
-            <p className="text-[12.5px] text-muted mb-4">Orders you place with this store will show up here.</p>
+            <p className="text-[13.5px] text-ink font-medium mb-1">{t('No orders yet')}</p>
+            <p className="text-[12.5px] text-muted mb-4">{t('Orders you place with this store will show up here.')}</p>
             <Link
               href={`/store/${subdomain}`}
               className="inline-block px-4 py-2 rounded-md bg-ink hover:bg-ink/90 text-white text-[12.5px] font-bold transition-colors"
             >
-              Start shopping
+              {t('Start shopping')}
             </Link>
           </div>
         )}

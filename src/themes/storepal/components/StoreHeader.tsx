@@ -10,7 +10,7 @@ import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
 import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { ChatBubble } from './ChatBubble';
 import { LazyPhotoSearchPanel } from './LazyWidgets';
 import { useHeaderPresence } from '../lib/headerPresence';
@@ -30,7 +30,7 @@ import { useAuthDialog } from '../lib/authDialog';
 import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefrontApi';
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
-import { useStoreText } from '../lib/storeText';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { matchesSearch as matchesSearchWords } from '../lib/searchMatch';
 
 interface StoreHeaderProps {
@@ -167,6 +167,7 @@ export function StoreHeader({
   chatProductName,
   categoryDetails = [],
 }: StoreHeaderProps) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
   const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
@@ -431,7 +432,7 @@ export function StoreHeader({
             type="button"
             onClick={() => setMobileMenuOpen(true)}
             className="sm:hidden -ml-1 p-1 text-ink"
-            aria-label="Open menu"
+            aria-label={t('Open menu')}
           >
             <Menu size={22} />
           </button>
@@ -467,7 +468,7 @@ export function StoreHeader({
                   type="button"
                   onClick={handleClearSearch}
                   className="px-2 text-muted hover:text-ink flex items-center justify-center"
-                  aria-label="Clear search"
+                  aria-label={t('Clear search')}
                 >
                   <X size={15} />
                 </button>
@@ -477,7 +478,7 @@ export function StoreHeader({
               <button
                 type="submit"
                 className="px-4 bg-ink text-white flex items-center justify-center hover:bg-ink/90 transition-colors"
-                aria-label="Search"
+                aria-label={t('Search')}
               >
                 <Search size={17} />
               </button>
@@ -563,7 +564,7 @@ export function StoreHeader({
             <Link
               href={`/store/${subdomain}/wishlist`}
               className="relative text-ink hover:text-accent transition-colors"
-              aria-label="Wishlist"
+              aria-label={t('Wishlist')}
             >
               <Heart size={21} strokeWidth={1.75} />
               {wishlist.slugs.length > 0 && (
@@ -582,7 +583,7 @@ export function StoreHeader({
               openLogin();
             }}
             className="text-ink hover:text-accent transition-colors"
-            aria-label="Account"
+            aria-label={t('Account')}
           >
             <User size={21} strokeWidth={1.75} />
           </Link>
@@ -595,7 +596,7 @@ export function StoreHeader({
               openCartDrawer();
             }}
             className="relative flex items-center gap-2 text-ink hover:text-accent transition-colors"
-            aria-label="Cart"
+            aria-label={t('Cart')}
             data-rg="cart-button"
           >
             <ShoppingBag size={21} strokeWidth={1.75} />
@@ -629,14 +630,14 @@ export function StoreHeader({
                 type="button"
                 onClick={handleClearSearch}
                 className="px-2 text-muted hover:text-ink flex items-center justify-center"
-                aria-label="Clear search"
+                aria-label={t('Clear search')}
               >
                 <X size={14} />
               </button>
             )}
             <VoiceSearchButton voice={voice} onStart={() => setSuggestionsOpen(false)} className="px-2 text-muted hover:text-ink flex items-center justify-center" />
             <PhotoSearchButton subdomain={subdomain} className="px-2.5 text-muted hover:text-ink flex items-center justify-center" />
-            <button type="submit" className="px-3.5 bg-ink text-white flex items-center justify-center" aria-label="Search">
+            <button type="submit" className="px-3.5 bg-ink text-white flex items-center justify-center" aria-label={t('Search')}>
               <Search size={16} />
             </button>
           </div>
@@ -784,7 +785,7 @@ export function StoreHeader({
           <nav className="absolute inset-y-0 left-0 w-[80%] max-w-[300px] bg-surface overflow-y-auto shadow-popover">
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-line">
               <span className="text-[15px] font-bold text-ink">{t('Menu')}</span>
-              <button onClick={() => setMobileMenuOpen(false)} aria-label="Close menu" className="text-ink">
+              <button onClick={() => setMobileMenuOpen(false)} aria-label={t('Close menu')} className="text-ink">
                 <X size={20} />
               </button>
             </div>

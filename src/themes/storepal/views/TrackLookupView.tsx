@@ -13,6 +13,7 @@ import { StoreFooter } from '../components/StoreFooter';
 import { TrackOrderBody } from '../components/TrackOrderBody';
 import { LangToggle } from './TrackOrderView';
 import type { TrackedOrder } from '@/lib/checkoutApi';
+import { phoneInput } from '@/lib/phoneInput';
 
 /** The looked-up order, refreshing itself once a minute while it is still moving. */
 function LiveResult({
@@ -110,7 +111,7 @@ export function TrackLookupView({ subdomain }: { subdomain: string }) {
           </label>
           <label className="block">
             <span className="block text-[12px] font-medium text-muted mb-1">{ui(lang, 'phoneNumber')}</span>
-            <input value={phone} onChange={(e) => setPhone(e.target.value)} placeholder="01XXXXXXXXX" inputMode="tel" autoComplete="tel" className={inputClass} />
+            <input value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} placeholder="01XXXXXXXXX" inputMode="tel" autoComplete="tel" className={inputClass} />
           </label>
           <button
             type="submit"

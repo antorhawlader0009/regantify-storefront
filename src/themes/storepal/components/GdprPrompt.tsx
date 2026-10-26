@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import type { StorefrontGdprPrompt } from '@/lib/storefrontApi';
 import { grantGdprConsent, hasGdprConsent } from '@/lib/gdprConsent';
+import { useStoreText } from '../lib/storeText';
 
 // Shown when the vendor enabled the prompt but left the message blank —
 // keep in sync with client's pages/vendor/store/GdprPrompt.tsx placeholder.
@@ -28,6 +29,7 @@ const POSITION_CLASSES: Record<StorefrontGdprPrompt['position'], string> = {
  * trust level as Store > Footer's aboutBlurb (see StoreFooter.tsx).
  */
 export function GdprPrompt({ subdomain, prompt }: { subdomain: string; prompt: StorefrontGdprPrompt }) {
+  const t = useStoreText();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
@@ -47,7 +49,7 @@ export function GdprPrompt({ subdomain, prompt }: { subdomain: string; prompt: S
     <div
       role="dialog"
       aria-live="polite"
-      aria-label="Cookie consent"
+      aria-label={t('Cookie consent')}
       className={`fixed z-[60] border-black/10 ${POSITION_CLASSES[prompt.position] ?? POSITION_CLASSES.BOTTOM}`}
       style={{ backgroundColor: prompt.backgroundColor, color: prompt.textColor }}
     >

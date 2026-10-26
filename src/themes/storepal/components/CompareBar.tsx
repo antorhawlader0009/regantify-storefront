@@ -12,7 +12,8 @@ export function CompareBar({ subdomain }: { subdomain: string }) {
   const design = useStorePalDesign();
   const pathname = usePathname() ?? '';
   const bn = design.storeLanguage === 'bn';
-  if (slugs.length === 0 || /\/compare$/.test(pathname)) return null;
+  // Off (IDEA-13): no bar, even if this browser still remembers products ticked before the store turned it off.
+  if (design.compareEnabled !== true || slugs.length === 0 || /\/compare$/.test(pathname)) return null;
   const n = bn ? bnDigits(slugs.length) : String(slugs.length);
   return (
     <div className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-surface px-4 py-3 shadow-[0_-4px_12px_rgba(0,0,0,0.08)]">

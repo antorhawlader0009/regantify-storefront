@@ -3,6 +3,8 @@
 import { useEffect, useState, type FormEvent } from 'react';
 import { BellRing, CheckCircle2, MessageCircleQuestion, X } from 'lucide-react';
 import { apiOrigin } from '@/lib/checkoutApi';
+import { useStoreText } from '../lib/storeText';
+import { phoneInput } from '@/lib/phoneInput';
 
 /*
  * LMS store forms on StorePal product pages (LMS-plan.md Step 9):
@@ -17,24 +19,26 @@ export type StoreFormType = 'notify-me' | 'call-back' | 'price-request';
 
 const CONSENT = "We'll use your number only to contact you about this request.";
 
-const COPY: Record<StoreFormType, { title: string; intro: (product: string) => string; submit: string; done: (name: string, phone: string, product: string) => string }> = {
+type T = (english: string) => string;
+const fill = (text: string, words: Record<string, string>) => text.replace(/\{(\w+)\}/g, (m, k: string) => words[k] ?? m);
+const COPY: Record<StoreFormType, { title: string; intro: (product: string, t: T) => string; submit: string; done: (name: string, phone: string, product: string, t: T) => string }> = {
   'notify-me': {
     title: "Tell me when it's back",
-    intro: (product) => `${product} is sold out right now. Leave your number and we'll message you as soon as it's back.`,
+    intro: (product, t) => fill(t("{product} is sold out right now. Leave your number and we'll message you as soon as it's back."), { product }),
     submit: 'Notify me',
-    done: (_name, phone, product) => `Done. We'll message ${phone} when ${product} is back.`,
+    done: (_name, phone, product, t) => fill(t("Done. We'll message {phone} when {product} is back."), { phone, product }),
   },
   'call-back': {
     title: 'Ask us a question',
-    intro: () => "Leave your number and we'll call you back.",
+    intro: (_product, t) => t("Leave your number and we'll call you back."),
     submit: 'Call me back',
-    done: (name, phone) => `Thanks, ${name}. We'll call you on ${phone}.`,
+    done: (name, phone, _product, t) => fill(t("Thanks, {name}. We'll call you on {phone}."), { name, phone }),
   },
   'price-request': {
     title: 'Request a price',
-    intro: (product) => `Tell us how many ${product} you need and we'll send you the price.`,
+    intro: (product, t) => fill(t("Tell us how many {product} you need and we'll send you the price."), { product }),
     submit: 'Send request',
-    done: (name, phone) => `Thanks, ${name}. We'll send the price to ${phone}.`,
+    done: (name, phone, _product, t) => fill(t("Thanks, {name}. We'll send the price to {phone}."), { name, phone }),
   },
 };
 
@@ -69,6 +73,7 @@ export function StoreLeadFormDialog({
   quantity?: number;
   onClose: () => void;
 }) {
+  const t = useStoreText();
   const copy = COPY[type];
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
@@ -136,9 +141,9 @@ export function StoreLeadFormDialog({
       >
         <div className="mb-2 flex items-start justify-between gap-3">
           <p id="store-lead-form-title" className="m-0 text-[16px] font-bold text-ink">
-            {copy.title}
+            {t(copy.title)}
           </p>
-          <button type="button" onClick={onClose} aria-label="Close" className="-mr-1 -mt-1 rounded p-1 text-muted hover:text-ink">
+          <button type="button" onClick={onClose} aria-label={t('Close')} className="-mr-1 -mt-1 rounded p-1 text-muted hover:text-ink">
             <X size={18} />
           </button>
         </div>
@@ -147,28 +152,28 @@ export function StoreLeadFormDialog({
           <div className="py-2">
             <p className="flex items-start gap-2 text-[14px] leading-relaxed text-ink">
               <CheckCircle2 size={18} className="mt-0.5 shrink-0 text-success" />
-              {copy.done(name.trim(), bdPhone(phone) ?? phone, productName)}
+              {copy.done(name.trim(), bdPhone(phone) ?? phone, productName, t)}
             </p>
             <button onClick={onClose} className="mt-5 w-full rounded-md border border-line py-2.5 text-[13px] font-semibold text-ink hover:bg-line/60">
-              Close
+              {t('Close')}
             </button>
           </div>
         ) : (
           <form onSubmit={submit} className="space-y-3" noValidate>
-            <p className="m-0 text-[13.5px] leading-relaxed text-muted">{copy.intro(productName)}</p>
-            <input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder="Your name" autoComplete="name" maxLength={120} autoFocus />
+            <p className="m-0 text-[13.5px] leading-relaxed text-muted">{copy.intro(productName, t)}</p>
+            <input className={input} value={name} onChange={(e) => setName(e.target.value)} placeholder={t('Your name')} autoComplete="name" maxLength={120} autoFocus />
             <input
               className={input}
               value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              placeholder="Mobile number, e.g. 01712345678"
+              onChange={(e) => setPhone(phoneInput(e.target.value))}
+              placeholder={t('Mobile number, e.g. 01712345678')}
               inputMode="tel"
               autoComplete="tel"
               maxLength={20}
             />
             {type === 'price-request' && (
               <label className="flex items-center gap-3 text-[13px] text-ink">
-                How many
+                {t('How many')}
                 <input
                   className={`${input} !w-28`}
                   type="number"
@@ -186,17 +191,17 @@ export function StoreLeadFormDialog({
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
                 maxLength={1000}
-                placeholder={type === 'call-back' ? 'Your question (optional)' : 'Anything else we should know (optional)'}
+                placeholder={type === 'call-back' ? t('Your question (optional)') : t('Anything else we should know (optional)')}
               />
             )}
             {type === 'call-back' && (
               <label className="flex items-center gap-3 text-[13px] text-ink">
-                Best time to call
+                {t('Best time to call')}
                 <select className={`${input} !w-auto`} value={time} onChange={(e) => setTime(e.target.value)}>
-                  <option value="ANY">Any time</option>
-                  <option value="MORNING">Morning</option>
-                  <option value="AFTERNOON">Afternoon</option>
-                  <option value="EVENING">Evening</option>
+                  <option value="ANY">{t('Any time')}</option>
+                  <option value="MORNING">{t('Morning')}</option>
+                  <option value="AFTERNOON">{t('Afternoon')}</option>
+                  <option value="EVENING">{t('Evening')}</option>
                 </select>
               </label>
             )}
@@ -219,7 +224,7 @@ export function StoreLeadFormDialog({
               disabled={state === 'sending'}
               className="w-full rounded-md bg-accent py-3 text-[14px] font-bold text-white transition-colors hover:bg-accent-dark disabled:opacity-60"
             >
-              {state === 'sending' ? 'Sending…' : copy.submit}
+              {state === 'sending' ? t('Sending…') : t(copy.submit)}
             </button>
             <p className="m-0 text-center text-[11.5px] text-muted">{CONSENT}</p>
           </form>
@@ -231,16 +236,18 @@ export function StoreLeadFormDialog({
 
 /** The price box for a price-on-request product (replaces the price). */
 export function PriceOnRequest() {
+  const t = useStoreText();
   return (
     <div className="mb-4 rounded-lg border border-accent/15 bg-accent-light p-4">
-      <p className="m-0 text-[22px] font-bold tracking-tight text-ink">Price on request</p>
-      <p className="m-0 mt-1 text-[13px] text-muted">Tell us how many you need and we'll send you the price.</p>
+      <p className="m-0 text-[22px] font-bold tracking-tight text-ink">{t('Price on request')}</p>
+      <p className="m-0 mt-1 text-[13px] text-muted">{t('Tell us how many you need and we\'ll send you the price.')}</p>
     </div>
   );
 }
 
 /** Replaces Add to Cart / Buy Now: "Request a price" or "Notify me when it's back". */
 export function LeadFormButton({ type, onOpen }: { type: 'notify-me' | 'price-request'; onOpen: () => void }) {
+  const t = useStoreText();
   return (
     <div className="mb-1">
       <button
@@ -249,21 +256,22 @@ export function LeadFormButton({ type, onOpen }: { type: 'notify-me' | 'price-re
         className="flex w-full items-center justify-center gap-2 rounded-md bg-accent py-3 text-[14px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark"
       >
         {type === 'notify-me' && <BellRing size={16} />}
-        {type === 'notify-me' ? "Notify me when it's back" : 'Request a price'}
+        {type === 'notify-me' ? t("Notify me when it's back") : t('Request a price')}
       </button>
-      {type === 'notify-me' && <p className="m-0 mt-2 text-center text-[12px] text-muted">We&apos;ll send you one message when it&apos;s in stock again.</p>}
+      {type === 'notify-me' && <p className="m-0 mt-2 text-center text-[12px] text-muted">{t("We'll send you one message when it's in stock again.")}</p>}
     </div>
   );
 }
 
 /** Under Buy on every product: a quiet way to ask before buying. */
 export function CallMeBackLink({ onOpen }: { onOpen: () => void }) {
+  const t = useStoreText();
   return (
     <p className="m-0 mt-3 flex items-center gap-1.5 text-[13px] text-muted">
       <MessageCircleQuestion size={15} className="shrink-0" />
-      Have a question?
+      {t('Have a question?')}
       <button type="button" onClick={onOpen} className="font-semibold text-ink underline underline-offset-2 hover:text-accent">
-        Ask us to call you back
+        {t('Ask us to call you back')}
       </button>
     </p>
   );

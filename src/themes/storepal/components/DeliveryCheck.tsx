@@ -6,8 +6,8 @@ import { apiOrigin } from '@/lib/checkoutApi';
 import { loadBdLocations } from '@/lib/bdLocations';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { useStorePalDesign } from '../lib/designSettings';
-import { formatPrice } from '../lib/formatPrice';
-import { bnDigits } from '../lib/storeText';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
+import { bnDigits, useFormatPrice } from '../lib/storeText';
 
 /** Where the chosen district is remembered, so the next product (and the checkout) starts with it. */
 export const DELIVERY_DISTRICT_KEY = 'storepal-delivery-district:';
@@ -30,6 +30,7 @@ const ZONE_BN = { DHAKA: 'ঢাকার ভেতর', AROUND_DHAKA: 'ঢা�
  * browser: the next product shows it already, and checkout starts with it. Nothing is stored on the server.
  */
 export function DeliveryCheck({ subdomain }: { subdomain: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const design = useStorePalDesign();
   const bn = design.storeLanguage === 'bn';
   const [districts, setDistricts] = useState<{ n: string; b: string }[]>([]);

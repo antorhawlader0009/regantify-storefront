@@ -7,13 +7,13 @@ import { usePathname } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { encodeCartLink } from '@/lib/cartLink';
 import { CartOffers } from './CartOffers';
 import { CartAddons } from './CartAddons';
-import { useStoreText } from '../lib/storeText';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 
 const SLIDE_MS = 300;
 
@@ -26,6 +26,7 @@ const SLIDE_MS = 300;
  * links to; the old /cart page is just a fallback for saved links.
  */
 export function CartDrawer({ subdomain }: { subdomain: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const open = useCartDrawer((s) => s.open);
   const closeDrawer = useCartDrawer((s) => s.closeDrawer);
@@ -107,7 +108,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
       <aside
         role="dialog"
         aria-modal="true"
-        aria-label="Shopping cart"
+        aria-label={t('Shopping cart')}
         data-rg="cart-drawer"
         className={`absolute right-0 top-0 flex h-full w-full flex-col bg-canvas shadow-2xl transition-transform ease-out motion-reduce:transition-none sm:w-[420px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ transitionDuration: `${SLIDE_MS}ms` }}
@@ -124,7 +125,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
           <button
             ref={closeButtonRef}
             onClick={closeDrawer}
-            aria-label="Close cart"
+            aria-label={t('Close cart')}
             className="-mr-1.5 rounded-full p-2 text-ink transition-colors hover:bg-surface hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
           >
             <X size={20} />
@@ -189,7 +190,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                         <div className="inline-flex items-center rounded-full border border-line-strong bg-canvas">
                           <button
                             onClick={() => setQuantity(line.id, line.quantity - 1)}
-                            aria-label="Decrease quantity"
+                            aria-label={t('Decrease quantity')}
                             className="flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                           >
                             <Minus size={13} />
@@ -198,7 +199,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                           <button
                             onClick={() => setQuantity(line.id, line.quantity + 1)}
                             disabled={line.maxQuantity !== undefined && line.quantity + (line.quantityStep ?? 1) > line.maxQuantity}
-                            aria-label="Increase quantity"
+                            aria-label={t('Increase quantity')}
                             className="disabled:cursor-not-allowed disabled:opacity-40 flex h-8 w-8 items-center justify-center rounded-full text-ink transition-colors hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
                           >
                             <Plus size={13} />

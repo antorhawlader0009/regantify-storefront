@@ -4,7 +4,8 @@ import { ReceiptText } from 'lucide-react';
 import type { TrackedOrder } from '@/lib/checkoutApi';
 import { orderLabel } from '@/lib/orderLabel';
 import { ui, type TrackLang } from '@/lib/trackingI18n';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
+import { useFormatPrice } from '../lib/storeText';
 
 const METHOD: Record<TrackLang, Record<string, string>> = {
   en: { CASH: 'Cash', CARD: 'Card', BKASH: 'bKash', NAGAD: 'Nagad', BANGLA_QR: 'Bangla QR', BANK: 'Bank', GIFT_CARD: 'Gift card', DUE: 'Due', OTHER: 'Other' },
@@ -17,6 +18,7 @@ const METHOD: Record<TrackLang, Record<string, string>> = {
  * courier card or timeline, since it was handed over in the shop.
  */
 export function InStoreReceipt({ order, lang }: { order: TrackedOrder; lang: TrackLang }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const vat = Number(order.vatAmount);
   const paidWith = [...new Set(order.paidWith ?? [])].map((m) => METHOD[lang][m] ?? m).join(', ');
   return (

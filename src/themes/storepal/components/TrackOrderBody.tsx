@@ -7,7 +7,7 @@ import { COURIER_TRACKING_STEPS, courierStageLabel, type CourierTracking } from 
 import { customerOrderStatusLabel, HAPPY_PATH, PICKUP_PATH } from '@/lib/orderStatusDisplay';
 import { orderLabel } from '@/lib/orderLabel';
 import { stageText, statusText, timelineDetail, timelineTitle, ui, type TrackLang } from '@/lib/trackingI18n';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { isFinishedOrder } from '@/lib/useLiveOrder';
 import { CancelOrderCard } from './CancelOrderCard';
@@ -17,6 +17,7 @@ import { ReviewProductsCard } from './ReviewProductsCard';
 import { HeardFromCard } from './HeardFromCard';
 import { RescheduleCard } from './RescheduleCard';
 import { EditAddressCard } from './EditAddressCard';
+import { useFormatPrice } from '../lib/storeText';
 
 const STOPPED_STATUSES = ['CANCELLED', 'RETURN', 'REFUNDED', 'PAYMENT_FAILED', 'STOCK_OUT'];
 
@@ -177,6 +178,7 @@ export function TrackOrderBody({
   subdomain?: string;
   onOrderChanged?: (order: TrackedOrder) => void;
 }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const path = order.deliveryZone === 'PICKUP' ? PICKUP_PATH : HAPPY_PATH;
   const stepIndex = path.indexOf(order.status);
   const stopped = STOPPED_STATUSES.includes(order.status);

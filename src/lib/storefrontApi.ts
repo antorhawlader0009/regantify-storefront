@@ -294,9 +294,13 @@ export interface StorefrontDesignSettings {
   homeHighlightsHeading: string | null;
   /** StorePal's buttons and labels: "en" or "bn" (themes/storepal/lib/storeText.ts). */
   storeLanguage?: 'en' | 'bn';
+  /** Prices in Bangla digits while storeLanguage is "bn" (IDEA-7); missing = Latin digits. */
+  storeBanglaDigits?: boolean;
   /** Store > Design > Chat Button — the floating bubble (see themes/storepal/components/ChatBubble.tsx). Missing = the bubble as it always was. */
   /** Share button on the product page (TellMe idea 61); missing = shown. */
   productShareEnabled?: boolean;
+  /** "Compare" tick box on cards and the compare bar (IDEA-13); missing = off. */
+  compareEnabled?: boolean;
   /** "N bought in the last X days" window (TellMe idea 63): 0 or missing = off. */
   socialProofDays?: number;
   /** Wishlist price / restock alerts by SMS (TellMe idea 62). */

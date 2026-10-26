@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { connectLogin, getRegantifyConnectConfig, regantifyConnectUrl, type RegantifyConnectConfig } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { useAuthDialog } from '../lib/authDialog';
+import { useStoreText } from '../lib/storeText';
 
 /** Google's own "G" mark, unchanged (Google's sign-in branding guidelines). */
 export function GoogleMark({ size = 18 }: { size?: number }) {
@@ -23,6 +24,7 @@ export function GoogleMark({ size = 18 }: { size?: number }) {
  * Hidden until the server has the central page set up.
  */
 export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const [cfg, setCfg] = useState<RegantifyConnectConfig | null>(null);
   useEffect(() => {
     let alive = true;
@@ -50,16 +52,16 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
         ) : null}
         {cfg.google ? (
           <span className="flex flex-col items-center">
-            <span className="text-[15px] font-semibold leading-[1.15]">Login with Google</span>
-            <span className="mt-0.5 text-[11px] font-medium leading-none text-muted">by Regantify</span>
+            <span className="text-[15px] font-semibold leading-[1.15]">{t('Login with Google')}</span>
+            <span className="mt-0.5 text-[11px] font-medium leading-none text-muted">{t('by Regantify')}</span>
           </span>
         ) : (
-          <span className="text-[14.5px] font-semibold">Continue with your Regantify account</span>
+          <span className="text-[14.5px] font-semibold">{t('Continue with your Regantify account')}</span>
         )}
       </button>
       <div className="mt-5 flex items-center gap-3 text-[12px] text-muted">
         <span className="h-px flex-1 bg-line" />
-        or
+        {t('or')}
         <span className="h-px flex-1 bg-line" />
       </div>
     </div>
@@ -68,6 +70,7 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
 
 /** Account > My Addresses: bring addresses saved at other Regantify stores (chosen on the central Regantify page, never shown here). */
 export function BringAddressesLink({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const [cfg, setCfg] = useState<RegantifyConnectConfig | null>(null);
   useEffect(() => {
     let alive = true;
@@ -83,7 +86,7 @@ export function BringAddressesLink({ subdomain }: { subdomain: string }) {
       onClick={() => window.location.assign(regantifyConnectUrl(cfg.url!, subdomain, window.location.href))}
       className="mb-5 inline-flex items-center gap-2 rounded-lg border border-line-strong bg-white px-3.5 py-2 text-[13px] font-semibold text-ink transition-colors hover:bg-surface"
     >
-      Bring addresses from my other Regantify stores
+      {t('Bring addresses from my other Regantify stores')}
     </button>
   );
 }
@@ -96,6 +99,7 @@ const swapped = new Set<string>();
  * taken off the address bar straight away, so a reload or a shared link never carries it.
  */
 export function RegantifyLoginCatcher() {
+  const t = useStoreText();
   const setSession = useCustomerAuthStore((s) => s.setSession);
   const openLogin = useAuthDialog((s) => s.openLogin);
   const done = useRef(false);
@@ -113,7 +117,7 @@ export function RegantifyLoginCatcher() {
     swapped.add(code);
     connectLogin(code)
       .then((r) => setSession(r.customer, r.accessToken))
-      .catch((err: Error) => setError(err.message || 'Could not sign you in. Please try again.'));
+      .catch((err: Error) => setError(err.message || t('Could not sign you in. Please try again.')));
   }, [setSession]);
 
   if (!error) return null;
@@ -129,10 +133,10 @@ export function RegantifyLoginCatcher() {
           }}
           className="font-semibold underline underline-offset-2"
         >
-          Sign in again
+          {t('Sign in again')}
         </button>
         <button type="button" onClick={() => setError(null)} className="text-white/70">
-          Close
+          {t('Close')}
         </button>
       </div>
     </div>

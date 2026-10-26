@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from 'react';
 import { Check, Link2, Share2 } from 'lucide-react';
 import { useStorePalDesign } from '../lib/designSettings';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
+import { useFormatPrice } from '../lib/storeText';
 
 /**
  * Product page "Share" (TellMe idea 61). On a phone it opens the phone's own share sheet; elsewhere a small menu offers
@@ -13,6 +14,7 @@ import { formatPrice } from '../lib/formatPrice';
  * Store > Design > Product Display.
  */
 export function ShareButton({ name, price }: { name: string; price: number }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const design = useStorePalDesign();
   const bn = design.storeLanguage === 'bn';
   const [open, setOpen] = useState(false);

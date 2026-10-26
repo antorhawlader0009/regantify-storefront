@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { joinProductWaitlist } from '@/lib/storefrontApi';
 import { useStoreText } from '../lib/storeText';
+import { phoneInput } from '@/lib/phoneInput';
 
 /**
  * The "Notify me" form of a coming-soon product (TellMe idea 104): a phone number and an optional name, no code. When the product goes on
@@ -43,7 +44,7 @@ export function ComingSoonNotify({ subdomain, slug, until, restock = false }: { 
       ) : (
         <form onSubmit={submit} className="mt-2 space-y-2">
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder={t('Your name (optional)')} className="h-10 w-full rounded-md border border-line bg-surface px-3 text-[13px] text-ink" />
-          <input value={phone} onChange={(e) => setPhone(e.target.value)} inputMode="tel" required placeholder="01XXXXXXXXX" className="h-10 w-full rounded-md border border-line bg-surface px-3 text-[13px] text-ink" />
+          <input value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} inputMode="tel" required placeholder="01XXXXXXXXX" className="h-10 w-full rounded-md border border-line bg-surface px-3 text-[13px] text-ink" />
           {error && <p className="m-0 text-[12px] text-accent-dark">{error}</p>}
           <button type="submit" disabled={busy} className="flex h-11 w-full items-center justify-center rounded-md bg-accent text-[14px] font-bold text-white hover:bg-accent-dark disabled:opacity-60">
             {restock ? t('Tell me when it is back') : t('Notify me')}

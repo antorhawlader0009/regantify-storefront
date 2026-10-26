@@ -8,9 +8,9 @@ import { CheckCircle2, Check, Minus, Plus, Truck, ShieldCheck, Banknote, PlayCir
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { ProductVideo } from '@/components/ProductVideo';
 import { HoverZoom, PhotoViewer } from '@/components/ProductImageViewer';
-import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
+import { formatPrice as plainPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
-import { useStoreText } from '../lib/storeText';
+import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
 import { preOrderDateText } from '../lib/preOrderDate';
 import { priceWithBreaks } from '@/lib/priceBreaks';
@@ -90,6 +90,7 @@ interface StorePalProductPanelProps {
  * treatment is refined here.
  */
 export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, titleExtra, onAddedToCart, onBuyNow }: StorePalProductPanelProps) {
+  const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const design = useStorePalDesign();
   const router = useRouter();

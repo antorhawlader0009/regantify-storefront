@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { GoogleMark } from '@/themes/storepal/components/RegantifySignIn';
 import { connectApi, connectConfig, type ConnectAnswer } from './connectApi';
+import { phoneInput } from '@/lib/phoneInput';
 
 type Step =
   | { kind: 'loading' }
@@ -239,7 +240,7 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
                 <label className="rgf-label" htmlFor="rgf-phone">
                   Mobile number
                 </label>
-                <input id="rgf-phone" className="rgf-input" inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={16} value={phone} onChange={(e) => setPhone(e.target.value)} />
+                <input id="rgf-phone" className="rgf-input" inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={16} value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} />
               </div>
               <button type="submit" className="rgf-btn rgf-btn-quiet" disabled={busy || phone.trim().length < 11}>
                 {busy ? 'Sending…' : 'Text me a code'}

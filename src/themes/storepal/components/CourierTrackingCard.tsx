@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Check, Copy, Truck, Undo2 } from 'lucide-react';
 import { COURIER_TRACKING_STEPS, courierStageLabel, type CourierTracking } from '@/lib/courierTracking';
+import { useStoreText } from '../lib/storeText';
 
 /** Tracking ID with a copy button — the shopper pastes it into the courier's own tracking or quotes it on a call. */
 function TrackingId({ id }: { id: string }) {
@@ -34,6 +35,7 @@ function TrackingId({ id }: { id: string }) {
  * (Booked → Picked up → In transit → Out for delivery → Delivered).
  */
 export function CourierTrackingCard({ tracking }: { tracking: CourierTracking }) {
+  const t = useStoreText();
   const current = COURIER_TRACKING_STEPS.findIndex((s) => s.stage === tracking.stage);
   const returned = tracking.stage === 'returned';
 
@@ -47,7 +49,7 @@ export function CourierTrackingCard({ tracking }: { tracking: CourierTracking })
           </p>
         </div>
         <div className="text-right">
-          <p className="text-[11px] text-muted">Tracking ID</p>
+          <p className="text-[11px] text-muted">{t('Tracking ID')}</p>
           {tracking.trackingId ? <TrackingId id={tracking.trackingId} /> : null}
         </div>
       </div>

@@ -16,6 +16,8 @@ import { trackMetaCompleteRegistration } from '@/lib/metaPixelEvents';
 import { trackSignUp } from '@/lib/ecommerceEvents';
 import { useAuthDialog, type AuthDialogMode } from '../lib/authDialog';
 import { RegantifySignInButton } from './RegantifySignIn';
+import { useStoreText } from '../lib/storeText';
+import { phoneInput, emailOrPhoneInput } from '@/lib/phoneInput';
 
 const RESEND_SECONDS = 30;
 
@@ -49,6 +51,7 @@ function PasswordInput({
   onChange: (v: string) => void;
   autoComplete: string;
 }) {
+  const t = useStoreText();
   const [visible, setVisible] = useState(false);
   return (
     <div className="relative">
@@ -64,7 +67,7 @@ function PasswordInput({
       <button
         type="button"
         onClick={() => setVisible((v) => !v)}
-        aria-label={visible ? 'Hide password' : 'Show password'}
+        aria-label={visible ? t('Hide password') : t('Show password')}
         className="absolute right-1.5 top-1/2 -translate-y-1/2 rounded-full p-2 text-muted transition-colors hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
       >
         {visible ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -83,6 +86,7 @@ function ErrorLine({ message }: { message: string | null }) {
 }
 
 function LoginForm({ onDone }: { onDone: () => void }) {
+  const t = useStoreText();
   const uid = useId();
   const setSession = useCustomerAuthStore((s) => s.setSession);
   const setMode = useAuthDialog((s) => s.setMode);
@@ -95,7 +99,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     e.preventDefault();
     setError(null);
     if (!identifier.trim() || !password.trim()) {
-      setError('Enter your email or phone number and your password.');
+      setError(t('Enter your email or phone number and your password.'));
       return;
     }
     setLoading(true);
@@ -104,7 +108,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
       setSession(result.customer, result.accessToken);
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not log in.');
+      setError(err instanceof Error ? err.message : t('Could not log in.'));
     } finally {
       setLoading(false);
     }
@@ -112,11 +116,11 @@ function LoginForm({ onDone }: { onDone: () => void }) {
 
   return (
     <form onSubmit={submit} className="space-y-4">
-      <Field label="Email or phone number" id={`${uid}-id`}>
+      <Field label={t('Email or phone number')} id={`${uid}-id`}>
         <input
           id={`${uid}-id`}
           value={identifier}
-          onChange={(e) => setIdentifier(e.target.value.slice(0, 150))}
+          onChange={(e) => setIdentifier(emailOrPhoneInput(e.target.value).slice(0, 150))}
           autoFocus
           maxLength={150}
           autoComplete="username"
@@ -124,7 +128,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
         />
       </Field>
       <Field
-        label="Password"
+        label={t('Password')}
         id={`${uid}-pw`}
         hint={
           <button
@@ -132,7 +136,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
             onClick={() => setMode('forgot')}
             className="text-[12.5px] font-medium text-accent hover:text-accent-dark"
           >
-            Forgot password?
+            {t('Forgot password?')}
           </button>
         }
       >
@@ -140,12 +144,12 @@ function LoginForm({ onDone }: { onDone: () => void }) {
       </Field>
       <ErrorLine message={error} />
       <button type="submit" disabled={loading} className={PRIMARY_BUTTON_CLASS}>
-        {loading ? 'Logging in…' : 'Log in'}
+        {loading ? t('Logging in…') : t('Log in')}
       </button>
       <p className="text-center text-[13px] text-muted">
-        New here?{' '}
+        {t('New here?')}{' '}
         <button type="button" onClick={() => setMode('signup')} className="font-semibold text-accent hover:text-accent-dark">
-          Create an account
+          {t('Create an account')}
         </button>
       </p>
     </form>
@@ -153,6 +157,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
 }
 
 function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => void }) {
+  const t = useStoreText();
   const uid = useId();
   const setSession = useCustomerAuthStore((s) => s.setSession);
   const setMode = useAuthDialog((s) => s.setMode);
@@ -176,7 +181,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
     e.preventDefault();
     setError(null);
     if (!fullName.trim() || !phone.trim() || !password.trim()) {
-      setError('Enter your name, phone number and a password.');
+      setError(t('Enter your name, phone number and a password.'));
       return;
     }
     setLoading(true);
@@ -185,7 +190,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
       setStep('otp');
       setCooldown(RESEND_SECONDS);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not create your account.');
+      setError(err instanceof Error ? err.message : t('Could not create your account.'));
     } finally {
       setLoading(false);
     }
@@ -195,7 +200,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
     e.preventDefault();
     setError(null);
     if (code.trim().length < 6) {
-      setError('Enter the 6-digit code.');
+      setError(t('Enter the 6-digit code.'));
       return;
     }
     setLoading(true);
@@ -206,7 +211,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
       trackSignUp();
       onDone();
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not verify your code.');
+      setError(err instanceof Error ? err.message : t('Could not verify your code.'));
     } finally {
       setLoading(false);
     }
@@ -218,14 +223,14 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
       await resendSignupOtp(phone.trim(), fullName.trim(), password, email.trim() || undefined, subdomain);
       setCooldown(RESEND_SECONDS);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send a new code.');
+      setError(err instanceof Error ? err.message : t('Could not send a new code.'));
     }
   };
 
   if (step === 'otp') {
     return (
       <form onSubmit={verify} className="space-y-4">
-        <Field label="6-digit code" id={`${uid}-code`}>
+        <Field label={t('6-digit code')} id={`${uid}-code`}>
           <input
             id={`${uid}-code`}
             value={code}
@@ -239,11 +244,11 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
         </Field>
         <ErrorLine message={error} />
         <button type="submit" disabled={loading} className={PRIMARY_BUTTON_CLASS}>
-          {loading ? 'Verifying…' : 'Verify and continue'}
+          {loading ? t('Verifying…') : t('Verify and continue')}
         </button>
         <div className="flex items-center justify-between text-[13px]">
           <button type="button" onClick={() => { setStep('form'); setCode(''); setError(null); }} className="font-medium text-muted hover:text-ink">
-            Change number
+            {t('Change number')}
           </button>
           <button
             type="button"
@@ -251,7 +256,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
             disabled={cooldown > 0}
             className="font-semibold text-accent hover:text-accent-dark disabled:text-muted disabled:hover:text-muted"
           >
-            {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+            {cooldown > 0 ? t('Resend code in {s}s').replace('{s}', String(cooldown)) : t('Resend code')}
           </button>
         </div>
       </form>
@@ -260,7 +265,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
 
   return (
     <form onSubmit={createAccount} className="space-y-4">
-      <Field label="Name" id={`${uid}-name`}>
+      <Field label={t('Name')} id={`${uid}-name`}>
         <input
           id={`${uid}-name`}
           value={fullName}
@@ -271,11 +276,11 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
           className={INPUT_CLASS}
         />
       </Field>
-      <Field label="Phone number" id={`${uid}-phone`}>
+      <Field label={t('Phone number')} id={`${uid}-phone`}>
         <input
           id={`${uid}-phone`}
           value={phone}
-          onChange={(e) => setPhone(e.target.value.slice(0, 30))}
+          onChange={(e) => setPhone(phoneInput(e.target.value).slice(0, 30))}
           placeholder="01XXXXXXXXX"
           inputMode="tel"
           autoComplete="tel"
@@ -283,7 +288,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
           className={INPUT_CLASS}
         />
       </Field>
-      <Field label="Email (optional)" id={`${uid}-email`}>
+      <Field label={t('Email (optional)')} id={`${uid}-email`}>
         <input
           id={`${uid}-email`}
           type="email"
@@ -294,17 +299,17 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
           className={INPUT_CLASS}
         />
       </Field>
-      <Field label="Password" id={`${uid}-pw`}>
+      <Field label={t('Password')} id={`${uid}-pw`}>
         <PasswordInput id={`${uid}-pw`} value={password} onChange={setPassword} autoComplete="new-password" />
       </Field>
       <ErrorLine message={error} />
       <button type="submit" disabled={loading} className={PRIMARY_BUTTON_CLASS}>
-        {loading ? 'Creating account…' : 'Create account'}
+        {loading ? t('Creating account…') : t('Create account')}
       </button>
       <p className="text-center text-[13px] text-muted">
-        Already have an account?{' '}
+        {t('Already have an account?')}{' '}
         <button type="button" onClick={() => setMode('login')} className="font-semibold text-accent hover:text-accent-dark">
-          Log in
+          {t('Log in')}
         </button>
       </p>
     </form>
@@ -315,6 +320,7 @@ type ForgotStep = 'phone' | 'otp' | 'reset' | 'done';
 
 /** Forgot password: text a code to the account's phone, check it, set a new password, then back to Log in (CustomerAuthService.forgotPassword*). */
 function ForgotForm({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const uid = useId();
   const setMode = useAuthDialog((s) => s.setMode);
   const [step, setStep] = useState<ForgotStep>('phone');
@@ -336,7 +342,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     setError(null);
     if (!phone.trim()) {
-      setError('Enter your phone number.');
+      setError(t('Enter your phone number.'));
       return;
     }
     setLoading(true);
@@ -345,7 +351,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
       setStep('otp');
       setCooldown(RESEND_SECONDS);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send the code.');
+      setError(err instanceof Error ? err.message : t('Could not send the code.'));
     } finally {
       setLoading(false);
     }
@@ -357,7 +363,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
       await forgotPasswordSendOtp(phone.trim(), subdomain);
       setCooldown(RESEND_SECONDS);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not send a new code.');
+      setError(err instanceof Error ? err.message : t('Could not send a new code.'));
     }
   };
 
@@ -365,7 +371,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     setError(null);
     if (code.trim().length < 6) {
-      setError('Enter the 6-digit code.');
+      setError(t('Enter the 6-digit code.'));
       return;
     }
     setLoading(true);
@@ -374,7 +380,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
       setResetToken(result.resetToken);
       setStep('reset');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not verify that code.');
+      setError(err instanceof Error ? err.message : t('Could not verify that code.'));
     } finally {
       setLoading(false);
     }
@@ -384,7 +390,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
     e.preventDefault();
     setError(null);
     if (newPassword.length < 6) {
-      setError('Password must be at least 6 characters.');
+      setError(t('Password must be at least 6 characters.'));
       return;
     }
     setLoading(true);
@@ -392,7 +398,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
       await resetPassword(resetToken, newPassword);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not reset your password.');
+      setError(err instanceof Error ? err.message : t('Could not reset your password.'));
     } finally {
       setLoading(false);
     }
@@ -402,10 +408,10 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
     return (
       <div className="space-y-4">
         <p className="rounded-md bg-success-bg px-3 py-2.5 text-[13.5px] font-medium text-success">
-          Your password has been changed. Log in with the new one.
+          {t('Your password has been changed. Log in with the new one.')}
         </p>
         <button type="button" onClick={() => setMode('login')} className={PRIMARY_BUTTON_CLASS}>
-          Log in
+          {t('Log in')}
         </button>
       </div>
     );
@@ -414,12 +420,12 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
   if (step === 'reset') {
     return (
       <form onSubmit={reset} className="space-y-4">
-        <Field label="New password" id={`${uid}-new`}>
+        <Field label={t('New password')} id={`${uid}-new`}>
           <PasswordInput id={`${uid}-new`} value={newPassword} onChange={setNewPassword} autoComplete="new-password" />
         </Field>
         <ErrorLine message={error} />
         <button type="submit" disabled={loading} className={PRIMARY_BUTTON_CLASS}>
-          {loading ? 'Saving…' : 'Change password'}
+          {loading ? t('Saving…') : t('Change password')}
         </button>
       </form>
     );
@@ -429,7 +435,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
     return (
       <form onSubmit={verify} className="space-y-4">
         <p className="text-[13px] text-muted">We sent a 6-digit code by SMS to {phone.trim()}.</p>
-        <Field label="6-digit code" id={`${uid}-code`}>
+        <Field label={t('6-digit code')} id={`${uid}-code`}>
           <input
             id={`${uid}-code`}
             value={code}
@@ -443,11 +449,11 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
         </Field>
         <ErrorLine message={error} />
         <button type="submit" disabled={loading} className={PRIMARY_BUTTON_CLASS}>
-          {loading ? 'Verifying…' : 'Verify code'}
+          {loading ? t('Verifying…') : t('Verify code')}
         </button>
         <div className="flex items-center justify-between text-[13px]">
           <button type="button" onClick={() => { setStep('phone'); setCode(''); setError(null); }} className="font-medium text-muted hover:text-ink">
-            Change number
+            {t('Change number')}
           </button>
           <button
             type="button"
@@ -455,7 +461,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
             disabled={cooldown > 0}
             className="font-semibold text-accent hover:text-accent-dark disabled:text-muted disabled:hover:text-muted"
           >
-            {cooldown > 0 ? `Resend code in ${cooldown}s` : 'Resend code'}
+            {cooldown > 0 ? t('Resend code in {s}s').replace('{s}', String(cooldown)) : t('Resend code')}
           </button>
         </div>
       </form>
@@ -464,11 +470,11 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
 
   return (
     <form onSubmit={sendCode} className="space-y-4">
-      <Field label="Phone number" id={`${uid}-phone`}>
+      <Field label={t('Phone number')} id={`${uid}-phone`}>
         <input
           id={`${uid}-phone`}
           value={phone}
-          onChange={(e) => setPhone(e.target.value.slice(0, 30))}
+          onChange={(e) => setPhone(phoneInput(e.target.value).slice(0, 30))}
           placeholder="01XXXXXXXXX"
           autoFocus
           inputMode="tel"
@@ -479,12 +485,12 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
       </Field>
       <ErrorLine message={error} />
       <button type="submit" disabled={loading} className={PRIMARY_BUTTON_CLASS}>
-        {loading ? 'Sending…' : 'Send code'}
+        {loading ? t('Sending…') : t('Send code')}
       </button>
       <p className="text-center text-[13px] text-muted">
-        Remembered it?{' '}
+        {t('Remembered it?')}{' '}
         <button type="button" onClick={() => setMode('login')} className="font-semibold text-accent hover:text-accent-dark">
-          Back to log in
+          {t('Back to log in')}
         </button>
       </p>
     </form>
@@ -498,6 +504,7 @@ const COPY: Record<AuthDialogMode, { title: string; subtitle: string }> = {
 };
 
 function AuthDialogPanel({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const mode = useAuthDialog((s) => s.mode);
   const close = useAuthDialog((s) => s.close);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -560,15 +567,15 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
       >
         <button
           onClick={close}
-          aria-label="Close"
+          aria-label={t('Close')}
           className="absolute right-3 top-3 rounded-full p-2 text-muted transition-colors hover:bg-surface hover:text-ink focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
         >
           <X size={18} />
         </button>
         <h2 id={titleId} className="pr-8 text-[22px] font-bold leading-tight text-ink">
-          {copy.title}
+          {t(copy.title)}
         </h2>
-        {copy.subtitle ? <p className="mb-5 mt-1 text-[13.5px] text-muted">{copy.subtitle}</p> : <div className="mb-5" />}
+        {copy.subtitle ? <p className="mb-5 mt-1 text-[13.5px] text-muted">{t(copy.subtitle)}</p> : <div className="mb-5" />}
         {mode !== 'forgot' && <RegantifySignInButton subdomain={subdomain} />}
         {mode === 'login' && <LoginForm onDone={close} />}
         {mode === 'signup' && <SignupForm subdomain={subdomain} onDone={close} />}

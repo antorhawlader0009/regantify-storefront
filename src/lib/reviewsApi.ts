@@ -72,6 +72,47 @@ export async function submitProductReview(subdomain: string, slug: string, input
   }
 }
 
+/** Whether the signed-in shopper may add photos to a review of this product (their own account bought it here). False on any error. */
+export async function getReviewPhotoEligibility(subdomain: string, slug: string, accessToken: string): Promise<{ canAddPhotos: boolean; maxPhotos: number }> {
+  try {
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews/photo-eligibility`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return { canAddPhotos: false, maxPhotos: 0 };
+    return res.json();
+  } catch {
+    return { canAddPhotos: false, maxPhotos: 0 };
+  }
+}
+
+/** The review form with photos (already shrunk in the browser, lib/reviewPhotos.ts). Signed-in shoppers only; same pending approval. */
+export async function submitProductReviewWithPhotos(
+  subdomain: string,
+  slug: string,
+  input: SubmitReviewInput,
+  photos: Blob[],
+  accessToken: string,
+): Promise<void> {
+  const form = new FormData();
+  form.append('title', input.title);
+  form.append('rating', String(input.rating));
+  form.append('customerName', input.customerName);
+  if (input.content) form.append('content', input.content);
+  if (input.customerEmail) form.append('customerEmail', input.customerEmail);
+  if (input.orderToken) form.append('orderToken', input.orderToken);
+  photos.forEach((p, i) => form.append('photos', p, `photo-${i + 1}.jpg`));
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews/with-photos`, {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    body: form,
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => null);
+    const message = Array.isArray(body?.message) ? body.message[0] : body?.message;
+    throw new Error(message || 'Could not submit your review. Please try again.');
+  }
+}
+
 /** One "helpful" vote on a review (TellMe idea 99); the server allows one per address. Returns the new count. */
 export async function voteReviewHelpful(subdomain: string, reviewId: string): Promise<{ helpfulCount: number; counted: boolean }> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/reviews/${encodeURIComponent(reviewId)}/helpful`, { method: 'POST' });

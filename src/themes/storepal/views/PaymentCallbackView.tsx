@@ -16,6 +16,7 @@ import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
+import { useStoreText } from '../lib/storeText';
 
 const HANDOFF_KEY = 'regantify-last-order';
 
@@ -49,6 +50,7 @@ function isCustomGatewayInvoice(invoiceNumber: string): boolean {
  * unchanged regardless of which gateway was used.
  */
 export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const router = useRouter();
   const searchParams = useSearchParams();
   const invoiceNumber = searchParams.get('invoice');
@@ -156,29 +158,31 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
         {state === 'checking' && (
           <>
             <Clock className="mx-auto mb-4 text-muted animate-pulse" size={40} />
-            <h1 className="text-[18px] font-bold text-ink mb-1">Confirming your payment…</h1>
-            <p className="text-[13.5px] text-muted">Please wait while we verify this with {isCustomGateway ? 'the payment gateway' : 'PayStation'}.</p>
+            <h1 className="text-[18px] font-bold text-ink mb-1">{t('Confirming your payment…')}</h1>
+            <p className="text-[13.5px] text-muted">{t('Please wait while we verify this with {gateway}.').replace('{gateway}', isCustomGateway ? t('the payment gateway') : 'PayStation')}</p>
           </>
         )}
 
         {state === 'SUCCESS' && (
           <>
             <CheckCircle2 className="mx-auto mb-4 text-success" size={40} />
-            <h1 className="text-[18px] font-bold text-ink mb-1">Payment successful</h1>
-            <p className="text-[13.5px] text-muted">Redirecting to your order confirmation…</p>
+            <h1 className="text-[18px] font-bold text-ink mb-1">{t('Payment successful')}</h1>
+            <p className="text-[13.5px] text-muted">{t('Redirecting to your order confirmation…')}</p>
           </>
         )}
 
         {state === 'PENDING' && (
           <>
             <Clock className="mx-auto mb-4 text-amber-600" size={40} />
-            <h1 className="text-[18px] font-bold text-ink mb-1">Still processing</h1>
+            <h1 className="text-[18px] font-bold text-ink mb-1">{t('Still processing')}</h1>
             <p className="text-[13.5px] text-muted mb-6">
-              {isCustomGateway ? 'The payment gateway hasn' : 'PayStation hasn'}&apos;t confirmed this payment yet. If
-              you completed checkout, your order will be confirmed automatically — check Track Order in a minute.
+              {t("{gateway} hasn't confirmed this payment yet. If you completed checkout, your order will be confirmed automatically, check Track Order in a minute.").replace(
+                '{gateway}',
+                isCustomGateway ? t('The payment gateway') : 'PayStation',
+              )}
             </p>
             <Link href={`/store/${subdomain}/orders`} className="text-accent text-[13.5px] font-medium hover:underline">
-              Track Your Order
+              {t('Track Your Order')}
             </Link>
           </>
         )}
@@ -186,12 +190,12 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
         {(state === 'FAILED' || state === 'CANCELLED') && (
           <>
             <XCircle className="mx-auto mb-4 text-accent" size={40} />
-            <h1 className="text-[18px] font-bold text-ink mb-1">{state === 'CANCELLED' ? 'Payment cancelled' : 'Payment failed'}</h1>
+            <h1 className="text-[18px] font-bold text-ink mb-1">{state === 'CANCELLED' ? t('Payment cancelled') : t('Payment failed')}</h1>
             <p className="text-[13.5px] text-muted mb-6">
-              {payLinkHref ? 'Nothing was charged. You can try again with the same payment link.' : 'Nothing was charged. You can return to your cart and try again.'}
+              {payLinkHref ? t('Nothing was charged. You can try again with the same payment link.') : t('Nothing was charged. You can return to your cart and try again.')}
             </p>
             <Link href={payLinkHref ?? `/store/${subdomain}/cart`} className="text-accent text-[13.5px] font-medium hover:underline">
-              {payLinkHref ? 'Try again' : 'Back to Cart'}
+              {payLinkHref ? t('Try again') : t('Back to Cart')}
             </Link>
           </>
         )}
@@ -199,12 +203,12 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
         {state === 'error' && (
           <>
             <XCircle className="mx-auto mb-4 text-accent" size={40} />
-            <h1 className="text-[18px] font-bold text-ink mb-1">Couldn&apos;t confirm this payment</h1>
+            <h1 className="text-[18px] font-bold text-ink mb-1">{t("Couldn't confirm this payment")}</h1>
             <p className="text-[13.5px] text-muted mb-6">
-              {invoiceNumber ? 'Something went wrong verifying this transaction.' : 'No invoice reference was provided.'}
+              {invoiceNumber ? t('Something went wrong verifying this transaction.') : t('No invoice reference was provided.')}
             </p>
             <Link href={`/store/${subdomain}`} className="text-accent text-[13.5px] font-medium hover:underline">
-              Back to Store
+              {t('Back to Store')}
             </Link>
           </>
         )}

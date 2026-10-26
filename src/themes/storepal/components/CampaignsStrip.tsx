@@ -2,6 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { ArrowRight } from 'lucide-react';
 import type { StorefrontCampaignSummary } from '@/lib/storefrontApi';
+import { useStoreText } from '../lib/storeText';
 
 /**
  * Marketing > Campaigns' "Product pages" on the StorePal homepage. A campaign
@@ -10,10 +11,11 @@ import type { StorefrontCampaignSummary } from '@/lib/storefrontApi';
  * home page as a cover card. Renders nothing when the vendor has none.
  */
 export function CampaignsStrip({ subdomain, campaigns }: { subdomain: string; campaigns: StorefrontCampaignSummary[] }) {
+  const t = useStoreText();
   if (campaigns.length === 0) return null;
   return (
-    <section aria-label="Campaigns">
-      <h2 className="text-[18px] font-bold text-ink mb-4 text-center">Offers &amp; Campaigns</h2>
+    <section aria-label={t('Campaigns')}>
+      <h2 className="text-[18px] font-bold text-ink mb-4 text-center">{t('Offers & Campaigns')}</h2>
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         {campaigns.map((c) => (
           <Link

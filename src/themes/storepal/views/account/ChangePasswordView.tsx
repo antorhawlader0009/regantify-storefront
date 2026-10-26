@@ -7,9 +7,11 @@ import { changeMyPassword } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { AccountLayout } from '../../components/AccountLayout';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
+import { useStoreText } from '../../lib/storeText';
 
 /** Account > Change Password (already logged in) — matches the reference sidebar-layout screenshot. */
 export function ChangePasswordView({ subdomain }: { subdomain: string }) {
+  const t = useStoreText();
   const storeName = useStoreDisplayName(subdomain);
   const hydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
@@ -26,7 +28,7 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
     setError(null);
     setSaved(false);
     if (!currentPassword.trim() || newPassword.length < 6) {
-      setError('Enter your current password and a new password of at least 6 characters.');
+      setError(t('Enter your current password and a new password of at least 6 characters.'));
       return;
     }
     if (!accessToken) return;
@@ -37,7 +39,7 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
       setCurrentPassword('');
       setNewPassword('');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Could not change your password.');
+      setError(err instanceof Error ? err.message : t('Could not change your password.'));
     } finally {
       setSaving(false);
     }
@@ -48,12 +50,12 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
       <AccountLayout subdomain={subdomain} storeName={storeName}>
         <div className="bg-surface border border-line rounded-lg p-6 text-center">
           <User size={26} className="mx-auto text-muted mb-3" />
-          <p className="text-[14px] text-ink font-semibold mb-1">Log in to change your password</p>
+          <p className="text-[14px] text-ink font-semibold mb-1">{t('Log in to change your password')}</p>
           <Link
             href={`/store/${subdomain}/account/login`}
             className="inline-block mt-3 px-5 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13px] font-bold transition-colors"
           >
-            Log in
+            {t('Log in')}
           </Link>
         </div>
       </AccountLayout>
@@ -62,11 +64,11 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
 
   return (
     <AccountLayout subdomain={subdomain} storeName={storeName}>
-      <h1 className="text-[22px] font-bold text-ink mb-5">Change Password</h1>
+      <h1 className="text-[22px] font-bold text-ink mb-5">{t('Change Password')}</h1>
       <div className="bg-surface border border-line rounded-lg p-5 sm:p-6 max-w-md">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <label className="block text-[13px] font-medium text-ink mb-1.5">Current Password</label>
+            <label className="block text-[13px] font-medium text-ink mb-1.5">{t('Current Password')}</label>
             <input
               type="password"
               value={currentPassword}
@@ -76,7 +78,7 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
             />
           </div>
           <div>
-            <label className="block text-[13px] font-medium text-ink mb-1.5">New Password</label>
+            <label className="block text-[13px] font-medium text-ink mb-1.5">{t('New Password')}</label>
             <input
               type="password"
               value={newPassword}
@@ -87,14 +89,14 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
           </div>
 
           {error && <p className="text-[12.5px] text-accent">{error}</p>}
-          {saved && <p className="text-[12.5px] text-success">Password changed successfully.</p>}
+          {saved && <p className="text-[12.5px] text-success">{t('Password changed successfully.')}</p>}
 
           <button
             type="submit"
             disabled={saving}
             className="px-6 py-2.5 rounded-md bg-ink hover:bg-ink/90 text-white text-[13.5px] font-bold disabled:opacity-60 transition-colors"
           >
-            {saving ? 'Saving…' : 'Change Password'}
+            {saving ? t('Saving…') : t('Change Password')}
           </button>
         </form>
       </div>

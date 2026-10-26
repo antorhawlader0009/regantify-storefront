@@ -6,6 +6,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { useStoreText } from '../lib/storeText';
 import { sendContactMessage, type StoreContactPage } from '@/lib/storefrontApi';
+import { phoneInput } from '@/lib/phoneInput';
 
 const inputCls = 'mt-2 w-full border border-line bg-white px-4 py-3 text-[14px] font-normal text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none';
 const labelCls = 'block text-[12px] font-semibold uppercase tracking-wide text-ink';
@@ -69,7 +70,7 @@ export function ContactView({ subdomain, storeName, categories, page }: { subdom
                   </label>
                   <label className={labelCls}>
                     {t('Mobile number')}
-                    <input value={phone} onChange={(e) => setPhone(e.target.value)} required inputMode="tel" maxLength={16} placeholder="01XXXXXXXXX" autoComplete="tel" className={inputCls} />
+                    <input value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} required inputMode="tel" maxLength={16} placeholder="01XXXXXXXXX" autoComplete="tel" className={inputCls} />
                   </label>
                 </div>
                 <label className={labelCls}>

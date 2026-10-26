@@ -3,6 +3,7 @@ import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { ProductCard } from '../components/ProductCard';
+import { useStoreText } from '../lib/storeText';
 
 interface CampaignViewProps {
   subdomain: string;
@@ -20,6 +21,7 @@ interface CampaignViewProps {
  * same price checkout charges, so nothing here works out a price.
  */
 export function CampaignView({ subdomain, storeName, categories, campaignName, coverPhotoUrl, products }: CampaignViewProps) {
+  const t = useStoreText();
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
@@ -41,8 +43,8 @@ export function CampaignView({ subdomain, storeName, categories, campaignName, c
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
         {products.length === 0 ? (
           <div className="text-center py-20 bg-surface border border-line">
-            <p className="text-lg font-semibold text-ink mb-1.5">Nothing here yet</p>
-            <p className="text-[13.5px] text-muted">This campaign doesn&apos;t have any products yet. Check back soon.</p>
+            <p className="text-lg font-semibold text-ink mb-1.5">{t('Nothing here yet')}</p>
+            <p className="text-[13.5px] text-muted">{t("This campaign doesn't have any products yet. Check back soon.")}</p>
           </div>
         ) : (
           <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">

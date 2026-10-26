@@ -50,9 +50,10 @@ import {
   type StoredChat,
 } from '../lib/chatHistory';
 import { ChatOrderCard } from './ChatOrderCard';
-import { formatPrice } from '../lib/formatPrice';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
+import { useFormatPrice } from '../lib/storeText';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -94,6 +95,7 @@ const GREETING: Message = {
  * Shoppers are never told the store ran out of AI Credits.
  */
 export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string; storeName: string }) {
+  const formatPrice = useFormatPrice(plainPrice);
   const [open, setOpen] = useState(false);
   // Ordering in the chat (lib/chatOrder.ts): one order for the whole chat, sent with every message, and the shopper's
   // details (from their saved address or this browser, else from the chat or typed in the card).
