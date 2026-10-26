@@ -5,6 +5,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { blogDate } from '../components/MagazineSection';
 import { useStoreText } from '../lib/storeText';
+import { TrackFeature } from '@/components/TrackFeature';
 
 interface BlogPostViewProps {
   subdomain: string;
@@ -19,6 +20,7 @@ export function BlogPostView({ subdomain, storeName, categories, post, others }:
   const t = useStoreText();
   return (
     <div className="min-h-screen bg-canvas text-ink">
+      <TrackFeature feature="MAGAZINE_VIEW" />
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
       <main className="mx-auto grid max-w-6xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[1fr_320px]">
         <article>

@@ -24,6 +24,7 @@ import { sendStoreEvent } from '@/lib/storeEvents';
 import { addressProblem } from '@/lib/addressCheck';
 import { useFormatPrice } from '../lib/storeText';
 import { phoneInput } from '@/lib/phoneInput';
+import { trackFeature } from '@/lib/featureUse';
 
 // Fallback label for a gateway row with no vendor-set displayLabel — see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
@@ -56,6 +57,10 @@ const EN = {
   giftTick: 'This is a gift',
   giftMessageLabel: 'Message for the card (optional)',
   giftHidePrices: 'Hide the prices on the invoice',
+  giftNote: 'The name, phone and address above are the receiver\'s. A gift is paid in full online (no Cash on Delivery); the receiver is only texted when it is out for delivery.',
+  giftSenderName: 'Your name (the sender)',
+  giftSenderPhone: 'Your phone (optional, any country)',
+  giftOnlyOnlineNote: 'A gift is paid in full online, so Cash on Delivery is not available for this order.',
   giftWrap: 'Gift wrap',
   giftWrapFree: 'Free',
   minOrderNote: (amount: string, more: string) => `Minimum order is ${amount}. Add ${more} more to order.`,
@@ -178,6 +183,10 @@ const BN: Copy = {
   giftTick: 'এটা একটা উপহার',
   giftMessageLabel: 'কার্ডের জন্য বার্তা (ঐচ্ছিক)',
   giftHidePrices: 'ইনভয়েসে দাম লুকান',
+  giftNote: 'উপরের নাম, ফোন আর ঠিকানা যিনি উপহার পাবেন তার। উপহারের টাকা পুরোটা অনলাইনে দিতে হয় (ক্যাশ অন ডেলিভারি নেই); ডেলিভারির জন্য বের হলে তবেই প্রাপককে SMS যায়।',
+  giftSenderName: 'আপনার নাম (যিনি পাঠাচ্ছেন)',
+  giftSenderPhone: 'আপনার ফোন (ঐচ্ছিক, যেকোনো দেশের)',
+  giftOnlyOnlineNote: 'উপহারের টাকা পুরোটা অনলাইনে দিতে হয়, তাই এই অর্ডারে ক্যাশ অন ডেলিভারি নেই।',
   giftWrap: 'গিফট মোড়ক',
   giftWrapFree: 'ফ্রি',
   minOrderNote: (amount: string, more: string) => `সর্বনিম্ন অর্ডার ${amount}। অর্ডার করতে আর ${more} যোগ করুন।`,
@@ -334,6 +343,12 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     setGiftMessage,
     hidePrices,
     setHidePrices,
+    giftSenderName,
+    setGiftSenderName,
+    giftSenderPhone,
+    setGiftSenderPhone,
+    giftSenderError,
+    giftOnlyOnline,
     giftWrapCharge,
     minOrderAmount,
     minOrderShortfall,
@@ -727,12 +742,40 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               {giftOption && (
                 <div className="rounded-md border border-line bg-canvas px-3.5 py-3">
                   <label className="flex cursor-pointer items-center gap-2 text-[13.5px] font-medium text-ink">
-                    <input type="checkbox" checked={isGift} onChange={(e) => setIsGift(e.target.checked)} className="h-4 w-4" />
+                    <input type="checkbox" checked={isGift} onChange={(e) => {
+                      setIsGift(e.target.checked);
+                      if (e.target.checked) trackFeature('GIFT_TICK');
+                    }} className="h-4 w-4" />
                     {t.giftTick}
                     {giftOption.charge > 0 && <span className="font-normal text-muted">(+{formatPrice(giftOption.charge)})</span>}
                   </label>
                   {isGift && (
                     <div className="mt-2 space-y-2">
+                      <p className="m-0 text-[12px] text-muted">{t.giftNote}</p>
+                      <div className="grid gap-2 sm:grid-cols-2">
+                        <div>
+                          <label className="mb-1 block text-[12.5px] text-ink">{t.giftSenderName}</label>
+                          <input
+                            value={giftSenderName}
+                            onChange={(e) => setGiftSenderName(e.target.value)}
+                            maxLength={80}
+                            autoComplete="name"
+                            className="w-full px-3 py-2 rounded-md text-[13px] bg-surface border border-line-strong outline-none focus:border-ink"
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[12.5px] text-ink">{t.giftSenderPhone}</label>
+                          <input
+                            value={giftSenderPhone}
+                            onChange={(e) => setGiftSenderPhone(phoneInput(e.target.value))}
+                            inputMode="tel"
+                            maxLength={20}
+                            placeholder="+14155550123"
+                            className="w-full px-3 py-2 rounded-md text-[13px] bg-surface border border-line-strong outline-none focus:border-ink"
+                          />
+                        </div>
+                      </div>
+                      {giftSenderError && <p className="m-0 text-[12px] text-accent">{giftSenderError}</p>}
                       <div>
                         <label className="mb-1 block text-[12.5px] text-ink">{t.giftMessageLabel}</label>
                         <textarea
@@ -1245,7 +1288,13 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               )}
               {codBlocked && (
                 <p className="m-0 mt-3 text-[12.5px] text-muted">
-                  {paymentGateways.some((g) => g.type !== 'COD') ? t.onlineOnlyNote(onlineOnlyNames.slice(0, 3).join(', ')) : t.noOnlineNote}
+                  {paymentGateways.some((g) => g.type !== 'COD')
+                    ? onlineOnlyNames.length > 0
+                      ? t.onlineOnlyNote(onlineOnlyNames.slice(0, 3).join(', '))
+                      : giftOnlyOnline
+                        ? t.giftOnlyOnlineNote
+                        : ''
+                    : t.noOnlineNote}
                 </p>
               )}
             </div>

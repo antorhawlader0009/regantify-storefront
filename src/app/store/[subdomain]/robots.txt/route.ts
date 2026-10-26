@@ -12,7 +12,7 @@ import { decodeStoreSegment } from '@/lib/storeAddress';
 // is not allowed in can never read that.
 // A store that switched indexing off (Store > SEO) blocks everything and has no sitemap line.
 // The short ones end in a slash so "/t/" cannot catch some other page that merely starts with the letter.
-const BLOCKED = ['checkout', 'payment-callback', 'account', 't/', 'pay/', 'r/', 'cart-link/', 'i/'];
+const BLOCKED = ['checkout', 'payment-callback', 'account', 't/', 'pay/', 'r/', 'cart-link/', 'i/', 'confirm/'];
 
 export async function GET(_request: Request, { params }: { params: Promise<{ subdomain: string }> }) {
   // The address the request came in on travels in the internal segment (lib/storeAddress.ts, PERFORMANCE-PLAN.md Step 8).

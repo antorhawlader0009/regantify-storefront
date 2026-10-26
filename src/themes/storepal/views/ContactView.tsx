@@ -7,6 +7,7 @@ import { StoreFooter } from '../components/StoreFooter';
 import { useStoreText } from '../lib/storeText';
 import { sendContactMessage, type StoreContactPage } from '@/lib/storefrontApi';
 import { phoneInput } from '@/lib/phoneInput';
+import { trackFeature } from '@/lib/featureUse';
 
 const inputCls = 'mt-2 w-full border border-line bg-white px-4 py-3 text-[14px] font-normal text-ink placeholder:text-muted/70 focus:border-ink focus:outline-none';
 const labelCls = 'block text-[12px] font-semibold uppercase tracking-wide text-ink';
@@ -29,6 +30,7 @@ export function ContactView({ subdomain, storeName, categories, page }: { subdom
     try {
       await sendContactMessage(subdomain, { name: name.trim(), phone: phone.trim(), email: email.trim() || undefined, message: message.trim() });
       setDone(true);
+      trackFeature('CONTACT_SENT');
       setMessage('');
     } catch (err) {
       setError((err as Error).message);

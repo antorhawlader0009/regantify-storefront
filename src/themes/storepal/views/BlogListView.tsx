@@ -3,12 +3,14 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { MagazineCard } from '../components/MagazineSection';
 import { useStoreText } from '../lib/storeText';
+import { TrackFeature } from '@/components/TrackFeature';
 
 /** /blog: every published magazine post (TellMe idea 106). */
 export function BlogListView({ subdomain, storeName, categories, posts }: { subdomain: string; storeName: string; categories: string[]; posts: StorefrontBlogCard[] }) {
   const t = useStoreText();
   return (
     <div className="min-h-screen bg-canvas text-ink">
+      <TrackFeature feature="MAGAZINE_VIEW" />
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
       <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
         <h1 className="text-center text-[28px] font-bold uppercase">{t('Magazine')}</h1>

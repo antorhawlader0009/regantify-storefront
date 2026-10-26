@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { recognitionCtor, type Recognition } from './voice/speechInput';
+import { trackFeature } from '@/lib/featureUse';
 
 /**
  * Search by voice (shared by every template; each template only draws its own mic button). The browser's own speech recognition
@@ -111,6 +112,7 @@ export function useVoiceSearch({ onInterim, onText }: { onInterim?: (text: strin
     rec.current = r;
     try {
       r.start();
+      trackFeature('VOICE_SEARCH');
     } catch {
       setListening(false);
       setError('failed');

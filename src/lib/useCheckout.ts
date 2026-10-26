@@ -510,8 +510,14 @@ export function useCheckout(
   // Gift option (TellMe idea 57): the shopper's tick, message and "hide prices"; the wrap charge is the store's.
   const [isGift, setIsGift] = useState(false);
   const [giftMessage, setGiftMessage] = useState('');
-  const [hidePrices, setHidePrices] = useState(false);
-  const giftOption = resaleCart ? null : (vendorCharges?.giftOption ?? null);
+  const [hidePrices, setHidePrices] = useState(true);
+  // Who sends the gift (IDEA-21). The name, phone and address above are the receiver's; the sender may live abroad, so the phone is free text.
+  const [giftSenderName, setGiftSenderName] = useState('');
+  const [giftSenderPhone, setGiftSenderPhone] = useState('');
+  const [giftSenderError, setGiftSenderError] = useState<string | null>(null);
+  // A gift is always paid in full online, so the option only exists while the store has an online payment method (the server refuses a gift on COD).
+  const storeHasOnlinePayment = paymentGateways.some((g) => g.type !== 'COD');
+  const giftOption = resaleCart || !storeHasOnlinePayment ? null : (vendorCharges?.giftOption ?? null);
   const giftWrapCharge = isGift && giftOption && lines.length > 0 ? giftOption.charge : 0;
   // Minimum order (TellMe idea 56): the goods total before discounts; the button waits until it is reached.
   const minOrderAmount = vendorCharges?.minOrderAmount ?? null;
@@ -543,7 +549,8 @@ export function useCheckout(
   const discountsReset = Boolean(appliedCoupon?.resetOtherDiscounts);
   // Products that must be paid online (TellMe idea 126): Cash on Delivery is off while the cart holds one.
   const onlineOnlyNames = automaticDiscounts?.onlineOnly ?? [];
-  const codBlocked = onlineOnlyNames.length > 0;
+  const giftOnlyOnline = isGift && !!giftOption;
+  const codBlocked = onlineOnlyNames.length > 0 || giftOnlyOnline;
   const onlineGateways = paymentGateways.filter((g) => g.type !== 'COD');
   useEffect(() => {
     if (!codBlocked || onlineGateways.length === 0) return;
@@ -767,8 +774,24 @@ export function useCheckout(
     if (formRules?.email && formRules.email !== 'HIDDEN' && form.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) next.email = 'Enter a valid email, or leave it empty.';
     else if (formRules?.email === 'REQUIRED' && !form.email.trim()) next.email = 'Enter your email.';
     if (formRules?.thana === 'REQUIRED' && zone !== 'PICKUP' && !form.city.trim()) next.city = 'Choose your thana or area.';
+    // The sender of a gift (IDEA-21): a name is needed, a phone is optional and may be from any country.
+    let senderOk = true;
+    if (isGift && giftOption) {
+      const phoneText = giftSenderPhone.replace(/\s+/g, '');
+      if (giftSenderName.trim().length < 2) {
+        setGiftSenderError('Enter your name as the sender of this gift.');
+        senderOk = false;
+      } else if (phoneText && !/^\+?[0-9][0-9()-]{5,19}$/.test(phoneText)) {
+        setGiftSenderError('Enter the sender phone number with digits only, like +14155550123, or leave it empty.');
+        senderOk = false;
+      } else {
+        setGiftSenderError(null);
+      }
+    } else {
+      setGiftSenderError(null);
+    }
     setErrors(next);
-    return Object.keys(next).length === 0;
+    return Object.keys(next).length === 0 && senderOk;
   };
 
   // Store > COD Guard "Before Checkout" (StorePal only — the server never
@@ -897,7 +920,7 @@ export function useCheckout(
         deliverySpeed: expressSelected ? 'EXPRESS' : undefined,
         preferredDeliveryDate: preferredDate || undefined,
         preferredSlotId: preferredSlotId || undefined,
-        ...(isGift && giftOption ? { isGift: true, giftMessage: giftMessage.trim() || undefined, hidePricesOnInvoice: hidePrices || undefined } : {}),
+        ...(isGift && giftOption ? { isGift: true, giftMessage: giftMessage.trim() || undefined, hidePricesOnInvoice: hidePrices || undefined, giftSenderName: giftSenderName.trim(), giftSenderPhone: giftSenderPhone.trim() || undefined } : {}),
         sessionKey: sessionKey || undefined,
         // Opened from an instant checkout link (lib/instantCheckout.ts): the order marks that link as used.
         instantCheckoutToken: externalLines ? undefined : instantTokenFor(subdomain),
@@ -914,6 +937,7 @@ export function useCheckout(
           productImage: l.image,
           selectedOptions: l.selectedOptions,
           customValues: l.customValues,
+          bundlePicks: l.bundlePicks?.map((p) => ({ productId: p.productId, quantity: p.quantity })),
           listPrice: l.originalUnitPrice ?? l.unitPrice,
           unitPrice: l.unitPrice,
           quantity: l.quantity,
@@ -1076,6 +1100,12 @@ export function useCheckout(
     setGiftMessage: (value: string) => setGiftMessage(value.slice(0, 200)),
     hidePrices,
     setHidePrices,
+    giftSenderName,
+    setGiftSenderName: (value: string) => setGiftSenderName(value.slice(0, 80)),
+    giftSenderPhone,
+    setGiftSenderPhone: (value: string) => setGiftSenderPhone(value.slice(0, 20)),
+    giftSenderError,
+    giftOnlyOnline,
     giftWrapCharge,
     minOrderAmount,
     minOrderShortfall,

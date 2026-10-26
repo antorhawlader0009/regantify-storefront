@@ -8,6 +8,7 @@ import { formatExpectedDate } from '@/lib/expectedDate';
 import { useStorePalDesign } from '../lib/designSettings';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { bnDigits, useFormatPrice } from '../lib/storeText';
+import { trackFeature } from '@/lib/featureUse';
 
 /** Where the chosen district is remembered, so the next product (and the checkout) starts with it. */
 export const DELIVERY_DISTRICT_KEY = 'storepal-delivery-district:';
@@ -70,6 +71,7 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
 
   const choose = (value: string) => {
     setDistrict(value);
+    if (value) trackFeature('DELIVERY_CHECK');
     try {
       if (value) localStorage.setItem(DELIVERY_DISTRICT_KEY + subdomain, value);
       else localStorage.removeItem(DELIVERY_DISTRICT_KEY + subdomain);

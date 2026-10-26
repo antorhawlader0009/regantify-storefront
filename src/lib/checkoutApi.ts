@@ -560,6 +560,8 @@ export interface TrackedOrder {
   // Whether the shopper may cancel this order themselves right now (server: orders/customer-cancel.ts).
   // Absent on the "My orders" list and on older answers.
   customerCancel?: { allowed: boolean };
+  // The SMS "confirm your order" page (IDEA-24): the two buttons may show (allowed), or the order is already confirmed. Absent on older answers.
+  customerConfirm?: { allowed: boolean; confirmed: boolean };
   // "Pay now online and save" on a COD order: the saving and what paying now costs; null/absent when not offered.
   prepaidOffer?: { saving: number; payNow: number } | null;
   // Whether the shopper may correct their delivery details right now ("Fix my address").
@@ -592,6 +594,17 @@ export async function startPrepaidSwitch(subdomain: string, token: string): Prom
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/pay-online`, { method: 'POST' });
   if (!res.ok) throw await apiError(res, 'Could not start the payment. Please try again.');
   return res.json() as Promise<{ payPath: string }>;
+}
+
+/** The answer on the SMS confirm link (IDEA-24, tracking token as proof): YES = this is my order, NO = I did not order this. Returns the order as it is now. */
+export async function answerConfirmLink(subdomain: string, token: string, answer: 'YES' | 'NO'): Promise<TrackedOrder> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/confirm`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ answer }),
+  });
+  if (!res.ok) throw await apiError(res, 'Something went wrong. Please try again.');
+  return res.json() as Promise<TrackedOrder>;
 }
 
 /** The shopper cancels their own order (tracking token as proof). Returns the order as it is now. */

@@ -23,6 +23,7 @@ import { preOrderDateText } from '../lib/preOrderDate';
 import { CardSwatches } from '@/components/CardSwatches';
 import { QuickAddSheet } from '@/components/QuickAddSheet';
 import type { StorefrontCardSwatches } from '@/lib/storefrontApi';
+import { trackFeature } from '@/lib/featureUse';
 
 // Minimal shape ProductCard actually reads — satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
@@ -50,6 +51,8 @@ interface CardProduct {
   minOrderQuantity?: number | null;
   /** Coming soon (TellMe idea 104). */
   comingSoon?: boolean;
+  /** A box the shopper fills (IDEA-22): its items are picked on the product page. */
+  bundlePick?: number | null;
   /** Sold in packs (TellMe idea 102). */
   quantityStep?: number;
   unitLabel?: string | null;
@@ -123,7 +126,8 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   // product with variations) the option pickers on the card. Anything
   // else — including backorder, whose confirm popup lives on the product
   // page — goes to the product page.
-  const canBuyInline = fullData && !outOfStock && (!hasVariations || showOptions);
+  // A box the shopper fills (IDEA-22) needs its items picked, so it always opens the product page.
+  const canBuyInline = fullData && !outOfStock && !product.bundlePick && (!hasVariations || showOptions);
   // A product with variations whose choices aren't on the card opens the quick add sheet instead.
   const quickAdd = fullData && !outOfStock && hasVariations && !showOptions;
   const photoFor = (option: string, value: string) =>
@@ -163,6 +167,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       if (quickAdd) {
         setVariantWarning(false);
         setSheetOpen(true);
+        trackFeature('QUICK_ADD');
         return;
       }
       router.push(href);
@@ -336,7 +341,9 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
               type="checkbox"
               checked={compare.has(product.slug)}
               onChange={() => {
+                const wasPicked = compare.has(product.slug);
                 const ok = compare.toggle(product.slug);
+                if (ok && !wasPicked) trackFeature('COMPARE_ADD');
                 setCompareFull(!ok);
               }}
               className="h-3.5 w-3.5"

@@ -27,6 +27,8 @@ export interface CartLine {
   customValues?: Record<string, string>;
   customDisplay?: { label: string; value: string }[];
   customFee?: number;
+  // What the shopper picked for a "pick N" box (IDEA-22), per box. Lines with different picks are different lines; the shown text is in customDisplay.
+  bundlePicks?: { productId: string; name: string; quantity: number }[];
   // The pre-order's expected date (YYYY-MM-DD, TellMe idea 64), shown in the cart and checkout. Missing = none.
   preOrderDate?: string;
   // Product.minOrderQuantity: the line never goes below it (the server
@@ -111,7 +113,8 @@ export type CartStore = CartState & CartActions;
 
 export const defaultInitState: CartState = { lines: [], ownerId: null };
 
-export function lineId(productSlug: string, selectedOptions: Record<string, string>, customValues?: Record<string, string>): string {
+export function lineId(productSlug: string, selectedOptions: Record<string, string>, customValues?: Record<string, string>, bundlePicks?: { productId: string; quantity: number }[]): string {
+  const picks = bundlePicks && bundlePicks.length > 0 ? `::b:${[...bundlePicks].sort((a, b) => a.productId.localeCompare(b.productId)).map((p) => `${p.productId}x${p.quantity}`).join('|')}` : '';
   const custom = customValues && Object.keys(customValues).length > 0
     ? `::c:${Object.entries(customValues).sort(([a], [b]) => a.localeCompare(b)).map(([k, v]) => `${k}=${v}`).join('|')}`
     : '';
@@ -119,7 +122,7 @@ export function lineId(productSlug: string, selectedOptions: Record<string, stri
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([k, v]) => `${k}:${v}`)
     .join('|');
-  return `${productSlug}::${optionsKey}${custom}`;
+  return `${productSlug}::${optionsKey}${custom}${picks}`;
 }
 
 // Store factory — called fresh per request via CartStoreProvider (see
@@ -139,7 +142,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
           const floor = Math.max(input.minOrderQuantity ?? 1, step);
           const wanted = Math.max(input.quantity, floor);
           const line = { ...input, quantity: step > 1 ? Math.ceil(wanted / step) * step : wanted };
-          const id = lineId(line.productSlug, line.selectedOptions, line.customValues);
+          const id = lineId(line.productSlug, line.selectedOptions, line.customValues, line.bundlePicks);
           set((state) => {
             const existing = state.lines.find((l) => l.id === id);
             if (existing) {

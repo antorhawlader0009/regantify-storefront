@@ -3,6 +3,7 @@
 import { useCallback, useSyncExternalStore } from 'react';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { syncServerWishlist } from '@/lib/customerAuthApi';
+import { trackFeature } from '@/lib/featureUse';
 
 // Store > Design > Product Card's "Show Wishlist Button". The wishlist is
 // a list of product slugs kept in the shopper's own browser, per store —
@@ -76,6 +77,7 @@ export function useWishlist(subdomain: string) {
     (slug: string) => {
       const current = read(subdomain);
       const next = current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug];
+      if (!current.includes(slug)) trackFeature('WISHLIST_ADD');
       write(subdomain, next);
       if (accessToken) void syncServerWishlist(accessToken, subdomain, next).catch(() => undefined);
     },

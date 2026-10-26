@@ -5,6 +5,7 @@ import { createPortal } from 'react-dom';
 import { Ruler, X } from 'lucide-react';
 import type { StorefrontSizeGuide } from '@/lib/storefrontApi';
 import { useStoreText } from '../lib/storeText';
+import { trackFeature } from '@/lib/featureUse';
 
 /**
  * The "Size guide" link beside a product's Size choice (Store > Product > Size Guides), opening the vendor's table
@@ -33,7 +34,10 @@ export function SizeGuideLink({ guide }: { guide: StorefrontSizeGuide }) {
     <>
       <button
         type="button"
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          trackFeature('SIZE_GUIDE_OPEN');
+        }}
         className="inline-flex items-center gap-1 text-[12px] font-semibold text-accent underline underline-offset-2 hover:text-accent-dark"
       >
         <Ruler size={13} aria-hidden />

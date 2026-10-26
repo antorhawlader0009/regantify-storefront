@@ -5,6 +5,7 @@ import { Share, SquarePlus, X } from 'lucide-react';
 import { useInstallApp } from '@/lib/installApp';
 import { useStorePalDesign } from '../lib/designSettings';
 import { useStoreText } from '../lib/storeText';
+import { trackFeature } from '@/lib/featureUse';
 
 /**
  * "Add the store to your home screen" (Store > Branding > Install as app). Shown once in a while to a returning shopper on a phone
@@ -40,7 +41,10 @@ export function InstallAppBanner({ subdomain, storeName }: { subdomain: string; 
           <button type="button" onClick={dismiss} className="rounded-lg px-3.5 py-2 text-[13px] font-medium text-muted hover:text-ink">
             {t('Not now')}
           </button>
-          <button type="button" onClick={() => void install()} className="rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90">
+          <button type="button" onClick={() => {
+              trackFeature('INSTALL_APP_CLICK');
+              void install();
+            }} className="rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90">
             {t('Install')}
           </button>
         </div>

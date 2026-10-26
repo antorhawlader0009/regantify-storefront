@@ -1,10 +1,7 @@
 /**
- * Does this product answer a search? Its name, or one of the hidden words the store added ("also found as", TellMe
- * idea 23: "kurta, কুর্তা" on a Panjabi). Plain case-insensitive "contains", the same rule the name always used, so a
- * store with no search words searches exactly as before. `query` is already trimmed and lower-cased by the caller.
+ * StorePal's product search (the header's suggestion list and the results page), IDEA-19. It finds a product by its name, the hidden
+ * "also found as" words the store added (TellMe idea 23: "kurta, কুর্তা" on a Panjabi), its category and its brand, and it forgives the way
+ * people really type: Bangla, Banglish and English spellings of one word meet ("পাঞ্জাবি", "panjabi", "punjabi"), and a misspelled word
+ * ("pnjabi", "walet") still finds its product. The rules are in lib/searchFold.ts, shared by every template.
  */
-export function matchesSearch(product: { name: string; searchKeywords?: string[] | null }, query: string): boolean {
-  if (!query) return true;
-  if (product.name.toLowerCase().includes(query)) return true;
-  return (product.searchKeywords ?? []).some((word) => word.toLowerCase().includes(query));
-}
+export { searchProducts } from '@/lib/searchFold';

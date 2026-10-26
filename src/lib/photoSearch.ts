@@ -3,6 +3,7 @@
 import type { ClipboardEvent as ReactClipboardEvent } from 'react';
 import { create } from 'zustand';
 import type { StorefrontProduct } from './storefrontApi';
+import { trackFeature } from '@/lib/featureUse';
 
 /**
  * Search the store by photo: the search bar's camera button, a picture pasted into the search box, or a picture dropped
@@ -72,6 +73,7 @@ export const usePhotoSearch = create<PhotoSearchState>((set, get) => ({
 
   search: async (subdomain, file) => {
     if (!isImageFile(file)) return;
+    trackFeature('PHOTO_SEARCH');
     const id = ++runId;
     const old = get().preview;
     if (old) URL.revokeObjectURL(old);

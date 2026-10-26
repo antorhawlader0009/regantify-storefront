@@ -5,6 +5,7 @@ import { Check, Link2, Share2 } from 'lucide-react';
 import { useStorePalDesign } from '../lib/designSettings';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useFormatPrice } from '../lib/storeText';
+import { trackFeature } from '@/lib/featureUse';
 
 /**
  * Product page "Share" (TellMe idea 61). On a phone it opens the phone's own share sheet; elsewhere a small menu offers
@@ -41,6 +42,7 @@ export function ShareButton({ name, price }: { name: string; price: number }) {
   const text = `${name} — ${formatPrice(price)}`;
 
   const onClick = async () => {
+    trackFeature('SHARE_OPEN');
     const nav = navigator as Navigator & { share?: (data: { title?: string; text?: string; url?: string }) => Promise<void> };
     if (typeof nav.share === 'function' && window.matchMedia('(pointer: coarse)').matches) {
       try {

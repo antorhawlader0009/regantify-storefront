@@ -16,7 +16,8 @@ export function BundleIncludes({ product }: { product: StorefrontProduct }) {
   const design = useStorePalDesign();
   const bn = design.storeLanguage === 'bn';
   const bundle = product.bundle;
-  if (!bundle || bundle.items.length === 0) return null;
+  // A "pick N" box (IDEA-22) shows its picker instead of a list of what is inside.
+  if (!bundle || bundle.items.length === 0 || bundle.pick) return null;
 
   const price = Number(product.discountPrice ?? product.price);
   const saving = bundle.separateTotal - price;

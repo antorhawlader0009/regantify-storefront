@@ -489,7 +489,14 @@ export interface StorefrontProduct {
   minOrderQuantity?: number | null;
   /** Bundle / combo (TellMe idea 51): what the set holds and what the parts cost one by one. Its stock is the fewest sets they allow. */
   isBundle?: boolean;
-  bundle?: { items: { name: string; quantity: number }[]; separateTotal: number };
+  /** "Pick N" box (IDEA-22): the shopper picks this many pieces from `bundle.items`; null/absent = a fixed set. */
+  bundlePick?: number | null;
+  bundle?: {
+    /** In a "pick N" box each item is a choice: `quantity` is the most one box may hold, and the rest says what the picker needs. */
+    items: { name: string; quantity: number; productId?: string; photo?: string | null; price?: number; stock?: number | null }[];
+    separateTotal: number;
+    pick?: number | null;
+  };
   /** Information asked from the shopper (TellMe idea 75): up to 3 boxes and a fee per piece when any is filled in. */
   customFields?: { id: string; label: string; required: boolean; maxLength: number }[] | null;
   customFee?: string | number | null;

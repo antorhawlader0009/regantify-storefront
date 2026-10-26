@@ -33,7 +33,7 @@ import { useStoreText } from '../lib/storeText';
 import { RecentlyViewed } from '../components/RecentlyViewed';
 import { SocialFeedSection } from '../components/SocialFeedSection';
 import type { StorefrontSocialFeed } from '@/lib/storefrontApi';
-import { matchesSearch as matchesSearchWords } from '../lib/searchMatch';
+import { searchProducts } from '../lib/searchMatch';
 import { AskAssistantButton } from '../components/AskAssistantButton';
 
 function groupByCategory(products: StorefrontProduct[]) {
@@ -179,9 +179,11 @@ export function HomeView({
   };
   const [mobileFiltersOpen, setMobileFiltersOpen] = useState(false);
 
+  // The products that answer the typed words, best first: Bangla, Banglish and English spellings meet and a typo is forgiven (lib/searchMatch.ts).
+  const searchHits = useMemo(() => (search?.trim() ? searchProducts(products, search.trim()) : null), [products, search]);
+  const searchRank = useMemo(() => new Map((searchHits ?? []).map((p, i) => [p, i] as const)), [searchHits]);
   const filtered = products.filter((p) => {
-    // The name, or one of the product's hidden search words (lib/searchMatch.ts).
-    const matchesSearch = search?.trim() ? matchesSearchWords(p, search.trim().toLowerCase()) : true;
+    const matchesSearch = searchHits ? searchRank.has(p) : true;
     // Matches on secondaryCategories too — a promo bucket like "50% OFF"
     // (see the header nav) is typically tagged onto products from many
     // different primary categories purely via Secondary Categories, never
@@ -227,7 +229,9 @@ export function HomeView({
       ? payPrice(a) - payPrice(b)
       : sortBy === 'price-desc'
         ? payPrice(b) - payPrice(a)
-        : 0, // "Latest" keeps the store's own order: the vendor's pinned products first, then newest first
+        : searchHits
+          ? (searchRank.get(a) ?? 0) - (searchRank.get(b) ?? 0) // a search: the closest spelling first, then the store's own order
+          : 0, // "Latest" keeps the store's own order: the vendor's pinned products first, then newest first
   );
 
   // Meta pixel Search / GA4 search, once per query, with the top results

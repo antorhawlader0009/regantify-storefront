@@ -14,6 +14,7 @@ import { encodeCartLink } from '@/lib/cartLink';
 import { CartOffers } from './CartOffers';
 import { CartAddons } from './CartAddons';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
+import { trackFeature } from '@/lib/featureUse';
 
 const SLIDE_MS = 300;
 
@@ -42,8 +43,9 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
   // "Share cart" (TellMe idea 77): the cart as a link (slugs, options, quantities). Lines with the shopper's own text or a
   // gift cannot be put in a link, and the server looks everything up again when the link is opened.
   const shareCart = async () => {
-    const shareable = lines.filter((l) => !l.customValues);
+    const shareable = lines.filter((l) => !l.customValues && !l.bundlePicks);
     if (shareable.length === 0) return;
+    trackFeature('CART_SHARE');
     // Path mode (/store/<sub>/...) keeps that prefix; on the store's own domain the link sits at the root.
     const base = window.location.pathname.startsWith(`/store/${subdomain}`) ? `/store/${subdomain}` : '';
     const url = `${window.location.origin}${base}/cart-link/${encodeCartLink(shareable)}`;
@@ -174,6 +176,9 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                                 .map(([k, v]) => `${k}: ${v}`)
                                 .join(' · ')}
                             </p>
+                          )}
+                          {line.customDisplay && line.customDisplay.length > 0 && (
+                            <p className="mt-1 text-[12px] text-muted">{line.customDisplay.map((v) => `${v.label}: ${v.value}`).join(' · ')}</p>
                           )}
                           {line.isPreOrder && <p className="mt-1 text-[12px] text-muted">{t('Pre-order')}</p>}
                           {line.quantity > 1 && <p className="mt-1 text-[12px] text-muted">{formatPrice(line.unitPrice)} each</p>}

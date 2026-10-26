@@ -54,6 +54,7 @@ import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
 import { useFormatPrice } from '../lib/storeText';
+import { trackFeature } from '@/lib/featureUse';
 
 interface Message {
   role: 'user' | 'assistant';
@@ -598,6 +599,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
     reopenAfterCall.current = true;
     setShowHistory(false);
     setOpen(false);
+    trackFeature('VOICE_CALL');
     void call.start();
   };
   useEffect(() => {
@@ -727,7 +729,10 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       {/* The round bubble only opens the chat; while it is open, the close button is in the panel's header. */}
       {!open && call.phase === 'idle' && (
       <button
-        onClick={() => setOpen(true)}
+        onClick={() => {
+          setOpen(true);
+          trackFeature('AI_CHAT_OPEN', { oncePerSession: true });
+        }}
         aria-label="Chat with our assistant"
         className="fixed bottom-[76px] right-5 z-30 w-12 h-12 rounded-full bg-accent hover:bg-accent-dark shadow-lg flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none"
         onFocus={reveal}

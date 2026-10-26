@@ -492,6 +492,13 @@ const BN: Record<string, string> = {
   // More IDEA-7 labels.
   "Tell us how many you need and we'll send you the price.": "আপনার কয়টি লাগবে জানান, আমরা দাম জানিয়ে দেব।",
   "Home, Office, Mother's place": "বাসা, অফিস, মায়ের বাসা",
+  // IDEA-22 pick-your-box labels.
+  "Pick your {n} items": "আপনার {n}টি পণ্য বাছুন",
+  "{done} of {total} picked": "{total}টির মধ্যে {done}টি বাছা হয়েছে",
+  "Pick exactly {n} items first.": "আগে ঠিক {n}টি পণ্য বাছুন।",
+  "Remove one": "একটি কমান",
+  "Add one": "একটি বাড়ান",
+  "Your picks": "আপনার বাছাই",
 };
 
 /** Bangla digits for numbers shown inside a Bangla label. */

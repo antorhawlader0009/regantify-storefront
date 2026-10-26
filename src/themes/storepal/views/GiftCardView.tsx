@@ -12,6 +12,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { phoneInput } from '@/lib/phoneInput';
+import { TrackFeature } from '@/components/TrackFeature';
 
 const field = 'w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors';
 
@@ -36,6 +37,7 @@ export function GiftCardView({ subdomain }: { subdomain: string }) {
 
   return (
     <div className="min-h-screen bg-canvas text-ink">
+      <TrackFeature feature="GIFT_CARD_PAGE" />
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={nav.categories} categoryDetails={nav.categoryDetails} logoUrl={logoUrl} socialLinks={socialLinks} />
       <main className="mx-auto max-w-lg px-4 py-10 sm:px-6">{invoice ? <Result invoice={invoice} subdomain={subdomain} /> : <Form subdomain={subdomain} />}</main>
       <StoreFooter subdomain={subdomain} storeName={storeName} />

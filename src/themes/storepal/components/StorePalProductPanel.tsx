@@ -11,11 +11,13 @@ import { HoverZoom, PhotoViewer } from '@/components/ProductImageViewer';
 import { formatPrice as plainPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
+import { BundlePicker, pickedCount, type BundlePickState } from './BundlePicker';
 import { useStorePalDesign } from '../lib/designSettings';
 import { preOrderDateText } from '../lib/preOrderDate';
 import { priceWithBreaks } from '@/lib/priceBreaks';
 import { SizeGuideLink } from './SizeGuideLink';
 import { useWholesalePrices } from '../lib/wholesale';
+import { trackFeature } from '@/lib/featureUse';
 
 interface StorePalProductPanelProps {
   subdomain: string;
@@ -258,6 +260,12 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     // The price without a step; the cart store lowers it to the break price for the product's total pieces (applyBreaks).
     unitPrice: Number(displayPrice) + customFeeNow,
     basePrice: Number(displayPrice),
+    ...(pickBox && pickedCount(picks) === pickBox
+      ? {
+          bundlePicks: pickList,
+          customDisplay: [{ label: t('Your picks'), value: pickList.map((p) => `${p.name} ×${p.quantity}`).join(', ') }],
+        }
+      : {}),
     ...(customFilled
       ? {
           customValues: Object.fromEntries(customFields.filter((f) => (customAnswers[f.id] ?? '').trim()).map((f) => [f.id, customAnswers[f.id].trim().slice(0, f.maxLength)])),
@@ -281,6 +289,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
 
   const addToCart = () => {
     addLine(buildLine());
+    setPicks({});
+    if (pickBox) trackFeature('BOX_ADDED');
     onAddedToCart?.();
     setAdded(true);
     setTimeout(() => setAdded(false), 2500);
@@ -288,6 +298,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
 
   const buyNow = () => {
     addLine(buildLine());
+    setPicks({});
+    if (pickBox) trackFeature('BOX_ADDED');
     if (onBuyNow) {
       onBuyNow();
       return;
@@ -308,7 +320,19 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     return true;
   };
 
+  // A box the shopper fills (IDEA-22): the box must be full before it goes in the cart.
+  const pickBox = product.bundle?.pick ?? 0;
+  const [picks, setPicks] = useState<BundlePickState>({});
+  const [pickError, setPickError] = useState<string | null>(null);
+  const pickList = Object.entries(picks).map(([productId, quantity]) => ({ productId, quantity, name: product.bundle?.items.find((i) => (i.productId ?? i.name) === productId)?.name ?? '' }));
+  const pickProblem = () => {
+    if (!pickBox || pickedCount(picks) === pickBox) return false;
+    setPickError(t('Pick exactly {n} items first.').replace('{n}', String(pickBox)));
+    return true;
+  };
+
   const handleAddToCart = () => {
+    if (pickProblem()) return;
     if (customProblem()) return;
     setCustomError(null);
     if (needsVariantSelection) {
@@ -324,6 +348,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   };
 
   const handleBuyNow = () => {
+    if (pickProblem()) return;
     if (customProblem()) return;
     setCustomError(null);
     if (needsVariantSelection) {
@@ -596,6 +621,18 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           <p className="text-[12.5px] text-accent-dark bg-accent-light border border-accent/20 rounded px-3 py-2 -mt-1 mb-4">
             {t('Select an option above first.')}
           </p>
+        )}
+
+        {pickBox > 0 && (
+          <BundlePicker
+            product={product}
+            picks={picks}
+            onPicks={(next) => {
+              setPicks(next);
+              setPickError(null);
+            }}
+            error={pickError}
+          />
         )}
 
         {customFields.length > 0 && (

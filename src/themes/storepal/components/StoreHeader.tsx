@@ -31,7 +31,7 @@ import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefr
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
-import { matchesSearch as matchesSearchWords } from '../lib/searchMatch';
+import { searchProducts } from '../lib/searchMatch';
 
 interface StoreHeaderProps {
   subdomain: string;
@@ -288,11 +288,11 @@ export function StoreHeader({
   const draftLower = searchDraft.trim().toLowerCase();
   const matchedCategories = useMemo(() => {
     if (!draftLower) return [];
-    return categories.filter((c) => c.toLowerCase().includes(draftLower)).slice(0, 3);
+    return searchProducts(categories.map((name) => ({ name })), draftLower).slice(0, 3).map((c) => c.name);
   }, [categories, draftLower]);
   const matchedProducts = useMemo(() => {
     if (!draftLower || !searchIndex) return [];
-    return searchIndex.filter((p) => matchesSearchWords(p, draftLower)).slice(0, 6);
+    return searchProducts(searchIndex, draftLower).slice(0, 6);
   }, [searchIndex, draftLower]);
   const showSuggestions = suggestionsOpen && draftLower.length > 0 && (matchedCategories.length > 0 || matchedProducts.length > 0);
   // Typed words that match nothing: offer to ask the AI assistant instead (only while it can answer).
