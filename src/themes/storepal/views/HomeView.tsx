@@ -182,15 +182,21 @@ export function HomeView({
   // The products that answer the typed words, best first: Bangla, Banglish and English spellings meet and a typo is forgiven (lib/searchMatch.ts).
   const searchHits = useMemo(() => (search?.trim() ? searchProducts(products, search.trim()) : null), [products, search]);
   const searchRank = useMemo(() => new Map((searchHits ?? []).map((p, i) => [p, i] as const)), [searchHits]);
+  // A main category also holds its sub categories' products: a product's category is the one picked for it, often a sub
+  // category, so "Home & Kitchen" must match products in "Kitchen Appliances" too.
+  const activeCategoryNames = activeCategory
+    ? new Set([activeCategory, ...(categoryDetails.find((c) => c.name === activeCategory)?.children ?? []).map((c) => c.name)])
+    : null;
+  const inActiveCategory = (p: (typeof products)[number]) =>
+    !activeCategoryNames || (p.category ? activeCategoryNames.has(p.category) : false) || p.secondaryCategories.some((c) => activeCategoryNames.has(c));
+
   const filtered = products.filter((p) => {
     const matchesSearch = searchHits ? searchRank.has(p) : true;
     // Matches on secondaryCategories too — a promo bucket like "50% OFF"
     // (see the header nav) is typically tagged onto products from many
     // different primary categories purely via Secondary Categories, never
     // set as any product's own `category`.
-    const matchesCategory = activeCategory
-      ? p.category === activeCategory || p.secondaryCategories.includes(activeCategory)
-      : true;
+    const matchesCategory = inActiveCategory(p);
     const matchesBrandParam = activeBrand ? p.brand === activeBrand : true;
     const price = Number(p.discountPrice ?? p.price);
     const matchesPrice = price >= effectiveFilters.minPrice && price <= effectiveFilters.maxPrice;
@@ -289,16 +295,17 @@ export function HomeView({
   // pass it only this category's own products so Brand doesn't mix in
   // brands from every other category in the store (e.g. Organic Food
   // brands showing up while browsing Phone).
-  const categoryScopedProducts = activeCategory
-    ? products.filter((p) => p.category === activeCategory || p.secondaryCategories.includes(activeCategory))
-    : products;
+  const categoryScopedProducts = activeCategory ? products.filter(inActiveCategory) : products;
 
   const shortcutCategories = categories.slice(0, MAX_SHORTCUTS).map((name) => {
     const detail = categoryDetails.find((c) => c.name === name);
     const image =
       detail?.squarePhotoUrl ||
       detail?.coverPhotoUrl ||
-      products.find((p) => p.category === name || p.secondaryCategories.includes(name))?.photoUrls[0];
+      products.find((p) => {
+        const names = [name, ...(detail?.children ?? []).map((c) => c.name)];
+        return (p.category ? names.includes(p.category) : false) || p.secondaryCategories.some((c) => names.includes(c));
+      })?.photoUrls[0];
     return { name, image };
   });
 
