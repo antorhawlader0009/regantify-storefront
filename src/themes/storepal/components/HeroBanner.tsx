@@ -63,16 +63,23 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
     () => categoryDetails.filter((c): c is StorefrontCategoryDetail & { coverPhotoUrl: string } => Boolean(c.coverPhotoUrl)),
     [categoryDetails],
   );
+  // Shuffled only after mount, as the comment above says: the server and the first browser render both use the store's own
+  // order, so the HTML matches (shuffling during render gave each side its own order: a hydration mismatch that React does
+  // not repair, leaving the server's picture under the browser's slide).
+  const [shuffled, setShuffled] = useState<typeof withCover | null>(null);
+  useEffect(() => {
+    setShuffled(shuffle(withCover));
+  }, [withCover]);
   // The website cover (Store > Branding) is always the first slide and links nowhere; the category covers follow it unless the
   // store asked for the cover alone. With no website cover this is exactly the old behaviour.
   const slides = useMemo<HeroSlide[]>(() => {
     const own: HeroSlide[] = siteCoverUrl ? [{ key: '__site_cover__', alt: 'Cover', url: siteCoverUrl, href: null }] : [];
     if (siteCoverUrl && siteCoverOnly) return own;
-    const categories = shuffle(withCover)
+    const categories = (shuffled ?? withCover)
       .slice(0, MAX_SLIDES - own.length)
       .map((c) => ({ key: c.name, alt: c.name, url: c.coverPhotoUrl, href: `/store/${subdomain}?category=${encodeURIComponent(c.name)}` }));
     return [...own, ...categories];
-  }, [withCover, siteCoverUrl, siteCoverOnly, subdomain]);
+  }, [withCover, shuffled, siteCoverUrl, siteCoverOnly, subdomain]);
 
   useEffect(() => {
     if (slides.length <= 1) return;

@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHeaderPresence } from '../lib/headerPresence';
 import Image from 'next/image';
-import { Bot, Send, X, Loader2, ImagePlus, Check, History, SquarePen, Trash2, Phone } from 'lucide-react';
+import { MessageCircle, Send, X, ImagePlus, Mic, Check, History, SquarePen, Trash2, Phone, Minimize2, Maximize2 } from 'lucide-react';
 import {
   ChatUnavailableError,
   getChatStatus,
@@ -55,6 +55,122 @@ import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
 import { useFormatPrice } from '../lib/storeText';
 import { trackFeature } from '@/lib/featureUse';
+import { useVoiceSearch } from '@/lib/voiceSearch';
+
+/** sessionStorage: '1' when the shopper shrank the phone chat to the corner panel. */
+const COMPACT_KEY = 'storepal-chat-compact';
+
+/** The header's quiet icon buttons (the store's colour is kept for the shopper's own words and the send button). */
+const HEADER_BUTTON =
+  'w-9 h-9 shrink-0 rounded-full text-muted flex items-center justify-center transition-colors hover:bg-canvas hover:text-ink focus-visible:outline-2 focus-visible:outline-accent';
+
+/** Soft depth for the white surfaces on the grey thread (bubbles, product list, message box): a close line plus a wide, faint lift. */
+const SOFT_SHADOW = 'shadow-[0_1px_2px_rgba(16,24,40,0.05),0_4px_14px_-4px_rgba(16,24,40,0.10)]';
+
+/**
+ * The chat's background, WhatsApp style: a faint tile of hand-drawn shop doodles (bag, tag, cart, gift, heart, star,
+ * parcel, truck, discount, chat, sparkle). Our own drawing, used as a mask over the store's accent colour so every store
+ * gets it in its own colour.
+ */
+const DOODLE_ICONS: Array<[number, number, number, string]> = [
+  [14, 14, -12, '<path d="M5 8h14l-1 12H6L5 8z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>'],
+  [96, 8, 15, '<path d="M3 12V4h8l10 10-8 8L3 12z"/><circle cx="7.5" cy="7.5" r="1.5"/>'],
+  [172, 20, -8, '<path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/>'],
+  [44, 74, 10, '<rect x="4" y="9" width="16" height="11" rx="1"/><path d="M3 9h18M12 9v11M12 9S10 4 7.5 5.5 9 9 12 9zm0 0s2-5 4.5-3.5S15 9 12 9z"/>'],
+  [126, 66, -14, '<path d="M3 4h2l2.4 11h10.2L20 8H6.2"/><circle cx="9" cy="19" r="1.5"/><circle cx="17" cy="19" r="1.5"/>'],
+  [200, 92, 18, '<path d="M12 3l2.6 5.6 6.1.7-4.5 4.2 1.2 6L12 16.6 6.6 19.5l1.2-6L3.3 9.3l6.1-.7z"/>'],
+  [12, 146, -10, '<path d="M3 7.5L12 3l9 4.5v9L12 21l-9-4.5z"/><path d="M3 7.5L12 12l9-4.5M12 12v9"/>'],
+  [98, 136, 8, '<path d="M19 5L5 19"/><circle cx="7" cy="7" r="2.5"/><circle cx="17" cy="17" r="2.5"/>'],
+  [176, 158, 12, '<path d="M12 3c.8 4.2 2.8 6.2 7 7-4.2.8-6.2 2.8-7 7-.8-4.2-2.8-6.2-7-7 4.2-.8 6.2-2.8 7-7z"/>'],
+  [56, 200, -6, '<path d="M4 5h16v11H9l-5 4z"/>'],
+  [142, 204, 10, '<path d="M2 6h11v10H2zM13 9h4l3 3v4h-7"/><circle cx="6" cy="17.5" r="1.8"/><circle cx="16.5" cy="17.5" r="1.8"/>'],
+];
+const DOODLE_SVG =
+  '<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240">' +
+  '<g fill="none" stroke="#000" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' +
+  DOODLE_ICONS.map(([x, y, r, d]) => `<g transform="translate(${x} ${y}) rotate(${r} 12 12)">${d}</g>`).join('') +
+  '</g><g fill="#000"><circle cx="84" cy="52" r="1.6"/><circle cx="214" cy="54" r="1.6"/><circle cx="160" cy="118" r="1.6"/>' +
+  '<circle cx="34" cy="122" r="1.6"/><circle cx="120" cy="186" r="1.6"/><circle cx="22" cy="226" r="1.6"/><circle cx="222" cy="226" r="1.6"/></g></svg>';
+const DOODLE_URL = `url("data:image/svg+xml,${encodeURIComponent(DOODLE_SVG)}")`;
+const DOODLE_STYLE: React.CSSProperties = {
+  maskImage: DOODLE_URL,
+  WebkitMaskImage: DOODLE_URL,
+  maskSize: '200px 200px',
+  WebkitMaskSize: '200px 200px',
+  maskRepeat: 'repeat',
+  WebkitMaskRepeat: 'repeat',
+};
+
+/** A CSS mask from one SVG tile (drawn in black; the layer's colour shows through it). */
+function svgMask(svg: string, size: string): React.CSSProperties {
+  const url = `url("data:image/svg+xml,${encodeURIComponent(svg)}")`;
+  return { maskImage: url, WebkitMaskImage: url, maskSize: size, WebkitMaskSize: size, maskRepeat: 'repeat', WebkitMaskRepeat: 'repeat' };
+}
+
+/**
+ * The header's background: a crisp line drawing (no gradient, no blur) of a little shopping street along the header's
+ * bottom edge: two shops with scalloped awnings, a small house-shop and a tree, on a ground line. Kept at its own
+ * proportions and anchored bottom-right, so it never stretches.
+ */
+const HEADER_STREET_STYLE: React.CSSProperties = {
+  ...svgMask(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="250" height="64" viewBox="0 0 250 64">' +
+      '<g fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M0 62h250"/>' +
+      // Shop with an awning, a sign, a window and a door.
+      '<path d="M8 62V28h48v34"/><path d="M4 28h56l-4 8H8z"/><path d="M8 36q4 4 8 0q4 4 8 0q4 4 8 0q4 4 8 0q4 4 8 0q4 4 8 0"/>' +
+      '<rect x="18" y="18" width="28" height="8" rx="1"/><rect x="13" y="44" width="12" height="10"/><path d="M34 62V46h12v16"/>' +
+      // Small house-shop with a pitched roof.
+      '<path d="M70 62V36l25-17 25 17v26"/><path d="M66 38l29-20 29 20"/><rect x="79" y="42" width="11" height="9"/><path d="M100 62V48h11v14"/>' +
+      // Second awning shop.
+      '<path d="M134 62V26h56v36"/><path d="M130 26h64l-5 8h-54z"/><path d="M135 34q4.5 4 9 0q4.5 4 9 0q4.5 4 9 0q4.5 4 9 0q4.5 4 9 0q4.5 4 9 0"/>' +
+      '<rect x="142" y="42" width="18" height="12"/><path d="M151 42v12M142 48h18"/><path d="M170 62V45h12v17"/>' +
+      // Tree.
+      '<circle cx="216" cy="38" r="11"/><path d="M216 49v13M216 54l-4-4M216 56l4-4"/>' +
+      '</g></svg>',
+    'auto 100%',
+  ),
+  maskRepeat: 'no-repeat',
+  WebkitMaskRepeat: 'no-repeat',
+  maskPosition: 'right bottom',
+  WebkitMaskPosition: 'right bottom',
+};
+
+/**
+ * The message box's background: the same crisp line style as the header's street, now the delivery side: a van with
+ * motion lines, a stack of parcels, a shopping bag and a small cloud, on a ground line. Anchored bottom-left (the header's
+ * drawing sits on the right), at its own proportions.
+ */
+const FOOTER_DELIVERY_STYLE: React.CSSProperties = {
+  ...svgMask(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="250" height="64" viewBox="0 0 250 64">' +
+      '<g fill="none" stroke="#000" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round">' +
+      '<path d="M0 62h250"/>' +
+      // Motion lines and the delivery van with a parcel on its side.
+      '<path d="M4 38h8M2 44h10M6 50h6"/>' +
+      '<path d="M16 56V32h46v24"/><path d="M62 38h16l10 10v8H62"/><path d="M66 41h10l6 6H66z"/>' +
+      '<rect x="28" y="38" width="16" height="11"/><path d="M36 38v11"/>' +
+      '<circle cx="31" cy="57" r="5"/><circle cx="75" cy="57" r="5"/><path d="M36 56h34"/>' +
+      // Stack of parcels.
+      '<rect x="112" y="42" width="20" height="20"/><path d="M122 42v6"/><rect x="134" y="48" width="16" height="14"/><path d="M142 48v5"/>' +
+      '<rect x="117" y="28" width="15" height="14"/><path d="M124.5 28v5"/>' +
+      // Shopping bag.
+      '<path d="M170 62V40h24v22z"/><path d="M175 40v-4a7 7 0 0 1 14 0v4"/>' +
+      // Small cloud.
+      '<path d="M212 30h22a6 6 0 0 0-2-11.7 8 8 0 0 0-15.4-1.3A6.5 6.5 0 0 0 212 30z"/>' +
+      '</g></svg>',
+    'auto 18px',
+  ),
+  // A thin strip along the bottom edge, behind the disclaimer line (no extra height), repeated sideways.
+  maskRepeat: 'repeat-x',
+  WebkitMaskRepeat: 'repeat-x',
+  // 6px up = the form's bottom padding, so the strip lines up with the disclaimer line.
+  maskPosition: 'left 0 bottom 6px',
+  WebkitMaskPosition: 'left 0 bottom 6px',
+};
+
+/** Questions a fresh chat offers to send in one tap: what shoppers ask most (new stock, delivery cost, an order). */
+const STARTERS = ['নতুন কী এসেছে?', 'ডেলিভারি চার্জ কত?', 'আমার অর্ডার কোথায়?'];
 
 interface Message {
   role: 'user' | 'assistant';
@@ -267,6 +383,15 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   };
   const [messages, setMessages] = useState<Message[]>([GREETING]);
   const [draft, setDraft] = useState('');
+  // Voice typing (the mic beside the photo button): the words fill the message box as the shopper speaks; they check
+  // them and press send themselves. Same browser speech recognition and language choice as the search box's mic.
+  const dictation = useVoiceSearch({ mode: 'dictation', onInterim: setDraft, onText: setDraft });
+  const { error: dictationError, clearError: clearDictationError } = dictation;
+  useEffect(() => {
+    if (!dictationError) return;
+    const t = setTimeout(clearDictationError, 5000);
+    return () => clearTimeout(t);
+  }, [dictationError, clearDictationError]);
   const [sending, setSending] = useState(false);
   // null while the status call is in flight; false hides the widget.
   const [available, setAvailable] = useState<boolean | null>(null);
@@ -330,6 +455,32 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
     if (window.matchMedia('(max-width: 639px)').matches) setOpen(false);
   };
 
+  // Phones: the chat opens full screen; the shopper can shrink it to the small corner panel (and back). The choice is
+  // kept for this visit (this tab); a new visit starts full screen again. Computers always get the corner panel.
+  const [phone, setPhone] = useState(false);
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    const sync = () => setPhone(mq.matches);
+    sync();
+    mq.addEventListener('change', sync);
+    try {
+      setCompact(sessionStorage.getItem(COMPACT_KEY) === '1');
+    } catch {
+      /* storage blocked: start full screen */
+    }
+    return () => mq.removeEventListener('change', sync);
+  }, []);
+  const setCompactChoice = (v: boolean) => {
+    setCompact(v);
+    try {
+      sessionStorage.setItem(COMPACT_KEY, v ? '1' : '0');
+    } catch {
+      /* storage blocked: the choice just isn't kept */
+    }
+  };
+  const fullScreen = phone && !compact;
+
   // Questions handed over by the store (lib/assistantBridge.ts): the chat opens and sends it once it can answer.
   const setBridgeAvailable = useAssistantBridge((s) => s.setAvailable);
   const pendingQuestion = useAssistantBridge((s) => s.pending);
@@ -344,8 +495,22 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
 
   useEffect(() => {
     let cancelled = false;
+    // The bubble shows at once from this store's last known answer (kept in this browser); the server's answer below
+    // corrects it. Only the very first visit waits, so a store with the chat off never flashes a bubble.
+    const cacheKey = `storepal-chat-on:${subdomain}`;
+    try {
+      const known = localStorage.getItem(cacheKey);
+      if (known === '1') setAvailable(true);
+    } catch {
+      /* storage blocked: wait for the server */
+    }
     getChatStatus(subdomain).then((status) => {
       if (cancelled) return;
+      try {
+        localStorage.setItem(cacheKey, status.available ? '1' : '0');
+      } catch {
+        /* storage blocked: next page waits again */
+      }
       setAvailable(status.available);
       setBridgeAvailable(status.available);
       setPhotoMode(status.photoText);
@@ -399,6 +564,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   // returned to be spoken, and a failure is thrown to the call instead of written into the chat.
   const handleSend = async (e?: React.FormEvent, asked?: string, voice?: { signal: AbortSignal; live?: ChatLive }): Promise<ChatReply | null> => {
     e?.preventDefault();
+    // Sent while the mic was still listening: drop the rest, or it would refill the box after sending.
+    if (!voice) dictation.cancel();
     const ticked = selection?.slugs ?? [];
     // Ticked cards can be sent without typing anything.
     const text = (asked ?? draft).trim() || (ticked.length ? (ticked.length === 1 ? 'আমি এটা নিতে চাই।' : 'আমি এগুলো নিতে চাই।') : '');
@@ -734,7 +901,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
           trackFeature('AI_CHAT_OPEN', { oncePerSession: true });
         }}
         aria-label="Chat with our assistant"
-        className="fixed bottom-[76px] right-5 z-30 w-12 h-12 rounded-full bg-accent hover:bg-accent-dark shadow-lg flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none"
+        title="শপিং সহকারীর সাথে কথা বলুন"
+        className="fixed bottom-[76px] right-5 z-30 w-14 h-14 rounded-full bg-accent hover:bg-accent-dark text-white shadow-[0_4px_10px_-2px_rgba(16,24,40,0.25),0_14px_32px_-8px_rgba(16,24,40,0.40)] flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         onFocus={reveal}
         style={{
           transform: cartOpen
@@ -744,27 +912,35 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
               : undefined,
         }}
       >
-        <Bot size={24} className="text-white" />
+        <MessageCircle size={26} strokeWidth={2.2} />
       </button>
       )}
 
       {open && (
         <div
-          className="fixed bottom-[76px] right-5 z-30 w-[min(360px,calc(100vw-2.5rem))] h-[min(480px,calc(100vh-120px))] bg-surface rounded-xl border border-line shadow-xl flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none"
-          style={{ transform: cartOpen ? 'translateX(calc(-100vw + 2.5rem + min(360px, 100vw - 2.5rem)))' : undefined }}
+          role="dialog"
+          aria-label="Shopping assistant"
+          className={
+            fullScreen
+              ? 'fixed inset-0 z-50 w-full h-[100dvh] bg-surface flex flex-col overflow-hidden overscroll-contain'
+              : 'fixed bottom-[76px] right-5 z-30 w-[min(380px,calc(100vw-2.5rem))] h-[min(600px,calc(100vh-120px))] bg-surface rounded-2xl border border-line shadow-[0_2px_6px_rgba(16,24,40,0.06),0_12px_24px_-6px_rgba(16,24,40,0.12),0_32px_72px_-12px_rgba(16,24,40,0.30)] flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none'
+          }
+          style={{ transform: cartOpen && !fullScreen ? 'translateX(calc(-100vw + 2.5rem + min(380px, 100vw - 2.5rem)))' : undefined }}
         >
-          <div className="flex items-center gap-2 px-4 py-3 border-b border-line bg-ink text-white shrink-0">
-            <Bot size={18} />
-            <span className="flex-1 text-[13.5px] font-semibold">শপিং অ্যাসিস্ট্যান্ট</span>
+          {/* The store's own helper: its initial and name, in the store's colour. The accent is kept for the shopper's words. */}
+          <div className="relative z-10 isolate flex items-center gap-1 pl-3.5 pr-2 py-2.5 border-b border-line bg-surface shrink-0 shadow-[0_2px_8px_-2px_rgba(16,24,40,0.08)]">
+            {/* The little shopping street behind the header (under the name and buttons: -z-10 inside this isolated layer). */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-accent opacity-[0.14]" style={HEADER_STREET_STYLE} />
+            <span className="w-9 h-9 shrink-0 rounded-full bg-accent-light text-accent font-bold text-[15px] flex items-center justify-center ring-2 ring-surface shadow-[0_2px_6px_-1px_rgba(16,24,40,0.18)]" aria-hidden>
+              {(storeName.trim()[0] ?? 'S').toUpperCase()}
+            </span>
+            <span className="ml-2 flex-1 min-w-0">
+              <span className="block truncate text-[14px] font-semibold leading-tight text-ink">{storeName}</span>
+              <span className="mt-0.5 block truncate text-[11.5px] leading-tight text-muted">এআই শপিং সহকারী</span>
+            </span>
             {callable && (
-              <button
-                type="button"
-                onClick={startCall}
-                aria-label="Voice call the assistant"
-                title="কল করে কথা বলুন"
-                className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors"
-              >
-                <Phone size={16} />
+              <button type="button" onClick={startCall} aria-label="Voice call the assistant" title="কল করে কথা বলুন" className={HEADER_BUTTON}>
+                <Phone size={17} />
               </button>
             )}
             <button
@@ -773,25 +949,36 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
               aria-pressed={showHistory}
               aria-label="Past chats"
               title="আগের চ্যাট"
-              className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${showHistory ? 'bg-white/20' : 'hover:bg-white/10'}`}
+              className={`${HEADER_BUTTON} ${showHistory ? 'bg-canvas text-ink' : ''}`}
             >
-              <History size={16} />
+              <History size={17} />
             </button>
-            <button type="button" onClick={startNewChat} aria-label="New chat" title="নতুন চ্যাট" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
-              <SquarePen size={16} />
+            <button type="button" onClick={startNewChat} aria-label="New chat" title="নতুন চ্যাট" className={HEADER_BUTTON}>
+              <SquarePen size={17} />
             </button>
-            <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant" title="বন্ধ করুন" className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-white/10 transition-colors">
-              <X size={18} />
+            {phone && (
+              <button
+                type="button"
+                onClick={() => setCompactChoice(!compact)}
+                aria-label={compact ? 'Full screen' : 'Make smaller'}
+                title={compact ? 'পুরো স্ক্রিনে দেখুন' : 'ছোট করুন'}
+                className={HEADER_BUTTON}
+              >
+                {compact ? <Maximize2 size={17} /> : <Minimize2 size={17} />}
+              </button>
+            )}
+            <button type="button" onClick={() => setOpen(false)} aria-label="Close assistant" title="বন্ধ করুন" className={HEADER_BUTTON}>
+              <X size={19} />
             </button>
           </div>
           {showHistory && (
-            <div className="flex-1 overflow-y-auto p-2">
-              <p className="px-2 py-1.5 text-[11.5px] font-semibold uppercase tracking-wide text-muted">আগের চ্যাট</p>
+            <div className="flex-1 overflow-y-auto bg-surface p-2">
+              <p className="px-2.5 pt-2 pb-1.5 text-[12.5px] font-semibold text-ink">আগের চ্যাট</p>
               {chats.length === 0 ? (
-                <p className="px-2 py-6 text-center text-[12.5px] text-muted">এখনো কোনো চ্যাট রাখা নেই।</p>
+                <p className="px-2 py-10 text-center text-[13px] text-muted">এখনো কোনো চ্যাট রাখা নেই। নতুন চ্যাট শুরু করলে এখানে থাকবে।</p>
               ) : (
                 chats.map((c) => (
-                  <div key={c.id} className={`group flex items-center gap-2 rounded-lg px-2 py-2 hover:bg-canvas ${c.id === chatId ? 'bg-canvas' : ''}`}>
+                  <div key={c.id} className={`group flex items-center gap-2 rounded-xl px-2.5 py-2 hover:bg-canvas ${c.id === chatId ? 'bg-canvas' : ''}`}>
                     <button
                       type="button"
                       onClick={() => {
@@ -801,9 +988,9 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                       }}
                       className="flex-1 min-w-0 text-left"
                     >
-                      <span className="block text-[13px] text-ink truncate">{c.title}</span>
-                      <span className="block text-[11px] text-muted">
-                        {ago(c.updatedAt)} · {c.messages.length}টি মেসেজ
+                      <span className="block text-[13px] font-medium text-ink truncate">{c.title}</span>
+                      <span className="block text-[11.5px] text-muted">
+                        {ago(c.updatedAt)}, {c.messages.length}টি মেসেজ
                       </span>
                     </button>
                     <button
@@ -814,9 +1001,9 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                         if (c.id === chatId) startNewChat();
                       }}
                       aria-label={`Delete chat ${c.title}`}
-                      className="w-7 h-7 shrink-0 rounded-md text-muted hover:text-red-600 hover:bg-red-50 flex items-center justify-center"
+                      className="w-8 h-8 shrink-0 rounded-lg text-muted hover:text-red-600 hover:bg-red-50 flex items-center justify-center"
                     >
-                      <Trash2 size={14} />
+                      <Trash2 size={15} />
                     </button>
                   </div>
                 ))
@@ -824,28 +1011,33 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
             </div>
           )}
 
-          <div ref={scrollRef} className={`relative flex-1 overflow-y-auto px-3 py-3 flex-col gap-3 ${showHistory ? 'hidden' : 'flex'}`}>
+          {/* The doodle layer stays put behind the messages (they scroll over it, like WhatsApp). */}
+          <div className={`relative flex-1 min-h-0 bg-canvas ${showHistory ? 'hidden' : 'block'}`}>
+          <div aria-hidden className="pointer-events-none absolute inset-0 bg-accent opacity-[0.12]" style={DOODLE_STYLE} />
+          <div ref={scrollRef} className="relative h-full overflow-y-auto px-3.5 py-4 flex flex-col gap-3.5">
             {messages.map((m, i) => (
               <div key={i} data-chat-msg className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
                 {m.image ? (
                   // eslint-disable-next-line @next/next/no-img-element -- the shopper's own photo, a local preview
-                  <img src={m.image} alt="Your photo" className="max-w-[60%] max-h-40 rounded-lg border border-line object-cover" />
+                  <img src={m.image} alt="Your photo" className="max-w-[62%] max-h-44 rounded-2xl rounded-tr-md border border-line object-cover" />
                 ) : (
                   <div
-                    className={`max-w-[85%] rounded-lg px-3 py-2 text-[13px] leading-relaxed whitespace-pre-line ${
-                      m.role === 'user' ? 'bg-ink text-white' : 'bg-canvas text-ink border border-line'
+                    className={`max-w-[85%] px-3.5 py-2.5 text-[13.5px] leading-relaxed whitespace-pre-line ${
+                      m.role === 'user'
+                        ? 'bg-accent text-white rounded-2xl rounded-tr-md shadow-[0_2px_4px_rgba(16,24,40,0.08),0_6px_16px_-6px_rgba(16,24,40,0.28)]'
+                        : `bg-surface text-ink border border-line rounded-2xl rounded-tl-md ${SOFT_SHADOW}`
                     }`}
                   >
                     {m.content}
-                    {m.picks && <span className="block mt-1 text-[11.5px] opacity-80">✓ {m.picks.join(', ')}</span>}
+                    {m.picks && <span className="block mt-1 text-[11.5px] opacity-85">✓ {m.picks.join(', ')}</span>}
                   </div>
                 )}
-                {m.at && <span className="mt-1 text-[10.5px] text-muted">{chatTime(m.at)}</span>}
+                {m.at && <span className="mt-1 px-1 text-[10.5px] text-muted">{chatTime(m.at)}</span>}
 
                 {m.complaint && (
-                  <div className="mt-2 w-full max-w-[85%] rounded-lg border border-line bg-white px-3 py-2 text-[12.5px] text-ink">
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <Check className="w-3.5 h-3.5 text-green-600" aria-hidden />
+                  <div className={`mt-2 w-full max-w-[85%] rounded-2xl border border-line bg-surface px-3.5 py-3 text-[12.5px] text-ink ${SOFT_SHADOW}`}>
+                    <span className="flex items-center gap-1.5 font-semibold">
+                      <Check className="w-4 h-4 text-green-600" aria-hidden />
                       আপনার অভিযোগ দোকানে পৌঁছে গেছে
                     </span>
                     {m.complaint.contactPage && (
@@ -853,7 +1045,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                         <span className="block mt-1 text-muted">খুব জরুরি হলে সরাসরি যোগাযোগ করুন:</span>
                         <Link
                           href={`/store/${subdomain}/contact`}
-                          className="mt-1.5 inline-flex items-center gap-1.5 rounded-md bg-ink px-3 py-1.5 text-[12px] font-medium text-white hover:opacity-90"
+                          className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-ink px-3.5 py-1.5 text-[12px] font-medium text-white hover:opacity-90"
                         >
                           <Phone className="w-3.5 h-3.5" aria-hidden />
                           যোগাযোগ পাতা
@@ -864,24 +1056,22 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                 )}
 
                 {m.products && m.products.length > 0 && (
-                  <div className="mt-2 flex flex-col gap-1.5 w-full max-w-[85%]">
+                  // One grouped list (rows, not a card per product): the numbers are what the shopper says ("২ নম্বরটা").
+                  <ul className={`mt-2 w-full max-w-[92%] rounded-2xl border border-line bg-surface divide-y divide-line overflow-hidden ${SOFT_SHADOW}`}>
                     {m.products.map((p, n) => {
                       const on = selection?.msg === i && selection.slugs.includes(p.slug);
                       return (
-                        <div
-                          key={p.slug}
-                          className={`flex items-center gap-2 rounded-lg border bg-surface p-2 transition-colors ${on ? 'border-accent ring-1 ring-accent' : 'border-line hover:border-accent'}`}
-                        >
-                          <span className="w-5 h-5 shrink-0 rounded-full bg-ink/80 text-white text-[11px] font-bold flex items-center justify-center" aria-hidden>
+                        <li key={p.slug} className={`flex items-center gap-2.5 pl-2.5 pr-2 py-2 transition-colors ${on ? 'bg-accent-light' : 'hover:bg-canvas'}`}>
+                          <span className="w-4 shrink-0 text-center text-[12px] font-semibold tabular-nums text-muted" aria-hidden>
                             {n + 1}
                           </span>
-                          <Link href={`/store/${subdomain}/product/${p.slug}`} onClick={onProductOpen} className="flex flex-1 min-w-0 items-center gap-2.5">
-                            <span className="relative w-10 h-10 shrink-0 rounded overflow-hidden bg-canvas">
-                              {p.photoUrl && <Image src={p.photoUrl} alt={p.name} fill sizes="40px" className="object-cover" />}
+                          <Link href={`/store/${subdomain}/product/${p.slug}`} onClick={onProductOpen} className="flex flex-1 min-w-0 items-center gap-2.5 rounded-lg focus-visible:outline-2 focus-visible:outline-accent">
+                            <span className="relative w-12 h-12 shrink-0 rounded-lg overflow-hidden bg-canvas border border-line">
+                              {p.photoUrl && <Image src={p.photoUrl} alt={p.name} fill sizes="48px" className="object-cover" />}
                             </span>
                             <span className="flex-1 min-w-0">
-                              <span className="block text-[12px] font-medium text-ink truncate">{p.name}</span>
-                              <span className="block text-[12px] font-bold text-accent">{formatPrice(p.price)}</span>
+                              <span className="block text-[12.5px] leading-snug text-ink line-clamp-2">{p.name}</span>
+                              <span className="block mt-0.5 text-[13px] font-bold text-ink">{formatPrice(p.price)}</span>
                             </span>
                           </Link>
                           <button
@@ -894,35 +1084,52 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                           >
                             <Check size={14} strokeWidth={3} />
                           </button>
-                        </div>
+                        </li>
                       );
                     })}
-                  </div>
+                  </ul>
                 )}
               </div>
             ))}
-            {callable && messages.length === 1 && !sending && (
-              <button
-                type="button"
-                onClick={startCall}
-                className="self-start inline-flex items-center gap-1.5 rounded-full border border-accent px-3 py-1.5 text-[12.5px] font-medium text-accent hover:bg-accent hover:text-white transition-colors"
-              >
-                <Phone size={13} />
-                লিখতে না চাইলে কল করে কথা বলুন
-              </button>
+            {messages.length === 1 && !sending && available !== false && (
+              // Starters for a fresh chat: each one is a real question sent as it is.
+              <div className="flex flex-wrap gap-2">
+                {STARTERS.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => void handleSend(undefined, q)}
+                    className="rounded-full border border-line-strong bg-surface px-3.5 py-1.5 text-[12.5px] text-ink shadow-[0_1px_2px_rgba(16,24,40,0.06)] hover:border-accent hover:text-accent hover:shadow-[0_3px_10px_-3px_rgba(16,24,40,0.15)] transition-[color,border-color,box-shadow]"
+                  >
+                    {q}
+                  </button>
+                ))}
+                {callable && (
+                  <button
+                    type="button"
+                    onClick={startCall}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-accent bg-surface px-3.5 py-1.5 text-[12.5px] font-medium text-accent hover:bg-accent hover:text-white transition-colors"
+                  >
+                    <Phone size={13} />
+                    লিখতে না চাইলে কল করুন
+                  </button>
+                )}
+              </div>
             )}
             {order && <ChatOrderCard order={order} details={details} onDetails={setDetails} onCheckout={checkout} busy={checkingOut} />}
             {sending && (
-              <div className="flex items-center gap-1.5 text-muted text-[12.5px]">
-                <Loader2 size={13} className="animate-spin" />
-                ভাবছি…
+              <div className={`self-start flex items-center gap-1 rounded-2xl rounded-tl-md border border-line bg-surface px-3.5 py-3 ${SOFT_SHADOW}`} role="status" aria-label="উত্তর লেখা হচ্ছে">
+                {[0, 150, 300].map((d) => (
+                  <span key={d} className="w-1.5 h-1.5 rounded-full bg-muted animate-bounce motion-reduce:animate-none" style={{ animationDelay: `${d}ms` }} />
+                ))}
               </div>
             )}
           </div>
+          </div>
 
           {selection && !showHistory && (
-            <div className="flex items-center gap-2 border-t border-line bg-canvas px-3 py-2 text-[12px] text-ink shrink-0">
-              <Check size={14} className="text-accent shrink-0" />
+            <div className="flex items-center gap-2 border-t border-line bg-accent-light px-3.5 py-2 text-[12.5px] text-ink shrink-0">
+              <Check size={15} className="text-accent shrink-0" strokeWidth={3} />
               <span className="flex-1 min-w-0 truncate">
                 বাছাই করা:{' '}
                 {(messages[selection.msg]?.products ?? [])
@@ -930,48 +1137,86 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                   .filter(Boolean)
                   .join(', ')}
               </span>
-              <button type="button" onClick={() => setSelection(null)} className="text-muted hover:text-ink" aria-label="Clear selection">
-                <X size={14} />
+              <button type="button" onClick={() => setSelection(null)} className="w-7 h-7 rounded-full text-muted hover:text-ink hover:bg-white/60 flex items-center justify-center" aria-label="Clear selection">
+                <X size={15} />
               </button>
             </div>
           )}
-          <form onSubmit={handleSend} className="flex items-center gap-2 border-t border-line p-2.5 shrink-0">
+          <form onSubmit={handleSend} className="relative isolate border-t border-line bg-surface px-3 pt-2.5 pb-1.5 shrink-0 shadow-[0_-2px_8px_-2px_rgba(16,24,40,0.06)]">
+            {/* The delivery drawing behind the message box: same line style as the header's street, on the other side. */}
+            <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-accent opacity-[0.16]" style={FOOTER_DELIVERY_STYLE} />
             <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => handlePhoto(e.target.files?.[0])} />
-            <button
-              type="button"
-              onClick={() => fileRef.current?.click()}
-              disabled={sending || available === false}
-              aria-label="Send a photo"
-              title="পণ্যের ছবি পাঠান"
-              className="w-9 h-9 shrink-0 rounded-lg border border-line-strong text-ink flex items-center justify-center disabled:opacity-40 hover:border-accent transition-colors"
-            >
-              <ImagePlus size={16} />
-            </button>
-            <input
-              type="text"
-              value={draft}
-              onChange={(e) => setDraft(e.target.value)}
-              // A copied picture pasted with Ctrl+V is sent as a photo (like Claude); pasted text stays text.
-              onPaste={(e) => {
-                const item = Array.from(e.clipboardData?.items ?? []).find((i) => i.kind === 'file' && i.type.startsWith('image/'));
-                const file = item?.getAsFile();
-                if (file) {
-                  e.preventDefault();
-                  void handlePhoto(file);
-                }
-              }}
-              placeholder="পণ্য সম্পর্কে জিজ্ঞেস করুন বা ছবি দিন…"
-              disabled={sending || available === false}
-              className="flex-1 px-3 py-2 rounded-lg border border-line-strong text-[13px] text-ink bg-surface outline-none focus:border-accent transition-colors disabled:opacity-60"
-            />
-            <button
-              type="submit"
-              disabled={sending || available === false || (!draft.trim() && !selection)}
-              aria-label="Send"
-              className="w-9 h-9 shrink-0 rounded-lg bg-ink text-white flex items-center justify-center disabled:opacity-40 hover:bg-ink/90 transition-colors"
-            >
-              <Send size={15} />
-            </button>
+            <div className={`flex items-center gap-1 rounded-full border border-line-strong bg-surface pl-1 pr-1 transition-[border-color,box-shadow] focus-within:border-accent focus-within:ring-2 focus-within:ring-accent-light ${SOFT_SHADOW}`}>
+              <button
+                type="button"
+                onClick={() => fileRef.current?.click()}
+                disabled={sending || available === false}
+                aria-label="Send a photo"
+                title="পণ্যের ছবি পাঠান"
+                className="w-9 h-9 shrink-0 rounded-full text-muted hover:text-ink hover:bg-canvas flex items-center justify-center disabled:opacity-40 transition-colors"
+              >
+                <ImagePlus size={18} />
+              </button>
+              {dictation.supported && (
+                <button
+                  type="button"
+                  onClick={() => (dictation.listening ? dictation.stop() : dictation.start())}
+                  disabled={sending || available === false}
+                  aria-pressed={dictation.listening}
+                  aria-label={dictation.listening ? 'Stop voice typing' : 'Type by voice'}
+                  title={dictation.listening ? 'থামান' : 'বলে লিখুন'}
+                  className={`relative w-9 h-9 shrink-0 rounded-full flex items-center justify-center disabled:opacity-40 transition-colors ${
+                    dictation.listening ? 'bg-accent text-white' : 'text-muted hover:text-ink hover:bg-canvas'
+                  }`}
+                >
+                  {dictation.listening && (
+                    <span className="absolute inset-0 rounded-full bg-accent animate-ping opacity-30 motion-reduce:animate-none" aria-hidden />
+                  )}
+                  <Mic size={18} className="relative" />
+                </button>
+              )}
+              <input
+                type="text"
+                value={draft}
+                onChange={(e) => setDraft(e.target.value)}
+                // A copied picture pasted with Ctrl+V is sent as a photo (like Claude); pasted text stays text.
+                onPaste={(e) => {
+                  const item = Array.from(e.clipboardData?.items ?? []).find((i) => i.kind === 'file' && i.type.startsWith('image/'));
+                  const file = item?.getAsFile();
+                  if (file) {
+                    e.preventDefault();
+                    void handlePhoto(file);
+                  }
+                }}
+                placeholder="পণ্য সম্পর্কে জিজ্ঞেস করুন বা ছবি দিন…"
+                aria-label="Message"
+                disabled={sending || available === false}
+                className="flex-1 min-w-0 bg-transparent py-2.5 text-[13.5px] text-ink placeholder:text-muted outline-none disabled:opacity-60"
+              />
+              <button
+                type="submit"
+                disabled={sending || available === false || (!draft.trim() && !selection)}
+                aria-label="Send"
+                className="w-9 h-9 shrink-0 rounded-full bg-accent text-white flex items-center justify-center shadow-[0_3px_8px_-2px_rgba(16,24,40,0.30)] disabled:bg-line-strong disabled:text-white disabled:shadow-none hover:bg-accent-dark transition-colors"
+              >
+                <Send size={16} className="-ml-0.5" />
+              </button>
+            </div>
+            {/* The text sits on a small white patch, so the drawing strip behind it runs on both sides without crossing the words. */}
+            <p className="mt-1.5 text-center leading-[18px]">
+              {/* While voice typing (or after it failed), this line says so instead of the usual note. */}
+              <span className={`bg-surface px-1.5 text-[10.5px] ${dictationError ? 'text-red-600' : dictation.listening ? 'text-accent font-medium' : 'text-muted'}`} role={dictationError ? 'alert' : undefined}>
+                {dictationError === 'denied'
+                  ? 'মাইক্রোফোনের অনুমতি দিন, তারপর আবার চাপুন।'
+                  : dictationError === 'no-speech'
+                    ? 'কিছু শোনা যায়নি। আবার চাপুন ও বলুন।'
+                    : dictationError
+                      ? 'ভয়েস কাজ করছে না, লিখে পাঠান।'
+                      : dictation.listening
+                        ? `শুনছি… (${dictation.lang === 'en-US' ? 'English' : 'বাংলা'}) বলা শেষ হলে আবার চাপুন`
+                        : 'এআই উত্তর দেয়। দাম ও স্টক পণ্যের পাতায় মিলিয়ে নিন।'}
+              </span>
+            </p>
           </form>
         </div>
       )}

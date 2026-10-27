@@ -81,7 +81,32 @@ export interface ChatStatus {
  * Step 5), and where a photo's text is read. Any failure reads as "not
  * available", so a broken status call never shows a widget that can't answer.
  */
-export async function getChatStatus(subdomain: string): Promise<ChatStatus> {
+export function getChatStatus(subdomain: string): Promise<ChatStatus> {
+  // A request already started by prefetchChatStatus is used once, so the page asks only one time.
+  const early = earlyStatus.get(subdomain);
+  if (early) {
+    earlyStatus.delete(subdomain);
+    return early;
+  }
+  return fetchChatStatus(subdomain);
+}
+
+const earlyStatus = new Map<string, Promise<ChatStatus>>();
+
+/**
+ * Starts the status call as soon as the page is up, before the chat widget's own file has loaded, so the bubble can
+ * show at once (LazyWidgets.tsx). The widget's getChatStatus then takes this same answer.
+ */
+export function prefetchChatStatus(subdomain: string): Promise<ChatStatus> {
+  let p = earlyStatus.get(subdomain);
+  if (!p) {
+    p = fetchChatStatus(subdomain);
+    earlyStatus.set(subdomain, p);
+  }
+  return p;
+}
+
+async function fetchChatStatus(subdomain: string): Promise<ChatStatus> {
   try {
     const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat/status`, { cache: 'no-store' });
     if (!res.ok) return { available: false, photoText: 'BROWSER', voice: null, voiceCall: false, voiceModel: 'model.onnx' };

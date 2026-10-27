@@ -37,7 +37,25 @@ function savedLang(): VoiceSearchLang {
   }
 }
 
-export function useVoiceSearch({ onInterim, onText }: { onInterim?: (text: string) => void; onText: (text: string) => void }) {
+/** Dictation (a chat message): the sentence as spoken, punctuation kept, up to 500 characters. */
+function cleanDictation(text: string): string {
+  return text.normalize('NFC').replace(/\s+/g, ' ').trim().slice(0, 500);
+}
+
+/**
+ * `mode: 'dictation'` is for typing a message by voice (the store AI chat): the words keep their punctuation and length,
+ * and it is not counted as a voice search in the store's feature-use report.
+ */
+export function useVoiceSearch({
+  onInterim,
+  onText,
+  mode = 'search',
+}: {
+  onInterim?: (text: string) => void;
+  onText: (text: string) => void;
+  mode?: 'search' | 'dictation';
+}) {
+  const clean = mode === 'dictation' ? cleanDictation : cleanVoiceQuery;
   // Known only in the browser, so the first render (server and browser alike) has no mic.
   const [supported, setSupported] = useState(false);
   const [listening, setListening] = useState(false);
@@ -67,6 +85,14 @@ export function useVoiceSearch({ onInterim, onText }: { onInterim?: (text: strin
     rec.current?.stop();
   }, []);
 
+  /** Stops and throws away what was heard (the chat message was sent while the mic was still listening). */
+  const cancel = useCallback(() => {
+    if (!rec.current) return;
+    clearTimer();
+    discard.current = true;
+    rec.current.abort();
+  }, []);
+
   const start = useCallback(() => {
     const Ctor = recognitionCtor();
     if (!Ctor) return;
@@ -87,7 +113,7 @@ export function useVoiceSearch({ onInterim, onText }: { onInterim?: (text: strin
         if (res.isFinal) finalText += res[0].transcript;
         else interim += res[0].transcript;
       }
-      handlers.current.onInterim?.(cleanVoiceQuery(finalText + interim));
+      handlers.current.onInterim?.(clean(finalText + interim));
     };
     r.onerror = (e) => {
       if (discard.current) return;
@@ -103,7 +129,7 @@ export function useVoiceSearch({ onInterim, onText }: { onInterim?: (text: strin
         discard.current = false;
         return;
       }
-      const text = cleanVoiceQuery(finalText);
+      const text = clean(finalText);
       if (text) handlers.current.onText(text);
       else if (!heard) setError((cur) => cur ?? 'no-speech');
     };
@@ -112,14 +138,14 @@ export function useVoiceSearch({ onInterim, onText }: { onInterim?: (text: strin
     rec.current = r;
     try {
       r.start();
-      trackFeature('VOICE_SEARCH');
+      if (mode === 'search') trackFeature('VOICE_SEARCH');
     } catch {
       setListening(false);
       setError('failed');
       return;
     }
     timer.current = setTimeout(() => r.stop(), SILENCE_MS);
-  }, [lang]);
+  }, [lang, clean, mode]);
 
   /** The shopper's choice of language, kept in this browser. While listening, it starts again in the new language. */
   const setLang = useCallback((next: VoiceSearchLang) => {
@@ -146,5 +172,5 @@ export function useVoiceSearch({ onInterim, onText }: { onInterim?: (text: strin
   }, [lang, listening, start]);
 
   const clearError = useCallback(() => setError(null), []);
-  return { supported, listening, error, lang, setLang, start, stop, clearError };
+  return { supported, listening, error, lang, setLang, start, stop, cancel, clearError };
 }
