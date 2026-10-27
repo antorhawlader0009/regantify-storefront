@@ -51,7 +51,8 @@ export type ChatAction =
   /** Cart changes (any line of this store's cart, also ones added before the call); options narrow it to one size/colour. */
   | { type: 'remove_from_cart'; slug: string; options?: Record<string, string> }
   | { type: 'cart_quantity'; slug: string; quantity: number; options?: Record<string, string> }
-  | { type: 'go_back' | 'show_cart' | 'close_cart' | 'photo_search' | 'hang_up' };
+  /** open_checkout / close_checkout: the voice call opens or closes the checkout form (the shopper still places the order). */
+  | { type: 'go_back' | 'show_cart' | 'close_cart' | 'open_checkout' | 'close_checkout' | 'photo_search' | 'hang_up' };
 
 /** Thrown when the store's AI Credit wallet is empty (HTTP 402, code AI_CREDITS_EMPTY; AI_TOKENS_EMPTY from an API older than credits). */
 export class ChatUnavailableError extends Error {}
@@ -74,6 +75,8 @@ export interface ChatStatus {
   voiceCall: boolean;
   /** The voice model file in `voice` Super Admin chose (e.g. "models/int4.onnx"); "model.onnx" from an API older than the choice. */
   voiceModel: string;
+  /** The voice a call switches to when this phone is too slow for Piper (Super Admin's choice): Google's, or our server's. */
+  voiceFallback: 'GOOGLE' | 'SERVER';
 }
 
 /**
@@ -109,8 +112,8 @@ export function prefetchChatStatus(subdomain: string): Promise<ChatStatus> {
 async function fetchChatStatus(subdomain: string): Promise<ChatStatus> {
   try {
     const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/chat/status`, { cache: 'no-store' });
-    if (!res.ok) return { available: false, photoText: 'BROWSER', voice: null, voiceCall: false, voiceModel: 'model.onnx' };
-    const body = (await res.json()) as { available?: boolean; photoText?: string; voice?: string | null; voiceCall?: boolean; voiceModel?: string };
+    if (!res.ok) return { available: false, photoText: 'BROWSER', voice: null, voiceCall: false, voiceModel: 'model.onnx', voiceFallback: 'GOOGLE' };
+    const body = (await res.json()) as { available?: boolean; photoText?: string; voice?: string | null; voiceCall?: boolean; voiceModel?: string; voiceFallback?: string };
     return {
       available: body.available === true,
       photoText: body.photoText === 'SERVER' ? 'SERVER' : 'BROWSER',
@@ -119,10 +122,27 @@ async function fetchChatStatus(subdomain: string): Promise<ChatStatus> {
       voiceCall: body.voiceCall !== false,
       // A plain relative .onnx path inside the voice folder; anything else means the original model.
       voiceModel: typeof body.voiceModel === 'string' && /^[\w-]+(\/[\w.-]+)*\.onnx$/.test(body.voiceModel) ? body.voiceModel : 'model.onnx',
+      voiceFallback: body.voiceFallback === 'SERVER' ? 'SERVER' : 'GOOGLE',
     };
   } catch {
-    return { available: false, photoText: 'BROWSER', voice: null, voiceCall: false, voiceModel: 'model.onnx' };
+    return { available: false, photoText: 'BROWSER', voice: null, voiceCall: false, voiceModel: 'model.onnx', voiceFallback: 'GOOGLE' };
   }
+}
+
+/**
+ * One sentence of a call's reply said with our server's voice (Super Admin's fallback choice SERVER). The text goes in
+ * the body, never the address (a reply can read a phone number back). Throws when the server is busy or the voice is off,
+ * and the call then says it with Google's voice (voiceOut.ts).
+ */
+export async function serverVoiceSpeak(subdomain: string, text: string, signal: AbortSignal): Promise<Blob> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${encodeURIComponent(subdomain)}/voice/speak`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ text: text.slice(0, 400) }),
+    signal,
+  });
+  if (!res.ok || !(res.headers.get('content-type') ?? '').startsWith('audio/')) throw new Error(`server voice ${res.status}`);
+  return res.blob();
 }
 
 export async function sendChatMessage(

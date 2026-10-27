@@ -22,6 +22,17 @@ const SLOW_KEY = 'regantify-voice-slow';
 const SLOW_DAYS = 3;
 const GOOGLE_MAX = 180; // the endpoint refuses much longer text
 
+/**
+ * Our server's voice, used instead of Google's when Super Admin chose it (chat status `voiceFallback` SERVER; the
+ * widget sets it). The same Piper voice made on the server, one piece per request. When the server is busy or fails, the
+ * rest of that call uses Google's voice, so the call never goes quiet.
+ */
+let serverSpeak: ((text: string, signal: AbortSignal) => Promise<Blob>) | null = null;
+export function setServerVoice(speak: ((text: string, signal: AbortSignal) => Promise<Blob>) | null) {
+  serverSpeak = speak;
+}
+const SERVER_WAIT_MS = 8000;
+
 export function deviceIsSlow(): boolean {
   try {
     const until = Number(localStorage.getItem(SLOW_KEY));
@@ -133,6 +144,8 @@ export class VoiceOut {
   private analyser: AnalyserNode;
   private levelBuf: Uint8Array<ArrayBuffer>;
   private googlePlaying = false;
+  /** Our server's voice failed once in this call: Google says the rest. */
+  private serverFailed = false;
   private slowPieces = 0;
   /** Piper audio made ahead of time for lines said often (the call's fillers), by speakable piece. */
   private ready = new Map<string, PiperAudio>();
@@ -376,6 +389,48 @@ export class VoiceOut {
     });
   }
 
+  /**
+   * Plays the pieces with our server's voice (setServerVoice). It comes from our own address, so unlike Google's it is
+   * decoded and played through the same loud-voice chain as Piper. The next piece is asked for while one plays.
+   * `failedAt`: the first piece the server couldn't give (busy, off, too slow).
+   */
+  private async playServer(pieces: string[], gen: number, begin: () => void): Promise<'done' | 'stopped' | { failedAt: number }> {
+    const speak = serverSpeak!;
+    const ac = new AbortController();
+    const get = (i: number): Promise<PiperAudio> => {
+      // Its own signal: cut when the call stops speaking, or when the server takes too long (no AbortSignal.any on older iPhones).
+      const one = new AbortController();
+      const timer = setTimeout(() => one.abort(), SERVER_WAIT_MS);
+      ac.signal.addEventListener('abort', () => one.abort(), { once: true });
+      const p = speak(pieces[i], one.signal)
+        .then((blob) => blob.arrayBuffer())
+        .then((bytes) => this.ctx.decodeAudioData(bytes))
+        .then((buf) => ({ pcm: buf.getChannelData(0), sampleRate: buf.sampleRate, ms: 0 }))
+        .finally(() => clearTimeout(timer));
+      p.catch(() => undefined); // a piece asked for ahead and never played must not be an unhandled rejection
+      return p;
+    };
+    let next = get(0);
+    try {
+      for (let i = 0; i < pieces.length; i++) {
+        if (gen !== this.gen) return 'stopped';
+        let audio: PiperAudio;
+        try {
+          audio = await next;
+        } catch {
+          return gen !== this.gen ? 'stopped' : { failedAt: i };
+        }
+        if (gen !== this.gen) return 'stopped';
+        if (i + 1 < pieces.length) next = get(i + 1);
+        if (i === 0) begin();
+        if (!(await this.playPcm(audio, gen))) return 'stopped';
+      }
+      return 'done';
+    } finally {
+      ac.abort();
+    }
+  }
+
   /** The call ended: the page's normal referrer policy comes back. */
   dispose() {
     this.stop();
@@ -387,6 +442,14 @@ export class VoiceOut {
    * gap waiting for Google. `failedAt`: the piece Google couldn't give (the caller may hand the rest to Piper).
    */
   private async playGoogle(pieces: string[], gen: number, begin: () => void): Promise<'done' | 'stopped' | { failedAt: number }> {
+    // Super Admin chose our server's voice: it says the pieces; if it fails, Google says the rest (for the whole call).
+    if (serverSpeak && !this.serverFailed) {
+      const r = await this.playServer(pieces, gen, begin);
+      if (r === 'done' || r === 'stopped') return r;
+      this.serverFailed = true;
+      const rest = await this.playGoogle(pieces.slice(r.failedAt), gen, begin);
+      return typeof rest === 'object' ? { failedAt: rest.failedAt + r.failedAt } : rest;
+    }
     pageReferrer(true);
     // Every request with the piece it belongs to (a long piece can need several requests).
     const parts = pieces.flatMap((p, piece) => googleVoiceUrls(p).map((url) => ({ url, piece })));

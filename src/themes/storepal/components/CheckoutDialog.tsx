@@ -15,6 +15,7 @@ import { useCheckout } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { takePendingCoupon } from '../lib/pendingCoupon';
 import { takeInstantPrefill } from '@/lib/instantCheckout';
+import { useVoiceCheckoutFill } from '@/lib/voiceCheckout';
 import { useStorePalDesign } from '../lib/designSettings';
 import { loadSavedCheckoutForm, saveCheckoutForm } from '../lib/checkoutFormStorage';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
@@ -519,6 +520,24 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     if (p.zone) updateField('zone', p.zone);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain, authHydrated]);
+  // The voice call filling the form while it is open (lib/voiceCheckout.ts): each detail the shopper says goes in at once.
+  const voiceSeq = useVoiceCheckoutFill((s) => s.seq);
+  // The call has every detail: Place order pulses, for the shopper to press (the assistant never presses it).
+  const voiceReady = useVoiceCheckoutFill((s) => s.ready);
+  // ...and is scrolled into view, so the shopper sees exactly what to press.
+  const placeOrderRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => {
+    if (voiceReady) placeOrderRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [voiceReady]);
+  useEffect(() => {
+    if (!voiceSeq) return;
+    const fill = useVoiceCheckoutFill.getState().fill;
+    (['fullName', 'phone', 'address', 'district'] as const).forEach((field) => {
+      const value = fill[field];
+      if (value && value !== form[field]) updateField(field, value);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [voiceSeq]);
   useEffect(() => {
     // Not before the restore above has run, or the blank form would overwrite what was saved.
     if (!authHydrated || loggedIn || !formRestoredRef.current) return;
@@ -1359,9 +1378,12 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
             )}
 
             <button
+              ref={placeOrderRef}
               onClick={handlePlaceOrder}
               disabled={placing || codOtpSending || ordersPaused || minOrderShortfall > 0 || !!areaRefusal || ordersFullToday}
-              className="w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm"
+              className={`w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm ${
+                voiceReady ? 'ring-4 ring-accent/30 animate-pulse motion-reduce:animate-none' : ''
+              }`}
             >
               {codOtpSending && !showCodOtp
                 ? t.sendingCode

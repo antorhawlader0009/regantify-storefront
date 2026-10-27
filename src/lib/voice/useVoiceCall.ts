@@ -85,6 +85,12 @@ export interface VoiceCallOptions<P extends CallProductRef> {
    * in it); `isOpen` tells whether it is open now.
    */
   cart?: { show: (open: boolean) => string; isOpen: () => boolean };
+  /**
+   * The checkout form (the user's request, 2026-10-27): the assistant opens it when the shopper wants to buy, fills it
+   * as the details are said (the template does that from the order), and closes it when they cancel. The shopper still
+   * presses Place order themselves.
+   */
+  checkout?: { open: () => void; close: () => void };
 }
 
 const MIN_RING_MS = 3600; // about one ring, even when the voice is ready at once
@@ -498,6 +504,11 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
         moved = true;
       } else if (a.type === 'close_cart' && opts.current.cart) {
         opts.current.cart.show(false);
+      } else if (a.type === 'open_checkout' && opts.current.checkout) {
+        opts.current.checkout.open();
+        moved = true;
+      } else if (a.type === 'close_checkout' && opts.current.checkout) {
+        opts.current.checkout.close();
       } else if (a.type === 'photo_search') {
         opts.current.photoHint?.();
       } else if (a.type === 'hang_up') {
@@ -758,7 +769,8 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     input.start();
 
     await sleep(350);
-    const greeting = `আসসালামু আলাইকুম! ${opts.current.storeName} থেকে বলছি। বলুন, কীভাবে সাহায্য করতে পারি?`;
+    // It says it is an AI at once, so nobody takes it for a person.
+    const greeting = `আসসালামু আলাইকুম! আমি ${opts.current.storeName}-এর এআই সহকারী। বলুন, কীভাবে সাহায্য করতে পারি?`;
     opts.current.onGreeting?.(greeting);
     await speak(id, greeting);
     void prepareFillers(id);

@@ -59,6 +59,7 @@ export function VoiceCallScreen<P extends CallProduct>({
   storeName,
   cart,
   checkout,
+  onPickPhoto,
 }: {
   call: VoiceCall<P>;
   storeName: string;
@@ -66,6 +67,11 @@ export function VoiceCallScreen<P extends CallProduct>({
   cart?: { count: number; total: number } | null;
   /** The shopper's own button to open the filled-in checkout (the assistant never does it). */
   checkout?: { onClick: () => void; busy: boolean } | null;
+  /**
+   * The card's photo button: the picture the shopper picks goes to the store's own photo search (its results show in
+   * the search's results, and the call hears them). Without it the button only says where the search's photo button is.
+   */
+  onPickPhoto?: (file: File) => void;
 }) {
   const [pos, setPos] = useState<{ x: number; y: number }>(() => {
     const p = typeof window === 'undefined' ? null : savedPos();
@@ -82,6 +88,7 @@ export function VoiceCallScreen<P extends CallProduct>({
   const headRef = useRef<HTMLButtonElement>(null);
   const ringRef = useRef<HTMLSpanElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   // The ring follows the assistant's voice (or a soft pulse while the shopper is heard).
   useEffect(() => {
@@ -242,7 +249,7 @@ export function VoiceCallScreen<P extends CallProduct>({
               }
             }}
             aria-expanded={panel}
-            aria-label={`Voice call with ${storeName}, ${status}, ${talkLabel}. Tap for call controls, drag to move.`}
+            aria-label={`Voice call with the AI assistant of ${storeName}, ${status}, ${talkLabel}. Tap for call controls, drag to move.`}
             className={`relative flex items-center justify-center rounded-full bg-accent text-[24px] font-semibold text-white shadow-[0_6px_16px_-4px_rgba(16,24,40,0.35),0_18px_40px_-10px_rgba(16,24,40,0.45)] ring-[3px] ring-white focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-ink ${dragging ? 'cursor-grabbing' : 'cursor-pointer'}`}
             style={{ width: HEAD, height: HEAD, touchAction: 'none', opacity: overEnd ? 0.6 : 1 }}
           >
@@ -293,6 +300,8 @@ export function VoiceCallScreen<P extends CallProduct>({
               className={`absolute top-0 ${side} w-[min(260px,calc(100vw-100px))] rounded-2xl bg-[#111b21] p-3 text-white shadow-2xl`}
             >
               <p className="truncate text-[14.5px] font-semibold">{storeName}</p>
+              {/* Always said plainly: the shopper is talking to an AI, not a person. */}
+              <p className="text-[11.5px] font-medium text-[#25d366]">এআই সহকারী</p>
               <p className="mt-0.5 flex items-center gap-1.5 text-[12px] text-white/65">
                 <span className="tabular-nums">{status}</span>
                 {talking && (
@@ -344,7 +353,9 @@ export function VoiceCallScreen<P extends CallProduct>({
                       type="button"
                       onClick={() => {
                         setPanel(false);
-                        call.askForPhoto();
+                        // A tap may open the picture picker (a voice request can't, so it gets the spoken hint instead).
+                        if (onPickPhoto) fileRef.current?.click();
+                        else call.askForPhoto();
                       }}
                       disabled={!talking}
                       aria-label="Search with a photo"
@@ -394,6 +405,20 @@ export function VoiceCallScreen<P extends CallProduct>({
           </button>
         )}
       </div>
+      {/* Outside the card: the card closes on the tap, and the picker's answer must still arrive here. */}
+      {onPickPhoto && (
+        <input
+          ref={fileRef}
+          type="file"
+          accept="image/*"
+          className="hidden"
+          onChange={(e) => {
+            const f = e.target.files?.[0];
+            e.target.value = '';
+            if (f) onPickPhoto(f);
+          }}
+        />
+      )}
     </>
   );
 }

@@ -9,6 +9,7 @@ import { MessageCircle, Send, X, ImagePlus, Mic, Check, History, SquarePen, Tras
 import {
   ChatUnavailableError,
   getChatStatus,
+  serverVoiceSpeak,
   sendChatMessage,
   sendChatPhoto,
   type ChatLive,
@@ -28,6 +29,8 @@ import { prefetchVoice } from '@/lib/voice/voicePrefetch';
 import { VoiceCallScreen } from '@/components/voice/VoiceCallScreen';
 import { readPhotoText } from '@/lib/photoText';
 import { usePhotoSearch } from '@/lib/photoSearch';
+import { useVoiceCheckoutFill } from '@/lib/voiceCheckout';
+import { setServerVoice } from '@/lib/voice/voiceOut';
 import { rememberDetails, rememberedDetails, type ChatOrder, type ChatOrderDetails } from '@/lib/chatOrder';
 import { encodeCartLink } from '@/lib/cartLink';
 import { fetchSharedCart } from '@/lib/checkoutApi';
@@ -170,8 +173,8 @@ const FOOTER_DELIVERY_STYLE: React.CSSProperties = {
   WebkitMaskPosition: 'left 0 bottom 6px',
 };
 
-/** Questions a fresh chat offers to send in one tap: what shoppers ask most (new stock, delivery cost, an order). */
-const STARTERS = ['নতুন কী এসেছে?', 'ডেলিভারি চার্জ কত?', 'আমার অর্ডার কোথায়?'];
+/** Questions a fresh chat offers to send in one tap: what shoppers ask most (new stock, delivery cost, an order, offers). */
+const STARTERS = ['নতুন কী এসেছে?', 'ডেলিভারি চার্জ কত?', 'আমার অর্ডার কোথায়?', 'কোনো অফার আছে?'];
 
 interface Message {
   role: 'user' | 'assistant';
@@ -331,6 +334,12 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
     };
   };
 
+  // The details as of the last message (the call compares with them to push only what changed into the checkout form),
+  // and the call's latest cart change, which the checkout waits for before it opens.
+  const detailsRef = useRef(details);
+  detailsRef.current = details;
+  const callCartSync = useRef<Promise<void>>(Promise.resolve());
+
   // A logged-in shopper's token may be gone after a reload; take a fresh one before reading or saving their addresses.
   const token = async (): Promise<string | null> => {
     if (!customer) return null;
@@ -481,6 +490,26 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   };
   const fullScreen = phone && !compact;
 
+  // Phones: when the keyboard opens, the browser shrinks only the visible part of the screen and scrolls the page under
+  // it, which pushed the chat's header off the top. The full-screen chat follows the visible part instead (its height
+  // and top), so the header with the store name, call and close buttons always stays in view.
+  const [viewport, setViewport] = useState<{ top: number; height: number } | null>(null);
+  useEffect(() => {
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null;
+    if (!open || !fullScreen || !vv) {
+      setViewport(null);
+      return;
+    }
+    const sync = () => setViewport({ top: vv.offsetTop, height: vv.height });
+    sync();
+    vv.addEventListener('resize', sync);
+    vv.addEventListener('scroll', sync);
+    return () => {
+      vv.removeEventListener('resize', sync);
+      vv.removeEventListener('scroll', sync);
+    };
+  }, [open, fullScreen]);
+
   // Questions handed over by the store (lib/assistantBridge.ts): the chat opens and sends it once it can answer.
   const setBridgeAvailable = useAssistantBridge((s) => s.setAvailable);
   const pendingQuestion = useAssistantBridge((s) => s.pending);
@@ -516,6 +545,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       setPhotoMode(status.photoText);
       setVoiceBase(status.voice);
       setVoiceModel(status.voiceModel);
+      // Super Admin's fallback voice: our server's (the same Piper voice made there) or Google's (the default).
+      setServerVoice(status.voiceFallback === 'SERVER' ? (text, signal) => serverVoiceSpeak(subdomain, text, signal) : null);
       setVoiceOn(status.voiceCall);
     });
     return () => {
@@ -655,9 +686,21 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         const o = res.order;
         setOrder(o);
         // What the assistant read from this message fills the card.
-        setDetails((d) => ({ name: o.name ?? d.name, phone: o.phone ?? d.phone, address: o.address ?? d.address, district: o.district ?? d.district }));
-        // On a call the assistant's choices go straight into the cart (it never places the order itself).
-        if (voice) void syncCallCart(o);
+        const before = detailsRef.current;
+        const next = { name: o.name ?? before.name, phone: o.phone ?? before.phone, address: o.address ?? before.address, district: o.district ?? before.district };
+        detailsRef.current = next;
+        setDetails(next);
+        // On a call the assistant's choices go straight into the cart (it never places the order itself), and each
+        // detail just said goes into the checkout form if it is open (lib/voiceCheckout.ts).
+        if (voice) {
+          callCartSync.current = syncCallCart(o);
+          useVoiceCheckoutFill.getState().push({
+            fullName: next.name !== before.name ? next.name : undefined,
+            phone: next.phone !== before.phone ? next.phone : undefined,
+            address: next.address !== before.address ? next.address : undefined,
+            district: next.district !== before.district ? next.district : undefined,
+          });
+        }
       }
       return res;
     } catch (err) {
@@ -724,6 +767,12 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         const total = Math.round(lines.reduce((n, l) => n + l.unitPrice * l.quantity, 0));
         return `এই যে আপনার কার্ট। ${count}টা পণ্য আছে, মোট ৳${total}। অর্ডার করতে চাইলে কার্টের বাটনে চাপুন।`;
       },
+    },
+    // "কিনব" / "চেকআউট বাতিল করো": the store's own checkout form, filled as the details are said (see handleSend). The
+    // assistant never presses Place order: that tap is always the shopper's own (the user's rule, 2026-10-27).
+    checkout: {
+      open: () => void openCheckoutLive(),
+      close: () => useCheckoutDialog.getState().closeDialog(),
     },
   });
   // The store's photo search (the search box's camera button) finishing during a call: its results are on the page
@@ -797,16 +846,26 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       setOpen(true);
     }
   }, [call.phase]);
-  // The shopper's own tap: the call ends and the checkout opens with the cart the call filled and the details it took.
-  // The assistant itself never opens it (the user's rule, 2026-10-22).
-  const checkoutFromCall = () => {
-    reopenAfterCall.current = false;
-    call.hangUp();
-    const d = { name: details.name.trim(), phone: details.phone.trim(), address: details.address.trim(), district: details.district.trim() };
-    setInstantHandoff(subdomain, null, { fullName: d.name, phone: d.phone, address: d.address, city: '', district: d.district, zone: null });
+  // The checkout during a call (the user's request, 2026-10-27): opened by the assistant when the shopper wants to buy,
+  // or by the shopper's "অর্ডার করুন" under the call head. The call goes on: it fills the form as the details are said
+  // (handleSend pushes each one), and the shopper presses Place order themselves. It waits for the call's last cart
+  // change, so the form opens with what was just added.
+  const openCheckoutLive = async () => {
+    await callCartSync.current.catch(() => undefined);
+    const d = detailsRef.current;
     void token().then((t) => rememberDetails(subdomain, d, t));
+    useCartDrawer.getState().closeDrawer();
     useCheckoutDialog.getState().openDialog();
+    // Everything already said goes in at once; later answers follow one by one.
+    useVoiceCheckoutFill.getState().push({ fullName: d.name, phone: d.phone, address: d.address, district: d.district });
   };
+  const checkoutFromCall = () => void openCheckoutLive();
+  const checkoutOpen = useCheckoutDialog((s) => s.open);
+  // Every detail given and the form open: the Place order button stands out (the shopper presses it themselves).
+  const voiceReady = call.phase === 'connected' && checkoutOpen && !!order?.ready;
+  useEffect(() => {
+    useVoiceCheckoutFill.getState().setReady(voiceReady);
+  }, [voiceReady]);
   const cartSummary = myLines.length
     ? { count: myLines.reduce((n, l) => n + l.quantity, 0), total: myLines.reduce((n, l) => n + l.unitPrice * l.quantity, 0) }
     : null;
@@ -815,7 +874,9 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       call={call}
       storeName={storeName}
       cart={cartSummary}
-      checkout={order?.ready && myLines.length ? { onClick: checkoutFromCall, busy: false } : null}
+      checkout={order?.ready && myLines.length && !checkoutOpen ? { onClick: checkoutFromCall, busy: false } : null}
+      // The card's photo button: the store's own photo search (results on the page; the call hears them, see above).
+      onPickPhoto={(file) => void usePhotoSearch.getState().search(subdomain, file)}
     />
   );
 
@@ -855,7 +916,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         {callable ? (
           <>
             <p className="mt-2 text-[13.5px] leading-relaxed text-muted">
-              আমাদের সহকারীর সাথে কথা বলুন। পণ্য, দাম, ডেলিভারি যা খুশি জিজ্ঞেস করুন, চাইলে অর্ডারও করতে পারবেন।
+              আমাদের এআই সহকারীর সাথে ফোনের মতো কথা বলুন (এটি এআই, কোনো মানুষ নয়)। পণ্য, দাম, ডেলিভারি যা খুশি জিজ্ঞেস করুন, চাইলে অর্ডারও করতে পারবেন।
             </p>
             <button
               type="button"
@@ -866,7 +927,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
               className="mt-5 inline-flex h-12 w-full items-center justify-center gap-2 rounded-xl bg-green-600 text-[15px] font-semibold text-white hover:bg-green-700"
             >
               <Phone size={18} />
-              কল করুন
+              এআই সহকারীকে কল করুন
             </button>
             <p className="mt-2 text-[11.5px] text-muted">মাইক্রোফোন চালু করার অনুমতি চাইবে।</p>
           </>
@@ -946,7 +1007,12 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
               ? 'fixed inset-0 z-50 w-full h-[100dvh] bg-surface flex flex-col overflow-hidden overscroll-contain'
               : 'fixed bottom-[76px] right-5 z-30 w-[min(380px,calc(100vw-2.5rem))] h-[min(600px,calc(100vh-120px))] bg-surface rounded-2xl border border-line shadow-[0_2px_6px_rgba(16,24,40,0.06),0_12px_24px_-6px_rgba(16,24,40,0.12),0_32px_72px_-12px_rgba(16,24,40,0.30)] flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none'
           }
-          style={{ transform: cartOpen && !fullScreen ? 'translateX(calc(-100vw + 2.5rem + min(380px, 100vw - 2.5rem)))' : undefined }}
+          style={
+            fullScreen && viewport
+              ? // Pinned to the visible part of the screen (above the keyboard), see the viewport effect.
+                { top: viewport.top, height: viewport.height, bottom: 'auto' }
+              : { transform: cartOpen && !fullScreen ? 'translateX(calc(-100vw + 2.5rem + min(380px, 100vw - 2.5rem)))' : undefined }
+          }
         >
           {/* The store's own helper: its initial and name, in the store's colour. The accent is kept for the shopper's words. */}
           <div className="relative z-10 isolate flex items-center gap-1 pl-3.5 pr-2 py-2.5 border-b border-line bg-surface shrink-0 shadow-[0_2px_8px_-2px_rgba(16,24,40,0.08)]">
@@ -960,7 +1026,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
               <span className="mt-0.5 block truncate text-[11.5px] leading-tight text-muted">এআই শপিং সহকারী</span>
             </span>
             {callable && (
-              <button type="button" onClick={startCall} aria-label="Voice call the assistant" title="কল করে কথা বলুন" className={HEADER_BUTTON}>
+              <button type="button" onClick={startCall} aria-label="Voice call the AI assistant" title="এআই সহকারীর সাথে কলে কথা বলুন" className={HEADER_BUTTON}>
                 <Phone size={17} />
               </button>
             )}
@@ -1132,7 +1198,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                     className="inline-flex items-center gap-1.5 rounded-full border border-accent bg-surface px-3.5 py-1.5 text-[12.5px] font-medium text-accent hover:bg-accent hover:text-white transition-colors"
                   >
                     <Phone size={13} />
-                    লিখতে না চাইলে কল করুন
+                    এআই সহকারীর সাথে কলে কথা বলুন
                   </button>
                 )}
               </div>
@@ -1211,11 +1277,16 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                 }}
                 placeholder="পণ্য সম্পর্কে জিজ্ঞেস করুন বা ছবি দিন…"
                 aria-label="Message"
-                disabled={sending || available === false}
+                // Not disabled while an answer is on its way: a disabled box loses the cursor after every message. The
+                // shopper can type the next one meanwhile; sending waits (the Send button and handleSend check `sending`).
+                disabled={available === false}
+                aria-busy={sending}
                 className="flex-1 min-w-0 bg-transparent py-2.5 text-[13.5px] text-ink placeholder:text-muted outline-none disabled:opacity-60"
               />
               <button
                 type="submit"
+                // A click on Send keeps the cursor in the message box (as in a messaging app).
+                onMouseDown={(e) => e.preventDefault()}
                 disabled={sending || available === false || (!draft.trim() && !selection)}
                 aria-label="Send"
                 className="w-9 h-9 shrink-0 rounded-full bg-accent text-white flex items-center justify-center shadow-[0_3px_8px_-2px_rgba(16,24,40,0.30)] disabled:bg-line-strong disabled:text-white disabled:shadow-none hover:bg-accent-dark transition-colors"
