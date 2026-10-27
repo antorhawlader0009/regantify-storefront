@@ -153,6 +153,7 @@ const BN: Record<string, string> = {
   'Sample products. This store has no products yet.': 'নমুনা পণ্য। এই স্টোরে এখনো কোনো পণ্য নেই।',
   'No matches': 'কিছু পাওয়া যায়নি',
   'Try adjusting your filters or browsing another category.': 'ফিল্টার বদলে দেখুন বা অন্য ক্যাটাগরিতে খুঁজুন।',
+  'Shown by our assistant': 'সহকারী যা দেখাচ্ছে',
   'Top Selling': 'সবচেয়ে বেশি বিক্রি',
   Magazine: 'ম্যাগাজিন',
   FAQ: 'সাধারণ প্রশ্ন',

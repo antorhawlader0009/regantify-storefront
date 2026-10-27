@@ -27,6 +27,7 @@ import { voiceCallSupported } from '@/lib/voice/speechInput';
 import { prefetchVoice } from '@/lib/voice/voicePrefetch';
 import { VoiceCallScreen } from '@/components/voice/VoiceCallScreen';
 import { readPhotoText } from '@/lib/photoText';
+import { usePhotoSearch } from '@/lib/photoSearch';
 import { rememberDetails, rememberedDetails, type ChatOrder, type ChatOrderDetails } from '@/lib/chatOrder';
 import { encodeCartLink } from '@/lib/cartLink';
 import { fetchSharedCart } from '@/lib/checkoutApi';
@@ -257,9 +258,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const fileRef = useRef<HTMLInputElement>(null);
 
   // Returns the products the photo matched (the voice call says them; the chat shows them as cards either way).
-  // `fromCall`: the voice call's camera, which may send while a spoken turn's answer is still on its way.
-  const handlePhoto = async (file: File | undefined, fromCall = false): Promise<ChatProductRef[]> => {
-    if (!file || (sending && !fromCall)) return [];
+  const handlePhoto = async (file: File | undefined): Promise<ChatProductRef[]> => {
+    if (!file || sending) return [];
     if (!file.type.startsWith('image/')) return [];
     // A small thumbnail (not a blob address), so the photo is still there when the chat is reopened.
     const preview = await photoThumbnail(file).catch(() => URL.createObjectURL(file));
@@ -684,8 +684,6 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   myLinesRef.current = myLines;
   const sendRef = useRef(handleSend);
   sendRef.current = handleSend;
-  const photoRef = useRef(handlePhoto);
-  photoRef.current = handlePhoto;
   const call = useVoiceCall<ChatProductRef>({
     base: voiceBase,
     model: voiceModel,
@@ -696,16 +694,19 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       return { reply: res.reply, products: res.products, actions: res.actions };
     },
     onGreeting: (greeting) => setMessages((prev) => [...prev, { role: 'assistant', content: greeting, at: Date.now() }]),
-    // "ছবি দিয়ে খুঁজতে চাই": the call's camera photo goes through the chat's own free picture match (kept in the chat too).
-    photoSearch: async (file) => {
-      const found = await photoRef.current(file, true);
-      return { products: found, names: found.map((p) => p.name) };
+    // "ছবি দিয়ে খুঁজতে চাই": the call opens no camera of its own; the store search's photo button is brought into view and
+    // made to stand out, and its results come back below (the photo search effect).
+    photoHint: () => {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+      usePhotoSearch.getState().hint();
     },
-    // "পণ্যটা খুলে দেখাও": the page opens in this tab; the call goes on (this widget lives in the store layout).
+    // A product the assistant talks about: its page opens in this tab; the call goes on (this widget lives in the store layout).
     onOpenProduct: (slug) => router.push(`/store/${subdomain}/product/${slug}`),
-    // "X khuje dekhao": the store's own search results page; "back jao": the browser's Back.
+    // "X khuje dekhao": the store's own search results page; several products the assistant shows: the same page listing
+    // just those (?picks=); "back jao": the browser's Back.
     navigate: {
       search: (query) => router.push(`/store/${subdomain}?q=${encodeURIComponent(query)}`),
+      picks: (slugs) => router.push(`/store/${subdomain}?picks=${encodeURIComponent(slugs.slice(0, 12).join(','))}`),
       back: () => router.back(),
     },
     // "কার্ট দেখাও" / "কার্ট বন্ধ করো": the same slide-in cart the header's bag icon opens.
@@ -725,6 +726,27 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       },
     },
   });
+  // The store's photo search (the search box's camera button) finishing during a call: its results are on the page
+  // already; the call says what it found, and the next spoken turn tells the AI which products the photo matched.
+  const callPhaseRef = useRef(call.phase);
+  callPhaseRef.current = call.phase;
+  const photoFoundRef = useRef(call.photoFound);
+  photoFoundRef.current = call.photoFound;
+  useEffect(
+    () =>
+      usePhotoSearch.subscribe((s, prev) => {
+        if (s.status !== 'done' || prev.status === 'done' || callPhaseRef.current !== 'connected') return;
+        const found: ChatProductRef[] = s.products.slice(0, 8).map((p) => ({
+          slug: p.slug,
+          name: p.name,
+          photoUrl: p.photoUrls[0] ?? null,
+          price: p.discountPrice ?? p.price,
+        }));
+        setPhotoSlugs(found.map((p) => p.slug));
+        photoFoundRef.current(found);
+      }),
+    [],
+  );
   // The chat steps aside during the call and comes back after it, showing what was said (not after "confirm order",
   // which opens the checkout instead).
   const reopenAfterCall = useRef(false);
@@ -792,7 +814,6 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
     <VoiceCallScreen
       call={call}
       storeName={storeName}
-      productHref={(slug) => `/store/${subdomain}/product/${slug}`}
       cart={cartSummary}
       checkout={order?.ready && myLines.length ? { onClick: checkoutFromCall, busy: false } : null}
     />

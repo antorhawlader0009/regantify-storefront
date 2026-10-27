@@ -57,6 +57,9 @@ interface PhotoSearchState {
   /** Similar products under the matches (same category, brand or name words; chosen by the server, no AI). */
   related: StorefrontProduct[];
   error: string | null;
+  /** When something asked the shopper to use the photo button (the voice call's "ছবি দিয়ে খুঁজব"); the buttons stand out for a while. */
+  hintAt: number;
+  hint: () => void;
   search: (subdomain: string, file: File) => Promise<void>;
   close: () => void;
 }
@@ -70,6 +73,8 @@ export const usePhotoSearch = create<PhotoSearchState>((set, get) => ({
   products: [],
   related: [],
   error: null,
+  hintAt: 0,
+  hint: () => set({ hintAt: Date.now() }),
 
   search: async (subdomain, file) => {
     if (!isImageFile(file)) return;

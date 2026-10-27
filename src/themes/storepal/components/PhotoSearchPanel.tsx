@@ -1,12 +1,15 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import { Camera, Loader2, X } from 'lucide-react';
 import { usePhotoSearch } from '@/lib/photoSearch';
 import { PhotoSearchDrop } from '@/components/PhotoSearchDrop';
 import { ProductCard } from './ProductCard';
 import { useStoreText } from '../lib/storeText';
+
+/** How long the photo button stands out after the voice call asked the shopper to use it. */
+const HINT_MS = 10_000;
 
 /**
  * StorePal's look for the search by photo (lib/photoSearch.ts): the results dialog, and the drop-anywhere listener with
@@ -117,11 +120,31 @@ export function PhotoSearchPanel({ subdomain, storeName }: { subdomain: string; 
 export function PhotoSearchButton({ subdomain, className }: { subdomain: string; className?: string }) {
   const t = useStoreText();
   const search = usePhotoSearch((s) => s.search);
+  const hintAt = usePhotoSearch((s) => s.hintAt);
   const fileRef = useRef<HTMLInputElement>(null);
+  // The voice call asked the shopper to use this button: it pulses for a few seconds.
+  const [hinting, setHinting] = useState(false);
+  useEffect(() => {
+    if (!hintAt) return;
+    setHinting(true);
+    const t = setTimeout(() => setHinting(false), HINT_MS);
+    return () => clearTimeout(t);
+  }, [hintAt]);
   return (
     <>
-      <button type="button" onClick={() => fileRef.current?.click()} className={className} aria-label={t('Search by photo')} title={t('Search by photo')}>
-        <Camera size={17} />
+      <button
+        type="button"
+        onClick={() => {
+          setHinting(false);
+          fileRef.current?.click();
+        }}
+        className={className}
+        aria-label={t('Search by photo')}
+        title={t('Search by photo')}
+      >
+        <span className={hinting ? 'relative flex items-center justify-center rounded-full text-accent ring-2 ring-accent ring-offset-2 animate-pulse' : 'contents'}>
+          <Camera size={17} />
+        </span>
       </button>
       <input
         ref={fileRef}

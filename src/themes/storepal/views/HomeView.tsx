@@ -29,7 +29,7 @@ import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
-import { useStoreText } from '../lib/storeText';
+import { bnDigits, useStoreText } from '../lib/storeText';
 import { RecentlyViewed } from '../components/RecentlyViewed';
 import { SocialFeedSection } from '../components/SocialFeedSection';
 import type { StorefrontSocialFeed } from '@/lib/storefrontApi';
@@ -58,6 +58,8 @@ interface HomeViewProps {
   /** `?brand=` — Store > Design menu items of type Brand link here. StorePal-only. */
   activeBrand?: string;
   search?: string;
+  /** `?picks=`: the products the AI voice call is showing the shopper, in its order (link names). */
+  picks?: string[];
   socialLinks?: SocialLinks;
   /** Marketing > Campaigns pages, listed on the homepage by CampaignsStrip (the hero itself uses categoryDetails, see HeroBanner). */
   campaigns?: StorefrontCampaignSummary[];
@@ -110,6 +112,7 @@ export function HomeView({
   activeCategory,
   activeBrand,
   search,
+  picks,
   socialLinks,
   campaigns = [],
   faqItems = [],
@@ -126,6 +129,8 @@ export function HomeView({
   const t = useStoreText();
   const router = useRouter();
   const design = useStorePalDesign();
+  // Card numbers on the voice call's picks: Bangla digits on a Bangla store.
+  const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
   const homeSections = resolveHomeSections(design.homeSections);
 
   // "Create custom link for this coupon" — resolve the shared link to a
@@ -182,6 +187,8 @@ export function HomeView({
   // The products that answer the typed words, best first: Bangla, Banglish and English spellings meet and a typo is forgiven (lib/searchMatch.ts).
   const searchHits = useMemo(() => (search?.trim() ? searchProducts(products, search.trim()) : null), [products, search]);
   const searchRank = useMemo(() => new Map((searchHits ?? []).map((p, i) => [p, i] as const)), [searchHits]);
+  // The voice call's picks, in the order the assistant gave them.
+  const pickRank = useMemo(() => (picks?.length ? new Map(picks.map((s, i) => [s, i] as const)) : null), [picks]);
   // A main category also holds its sub categories' products: a product's category is the one picked for it, often a sub
   // category, so "Home & Kitchen" must match products in "Kitchen Appliances" too.
   const activeCategoryNames = activeCategory
@@ -191,7 +198,7 @@ export function HomeView({
     !activeCategoryNames || (p.category ? activeCategoryNames.has(p.category) : false) || p.secondaryCategories.some((c) => activeCategoryNames.has(c));
 
   const filtered = products.filter((p) => {
-    const matchesSearch = searchHits ? searchRank.has(p) : true;
+    const matchesSearch = (searchHits ? searchRank.has(p) : true) && (pickRank ? pickRank.has(p.slug) : true);
     // Matches on secondaryCategories too — a promo bucket like "50% OFF"
     // (see the header nav) is typically tagged onto products from many
     // different primary categories purely via Secondary Categories, never
@@ -235,9 +242,11 @@ export function HomeView({
       ? payPrice(a) - payPrice(b)
       : sortBy === 'price-desc'
         ? payPrice(b) - payPrice(a)
-        : searchHits
-          ? (searchRank.get(a) ?? 0) - (searchRank.get(b) ?? 0) // a search: the closest spelling first, then the store's own order
-          : 0, // "Latest" keeps the store's own order: the vendor's pinned products first, then newest first
+        : pickRank
+          ? (pickRank.get(a.slug) ?? 0) - (pickRank.get(b.slug) ?? 0) // the voice call's picks: in the assistant's order
+          : searchHits
+            ? (searchRank.get(a) ?? 0) - (searchRank.get(b) ?? 0) // a search: the closest spelling first, then the store's own order
+            : 0, // "Latest" keeps the store's own order: the vendor's pinned products first, then newest first
   );
 
   // Meta pixel Search / GA4 search, once per query, with the top results
@@ -252,7 +261,7 @@ export function HomeView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
 
-  const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
+  const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand || pickRank);
 
   // GA4 view_item_list: the category / brand / search listing, or the home page's products, named like a card click's select_item.
   const shownList = isFiltered ? sorted : products;
@@ -363,7 +372,7 @@ export function HomeView({
               )}
               <div className="flex items-center justify-between">
                 <h1 className="text-[16px] font-bold text-ink">
-                  {search?.trim() ? `Results for "${search}"` : (activeCategory ?? activeBrand)}
+                  {pickRank ? t('Shown by our assistant') : search?.trim() ? `Results for "${search}"` : (activeCategory ?? activeBrand)}
                 </h1>
                 <div className="flex items-center gap-3">
                   <span className="text-[12.5px] text-muted">{filtered.length} products</span>
@@ -446,9 +455,19 @@ export function HomeView({
                 </div>
               ) : (
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-                  {sorted.map((product) => (
-                    <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
-                  ))}
+                  {sorted.map((product, i) =>
+                    pickRank ? (
+                      // The voice call's picks are numbered, so the shopper can say "২ নম্বরটা".
+                      <div key={product.id} className="relative">
+                        <ProductCard product={product} subdomain={subdomain} storeName={storeName} />
+                        <span className="pointer-events-none absolute left-2 top-2 z-10 flex h-7 min-w-7 items-center justify-center rounded-full bg-ink px-1.5 text-[13px] font-bold text-white shadow" aria-hidden>
+                          {formatNumber(i + 1)}
+                        </span>
+                      </div>
+                    ) : (
+                      <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
+                    ),
+                  )}
                 </div>
               )}
             </div>

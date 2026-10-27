@@ -35,8 +35,17 @@ import { storeParams } from '@/lib/storeRequest';
 // simultaneously reachable at the same URL.
 const HOMEPAGE_LANDING_SLUG = '/';
 
-/** The home page's query: ?category= / ?brand= listings, ?q= search results and ?coupon= links. */
-export type HomeQuery = { category?: string; q?: string; coupon?: string; brand?: string };
+/**
+ * The home page's query: ?category= / ?brand= listings, ?q= search results, ?coupon= links, and ?picks=a,b,c: the
+ * products the AI voice call is showing the shopper, listed on this page (lib/voice/useVoiceCall.ts showOnSite).
+ */
+export type HomeQuery = { category?: string; q?: string; coupon?: string; brand?: string; picks?: string };
+
+/** ?picks= as product link names, at most 12. */
+function pickSlugs(raw: string | undefined): string[] | undefined {
+  const slugs = (raw ?? '').split(',').map((s) => s.trim()).filter(Boolean).slice(0, 12);
+  return slugs.length ? slugs : undefined;
+}
 
 interface HomeProps {
   params: Promise<{ subdomain: string }>;
@@ -85,7 +94,7 @@ export async function homeMetadata({ params, query }: HomeProps): Promise<Metada
     // A category or brand listing (?category= / ?brand=) is a page of its own for search engines (people search "phones in
     // Dhaka"), so it gets its own title and canonical instead of being folded into the home page. Search results (?q=) and
     // coupon links are not pages worth listing.
-    const { category, brand, q, coupon } = query;
+    const { category, brand, q, coupon, picks } = query;
     const listing = category?.trim() || brand?.trim() || null;
     const listingQuery = category?.trim() ? `?category=${encodeURIComponent(category.trim())}` : brand?.trim() ? `?brand=${encodeURIComponent(brand.trim())}` : '';
     const homeTitle = store.brandMetaTitle || store.storeName;
@@ -99,7 +108,7 @@ export async function homeMetadata({ params, query }: HomeProps): Promise<Metada
       title: listing ? listing : { absolute: homeTitle },
       description,
       alternates: { canonical },
-      robots: q?.trim() || coupon ? { index: false, follow: true } : undefined,
+      robots: q?.trim() || coupon || picks ? { index: false, follow: true } : undefined,
       ...socialMeta({ store, title, description, url: canonical, locale: store.designSettings?.storeLanguage }),
     };
   } catch {
@@ -259,6 +268,8 @@ export async function HomePage({ params, query }: HomeProps) {
               couponLink={couponLink}
               // Store > Design menu items of type Brand — StorePal-only, like couponLink.
               activeBrand={activeBrand}
+              // The products the voice call is showing (?picks=).
+              picks={pickSlugs(query.picks)}
             />
           );
         }

@@ -51,7 +51,7 @@ function isKnownPlatformHost(host: string): boolean {
 
 // The home page with one of these in its query (category or brand listings, search results, coupon links) is rendered by
 // its own route (store/[subdomain]/browse), which reads the query and is never kept. The plain home page is kept.
-const HOME_QUERY_KEYS = ['category', 'brand', 'q', 'coupon'];
+const HOME_QUERY_KEYS = ['category', 'brand', 'q', 'coupon', 'picks'];
 
 /** Same origin siteUrl() used to build from the request: the Host header (with its port) and the proxy's protocol. */
 function originOf(request: NextRequest): string {
@@ -189,7 +189,7 @@ export async function middleware(request: NextRequest) {
   const params = request.nextUrl.searchParams;
   if (PRIVATE_SEGMENTS.has(first)) {
     response.headers.set('X-Robots-Tag', 'noindex, nofollow');
-  } else if (params.has('q') || params.has('coupon')) {
+  } else if (params.has('q') || params.has('coupon') || params.has('picks')) {
     response.headers.set('X-Robots-Tag', 'noindex, follow');
   }
 

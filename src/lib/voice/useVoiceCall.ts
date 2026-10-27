@@ -2,8 +2,9 @@
 
 /**
  * The store AI chat's voice call (2026-10-22): the shopper taps the call button, hears a phone ring while the Piper
- * voice loads, and then talks with the assistant as on a WhatsApp call. Theme-independent: a template only draws the
- * screen (components/voice/VoiceCallScreen.tsx) and passes its chat's send function.
+ * voice loads, and then talks with the assistant as on a phone call. On screen the call is only a chat head over the real
+ * store (components/voice/VoiceCallScreen.tsx); whatever the assistant shows goes on the store's own pages (showOnSite).
+ * Theme-independent: a template draws nothing of its own and passes its chat's send function.
  *
  * One turn: the browser's speech recognition hears the shopper (speechInput.ts) -> the chat's own send (the server's
  * streamed chat route, POST chat/stream, with `voice: true`, so it answers short and in Bangla letters, and the turn is
@@ -67,17 +68,21 @@ export interface VoiceCallOptions<P extends CallProductRef> {
   /** Puts the spoken greeting into the chat too, so the AI knows it already greeted. */
   onGreeting?: (text: string) => void;
   /**
-   * The shopper's photo -> the store's products it looks like (the chat's free picture match, no AI). When given, "I
-   * want to search with a photo" opens the camera in the call.
+   * "I want to search with a photo": the call never opens a camera of its own (the user's rule, 2026-10-27). The
+   * assistant asks the shopper to use the store search's own photo button, and this makes that button stand out. The
+   * search's results then come back through `photoFound`.
    */
-  photoSearch?: (file: File) => Promise<{ products: P[]; names: string[] }>;
-  /** Opens a product's page in this tab ("পণ্যটা খুলে দেখাও", or the card's button); the call shrinks to its top bar. */
+  photoHint?: () => void;
+  /** Opens a product's page in this tab ("পণ্যটা খুলে দেখাও", or a product the assistant talks about). */
   onOpenProduct?: (slug: string) => void;
-  /** Moves the shopper's own page: the store search with these words, or one page back. */
-  navigate?: { search: (query: string) => void; back: () => void };
   /**
-   * The store's slide-in cart: "কার্ট দেখাও" opens it (the call shrinks to its top bar so the cart can be seen), "কার্ট বন্ধ
-   * করো" closes it. `show` returns the line to say (what is in it); `isOpen` tells whether it is open now.
+   * Moves the shopper's own page: the store search with these words, the list of products the assistant is showing
+   * (`picks`, the store's results page), or one page back.
+   */
+  navigate?: { search: (query: string) => void; picks: (slugs: string[]) => void; back: () => void };
+  /**
+   * The store's slide-in cart: "কার্ট দেখাও" opens it, "কার্ট বন্ধ করো" closes it. `show` returns the line to say (what is
+   * in it); `isOpen` tells whether it is open now.
    */
   cart?: { show: (open: boolean) => string; isOpen: () => boolean };
 }
@@ -170,19 +175,13 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     productsRef.current = list;
     setProductsState(list);
   };
-  // Small bar at the top instead of the full call screen, so a product page opened during the call can be seen.
-  const [minimized, setMinimized] = useState(false);
+  // The call is only a chat head over the real store (the user's rule, 2026-10-27): what the assistant shows goes on the
+  // page itself. The products last put on the page, so the same ones aren't opened again on every answer.
+  const shownKeyRef = useRef('');
   const [engine, setEngine] = useState<VoiceEngine>('piper');
   const [loadPct, setLoadPct] = useState<number | null>(null);
   const [problem, setProblem] = useState<string | null>(null);
   const [lang, setLangState] = useState<'bn-BD' | 'en-US'>('bn-BD');
-  // The camera is open in the call for a photo search (components/voice/CallCamera.tsx draws it).
-  const [camera, setCameraState] = useState(false);
-  const cameraRef = useRef(false);
-  const setCamera = (open: boolean) => {
-    cameraRef.current = open;
-    setCameraState(open);
-  };
 
   const phaseRef = useRef<CallPhase>('idle');
   const talkRef = useRef<TalkState>('listening');
@@ -268,7 +267,6 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
   const hangUp = useCallback((keepOpen = false) => {
     if (phaseRef.current === 'idle' || phaseRef.current === 'ended') return;
     callIdRef.current++;
-    setCamera(false);
     stopRingRef.current?.();
     stopRingRef.current = null;
     inputRef.current?.stop();
@@ -348,9 +346,8 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     const seq = ++turnSeqRef.current;
     // `cut`: the shopper stopped this turn's voice (cut in, or the stop button); the rest of its answer stays unspoken.
     const out: { stream: VoiceStream | null; cut: boolean } = { stream: null, cut: false };
-    // Still this turn's to speak: the call goes on, no newer turn, no camera, not cut, and the shopper didn't keep talking.
-    const mine = () =>
-      live(id) && seq === turnSeqRef.current && !ac.signal.aborted && !cameraRef.current && !pendingRef.current && !out.cut;
+    // Still this turn's to speak: the call goes on, no newer turn, not cut, and the shopper didn't keep talking.
+    const mine = () => live(id) && seq === turnSeqRef.current && !ac.signal.aborted && !pendingRef.current && !out.cut;
     let answerStarted = false;
     let said = '';
     let fillers = 0;
@@ -458,9 +455,6 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
       stopFillers();
     }
     if (!live(id) || ac.signal.aborted || seq !== turnSeqRef.current) return;
-    // The shopper opened the camera while this answer was on its way: it stays in the chat, unspoken.
-    if (cameraRef.current) return drop();
-
     // The shopper kept talking while we waited: answer that instead (this reply stays in the chat).
     if (pendingRef.current) {
       const next = pendingRef.current;
@@ -480,38 +474,43 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     const rest = remainderAfter(result.reply, said);
     // Client-side tools: the AI decided what to do on the screen, the page does it, then the answer is spoken.
     let after: (() => void) | undefined;
+    // The page was moved by an action (or the cart opened): this answer's products are not put on the page as well.
+    let moved = false;
     for (const a of result.actions ?? []) {
       if (a.type === 'open_product') {
         const p = result.products.find((x) => x.slug === a.slug) ?? productsRef.current.find((x) => x.slug === a.slug);
         if (p) {
           if (!out.stream) return openProduct(id, p, result.reply);
-          opts.current.onOpenProduct?.(p.slug);
-          setMinimized(true);
+          shownKeyRef.current = '';
+          showOnSite([p]);
           return finish(result.reply, rest);
         }
       } else if (a.type === 'search') {
         opts.current.navigate?.search(a.query);
-        setMinimized(true);
+        shownKeyRef.current = '';
+        moved = true;
       } else if (a.type === 'go_back') {
         opts.current.navigate?.back();
+        shownKeyRef.current = '';
+        moved = true;
       } else if (a.type === 'show_cart' && opts.current.cart) {
         opts.current.cart.show(true);
-        setMinimized(true);
+        moved = true;
       } else if (a.type === 'close_cart' && opts.current.cart) {
         opts.current.cart.show(false);
-        setMinimized(false);
-      } else if (a.type === 'photo_search' && opts.current.photoSearch) {
-        after = () => openCamera(id);
+      } else if (a.type === 'photo_search') {
+        opts.current.photoHint?.();
       } else if (a.type === 'hang_up') {
         after = () => hangUp();
       }
     }
     if (openAfter && result.products.length) {
       if (!out.stream) return openProduct(id, result.products[0], result.reply);
-      opts.current.onOpenProduct?.(result.products[0].slug);
-      setMinimized(true);
+      shownKeyRef.current = '';
+      showOnSite([result.products[0]]);
       return finish(result.reply, rest);
     }
+    if (!moved && result.products.length) showOnSite(result.products);
     if (out.stream) return finish(result.reply, rest, after);
     await speak(id, result.reply, after);
   };
@@ -529,58 +528,54 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     }
   };
 
-  // Photo search: the camera opens in the call (a page may open the camera without a tap, but not the file picker).
-  // Listening pauses while it is open, so the camera's moment of silence isn't taken as "nothing said".
-  const openCamera = (id: number) => {
+  /**
+   * The products the assistant talks about go on the shopper's real page: one opens its page, several are listed on the
+   * store's results page. The same products are not put on the page again (the AI repeats its cards while it talks).
+   */
+  const showOnSite = (list: P[]) => {
+    const key = list.map((p) => p.slug).join(',');
+    if (!key || key === shownKeyRef.current) return;
+    shownKeyRef.current = key;
+    if (list.length === 1) opts.current.onOpenProduct?.(list[0].slug);
+    else opts.current.navigate?.picks(list.map((p) => p.slug));
+  };
+
+  // "ছবি দিয়ে খুঁজব": the store search's own photo button (the call opens no camera of its own).
+  const askForPhoto = (id: number) => {
+    if (!live(id)) return;
+    opts.current.photoHint?.();
+    void speak(id, 'অবশ্যই। উপরের সার্চ বক্সের পাশে ক্যামেরার বাটনে চাপুন, তারপর ছবিটা দিন। আমি দেখে বলছি।');
+  };
+
+  /**
+   * The store's photo search finished during the call (the shopper used the search's photo button). Its results are
+   * already on the page (the search's own results); the call says what it found, and "এটা নেব" works on them.
+   */
+  const photoFound = (found: P[]) => {
+    const id = callIdRef.current;
     if (!live(id)) return;
     clearSilence();
     voiceRef.current?.stop();
-    inputRef.current?.setPaused(true);
-    setCamera(true);
-    void speak(id, 'ঠিক আছে, ক্যামেরা খুলছি। পণ্যটা ক্যামেরার সামনে ধরুন, আমি ছবি তুলে নিচ্ছি।', () => undefined);
-  };
-  const resumeListening = () => {
-    inputRef.current?.setPaused(mutedRef.current);
-  };
-  const cancelCamera = () => {
-    const id = callIdRef.current;
-    setCamera(false);
-    resumeListening();
-    void speak(id, 'ঠিক আছে। কী খুঁজছেন মুখে বলুন, আমি দেখছি।');
-  };
-  const submitPhoto = async (file: File) => {
-    const id = callIdRef.current;
-    setCamera(false);
-    voiceRef.current?.stop();
-    if (!live(id) || !opts.current.photoSearch) return;
-    setTalk('thinking');
-    caption('shopper', '📷 ছবি পাঠালাম');
-    let found: { products: P[]; names: string[] } = { products: [], names: [] };
-    try {
-      found = await opts.current.photoSearch(file);
-    } catch {
-      /* answered below as "not found" */
-    }
-    if (!live(id)) return;
-    resumeListening();
-    if (found.products.length) setProducts(found.products);
-    const n = found.names.length;
-    await speak(
+    caption('shopper', 'ছবি দিলাম');
+    setProducts(found);
+    shownKeyRef.current = found.map((p) => p.slug).join(',');
+    const n = found.length;
+    void speak(
       id,
       n === 1
-        ? `মনে হচ্ছে এটা ${found.names[0]}। স্ক্রিনে দেখাচ্ছি, নিতে চাইলে সাইজ বা কয়টা লাগবে বলুন।`
+        ? `মনে হচ্ছে এটা ${found[0].name}। স্ক্রিনে দেখাচ্ছি, নিতে চাইলে সাইজ বা কয়টা লাগবে বলুন।`
         : n > 1
           ? `ছবির মতো ${String(n).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[Number(d)])}টা পণ্য পেয়েছি, স্ক্রিনে দেখাচ্ছি। কোনটা চান বলুন।`
           : 'হুবহু এই পণ্যটা আমাদের দোকানে পাইনি। কী খুঁজছেন মুখে বলুন, আমি দেখছি।',
     );
   };
 
-  // Opens a product's page in this tab (the call keeps going: the widget lives in the store layout) and shrinks the call
-  // to its top bar so the page can be seen. `say`: the AI's own answer, spoken instead of the fixed line.
+  // Opens a product's page in this tab (the call keeps going: the widget lives in the store layout).
+  // `say`: the AI's own answer, spoken instead of the fixed line.
   const openProduct = async (id: number, p: P, say?: string) => {
     if (!live(id)) return;
-    opts.current.onOpenProduct?.(p.slug);
-    setMinimized(true);
+    shownKeyRef.current = '';
+    showOnSite([p]);
     await speak(id, say ?? `এই যে, ${p.name} এর পেজ খুলে দিলাম। কিছু জানতে চাইলে বলুন।`);
   };
 
@@ -601,14 +596,12 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
       caption('shopper', text);
       voiceRef.current?.stop();
       const line = cart.show(false);
-      setMinimized(false);
       return void speak(id, line);
     }
     if (cart && wantsShowCart(text)) {
       caption('shopper', text);
       voiceRef.current?.stop();
       const line = cart.show(true);
-      setMinimized(true);
       return void speak(id, line);
     }
     if (wantsBack(text) && opts.current.navigate) {
@@ -625,9 +618,10 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
       if (i >= 0) return void openProduct(id, shown[i]);
       return void turn(id, text, true);
     }
-    if (opts.current.photoSearch && wantsPhotoSearch(text)) {
+    if (opts.current.photoHint && wantsPhotoSearch(text)) {
       caption('shopper', text);
-      return openCamera(id);
+      voiceRef.current?.stop();
+      return askForPhoto(id);
     }
     if (talkRef.current === 'thinking') {
       pendingRef.current = `${pendingRef.current} ${text}`.trim();
@@ -678,7 +672,7 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     setSeconds(0);
     setLines([]);
     setProducts([]);
-    setMinimized(false);
+    shownKeyRef.current = '';
     setProblem(null);
     setLoadPct(null);
     setMutedState((mutedRef.current = false));
@@ -796,8 +790,8 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
 
   return {
     phase, talk, seconds, muted, setMuted, lines, products, engine, loadPct, problem, lang, setLang, start, hangUp, close, level,
-    camera, cancelCamera, submitPhoto, openCamera: () => openCamera(callIdRef.current), canPhotoSearch: !!options.photoSearch,
-    minimized, setMinimized, openProduct: (p: P) => openProduct(callIdRef.current, p),
+    photoFound, askForPhoto: () => askForPhoto(callIdRef.current), canPhotoSearch: !!options.photoHint,
+    openProduct: (p: P) => openProduct(callIdRef.current, p),
     interrupt, halfDuplex: halfDuplexRef.current,
   };
 }

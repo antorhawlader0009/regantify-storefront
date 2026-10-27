@@ -10,7 +10,7 @@ type PageProps = { params: Promise<{ subdomain: string }>; searchParams: Promise
 
 function homeQuery(raw: Record<string, string | string[] | undefined>): HomeQuery {
   const one = (v: string | string[] | undefined) => (Array.isArray(v) ? v[0] : v);
-  return { category: one(raw.category), brand: one(raw.brand), q: one(raw.q), coupon: one(raw.coupon) };
+  return { category: one(raw.category), brand: one(raw.brand), q: one(raw.q), coupon: one(raw.coupon), picks: one(raw.picks) };
 }
 
 export async function generateMetadata({ params, searchParams }: PageProps): Promise<Metadata> {
