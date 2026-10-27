@@ -129,6 +129,7 @@ const BN: Record<string, string> = {
   'Looking for this product…': 'পণ্যটি খোঁজা হচ্ছে…',
   'Products like your photo': 'আপনার ছবির মতো পণ্য',
   'No similar product found. Try a clearer photo, or type the product name.': 'একই রকম পণ্য পাওয়া যায়নি। আরও পরিষ্কার ছবি দিন, অথবা পণ্যের নাম লিখে খুঁজুন।',
+  "We couldn't find this exact product in our store. Here are some similar ones.": 'হুবহু এই পণ্যটি আমাদের দোকানে পাওয়া যায়নি। কাছাকাছি কিছু পণ্য নিচে দেখুন।',
   'Try another photo': 'অন্য ছবি দিন',
   'Related products': 'সম্পর্কিত পণ্য',
   // A search that found nothing (AskAssistantButton.tsx)

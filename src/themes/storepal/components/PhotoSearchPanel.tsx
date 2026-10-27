@@ -65,7 +65,12 @@ export function PhotoSearchPanel({ subdomain, storeName }: { subdomain: string; 
             )}
             {status === 'error' && <p className="py-8 text-center text-[14px] text-red-600">{error}</p>}
             {status === 'done' && products.length === 0 && (
-              <p className="py-8 text-center text-[14px] text-muted">{t('No similar product found. Try a clearer photo, or type the product name.')}</p>
+              <p className="py-8 text-center text-[14px] text-muted">
+                {related.length
+                  ? // Nothing exact (by picture, or by the store's AI photo search when it is on), but similar products below.
+                    t("We couldn't find this exact product in our store. Here are some similar ones.")
+                  : t('No similar product found. Try a clearer photo, or type the product name.')}
+              </p>
             )}
             {status === 'done' && products.length > 0 && (
               <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(180px,1fr))]">
