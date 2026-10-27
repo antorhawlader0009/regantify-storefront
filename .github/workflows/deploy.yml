@@ -23,6 +23,6 @@ jobs:
             cd ~/regantify/storefront
             git pull origin main
             cd ~/regantify
-            docker compose build storefront
+            docker compose build --pull storefront
             docker compose up -d --no-deps storefront
             docker image prune -f
