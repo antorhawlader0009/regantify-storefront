@@ -11,6 +11,7 @@ import {
   type ProductReview,
 } from '@/lib/reviewsApi';
 import { MAX_REVIEW_PHOTOS, shrinkReviewPhoto } from '@/lib/reviewPhotos';
+import { MAX_REVIEW_VIDEO_MB, REVIEW_VIDEO_ACCEPT, reviewVideoProblem } from '@/lib/reviewVideo';
 import { variantUrl } from '@/lib/imageVariants';
 import { PhotoViewer } from '@/components/ProductImageViewer';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
@@ -173,6 +174,17 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
                       ))}
                     </div>
                   )}
+                  {r.videoUrl && (
+                    // The buyer's own video; only its first frame loads until it is played.
+                    <video
+                      src={r.videoUrl}
+                      controls
+                      playsInline
+                      preload="metadata"
+                      aria-label={t('Video from this review')}
+                      className="mt-2 w-full max-w-[280px] max-h-[360px] rounded border border-line bg-black"
+                    />
+                  )}
                   <p className="mt-1.5 text-[12px] text-muted font-medium">{r.customerName ?? 'Anonymous'}</p>
                   <button
                     type="button"
@@ -229,14 +241,20 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
   const [canAddPhotos, setCanAddPhotos] = useState(false);
   const [photos, setPhotos] = useState<{ blob: Blob; preview: string }[]>([]);
   const [shrinking, setShrinking] = useState(false);
+  // One video as well, when the store's plan allows it (Advance) and the server says this buyer may.
+  const [canAddVideo, setCanAddVideo] = useState(false);
+  const [video, setVideo] = useState<{ file: File; preview: string } | null>(null);
   useEffect(() => {
     if (!open || !accessToken) {
       setCanAddPhotos(false);
+      setCanAddVideo(false);
       return;
     }
     let live = true;
     void getReviewPhotoEligibility(subdomain, slug, accessToken).then((r) => {
-      if (live) setCanAddPhotos(r.canAddPhotos);
+      if (!live) return;
+      setCanAddPhotos(r.canAddPhotos);
+      setCanAddVideo(!!r.canAddVideo);
     });
     return () => {
       live = false;
@@ -250,6 +268,31 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
   const photosRef = useRef(photos);
   photosRef.current = photos;
   useEffect(() => () => photosRef.current.forEach((p) => URL.revokeObjectURL(p.preview)), []);
+  const videoRef = useRef(video);
+  videoRef.current = video;
+  useEffect(() => () => {
+    if (videoRef.current) URL.revokeObjectURL(videoRef.current.preview);
+  }, []);
+
+  const pickVideo = (file: File | undefined) => {
+    if (!file) return;
+    setError(null);
+    const problem = reviewVideoProblem(file);
+    if (problem === 'type') {
+      setError(t('Please choose an MP4, MOV or WebM video.'));
+      return;
+    }
+    if (problem === 'size') {
+      setError(t('The video must be {mb} MB or smaller.').replace('{mb}', String(MAX_REVIEW_VIDEO_MB)));
+      return;
+    }
+    if (video) URL.revokeObjectURL(video.preview);
+    setVideo({ file, preview: URL.createObjectURL(file) });
+  };
+  const removeVideo = () => {
+    if (video) URL.revokeObjectURL(video.preview);
+    setVideo(null);
+  };
 
   const addPhotos = async (files: File[]) => {
     setError(null);
@@ -289,8 +332,9 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
         customerEmail: email.trim() || undefined,
         orderToken,
       };
-      if (photos.length > 0 && canAddPhotos && accessToken) {
-        await submitProductReviewWithPhotos(subdomain, slug, input, photos.map((p) => p.blob), accessToken);
+      const sendVideo = video && canAddVideo ? video.file : null;
+      if ((photos.length > 0 || sendVideo) && canAddPhotos && accessToken) {
+        await submitProductReviewWithPhotos(subdomain, slug, input, photos.map((p) => p.blob), accessToken, sendVideo);
       } else {
         await submitProductReview(subdomain, slug, input);
       }
@@ -408,6 +452,41 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
               </label>
             )}
           </div>
+          {canAddVideo && (
+            <div className="mt-3">
+              <p className="text-[12px] text-muted mb-1.5">
+                {t('You can also add one short video (up to {mb} MB).').replace('{mb}', String(MAX_REVIEW_VIDEO_MB))}
+              </p>
+              {video ? (
+                <div className="relative inline-block">
+                  <video src={video.preview} controls playsInline preload="metadata" className="w-48 max-h-40 rounded border border-line bg-black" />
+                  <button
+                    type="button"
+                    onClick={removeVideo}
+                    aria-label={t('Remove video')}
+                    className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-ink text-white text-[11px] leading-5 text-center"
+                  >
+                    ×
+                  </button>
+                </div>
+              ) : (
+                <label className="inline-flex items-center gap-1.5 px-3 py-2 rounded border border-dashed border-line text-[12px] text-muted cursor-pointer hover:border-ink">
+                  <span className="text-[16px] leading-none">+</span>
+                  {t('Add a video')}
+                  <input
+                    type="file"
+                    accept={REVIEW_VIDEO_ACCEPT}
+                    className="hidden"
+                    onChange={(e) => {
+                      const picked = e.target.files?.[0];
+                      e.target.value = '';
+                      pickVideo(picked);
+                    }}
+                  />
+                </label>
+              )}
+            </div>
+          )}
         </div>
       ) : accessToken ? (
         <p className="text-[12px] text-muted">{t('Photos can be added by customers who bought this with their account.')}</p>

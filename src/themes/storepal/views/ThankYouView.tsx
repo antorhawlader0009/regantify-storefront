@@ -196,6 +196,17 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
           </div>
         )}
 
+        {/* Store pickup: the code the shop checks before handing the order over (also on the tracking page and in the "ready" text). */}
+        {order.deliveryZone === 'PICKUP' && order.pickupCode && (
+          <div className="rounded-lg border-2 border-dashed border-accent bg-surface px-4 py-3.5 text-center">
+            <p className="m-0 text-[12.5px] text-muted">{storeLanguage === 'bn' ? 'দোকানে এই পিকআপ কোডটি দেখান' : 'Show this pickup code at the shop'}</p>
+            <p className="m-0 mt-1 text-[28px] font-bold tracking-[0.3em] text-ink tabular-nums">{order.pickupCode}</p>
+            <p className="m-0 mt-1 text-[12px] text-muted">
+              {storeLanguage === 'bn' ? 'অর্ডার তৈরি হলে SMS-এও কোডটি পাঠানো হবে।' : 'It also comes in the text when your order is ready.'}
+            </p>
+          </div>
+        )}
+
         {/* Memo / invoice card */}
         <div className="storepal-fade-up bg-surface border border-line rounded-lg overflow-hidden shadow-card" style={{ animationDelay: '0.16s' }}>
           <div className="flex items-center justify-between gap-3 flex-wrap px-5 py-4 border-b border-line bg-canvas">

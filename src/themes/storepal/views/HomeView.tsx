@@ -31,6 +31,7 @@ import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
 import { bnDigits, useStoreText } from '../lib/storeText';
 import { RecentlyViewed } from '../components/RecentlyViewed';
+import { ComebackNudge } from '../components/ComebackNudge';
 import { SocialFeedSection } from '../components/SocialFeedSection';
 import type { StorefrontSocialFeed } from '@/lib/storefrontApi';
 import { searchProducts } from '../lib/searchMatch';
@@ -338,6 +339,9 @@ export function HomeView({
       />
 
       {showPreview && <OpeningSoonBar />}
+
+      {/* "You were looking at this": a returning shopper's last product, once per visit (everything stays in their browser). */}
+      {!isFiltered && !showPreview && <ComebackNudge subdomain={subdomain} />}
 
       {couponBannerCode && (
         <div className="bg-success-bg text-success text-[13px] font-medium">

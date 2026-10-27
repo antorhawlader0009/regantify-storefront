@@ -134,7 +134,7 @@ export interface StoreDeliveryCharges {
   /** Discount for paying online (lib/prepaidDiscount.ts); null while the store has it off. */
   prepaidDiscount?: PrepaidRule | null;
   /** Gift option (TellMe idea 57, StorePal only): the wrap charge; null while off. */
-  giftOption?: { charge: number } | null;
+  giftOption?: { charge: number; usdRate?: number | null } | null;
   // Store > Store Away (holiday mode), StorePal only; null while open. See lib/storeAway.ts.
   storeAway?: StorefrontStoreAway | null;
 }
@@ -480,6 +480,8 @@ export interface TrackedOrder {
   invoiceNumber: number;
   /** DHAKA | OUTSIDE_DHAKA | AROUND_DHAKA | PICKUP (a store-pickup order is collected at the shop). */
   deliveryZone?: string | null;
+  /** Store pickup: the 6-digit code the customer shows at the shop; null for any other order. */
+  pickupCode?: string | null;
   /** The day the shopper asked for (an ISO date at midnight UTC), when they picked one. */
   preferredDeliveryDate?: string | null;
   /** The parcel was split into this many orders (TellMe idea 59); 0 = never split. */

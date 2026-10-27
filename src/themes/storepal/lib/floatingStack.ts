@@ -7,9 +7,13 @@ import { create } from 'zustand';
  * Messenger chat button) says so with useFloatingSlot while it is on screen; the AI assistant then sits above it, and
  * moves down into the bottom spot when it isn't there.
  */
-const useFloatingStackStore = create<{ right: number; add: (n: number) => void }>((set) => ({
+export type FloatingSide = 'left' | 'right';
+
+/** How many buttons hold the bottom spot on each side (the AI button may sit on either side, AI Usages > "Your AI assistant"). */
+const useFloatingStackStore = create<{ right: number; left: number; add: (side: FloatingSide, n: number) => void }>((set) => ({
   right: 0,
-  add: (n) => set((s) => ({ right: Math.max(0, s.right + n) })),
+  left: 0,
+  add: (side, n) => set((s) => ({ [side]: Math.max(0, s[side] + n) }) as Pick<{ right: number; left: number }, FloatingSide>),
 }));
 
 /**
@@ -19,18 +23,18 @@ const useFloatingStackStore = create<{ right: number; add: (n: number) => void }
 export const FLOATING_BUTTON =
   'w-14 h-14 rounded-full shadow-[0_0_4px_rgba(16,24,40,0.30),0_0_12px_rgba(16,24,40,0.30)]';
 
-/** Holds the bottom-right spot while `taken` is true (call it on every render, before any early return). */
-export function useFloatingSlot(taken: boolean) {
+/** Holds the bottom spot of one side while `taken` is true (call it on every render, before any early return). */
+export function useFloatingSlot(taken: boolean, side: FloatingSide = 'right') {
   useEffect(() => {
     if (!taken) return;
-    useFloatingStackStore.getState().add(1);
-    return () => useFloatingStackStore.getState().add(-1);
-  }, [taken]);
+    useFloatingStackStore.getState().add(side, 1);
+    return () => useFloatingStackStore.getState().add(side, -1);
+  }, [taken, side]);
 }
 
 /** Where the AI assistant's bubble (and its corner panel) sits: above the chat button when there is one, else at the bottom. */
-export function useAssistantBottom(): string {
-  const below = useFloatingStackStore((s) => s.right > 0);
+export function useAssistantBottom(side: FloatingSide = 'right'): string {
+  const below = useFloatingStackStore((s) => s[side] > 0);
   // 20 px from the edge, plus a 56 px button and a 12 px gap when the chat button is below it.
   return below ? 'bottom-[88px]' : 'bottom-5';
 }

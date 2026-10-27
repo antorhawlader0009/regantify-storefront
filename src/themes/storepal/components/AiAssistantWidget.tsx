@@ -1,6 +1,7 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useStorePalDesign } from '../lib/designSettings';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHeaderPresence } from '../lib/headerPresence';
@@ -189,6 +190,8 @@ interface Message {
   complaint?: { contactPage: boolean };
   /** When it was sent or received (ms). The greeting has none, so nothing differs between the server and the browser render. */
   at?: number;
+  /** The chat's first message (never saved, never sent to the AI as history). */
+  greeting?: true;
 }
 
 /** "4:06 PM" for today, "11 Oct, 4:06 PM" for an earlier day, in the shopper's own time zone. */
@@ -198,11 +201,14 @@ function chatTime(at: number): string {
   return d.toDateString() === new Date().toDateString() ? time : `${d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}, ${time}`;
 }
 
-const GREETING: Message = {
-  role: 'assistant',
-  // The chat speaks Bangla in Bangla script (the server's prompt does the same for the AI), unless the shopper asks for English.
-  content: 'হ্যালো! আমি আপনার শপিং অ্যাসিস্ট্যান্ট। যেকোনো পণ্যের সাইজ, দাম বা স্টক সম্পর্কে জিজ্ঞেস করুন। কিছু কিনতে চাইলে বলুন, এখানেই অর্ডার নিয়ে নেব।',
-};
+// The chat speaks Bangla in Bangla script (the server's prompt does the same for the AI), unless the shopper asks for English.
+const DEFAULT_GREETING = 'হ্যালো! আমি আপনার শপিং অ্যাসিস্ট্যান্ট। যেকোনো পণ্যের সাইজ, দাম বা স্টক সম্পর্কে জিজ্ঞেস করুন। কিছু কিনতে চাইলে বলুন, এখানেই অর্ডার নিয়ে নেব।';
+const DEFAULT_ASSISTANT_NAME = 'এআই শপিং সহকারী';
+
+/** The chat's first message: the store's own (AI Usages > "Your AI assistant", Bangla only) or the built-in one. */
+function greetingMessage(text: string | null | undefined): Message {
+  return { role: 'assistant', content: text?.trim() || DEFAULT_GREETING, greeting: true };
+}
 
 /**
  * Floating "Assistant" icon (Store AI Chat Bot — see Super Admin > AI
@@ -218,6 +224,13 @@ const GREETING: Message = {
  */
 export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string; storeName: string }) {
   const formatPrice = useFormatPrice(plainPrice);
+  // The store's own assistant (AI Usages > "Your AI assistant"): name, picture, first message, ready questions, corner.
+  const design = useStorePalDesign();
+  const greeting = useMemo(() => greetingMessage(design.aiChatGreeting), [design.aiChatGreeting]);
+  const assistantName = design.aiAssistantName?.trim() || DEFAULT_ASSISTANT_NAME;
+  const starters = design.aiChatStarters?.length ? design.aiChatStarters : STARTERS;
+  const onLeft = design.aiChatSide === 'LEFT';
+  const sideClass = onLeft ? 'left-5' : 'right-5';
   const [open, setOpen] = useState(false);
   // Ordering in the chat (lib/chatOrder.ts): one order for the whole chat, sent with every message, and the shopper's
   // details (from their saved address or this browser, else from the chat or typed in the card).
@@ -391,7 +404,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       setCheckingOut(false);
     }
   };
-  const [messages, setMessages] = useState<Message[]>([GREETING]);
+  const [messages, setMessages] = useState<Message[]>([greeting]);
   const [draft, setDraft] = useState('');
   // Voice typing (the mic beside the photo button): the words fill the message box as the shopper speaks; they check
   // them and press send themselves. Same browser speech recognition and language choice as the search box's mic.
@@ -405,6 +418,27 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const [sending, setSending] = useState(false);
   // null while the status call is in flight; false hides the widget.
   const [available, setAvailable] = useState<boolean | null>(null);
+  // "AI সহকারী, আমার সাথে কথা বলুন": a small bubble beside the round button, shown shortly after the page loads. Its × hides it for
+  // the rest of this visit; opening the chat hides it too.
+  const [teaser, setTeaser] = useState(false);
+  useEffect(() => {
+    if (available !== true) return;
+    try {
+      if (sessionStorage.getItem(`storepal-ai-teaser-closed:${subdomain}`) === '1') return;
+    } catch {
+      // Storage blocked: the bubble just shows.
+    }
+    const timer = setTimeout(() => setTeaser(true), 1500);
+    return () => clearTimeout(timer);
+  }, [available, subdomain]);
+  const closeTeaser = () => {
+    setTeaser(false);
+    try {
+      sessionStorage.setItem(`storepal-ai-teaser-closed:${subdomain}`, '1');
+    } catch {
+      // Storage blocked: it closes for now.
+    }
+  };
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Saved chats (lib/chatHistory.ts), like the dashboard's Ask AI: the last 10 per store in this browser, and the chat in
@@ -418,7 +452,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const loadChat = (c: StoredChat) => {
     lastSaved.current = JSON.stringify([c.messages, c.order]);
     setChatId(c.id);
-    setMessages([GREETING, ...c.messages]);
+    setMessages([greeting, ...c.messages]);
     setOrder(c.order);
     setSelection(null);
     setPhotoSlugs([]);
@@ -434,7 +468,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   }, [subdomain]);
   useEffect(() => {
     if (!restored.current) return;
-    const kept = messages.filter((m) => m !== GREETING);
+    const kept = messages.filter((m) => !m.greeting);
     if (!kept.some((m) => m.role === 'user')) return;
     const snapshot = JSON.stringify([kept, order]);
     if (snapshot === lastSaved.current) return;
@@ -447,7 +481,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   }, [open, subdomain]);
   const startNewChat = () => {
     setChatId(newChatId());
-    setMessages([GREETING]);
+    setMessages([greeting]);
     setOrder(null);
     setSelection(null);
     setPhotoSlugs([]);
@@ -615,7 +649,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       .map((i) => `${i + 1}. ${shown[i].name}`);
 
     const history: ChatTurn[] = messages
-      .filter((m) => m !== GREETING)
+      .filter((m) => !m.greeting)
       .map((m) => ({ role: m.role, content: m.picks?.length ? `${m.content} (ticked: ${m.picks.join(', ')})` : m.content }));
 
     setMessages((prev) => [...prev, { role: 'user', content: text, picks: picks.length ? picks : undefined, at: Date.now() }]);
@@ -733,6 +767,9 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
     base: voiceBase,
     model: voiceModel,
     storeName,
+    // The store's own opening line and speaking speed (AI Usages > "Your AI assistant").
+    greeting: design.aiVoiceGreeting,
+    speed: design.aiVoiceSpeed === 'SLOW' ? 0.85 : design.aiVoiceSpeed === 'FAST' ? 1.15 : 1,
     send: async (text, signal, live) => {
       const res = await sendRef.current(undefined, text, { signal, live });
       if (!res) throw new Error('no reply');
@@ -885,7 +922,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   // Both the bubble and the open panel step over to the left edge while the slide-in cart is open.
   const cartOpen = useCartDrawer((s) => s.open);
   // Above the WhatsApp/Messenger button when it is on screen, else in the bottom spot (lib/floatingStack.ts).
-  const assistantBottom = useAssistantBottom();
+  const assistantBottom = useAssistantBottom(onLeft ? 'left' : 'right');
   // Slides off to the right while the shopper scrolls down, back on scroll up (never while the chat is open).
   const { hidden: scrolledAway, reveal } = useFloatingHidden(open || cartOpen);
   // Mounted once in the store layout: shown only on pages that have the store header (headerPresence.ts).
@@ -988,18 +1025,40 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         }}
         aria-label="Chat with our assistant"
         title="শপিং সহকারীর সাথে কথা বলুন"
-        className={`fixed ${assistantBottom} right-5 z-30 ${FLOATING_BUTTON} bg-accent hover:bg-accent-dark text-white flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
+        className={`fixed ${assistantBottom} ${sideClass} z-30 ${FLOATING_BUTTON} bg-accent hover:bg-accent-dark text-white flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
         onFocus={reveal}
         style={{
-          transform: cartOpen
+          transform: cartOpen && !onLeft
             ? 'translateX(calc(-100vw + 5.5rem))'
             : scrolledAway
-              ? floatingHideTransform('right')
+              ? floatingHideTransform(onLeft ? 'left' : 'right')
               : undefined,
         }}
       >
         <MessageCircle size={26} strokeWidth={2.2} />
       </button>
+      )}
+      {teaser && !open && call.phase === 'idle' && !cartOpen && !scrolledAway && (
+        <div className={`fixed ${assistantBottom} ${onLeft ? 'left-[86px]' : 'right-[86px]'} z-30 flex h-14 items-center storepal-fade-up`}>
+          <div className="relative flex items-center rounded-full border border-line bg-surface shadow-[0_0_4px_rgba(16,24,40,0.20),0_0_12px_rgba(16,24,40,0.18)]">
+            <button
+              type="button"
+              onClick={() => {
+                closeTeaser();
+                setOpen(true);
+                trackFeature('AI_CHAT_OPEN', { oncePerSession: true });
+              }}
+              className="whitespace-nowrap py-2 pl-4 pr-2 text-[13px] font-semibold text-ink"
+            >
+              AI সহকারী, আমার সাথে কথা বলুন
+            </button>
+            <button type="button" onClick={closeTeaser} aria-label="Close" className="mr-1.5 flex h-6 w-6 items-center justify-center rounded-full text-muted hover:text-ink">
+              <X size={13} />
+            </button>
+            {/* Little tail pointing at the round button. */}
+            <span aria-hidden className={`absolute top-1/2 h-3 w-3 -translate-y-1/2 border-r border-t border-line bg-surface ${onLeft ? '-left-1.5 rotate-[225deg]' : '-right-1.5 rotate-45'}`} />
+          </div>
+        </div>
       )}
 
       {open && (
@@ -1009,25 +1068,30 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
           className={
             fullScreen
               ? 'fixed inset-0 z-50 w-full h-[100dvh] bg-surface flex flex-col overflow-hidden overscroll-contain'
-              : `fixed ${assistantBottom} right-5 z-30 w-[min(380px,calc(100vw-2.5rem))] h-[min(600px,calc(100vh-120px))] bg-surface rounded-2xl border border-line shadow-[0_2px_6px_rgba(16,24,40,0.06),0_12px_24px_-6px_rgba(16,24,40,0.12),0_32px_72px_-12px_rgba(16,24,40,0.30)] flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none`
+              : `fixed ${assistantBottom} ${sideClass} z-30 w-[min(380px,calc(100vw-2.5rem))] h-[min(600px,calc(100vh-120px))] bg-surface rounded-2xl border border-line shadow-[0_2px_6px_rgba(16,24,40,0.06),0_12px_24px_-6px_rgba(16,24,40,0.12),0_32px_72px_-12px_rgba(16,24,40,0.30)] flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none`
           }
           style={
             fullScreen && viewport
               ? // Pinned to the visible part of the screen (above the keyboard), see the viewport effect.
                 { top: viewport.top, height: viewport.height, bottom: 'auto' }
-              : { transform: cartOpen && !fullScreen ? 'translateX(calc(-100vw + 2.5rem + min(380px, 100vw - 2.5rem)))' : undefined }
+              : { transform: cartOpen && !fullScreen && !onLeft ? 'translateX(calc(-100vw + 2.5rem + min(380px, 100vw - 2.5rem)))' : undefined }
           }
         >
           {/* The store's own helper: its initial and name, in the store's colour. The accent is kept for the shopper's words. */}
           <div className="relative z-10 isolate flex items-center gap-1 pl-3.5 pr-2 py-2.5 border-b border-line bg-surface shrink-0 shadow-[0_2px_8px_-2px_rgba(16,24,40,0.08)]">
             {/* The little shopping street behind the header (under the name and buttons: -z-10 inside this isolated layer). */}
             <div aria-hidden className="pointer-events-none absolute inset-0 -z-10 bg-accent opacity-[0.14]" style={HEADER_STREET_STYLE} />
-            <span className="w-9 h-9 shrink-0 rounded-full bg-accent-light text-accent font-bold text-[15px] flex items-center justify-center ring-2 ring-surface shadow-[0_2px_6px_-1px_rgba(16,24,40,0.18)]" aria-hidden>
-              {(storeName.trim()[0] ?? 'S').toUpperCase()}
+            <span className="relative w-9 h-9 shrink-0 overflow-hidden rounded-full bg-accent-light text-accent font-bold text-[15px] flex items-center justify-center ring-2 ring-surface shadow-[0_2px_6px_-1px_rgba(16,24,40,0.18)]" aria-hidden>
+              {design.aiAssistantAvatarUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element -- the store's own small picture of its assistant
+                <img src={design.aiAssistantAvatarUrl} alt="" className="h-full w-full object-cover" />
+              ) : (
+                (storeName.trim()[0] ?? 'S').toUpperCase()
+              )}
             </span>
             <span className="ml-2 flex-1 min-w-0">
               <span className="block truncate text-[14px] font-semibold leading-tight text-ink">{storeName}</span>
-              <span className="mt-0.5 block truncate text-[11.5px] leading-tight text-muted">এআই শপিং সহকারী</span>
+              <span className="mt-0.5 block truncate text-[11.5px] leading-tight text-muted">{assistantName}</span>
             </span>
             {callable && (
               <button type="button" onClick={startCall} aria-label="Voice call the AI assistant" title="এআই সহকারীর সাথে কলে কথা বলুন" className={HEADER_BUTTON}>
@@ -1185,7 +1249,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
             {messages.length === 1 && !sending && available !== false && (
               // Starters for a fresh chat: each one is a real question sent as it is.
               <div className="flex flex-wrap gap-2">
-                {STARTERS.map((q) => (
+                {starters.map((q) => (
                   <button
                     key={q}
                     type="button"

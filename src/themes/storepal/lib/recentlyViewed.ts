@@ -55,9 +55,26 @@ function subscribe(listener: () => void) {
   };
 }
 
+const LAST_VIEW_PREFIX = 'storepal-last-view:';
+
+/** The product opened last in this store and when (ms), for "You were looking at this" (ComebackNudge); null when none. */
+export function readLastView(subdomain: string): { slug: string; at: number } | null {
+  try {
+    const v = JSON.parse(localStorage.getItem(LAST_VIEW_PREFIX + subdomain) ?? 'null') as { slug?: unknown; at?: unknown } | null;
+    return v && typeof v.slug === 'string' && typeof v.at === 'number' ? { slug: v.slug, at: v.at } : null;
+  } catch {
+    return null;
+  }
+}
+
 /** Puts a product at the front of the list (moving it there if it was already in it). */
 export function recordView(subdomain: string, slug: string) {
   if (!slug) return;
+  try {
+    localStorage.setItem(LAST_VIEW_PREFIX + subdomain, JSON.stringify({ slug, at: Date.now() }));
+  } catch {
+    // Storage blocked: the reminder just isn't shown.
+  }
   const current = read(subdomain);
   if (current[0] === slug) return;
   write(subdomain, [slug, ...current.filter((s) => s !== slug)].slice(0, RECENT_MAX));

@@ -26,6 +26,7 @@ import { addressProblem } from '@/lib/addressCheck';
 import { useFormatPrice } from '../lib/storeText';
 import { phoneInput } from '@/lib/phoneInput';
 import { trackFeature } from '@/lib/featureUse';
+import { useUsdPrice } from '@/lib/usdPrice';
 
 // Fallback label for a gateway row with no vendor-set displayLabel — see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
@@ -305,6 +306,9 @@ const COPY: Record<Lang, Copy> = { en: EN, bn: BN };
 
 function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; onClose: () => void; lang: Lang }) {
   const formatPrice = useFormatPrice(plainPrice);
+  // Dollar guide: for every visitor abroad, and for anyone once "This is a gift" is ticked (the hook decides; null = not shown).
+  const usdFor = useUsdPrice(true);
+  const usdAbroad = useUsdPrice();
   const t = COPY[lang];
   // The store's choices for the optional checkout boxes (TellMe idea 128).
   const design = useStorePalDesign();
@@ -421,6 +425,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     codOtpError,
     resendCodOtp,
   } = useCheckout(subdomain, 'thank-you', { formRules: { altPhone: design.checkoutAltPhone, email: design.checkoutEmail, thana: design.checkoutThana } });
+  const usd = isGift ? usdFor : usdAbroad;
   // Store > Store Away: "browse only" stops the order here (the server refuses it too).
   const ordersPaused = storeAway?.mode === 'BROWSE_ONLY';
   const awayDay = storeAway?.returnDate ? formatReturnDay(storeAway.returnDate, lang) : null;
@@ -1109,6 +1114,12 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 <span>{t.total}</span>
                 <span>{formatPrice(visibleGrandTotal)}</span>
               </div>
+              {/* Gift senders abroad: the total in dollars at the store's own rate (a guide only; the card pays in taka). */}
+              {usd(visibleGrandTotal) && (
+                <p className="m-0 text-right text-[12px] text-muted">
+                  {usd(visibleGrandTotal)} · {lang === 'bn' ? 'আপনি টাকায় পেমেন্ট করবেন, কার্ড নিজে বদলে নেবে' : 'You pay in taka; your card converts it'}
+                </p>
+              )}
               {codAdvance && (
                 <>
                   <div className="flex justify-between text-ink">

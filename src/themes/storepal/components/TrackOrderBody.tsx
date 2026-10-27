@@ -235,6 +235,19 @@ export function TrackOrderBody({
         )}
       </section>
 
+      {/* Store pickup: the code the shop checks before handing the order over. Hidden once it is collected or closed. */}
+      {order.deliveryZone === 'PICKUP' && order.pickupCode && !isFinishedOrder(order) && !stopped && (
+        <section className="rounded-lg border-2 border-dashed border-accent bg-canvas px-4 py-3.5 text-center">
+          <p className="m-0 text-[12.5px] text-muted">{lang === 'bn' ? 'দোকানে এই কোডটি দেখান' : 'Show this code at the shop'}</p>
+          <p className="m-0 mt-1 text-[28px] font-bold tracking-[0.3em] text-ink tabular-nums" aria-label={lang === 'bn' ? 'পিকআপ কোড' : 'Pickup code'}>
+            {order.pickupCode}
+          </p>
+          <p className="m-0 mt-1 text-[12px] text-muted">
+            {lang === 'bn' ? 'কোড ছাড়া পণ্য দেওয়া হবে না। কাউকে শেয়ার করবেন না।' : 'The shop hands the order over only with this code. Do not share it.'}
+          </p>
+        </section>
+      )}
+
       {/* The parcel was split (TellMe idea 59): what was in stock goes first, the rest follows in its own order. */}
       {(order.splitParts ?? 0) > 1 && (
         <p className="rounded-md border border-line bg-canvas px-3.5 py-3 text-[13px] text-ink">

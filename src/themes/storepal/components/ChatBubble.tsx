@@ -77,7 +77,7 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
   const link = (messenger ? design.chatButtonMessengerLink : socialLinks?.whatsappUrl)?.trim();
   const shown = design.chatButtonEnabled !== false && pages.includes(kind) && !!link;
   // On the right it takes the bottom spot; the AI assistant then sits above it (lib/floatingStack.ts).
-  useFloatingSlot(shown && !onLeft);
+  useFloatingSlot(shown, onLeft ? 'left' : 'right');
   if (!shown || !link) return null;
 
   // Outside the shop hours (TellMe idea 73) the bubble says so and when we answer again; the chat still opens.

@@ -17,6 +17,7 @@ export type FeatureKey =
   | 'DELIVERY_CHECK'
   | 'SHARE_OPEN'
   | 'WISHLIST_ADD'
+  | 'WISHLIST_SHARE'
   | 'BOX_ADDED'
   | 'GIFT_TICK'
   | 'CART_SHARE'

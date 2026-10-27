@@ -170,6 +170,10 @@ export class VoiceOut {
     this.levelBuf = new Uint8Array(new ArrayBuffer(this.analyser.fftSize));
   }
 
+  /** How fast the call speaks (the store's choice, AI Usages > "Your AI assistant"): 1 = normal. Piper makes the speech at this pace;
+   *  Google's voice is played faster or slower with its pitch kept. Our server's fallback voice stays at normal speed. */
+  speed = 1;
+
   /** Switches the rest of the call to Google. */
   fallback(why: string) {
     if (this.engine === 'google') return;
@@ -222,7 +226,7 @@ export class VoiceOut {
     };
 
     const made: (Promise<PiperAudio> | null)[] =
-      this.engine === 'piper' && this.base ? pieces.map((p) => synthesizePiper(this.base!, p, gen)) : pieces.map(() => null);
+      this.engine === 'piper' && this.base ? pieces.map((p) => synthesizePiper(this.base!, p, gen, this.speed)) : pieces.map(() => null);
     made.forEach((m) => m?.catch(() => undefined)); // handled where awaited
 
     for (let i = 0; i < pieces.length; i++) {
@@ -256,7 +260,7 @@ export class VoiceOut {
       if (!this.base || !isPiperReady()) return gen === this.gen;
       this.engine = 'piper';
       for (const piece of left.slice(google.failedAt)) {
-        const audio = await synthesizePiper(this.base, piece, gen).catch(() => null);
+        const audio = await synthesizePiper(this.base, piece, gen, this.speed).catch(() => null);
         if (gen !== this.gen) return false;
         if (!audio) return true;
         begin();
@@ -276,7 +280,7 @@ export class VoiceOut {
     for (const piece of speechChunks(text)) {
       if (this.ready.has(piece)) continue;
       try {
-        this.ready.set(piece, await synthesizePiper(this.base, piece, KEEP_GEN));
+        this.ready.set(piece, await synthesizePiper(this.base, piece, KEEP_GEN, this.speed));
       } catch {
         return;
       }
@@ -313,7 +317,7 @@ export class VoiceOut {
       if (gen !== this.gen || ended) return;
       for (const piece of speechChunks(text)) {
         const ready = this.engine === 'piper' ? this.ready.get(piece) : undefined;
-        const job = ready ? Promise.resolve(ready) : this.engine === 'piper' && this.base ? synthesizePiper(this.base, piece, gen) : null;
+        const job = ready ? Promise.resolve(ready) : this.engine === 'piper' && this.base ? synthesizePiper(this.base, piece, gen, this.speed) : null;
         job?.catch(() => undefined); // handled where awaited
         queue.push({ piece, job, cached: !!ready });
       }
@@ -358,7 +362,7 @@ export class VoiceOut {
         if (google !== 'done' && this.base && isPiperReady()) {
           // Google failed: Piper says it if it got ready meanwhile.
           this.engine = 'piper';
-          const audio = await synthesizePiper(this.base, piece, gen).catch(() => null);
+          const audio = await synthesizePiper(this.base, piece, gen, this.speed).catch(() => null);
           if (gen !== this.gen) return false;
           if (audio) {
             begin();
@@ -486,6 +490,7 @@ export class VoiceOut {
           begin();
         };
         if (el.error) return finish('failed');
+        el.playbackRate = this.speed;
         el.play().catch(() => finish(gen !== this.gen ? 'stopped' : 'failed'));
       });
       if (result === 'stopped' || gen !== this.gen) return 'stopped';

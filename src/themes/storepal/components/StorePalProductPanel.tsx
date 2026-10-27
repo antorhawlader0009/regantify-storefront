@@ -11,6 +11,7 @@ import { HoverZoom, PhotoViewer } from '@/components/ProductImageViewer';
 import { formatPrice as plainPrice, isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
+import { useUsdPrice } from '@/lib/usdPrice';
 import { BundlePicker, pickedCount, type BundlePickState } from './BundlePicker';
 import { useStorePalDesign } from '../lib/designSettings';
 import { preOrderDateText } from '../lib/preOrderDate';
@@ -93,6 +94,8 @@ interface StorePalProductPanelProps {
  */
 export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, titleExtra, onAddedToCart, onBuyNow }: StorePalProductPanelProps) {
   const formatPrice = useFormatPrice(plainPrice);
+  // Gift senders abroad: "≈ US$X" beside the price, only for a visitor whose browser is not on Bangladesh time (lib/usdPrice.tsx).
+  const usd = useUsdPrice();
   const t = useStoreText();
   const design = useStorePalDesign();
   const router = useRouter();
@@ -498,6 +501,9 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           <div className="flex gap-2.5 items-baseline flex-wrap">
             <span className="text-[28px] font-bold text-accent tracking-tight">{formatPrice(breakApplied ? brokenPrice : displayPrice)}</span>
             {product.unitLabel && <span className="text-muted text-[14px]">/ {product.unitLabel}</span>}
+            {usd(breakApplied ? brokenPrice : displayPrice) && (
+              <span className="text-muted text-[13px]">{usd(breakApplied ? brokenPrice : displayPrice)}</span>
+            )}
             {wholesaleApplied && <span className="rounded bg-accent px-1.5 py-0.5 text-[11px] font-semibold text-white">{t('Wholesale price')}</span>}
             {breakApplied ? (
               <span className="text-muted line-through text-[15px]">{formatPrice(displayOriginalPrice ?? displayPrice)}</span>
@@ -733,25 +739,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         )}
       </div>
 
-      {/* Sticky mobile bar (not when a store form replaces Buy) */}
-      {!leadSlots?.purchase && (
-      <div data-rg="mobile-buy-bar" className="storefront-sticky-bar fixed bottom-0 left-0 right-0 bg-surface border-t border-line px-4 py-2.5 hidden gap-2.5 shadow-popover">
-        <button
-          disabled={!canPurchase}
-          onClick={handleAddToCart}
-          className="flex-1 py-3 rounded-md border-2 border-ink text-ink text-[13.5px] font-bold"
-        >
-          {t('Add to Cart')}
-        </button>
-        <button
-          disabled={!canPurchase}
-          onClick={handleBuyNow}
-          className="flex-1 py-3 rounded-md bg-accent text-white text-[13.5px] font-bold"
-        >
-          {t('Buy Now')}
-        </button>
-      </div>
-      )}
+      {/* No sticky Add to Cart / Buy Now bar on phones (removed 2026-10-27, the user's request): it repeated the buttons above. */}
 
       {backorder && pendingBackorderAction && (
         <div

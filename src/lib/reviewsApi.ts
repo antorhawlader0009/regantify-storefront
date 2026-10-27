@@ -16,6 +16,8 @@ export interface ProductReview {
   content: string | null;
   rating: number;
   photos: string[];
+  /** A buyer's video (Advance-plan stores only); null/absent = none. */
+  videoUrl?: string | null;
   customerName: string | null;
   featured: boolean;
   createdAt: string;
@@ -72,8 +74,16 @@ export async function submitProductReview(subdomain: string, slug: string, input
   }
 }
 
-/** Whether the signed-in shopper may add photos to a review of this product (their own account bought it here). False on any error. */
-export async function getReviewPhotoEligibility(subdomain: string, slug: string, accessToken: string): Promise<{ canAddPhotos: boolean; maxPhotos: number }> {
+export interface ReviewMediaEligibility {
+  canAddPhotos: boolean;
+  maxPhotos: number;
+  /** One video too (stores on the Advance plan only). */
+  canAddVideo?: boolean;
+  maxVideoMb?: number;
+}
+
+/** Whether the signed-in shopper may add photos (and a video) to a review of this product (their own account bought it here). False on any error. */
+export async function getReviewPhotoEligibility(subdomain: string, slug: string, accessToken: string): Promise<ReviewMediaEligibility> {
   try {
     const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews/photo-eligibility`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -85,13 +95,14 @@ export async function getReviewPhotoEligibility(subdomain: string, slug: string,
   }
 }
 
-/** The review form with photos (already shrunk in the browser, lib/reviewPhotos.ts). Signed-in shoppers only; same pending approval. */
+/** The review form with photos (already shrunk in the browser, lib/reviewPhotos.ts) and/or one video (lib/reviewVideo.ts). Signed-in shoppers only; same pending approval. */
 export async function submitProductReviewWithPhotos(
   subdomain: string,
   slug: string,
   input: SubmitReviewInput,
   photos: Blob[],
   accessToken: string,
+  video?: File | null,
 ): Promise<void> {
   const form = new FormData();
   form.append('title', input.title);
@@ -101,6 +112,7 @@ export async function submitProductReviewWithPhotos(
   if (input.customerEmail) form.append('customerEmail', input.customerEmail);
   if (input.orderToken) form.append('orderToken', input.orderToken);
   photos.forEach((p, i) => form.append('photos', p, `photo-${i + 1}.jpg`));
+  if (video) form.append('video', video, video.name || 'video.mp4');
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews/with-photos`, {
     method: 'POST',
     headers: { Authorization: `Bearer ${accessToken}` },

@@ -11,6 +11,8 @@ import type { StorefrontStoreAway } from '@/lib/storeAway';
 import { CustomCodeInjector } from '@/themes/storepal/components/CustomCodeInjector';
 import { StoreCodeHooks } from '@/components/StoreCodeHooks';
 import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
+import { UsdPriceProvider } from '@/lib/usdPrice';
+import { safeFontName, storeFontStyle, storeFontsHref } from '@/lib/storeFonts';
 import type { BusinessHours } from '@/lib/businessHours';
 import { LazyAiAssistantWidget, LazyCompareBar, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
 import { InstallAppBanner } from '@/themes/storepal/components/InstallAppBanner';
@@ -121,14 +123,6 @@ export async function generateViewport({ params }: LayoutProps): Promise<Viewpor
   return color ? { themeColor: color } : {};
 }
 
-/** Turns a free-text font-family name (Vendor.brandHeadingFont/brandBodyFont) into a Google Fonts stylesheet URL, best-effort — same helper as landing pages' own googleFontsHref (src/landing/LandingPageView.tsx), duplicated rather than shared since the two live in different route trees and this is a two-line pure function. A vendor who types a name Google Fonts doesn't have just gets the theme's own fallback font, never a broken page. */
-function googleFontsHref(fontNames: (string | null | undefined)[]): string | null {
-  const unique = Array.from(new Set(fontNames.filter((n): n is string => !!n?.trim())));
-  if (unique.length === 0) return null;
-  const families = unique.map((n) => `family=${encodeURIComponent(n.trim()).replace(/%20/g, '+')}:wght@400;500;600;700`);
-  return `https://fonts.googleapis.com/css2?${families.join('&')}&display=swap`;
-}
-
 /**
  * Applies the vendor's chosen storefront theme (see StoreTheme,
  * Store > Theme on the dashboard) as a `data-theme` attribute wrapping
@@ -153,7 +147,7 @@ function googleFontsHref(fontNames: (string | null | undefined)[]): string | nul
  * with zero per-theme changes needed. Unset (null) fields are simply
  * omitted from the style object, which leaves the theme's own default in
  * effect. brandHeadingFont/brandBodyFont are injected the same way
- * landing pages already do it (see googleFontsHref above) — a runtime
+ * landing pages already do it (lib/storeFonts.ts, which also sets the wrapper's own font-family) — a runtime
  * Google Fonts <link>, since next/font/google requires a static import
  * and can't load an arbitrary vendor-typed family name. Reuses the same
  * getStoreInfo call generateMetadata above already makes (Next.js
@@ -189,6 +183,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let lmsForms: StorefrontLmsForms | null = null;
   let popupCampaigns: StorefrontPopupCampaign[] = [];
   let storeAway: StorefrontStoreAway | null = null;
+  // Dollar prices for gift senders abroad (lib/usdPrice.tsx): the store's own rate, null = off.
+  let usdRate: number | null = null;
   let storeName = '';
   try {
     const store = await getStoreInfo(subdomain);
@@ -215,6 +211,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     }
     lmsForms = store.lmsForms ?? null;
     verifiedSeller = store.verifiedSeller ?? null;
+    usdRate = store.giftOption?.usdRate ?? null;
     popupCampaigns = store.popupCampaigns ?? [];
     storeAway = store.storeAway ?? null;
     // Shop hours (TellMe idea 73): Store Away wins while it is on.
@@ -229,10 +226,10 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   const brandStyle: React.CSSProperties = {
     ...(accentColor ? { '--color-accent': accentColor } as React.CSSProperties : {}),
     ...(bodyBackgroundColor ? { '--color-canvas': bodyBackgroundColor } as React.CSSProperties : {}),
-    ...(headingFont ? { '--font-display': `"${headingFont}", var(--font-display)` } as React.CSSProperties : {}),
-    ...(bodyFont ? { '--font-sans': `"${bodyFont}", var(--font-sans)` } as React.CSSProperties : {}),
+    // Store > Branding fonts (lib/storeFonts.ts): the body font on this wrapper, the heading font on headings and the store name.
+    ...storeFontStyle(headingFont, bodyFont),
   };
-  const fontHref = googleFontsHref([headingFont, bodyFont]);
+  const fontHref = storeFontsHref([headingFont, bodyFont]);
 
   return (
     // The query hook every theme's header uses, safe on a kept page (see StoreQueryAdapter and revalidate above).
@@ -242,6 +239,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     <div
       data-theme={theme.toLowerCase()}
       data-layout={theme === 'STOREPAL' && designSettings?.layoutType === 'EXTENDED' ? 'extended' : undefined}
+      data-brand-heading={safeFontName(headingFont) ? '' : undefined}
       style={brandStyle}
     >
       {/* A vendor-picked font: open the connection to Google Fonts early (PERFORMANCE-PLAN.md Step 11); `display=swap` is in
@@ -297,6 +295,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         </>
       )}
       <ThemeProvider theme={theme}>
+        <UsdPriceProvider rate={usdRate}>
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (
@@ -317,6 +316,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         ) : (
           children
         )}
+        </UsdPriceProvider>
       </ThemeProvider>
       {/* Store > GDPR Prompt — StorePal only by design, same as the AI
           chat widget; null unless the vendor turned it on. */}

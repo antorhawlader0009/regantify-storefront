@@ -114,6 +114,12 @@
   --shadow-popover: 0 12px 32px rgba(26, 43, 60, 0.16), 0 4px 10px rgba(26, 43, 60, 0.07);
 }
 
+/* Store > Branding's heading font (lib/storeFonts.ts): the store layout marks its wrapper with data-brand-heading when one
+   is chosen, and headings take it (the store name already uses font-display). */
+[data-brand-heading] :is(h1, h2, h3) {
+  font-family: var(--font-display);
+}
+
 body {
   margin: 0;
   background: var(--color-canvas);

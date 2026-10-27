@@ -10,7 +10,9 @@ import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { ShoppingBag, X } from 'lucide-react';
+import { Share2, ShoppingBag, X } from 'lucide-react';
+import { encodeWishlistLink } from '@/lib/wishlistLink';
+import { trackFeature } from '@/lib/featureUse';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
@@ -41,11 +43,12 @@ interface WishlistRowProps {
   alertsOn: boolean;
   notifying: boolean;
   onToggleNotify: () => void;
-  onRemove: () => void;
+  /** Absent on a list someone shared (SharedWishlistView): no remove button there. */
+  onRemove?: () => void;
 }
 
 /** One saved product: picture, name and option pickers, today's price, Add to Cart and a remove button. */
-function WishlistRow({ product, subdomain, storeName, alertsOn, notifying, onToggleNotify, onRemove }: WishlistRowProps) {
+export function WishlistRow({ product, subdomain, storeName, alertsOn, notifying, onToggleNotify, onRemove }: WishlistRowProps) {
   const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const design = useStorePalDesign();
@@ -147,14 +150,18 @@ function WishlistRow({ product, subdomain, storeName, alertsOn, notifying, onTog
           {warn && <p className="mt-1.5 text-[12px] text-accent">{t('Choose an option first')}</p>}
         </div>
       </div>
-      <button
-        type="button"
-        onClick={onRemove}
-        aria-label={t('Remove from wishlist')}
-        className="order-last row-start-1 col-start-3 flex h-8 w-8 items-center justify-center justify-self-end rounded-full border border-red-400 text-red-500 md:order-none md:row-auto md:col-start-4"
-      >
-        <X size={16} />
-      </button>
+      {onRemove ? (
+        <button
+          type="button"
+          onClick={onRemove}
+          aria-label={t('Remove from wishlist')}
+          className="order-last row-start-1 col-start-3 flex h-8 w-8 items-center justify-center justify-self-end rounded-full border border-red-400 text-red-500 md:order-none md:row-auto md:col-start-4"
+        >
+          <X size={16} />
+        </button>
+      ) : (
+        <span className="order-last row-start-1 col-start-3 md:order-none md:row-auto md:col-start-4" />
+      )}
       <div className="col-start-2 text-[15px] text-muted md:col-start-auto">
         {formatPrice(displayPrice)}
         {originalPrice && <span className="ml-2 text-[12.5px] line-through opacity-70">{formatPrice(originalPrice)}</span>}
@@ -182,6 +189,80 @@ function WishlistRow({ product, subdomain, storeName, alertsOn, notifying, onTog
         )}
       </div>
     </li>
+  );
+}
+
+/**
+ * "Share my list": a link holding the saved products (lib/wishlistLink.ts) to send to friends or family, so they know what to buy
+ * as a gift. The sharer may add their name. The phone's share sheet when there is one, else WhatsApp and Copy link.
+ */
+function ShareWishlist({ subdomain, slugs }: { subdomain: string; slugs: string[] }) {
+  const t = useStoreText();
+  const customer = useCustomerAuthStore((s) => s.customer);
+  const [open, setOpen] = useState(false);
+  const [name, setName] = useState('');
+  const [copied, setCopied] = useState(false);
+  useEffect(() => {
+    if (open && !name && customer?.fullName) setName(customer.fullName);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fill the name once when the panel opens
+  }, [open, customer?.fullName]);
+
+  const link = () => `${window.location.origin}${window.location.pathname.replace(/\/wishlist\/?$/, '')}/wishlist/shared/${encodeWishlistLink(slugs, name)}`;
+  const message = () => `${t('My wishlist')}: ${link()}`;
+  const share = async () => {
+    trackFeature('WISHLIST_SHARE');
+    if (typeof navigator.share === 'function' && window.matchMedia('(pointer: coarse)').matches) {
+      try {
+        await navigator.share({ title: t('My wishlist'), url: link() });
+        return;
+      } catch {
+        // Closed the sheet: nothing else to do.
+        return;
+      }
+    }
+    setOpen(true);
+  };
+  const copy = async () => {
+    try {
+      await navigator.clipboard.writeText(link());
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch {
+      setCopied(false);
+    }
+  };
+
+  return (
+    <div>
+      <button type="button" onClick={() => (open ? setOpen(false) : void share())} className="inline-flex items-center gap-2 rounded-sm bg-ink px-8 py-4 text-[13px] font-semibold uppercase tracking-wide text-white">
+        <Share2 size={15} />
+        {t('Share my wishlist')}
+      </button>
+      {open && (
+        <div className="mt-3 w-full max-w-sm rounded-md border border-line bg-surface p-3">
+          <p className="m-0 text-[12.5px] text-muted">{t('Send your list to friends or family so they know what to gift you.')}</p>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value.slice(0, 40))}
+            placeholder={t('Your name (optional)')}
+            className="mt-2 w-full rounded-md border border-line bg-canvas px-3 py-2 text-[13px] outline-none focus:border-ink"
+          />
+          <div className="mt-2 flex flex-wrap gap-2">
+            <a
+              href={`https://wa.me/?text=${encodeURIComponent(message())}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded-md border border-line px-3 py-2 text-[12.5px] font-semibold text-ink hover:border-ink"
+            >
+              WhatsApp
+            </a>
+            <button type="button" onClick={() => void copy()} className="rounded-md border border-line px-3 py-2 text-[12.5px] font-semibold text-ink hover:border-ink">
+              {copied ? t('Copied ✓') : t('Copy link')}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -268,13 +349,16 @@ export function WishlistView({
                 />
               ))}
             </ul>
-            <button
-              type="button"
-              onClick={clear}
-              className="mt-6 rounded-sm bg-line px-8 py-4 text-[13px] font-semibold uppercase tracking-wide text-ink hover:bg-line-strong"
-            >
-              {t('Clear wishlist')}
-            </button>
+            <div className="mt-6 flex flex-wrap items-start gap-3">
+              <ShareWishlist subdomain={subdomain} slugs={saved.map((p) => p.slug)} />
+              <button
+                type="button"
+                onClick={clear}
+                className="rounded-sm bg-line px-8 py-4 text-[13px] font-semibold uppercase tracking-wide text-ink hover:bg-line-strong"
+              >
+                {t('Clear wishlist')}
+              </button>
+            </div>
           </>
         )}
       </main>

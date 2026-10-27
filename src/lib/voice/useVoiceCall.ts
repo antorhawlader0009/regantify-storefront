@@ -60,6 +60,10 @@ export interface VoiceCallOptions<P extends CallProductRef> {
   /** The voice model file in that folder Super Admin chose (chat status `voiceModel`). */
   model?: string;
   storeName: string;
+  /** What the call says first (the store's own, Bangla only); empty = the built-in greeting with the store name. */
+  greeting?: string | null;
+  /** Speaking speed: 1 = normal (the store's choice: slow 0.85, fast 1.15). */
+  speed?: number;
   /**
    * Sends what the shopper said as a chat message (voice mode) and returns the assistant's reply. `live` hears the
    * reply's finished pieces while it is still being written (POST chat/stream), so the call starts speaking early.
@@ -751,6 +755,7 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     const first: VoiceEngine = ok ? 'piper' : 'google';
     setEngine(first);
     voiceRef.current = new VoiceOut(ctx, googleEls, base, first, () => setEngine('google'));
+    voiceRef.current.speed = opts.current.speed ?? 1;
     setPhase('connected');
     timersRef.current.clock = setInterval(() => setSeconds((s) => s + 1), 1000);
 
@@ -770,7 +775,7 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
 
     await sleep(350);
     // It says it is an AI at once, so nobody takes it for a person.
-    const greeting = `আসসালামু আলাইকুম! আমি ${opts.current.storeName}-এর এআই সহকারী। বলুন, কীভাবে সাহায্য করতে পারি?`;
+    const greeting = opts.current.greeting?.trim() || `আসসালামু আলাইকুম! আমি ${opts.current.storeName}-এর এআই সহকারী। বলুন, কীভাবে সাহায্য করতে পারি?`;
     opts.current.onGreeting?.(greeting);
     await speak(id, greeting);
     void prepareFillers(id);

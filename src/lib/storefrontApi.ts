@@ -88,6 +88,8 @@ export interface StorefrontInfo {
   businessHours?: Record<string, { open: boolean; from: string; to: string }> | null;
   /** "Verified seller" (super-admin-new.md Step 12): Super Admin approved the store's verification. StorePal only; `dbid` is its public DBID, if given. */
   verifiedSeller?: { since: string; dbid: string | null } | null;
+  /** Gift option (StorePal): the wrap charge and the store's own taka-per-dollar rate for gift senders abroad (null = no dollar prices). */
+  giftOption?: { charge: number; usdRate?: number | null } | null;
   // Store > Logo — replaces the plain-text storeName wordmark wherever
   // a theme's header/footer shows it, when set. Nullable: a vendor who
   // hasn't uploaded one yet keeps the existing text-wordmark fallback.
@@ -305,6 +307,14 @@ export interface StorefrontDesignSettings {
   socialProofDays?: number;
   /** Wishlist price / restock alerts by SMS (TellMe idea 62). */
   wishlistAlertsEnabled?: boolean;
+  /** The store AI assistant's own name, picture, first message, ready questions, voice-call opening, voice speed and corner (null / [] = built-in). */
+  aiAssistantName?: string | null;
+  aiAssistantAvatarUrl?: string | null;
+  aiChatGreeting?: string | null;
+  aiChatStarters?: string[];
+  aiVoiceGreeting?: string | null;
+  aiVoiceSpeed?: 'SLOW' | 'NORMAL' | 'FAST';
+  aiChatSide?: 'RIGHT' | 'LEFT';
   chatButtonEnabled?: boolean;
   chatButtonChannel?: 'WHATSAPP' | 'MESSENGER';
   /** Messenger only: https://m.me/<page>. */
