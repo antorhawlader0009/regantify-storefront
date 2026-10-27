@@ -9,6 +9,7 @@ import { grantGoogleTagManagerConsent, pushGtmPageView, setupGoogleTagManager } 
 
 interface GoogleTagManagerProps {
   subdomain: string;
+  storeName: string | null;
   googleTagManager: StorefrontGoogleTagManager | null;
   consentRequired: boolean;
 }
@@ -23,6 +24,7 @@ export function GoogleTagManager(props: GoogleTagManagerProps) {
   if (typeof window !== 'undefined') {
     setupGoogleTagManager({
       subdomain: props.subdomain,
+      storeName: props.storeName,
       googleTagManager: props.googleTagManager,
       consentRequired: props.consentRequired,
     });

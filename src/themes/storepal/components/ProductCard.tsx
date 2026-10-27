@@ -17,7 +17,7 @@ import { FlashSaleTimer } from './FlashSaleTimer';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaAddToWishlist } from '@/lib/metaPixelEvents';
-import { trackAddToWishlist } from '@/lib/ecommerceEvents';
+import { trackAddToWishlist, trackSelectItem } from '@/lib/ecommerceEvents';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { preOrderDateText } from '../lib/preOrderDate';
 import { CardSwatches } from '@/components/CardSwatches';
@@ -224,6 +224,10 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
 
   return (
     <div
+      // GA4 select_item: any of the card's links to the product page (photo, name, button), not its other buttons.
+      onClickCapture={(e) => {
+        if (product.id && (e.target as HTMLElement).closest('a')?.getAttribute('href') === href) trackSelectItem({ ...product, id: product.id });
+      }}
       data-rg="product-card"
       data-rg-product={product.slug}
       className={`flex flex-col overflow-hidden ${

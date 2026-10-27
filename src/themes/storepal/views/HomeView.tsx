@@ -11,7 +11,7 @@ import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { resolveCouponLink } from '@/lib/checkoutApi';
 import { setPendingCoupon } from '../lib/pendingCoupon';
 import { trackMetaSearch } from '@/lib/metaPixelEvents';
-import { trackSearch } from '@/lib/ecommerceEvents';
+import { currentListName, trackSearch, trackViewItemList } from '@/lib/ecommerceEvents';
 import { logSearch } from '@/lib/searchLog';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
@@ -253,6 +253,14 @@ export function HomeView({
   }, [searchQuery]);
 
   const isFiltered = Boolean(search?.trim() || activeCategory || activeBrand);
+
+  // GA4 view_item_list: the category / brand / search listing, or the home page's products, named like a card click's select_item.
+  const shownList = isFiltered ? sorted : products;
+  const shownListKey = shownList.slice(0, 20).map((p) => p.id).join(',');
+  useEffect(() => {
+    trackViewItemList(currentListName(), shownList);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [shownListKey]);
   // Nothing to sell yet (the server sends `setup` only then): the shop shows drawn sample products, Shopify style
   // (store-empty-preview.md), with the owner's setup board under them.
   const showPreview = isEmptyStorePreview({ productCount: products.length, isFiltered, setup });

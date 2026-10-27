@@ -13,7 +13,7 @@ import {
 } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { trackMetaCompleteRegistration } from '@/lib/metaPixelEvents';
-import { trackSignUp } from '@/lib/ecommerceEvents';
+import { trackLogin, trackSignUp } from '@/lib/ecommerceEvents';
 import { useAuthDialog, type AuthDialogMode } from '../lib/authDialog';
 import { RegantifySignInButton } from './RegantifySignIn';
 import { useStoreText } from '../lib/storeText';
@@ -106,6 +106,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
     try {
       const result = await customerLogin(identifier.trim(), password);
       setSession(result.customer, result.accessToken);
+      trackLogin('password');
       onDone();
     } catch (err) {
       setError(err instanceof Error ? err.message : t('Could not log in.'));

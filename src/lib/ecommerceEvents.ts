@@ -104,24 +104,68 @@ type ProductLike = Pick<StorefrontProduct, 'id' | 'name' | 'price' | 'discountPr
   brand?: string | null;
 };
 
-function productParams(product: ProductLike) {
+function productItem(product: ProductLike) {
   const price = Number(product.price);
   const payPrice = Number(product.discountPrice ?? product.price);
   return {
-    currency: CURRENCY,
-    value: payPrice,
-    items: [
-      {
-        item_id: product.id,
-        item_name: product.name,
-        ...(product.category && { item_category: product.category }),
-        ...(product.brand && { item_brand: product.brand }),
-        price: payPrice,
-        ...(price > payPrice && { discount: round(price - payPrice) }),
-        quantity: 1,
-      },
-    ],
+    item_id: product.id,
+    item_name: product.name,
+    ...(product.category && { item_category: product.category }),
+    ...(product.brand && { item_brand: product.brand }),
+    price: payPrice,
+    ...(price > payPrice && { discount: round(price - payPrice) }),
+    quantity: 1,
   };
+}
+
+function productParams(product: ProductLike) {
+  const item = productItem(product);
+  return { currency: CURRENCY, value: item.price, items: [item] };
+}
+
+// -- Product lists (GA4 view_item_list / select_item) --
+
+/**
+ * The list a product card sits in, from the address: the same name for view_item_list and the select_item of a click in
+ * it, so GA4's item-list reports can say which list sold a product.
+ */
+export function currentListName(): string {
+  if (typeof window === 'undefined') return 'Products';
+  const q = new URLSearchParams(window.location.search);
+  if (q.get('q')) return 'Search results';
+  if (q.get('category')) return `Category: ${q.get('category')}`;
+  if (q.get('brand')) return `Brand: ${q.get('brand')}`;
+  const path = window.location.pathname;
+  if (/\/(p|product)\//.test(path)) return 'Related products';
+  if (/\/collection\//.test(path)) return 'Collection';
+  if (/\/campaign\//.test(path)) return 'Campaign';
+  if (/\/wishlist/.test(path)) return 'Wishlist';
+  return 'Home';
+}
+
+const listId = (name: string) => name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '').slice(0, 100);
+const seenLists = new Set<string>();
+
+/** A list of products was shown (the first 20, GA4's practical limit). Once per list and address per page load. */
+export function trackViewItemList(listName: string, products: ProductLike[]) {
+  if (products.length === 0) return;
+  const key = `${listName}|${typeof window === 'undefined' ? '' : window.location.href}|${products[0].id}`;
+  if (seenLists.has(key)) return;
+  seenLists.add(key);
+  emit('view_item_list', {
+    item_list_id: listId(listName),
+    item_list_name: listName,
+    items: products.slice(0, 20).map((p, index) => ({ ...productItem(p), index, item_list_name: listName })),
+  });
+}
+
+/** A product card in a list was clicked. */
+export function trackSelectItem(product: ProductLike, listName = currentListName()) {
+  emit('select_item', {
+    item_list_id: listId(listName),
+    item_list_name: listName,
+    items: [{ ...productItem(product), item_list_name: listName }],
+  });
 }
 
 // -- Cart changes --
@@ -184,6 +228,12 @@ export function trackBeginCheckout(lines: CartLine[], coupon?: string) {
 }
 
 /** "Place Order" clicked with a payment method chosen, right before the order is sent. */
+/** The delivery details passed checks at "Place order" (GA4 add_shipping_info); shipping_tier is the delivery area. */
+export function trackAddShippingInfo(lines: CartLine[], shippingTier: string, coupon?: string) {
+  if (lines.length === 0) return;
+  emit('add_shipping_info', { ...linesParams(lines), shipping_tier: shippingTier, ...(coupon && { coupon }) });
+}
+
 export function trackAddPaymentInfo(lines: CartLine[], paymentType: string, coupon?: string) {
   if (lines.length === 0) return;
   emit('add_payment_info', { ...linesParams(lines), payment_type: paymentType, ...(coupon && { coupon }) });
@@ -271,6 +321,11 @@ export function trackSignUp() {
 }
 
 /** Landing page Lead Form submitted. */
+/** A shopper signed in (GA4 login). */
+export function trackLogin(method: 'password' | 'regantify') {
+  emit('login', { method }, false);
+}
+
 export function trackGenerateLead() {
   emit('generate_lead', { currency: CURRENCY, value: 0 }, false);
 }

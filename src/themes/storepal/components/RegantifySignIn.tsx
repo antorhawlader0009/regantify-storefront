@@ -5,6 +5,7 @@ import { connectLogin, getRegantifyConnectConfig, regantifyConnectUrl, type Rega
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { useAuthDialog } from '../lib/authDialog';
 import { useStoreText } from '../lib/storeText';
+import { trackLogin } from '@/lib/ecommerceEvents';
 
 /** Google's own "G" mark, unchanged (Google's sign-in branding guidelines). */
 export function GoogleMark({ size = 18 }: { size?: number }) {
@@ -116,7 +117,10 @@ export function RegantifyLoginCatcher() {
     if (swapped.has(code)) return;
     swapped.add(code);
     connectLogin(code)
-      .then((r) => setSession(r.customer, r.accessToken))
+      .then((r) => {
+        setSession(r.customer, r.accessToken);
+        trackLogin('regantify');
+      })
       .catch((err: Error) => setError(err.message || t('Could not sign you in. Please try again.')));
   }, [setSession]);
 

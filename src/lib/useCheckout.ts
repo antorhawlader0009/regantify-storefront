@@ -17,7 +17,7 @@ import {
 } from '@/lib/customerAuthApi';
 import { trackMetaAddPaymentInfo } from '@/lib/metaPixelEvents';
 import { metaAdContext } from '@/lib/metaPixel';
-import { trackAddPaymentInfo } from '@/lib/ecommerceEvents';
+import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/ecommerceEvents';
 import { gaAdContext } from '@/lib/googleAnalytics';
 import { tiktokAdContext } from '@/lib/tiktokPixel';
 import { captureTrafficSource } from '@/lib/trafficSource';
@@ -890,6 +890,7 @@ export function useCheckout(
     // and a payment method is chosen. No-ops on non-StorePal stores
     // (neither is mounted there).
     trackMetaAddPaymentInfo(lines);
+    trackAddShippingInfo(lines, zone, appliedCoupon?.code);
     trackAddPaymentInfo(lines, selectedGateway?.type ?? paymentMethod, appliedCoupon?.code);
 
     try {

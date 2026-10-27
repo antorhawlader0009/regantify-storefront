@@ -22,11 +22,13 @@
 import type { StorefrontGoogleTagManager } from './storefrontApi';
 import { hasGdprConsent } from './gdprConsent';
 import { dataLayerPush, ensureGoogleConsentDefault, grantGoogleConsent } from './googleTag';
+import { storePageType } from '@/components/StoreCodeHooks';
 
 const GOOGLE_ORIGIN = 'https://www.googletagmanager.com';
 
 interface StoreSetup {
   subdomain: string;
+  storeName: string | null;
   googleTagManager: StorefrontGoogleTagManager | null;
   // The vendor's GDPR Prompt is on, so consent has to be asked for.
   consentRequired: boolean;
@@ -38,6 +40,19 @@ let loaded = false;
 // The URL of the last page a page view was counted for, as the next
 // virtual_page_view's referrer.
 let lastPageUrl: string | null = null;
+
+/**
+ * The page-level variables every page pushes (same names on every page and every store, so one container setup works for
+ * all of them): which store, what kind of page (the same page types as Custom Code's data-rg-page), and the currency.
+ */
+function pageData(): Record<string, unknown> {
+  return {
+    store_subdomain: store!.subdomain,
+    ...(store!.storeName && { store_name: store!.storeName }),
+    page_type: storePageType(window.location.pathname, store!.subdomain, new URLSearchParams(window.location.search)),
+    currency: 'BDT',
+  };
+}
 
 /** Called by <GoogleTagManager> while rendering, so it's in place before any page effect pushes an event. */
 export function setupGoogleTagManager(setup: StoreSetup) {
@@ -74,6 +89,9 @@ function ensureLoaded() {
   // The consent default must be on the dataLayer before the container
   // starts (a no-op when Google Analytics already set it up).
   if (store!.consentRequired) ensureGoogleConsentDefault(consent);
+  // Page information goes on the dataLayer BEFORE the container starts (Google's data layer guide), so tags and
+  // triggers can use it from the very first event ("Page type equals product").
+  dataLayerPush(pageData());
   dataLayerPush({ 'gtm.start': Date.now(), event: 'gtm.js' });
   const script = document.createElement('script');
   script.async = true;
@@ -121,6 +139,8 @@ export function pushGtmPageView() {
   const url = window.location.href;
   if (url === lastPageUrl) return;
   dataLayerPush({
+    // The new page's type etc. (values only last for the page they were pushed on, so they are sent again here).
+    ...pageData(),
     event: 'virtual_page_view',
     page_location: url,
     page_path: window.location.pathname + window.location.search,

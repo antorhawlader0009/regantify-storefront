@@ -283,7 +283,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           without JavaScript can't be asked for consent. */}
       {storeExists && theme === 'STOREPAL' && googleTagManager && (
         <>
-          <GoogleTagManager subdomain={subdomain} googleTagManager={googleTagManager} consentRequired={!!gdprPrompt} />
+          <GoogleTagManager subdomain={subdomain} storeName={storeName || null} googleTagManager={googleTagManager} consentRequired={!!gdprPrompt} />
           {!gdprPrompt && (
             <noscript>
               <iframe
