@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { create } from 'zustand';
 
 // The floating buttons (AI assistant, chat bubble) slide off to their side while the shopper
@@ -65,6 +65,69 @@ function attach() {
     window.removeEventListener('scroll', onScroll);
     if (frame) window.cancelAnimationFrame(frame);
   };
+}
+
+/**
+ * The phone header's category strip: hidden while the shopper scrolls down, back on scroll up (the user's request,
+ * 2026-10-27). Its own rule, not the floating buttons': the strip is part of the sticky header, so hiding it makes the
+ * page jump up by its height, which the browser reports as a scroll up and would bring it straight back (the shaking
+ * seen on 2026-10-27). So: after each change, scroll moves are ignored while the strip folds (STRIP_SETTLE_MS) and the
+ * position is measured again from there; it needs a real run of STRIP_TRAVEL pixels (more than its own height) to
+ * change again; and it only hides below STRIP_TOP_ZONE. `pinned` keeps it shown.
+ */
+const STRIP_TOP_ZONE = 160;
+const STRIP_TRAVEL = 60;
+const STRIP_SETTLE_MS = 400;
+
+export function useStripHidden(pinned = false): boolean {
+  const [hidden, setHidden] = useState(false);
+  const hiddenRef = useRef(false);
+  useEffect(() => {
+    if (pinned) {
+      hiddenRef.current = false;
+      setHidden(false);
+      return;
+    }
+    let lastY = Math.max(0, window.scrollY);
+    let anchorY = lastY;
+    let goingDown = false;
+    let settleUntil = 0;
+    let frame = 0;
+    const set = (next: boolean) => {
+      if (next === hiddenRef.current) return;
+      hiddenRef.current = next;
+      setHidden(next);
+      // The strip's own fold moves the page: wait for it, then measure from wherever the page ended up.
+      settleUntil = performance.now() + STRIP_SETTLE_MS;
+    };
+    const update = () => {
+      frame = 0;
+      const maxY = Math.max(0, document.documentElement.scrollHeight - window.innerHeight);
+      const y = Math.min(Math.max(0, window.scrollY), maxY);
+      if (performance.now() < settleUntil) {
+        lastY = anchorY = y;
+        return;
+      }
+      if (y === lastY) return;
+      const down = y > lastY;
+      if (down !== goingDown) {
+        goingDown = down;
+        anchorY = lastY;
+      }
+      lastY = y;
+      if (y <= STRIP_TOP_ZONE) set(false);
+      else if (Math.abs(y - anchorY) >= STRIP_TRAVEL) set(down);
+    };
+    const onScroll = () => {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', onScroll);
+      if (frame) window.cancelAnimationFrame(frame);
+    };
+  }, [pinned]);
+  return hidden;
 }
 
 /**

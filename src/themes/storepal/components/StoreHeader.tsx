@@ -26,6 +26,7 @@ import { AuthDialog } from './AuthDialog';
 import { RegantifyLoginCatcher } from './RegantifySignIn';
 import { MarqueeTrack } from './MarqueeTrack';
 import { useCartDrawer } from '../lib/cartDrawer';
+import { useStripHidden } from '../lib/floatingScroll';
 import { useAuthDialog } from '../lib/authDialog';
 import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefrontApi';
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
@@ -268,6 +269,24 @@ export function StoreHeader({
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const searchBoxRef = useRef<HTMLDivElement>(null);
   const mobileSearchBoxRef = useRef<HTMLDivElement>(null);
+  // Phones: the search sits behind a search icon in the top row (the user's request, 2026-10-27). Opened, it takes the
+  // top row (logo and icons hide) with a close button; closed, the header is as before. Computers always show it.
+  const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  // Phones: the category strip hides on scroll down, back on scroll up (never while a category menu or the search is open).
+  const stripHidden = useStripHidden(mobileSearchOpen || openCategory !== null);
+  const mobileSearchInputRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    if (mobileSearchOpen) mobileSearchInputRef.current?.focus();
+  }, [mobileSearchOpen]);
+  const closeMobileSearch = () => {
+    setMobileSearchOpen(false);
+    setSuggestionsOpen(false);
+  };
+  // The voice call asking the shopper to use the photo button: on a phone that button is inside the search, so it opens.
+  const photoHintAt = usePhotoSearch((s) => s.hintAt);
+  useEffect(() => {
+    if (photoHintAt && window.matchMedia('(max-width: 639px)').matches) setMobileSearchOpen(true);
+  }, [photoHintAt]);
 
   useEffect(() => {
     if (searchIndex !== null) return;
@@ -426,7 +445,7 @@ export function StoreHeader({
         </div>
       )}
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 flex items-center gap-4">
+      <div className={`max-w-6xl mx-auto px-4 sm:px-6 py-4 items-center gap-4 ${mobileSearchOpen ? 'hidden sm:flex' : 'flex'}`}>
         {hasMobileMenu && (
           <button
             type="button"
@@ -550,6 +569,16 @@ export function StoreHeader({
         )}
 
         <div className="flex items-center gap-4 ml-auto shrink-0">
+          {/* Phones: the search behind an icon (it opens in place of this row). */}
+          <button
+            type="button"
+            onClick={() => setMobileSearchOpen(true)}
+            className="sm:hidden text-ink hover:text-accent transition-colors"
+            aria-label={t('Search')}
+            aria-expanded={mobileSearchOpen}
+          >
+            <Search size={21} strokeWidth={1.75} />
+          </button>
           {/* The phone number is a call button on small screens, where the full "Call Us Now" block has no room. */}
           {design.headerPhoneEnabled && design.headerPhone?.trim() && (
             <a
@@ -583,9 +612,18 @@ export function StoreHeader({
               openLogin();
             }}
             className="text-ink hover:text-accent transition-colors"
-            aria-label={t('Account')}
+            aria-label={authHydrated && customer ? `${t('My account')}: ${customer.fullName}` : t('Account')}
+            title={authHydrated && customer ? customer.fullName : undefined}
           >
-            <User size={21} strokeWidth={1.75} />
+            {authHydrated && customer ? (
+              // Signed in: the shopper's initial in the store's colour with a green dot, so it is plain that they are logged in.
+              <span className="relative flex h-[30px] w-[30px] items-center justify-center rounded-full bg-accent text-[13px] font-bold uppercase text-white ring-2 ring-accent/20">
+                {customer.fullName.trim().charAt(0) || <User size={16} strokeWidth={2} />}
+                <span className="absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-[#22c55e] ring-2 ring-surface" aria-hidden />
+              </span>
+            ) : (
+              <User size={21} strokeWidth={1.75} />
+            )}
           </Link>
 
           {/* Opens the slide-in cart (the href is only a fallback for open-in-new-tab / no JS). */}
@@ -612,10 +650,20 @@ export function StoreHeader({
         </div>
       </div>
 
-      <div ref={mobileSearchBoxRef} data-rg="search" className="sm:hidden relative px-4 pb-3">
-        <form onSubmit={handleSearchSubmit} className="flex w-full">
+      {mobileSearchOpen && (
+      <div ref={mobileSearchBoxRef} data-rg="search" className="sm:hidden relative flex items-center gap-2 px-4 py-3">
+        <button
+          type="button"
+          onClick={closeMobileSearch}
+          className="-ml-1 shrink-0 p-1 text-ink hover:text-accent transition-colors"
+          aria-label={t('Close search')}
+        >
+          <X size={22} />
+        </button>
+        <form onSubmit={handleSearchSubmit} className="flex min-w-0 flex-1">
           <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
             <input
+              ref={mobileSearchInputRef}
               type="text"
               value={searchDraft}
               onChange={(e) => setSearchDraft(e.target.value)}
@@ -692,6 +740,7 @@ export function StoreHeader({
           </div>
         )}
       </div>
+      )}
 
       {/* Layout Settings > Site Menu replaces the category strip on
           larger screens; phones keep the strip. */}
@@ -712,7 +761,14 @@ export function StoreHeader({
       )}
 
       {categories.length > 0 && (
-        <div className={`border-t border-line ${hasSiteMenu ? 'sm:hidden' : ''}`}>
+        // Phones: the strip folds away while the shopper scrolls down and comes back on scroll up (the user's request,
+        // 2026-10-27; useStripHidden in lib/floatingScroll.ts, which ignores the page's own jump). Computers always show it.
+        <div
+          className={`grid transition-[grid-template-rows] duration-300 ease-out motion-reduce:transition-none sm:grid-rows-[1fr] ${
+            stripHidden ? 'grid-rows-[0fr]' : 'grid-rows-[1fr]'
+          } ${hasSiteMenu ? 'sm:hidden' : ''}`}
+        >
+        <div className={`min-h-0 overflow-hidden border-line ${stripHidden ? 'border-t-0 sm:border-t' : 'border-t'}`}>
           <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
             {visibleCategories.map((cat) => {
               const children = childrenByCategory.get(cat) ?? [];
@@ -771,6 +827,7 @@ export function StoreHeader({
               );
             })}
           </div>
+        </div>
         </div>
       )}
 
