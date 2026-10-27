@@ -691,10 +691,11 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         const next = { name: o.name ?? before.name, phone: o.phone ?? before.phone, address: o.address ?? before.address, district: o.district ?? before.district };
         detailsRef.current = next;
         setDetails(next);
-        // On a call the assistant's choices go straight into the cart (it never places the order itself), and each
-        // detail just said goes into the checkout form if it is open (lib/voiceCheckout.ts).
+        // Typed or spoken, the assistant's choices go straight into the real cart (the user's rule, 2026-10-27: what the
+        // assistant says must happen on the website; it never places the order itself). On a call, each detail just said
+        // also goes into the checkout form if it is open (lib/voiceCheckout.ts).
+        callCartSync.current = syncCallCart(o);
         if (voice) {
-          callCartSync.current = syncCallCart(o);
           useVoiceCheckoutFill.getState().push({
             fullName: next.name !== before.name ? next.name : undefined,
             phone: next.phone !== before.phone ? next.phone : undefined,
