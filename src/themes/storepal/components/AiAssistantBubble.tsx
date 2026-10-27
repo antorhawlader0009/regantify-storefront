@@ -8,6 +8,7 @@ import { useHeaderPresence } from '../lib/headerPresence';
 import { rememberOpen } from '../lib/chatHistory';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
+import { FLOATING_BUTTON, useAssistantBottom } from '../lib/floatingStack';
 
 /**
  * The chat bubble alone, shown while the full chat widget's file (AiAssistantWidget.tsx, large: voice call, photos,
@@ -22,6 +23,7 @@ export function AiAssistantBubble({ subdomain }: { subdomain: string }) {
   const headerHere = useHeaderPresence((s) => s.count > 0);
   const cartOpen = useCartDrawer((s) => s.open);
   const { hidden: scrolledAway, reveal } = useFloatingHidden(cartOpen);
+  const assistantBottom = useAssistantBottom();
 
   useEffect(() => {
     let cancelled = false;
@@ -49,7 +51,7 @@ export function AiAssistantBubble({ subdomain }: { subdomain: string }) {
       }}
       aria-label="Chat with our assistant"
       title="শপিং সহকারীর সাথে কথা বলুন"
-      className="fixed bottom-[76px] right-5 z-30 w-14 h-14 rounded-full bg-accent hover:bg-accent-dark text-white shadow-[0_4px_10px_-2px_rgba(16,24,40,0.25),0_14px_32px_-8px_rgba(16,24,40,0.40)] flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className={`fixed ${assistantBottom} right-5 z-30 ${FLOATING_BUTTON} bg-accent hover:bg-accent-dark text-white flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
       onFocus={reveal}
       style={{
         transform: cartOpen ? 'translateX(calc(-100vw + 5.5rem))' : scrolledAway ? floatingHideTransform('right') : undefined,

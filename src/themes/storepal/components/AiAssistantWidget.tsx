@@ -57,6 +57,7 @@ import { ChatOrderCard } from './ChatOrderCard';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
+import { FLOATING_BUTTON, useAssistantBottom } from '../lib/floatingStack';
 import { useFormatPrice } from '../lib/storeText';
 import { trackFeature } from '@/lib/featureUse';
 import { useVoiceSearch } from '@/lib/voiceSearch';
@@ -882,6 +883,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
 
   // Both the bubble and the open panel step over to the left edge while the slide-in cart is open.
   const cartOpen = useCartDrawer((s) => s.open);
+  // Above the WhatsApp/Messenger button when it is on screen, else in the bottom spot (lib/floatingStack.ts).
+  const assistantBottom = useAssistantBottom();
   // Slides off to the right while the shopper scrolls down, back on scroll up (never while the chat is open).
   const { hidden: scrolledAway, reveal } = useFloatingHidden(open || cartOpen);
   // Mounted once in the store layout: shown only on pages that have the store header (headerPresence.ts).
@@ -984,7 +987,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         }}
         aria-label="Chat with our assistant"
         title="শপিং সহকারীর সাথে কথা বলুন"
-        className="fixed bottom-[76px] right-5 z-30 w-14 h-14 rounded-full bg-accent hover:bg-accent-dark text-white shadow-[0_4px_10px_-2px_rgba(16,24,40,0.25),0_14px_32px_-8px_rgba(16,24,40,0.40)] flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className={`fixed ${assistantBottom} right-5 z-30 ${FLOATING_BUTTON} bg-accent hover:bg-accent-dark text-white flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent`}
         onFocus={reveal}
         style={{
           transform: cartOpen
@@ -1005,7 +1008,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
           className={
             fullScreen
               ? 'fixed inset-0 z-50 w-full h-[100dvh] bg-surface flex flex-col overflow-hidden overscroll-contain'
-              : 'fixed bottom-[76px] right-5 z-30 w-[min(380px,calc(100vw-2.5rem))] h-[min(600px,calc(100vh-120px))] bg-surface rounded-2xl border border-line shadow-[0_2px_6px_rgba(16,24,40,0.06),0_12px_24px_-6px_rgba(16,24,40,0.12),0_32px_72px_-12px_rgba(16,24,40,0.30)] flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none'
+              : `fixed ${assistantBottom} right-5 z-30 w-[min(380px,calc(100vw-2.5rem))] h-[min(600px,calc(100vh-120px))] bg-surface rounded-2xl border border-line shadow-[0_2px_6px_rgba(16,24,40,0.06),0_12px_24px_-6px_rgba(16,24,40,0.12),0_32px_72px_-12px_rgba(16,24,40,0.30)] flex flex-col overflow-hidden transition-transform duration-300 ease-out motion-reduce:transition-none`
           }
           style={
             fullScreen && viewport
