@@ -73,6 +73,8 @@ export interface BannerVideoProps {
   muted: boolean;
   loop: boolean;
   style?: SectionStyle;
+  /** Added by the server for a YouTube / Facebook / Instagram / TikTok link (StorefrontService.getStoreLandingPage). */
+  video?: import('@/lib/storefrontApi').StorefrontProductVideo | null;
 }
 
 export type TwoColumnSide = { kind: 'image'; imageUrl: string; alt?: string } | { kind: 'html'; html: string };

@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import type { BannerVideoProps, HeroSliderProps, TwoColumnProps, TwoColumnSide } from '../types';
+import { ProductVideo } from '@/components/ProductVideo';
 
 export function HeroSliderSection({ props }: { props: HeroSliderProps }) {
   const slides = props.slides ?? [];
@@ -56,6 +57,21 @@ export function HeroSliderSection({ props }: { props: HeroSliderProps }) {
 
 export function BannerVideoSection({ props }: { props: BannerVideoProps }) {
   if (!props.videoUrl) return null;
+  // A YouTube / Facebook / Instagram / TikTok link: the shared player (picture first, the platform's player on a tap),
+  // with the address the server worked out. A plain video file keeps the full-width banner below.
+  if (props.video && props.video.platform !== 'FILE') {
+    return (
+      <div className="mx-auto w-full max-w-3xl px-5 py-6 sm:px-8">
+        <ProductVideo
+          video={props.video}
+          fallbackPoster={props.posterImageUrl || null}
+          title={props.overlayText || 'Video'}
+          className="text-orange-600"
+          labels={{ play: 'Play video', watchOn: (platform) => `Watch on ${platform}` }}
+        />
+      </div>
+    );
+  }
   return (
     <div className="relative h-[360px] w-full overflow-hidden sm:h-[480px]">
       <video

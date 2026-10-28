@@ -15,6 +15,26 @@ import { trackMetaInitiateCheckout, trackMetaLead } from '@/lib/metaPixelEvents'
 import { trackBeginCheckout, trackGenerateLead } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
 
+/**
+ * The price the order will charge for this product with these options: the picked combination's own sale price, else
+ * its own price, else the product's sale price, else its price (the same order as OrdersService.create).
+ */
+function priceFor(p: StorefrontLandingPageProduct, picked: Record<string, string>): { unit: number; original?: number } {
+  const opts = p.options ?? [];
+  const own =
+    opts.length > 0 && opts.every((o) => picked[o.name])
+      ? (p.variantPrices ?? []).find((v) => opts.every((o) => v.options[o.name] === picked[o.name]))
+      : undefined;
+  if (own) {
+    const unit = Number(own.discountPrice ?? own.price ?? p.discountPrice ?? p.price);
+    const original = own.discountPrice && own.price ? Number(own.price) : undefined;
+    return { unit, original: original && original > unit ? original : undefined };
+  }
+  const price = Number(p.price);
+  const discount = p.discountPrice != null ? Number(p.discountPrice) : null;
+  return { unit: discount ?? price, original: discount != null && discount < price ? price : undefined };
+}
+
 /** True when every option of the product is picked and that exact combination is sold out. */
 function soldOutPick(p: StorefrontLandingPageProduct, picked: Record<string, string>): boolean {
   const opts = p.options ?? [];
@@ -87,9 +107,8 @@ export function CheckoutFormSection({
       products
         .filter((p) => selected[p.id] && orderable(p))
         .map((p) => {
-          const price = Number(p.price);
-          const discount = p.discountPrice != null ? Number(p.discountPrice) : null;
           const picked = choices[p.id] ?? {};
+          const { unit, original } = priceFor(p, picked);
           return {
             id: Object.keys(picked).length ? `${p.id}:${JSON.stringify(picked)}` : p.id,
             subdomain,
@@ -97,8 +116,8 @@ export function CheckoutFormSection({
             productSlug: p.slug,
             name: p.name,
             image: p.photoUrl ?? undefined,
-            unitPrice: discount ?? price,
-            originalUnitPrice: discount != null && discount < price ? price : undefined,
+            unitPrice: unit,
+            originalUnitPrice: original,
             quantity: quantities[p.id] ?? p.minOrderQuantity ?? 1,
             minOrderQuantity: p.minOrderQuantity,
             selectedOptions: picked,
@@ -317,7 +336,7 @@ export function CheckoutFormSection({
                 const canOrder = orderable(p);
                 const isOn = canOrder && selected[p.id];
                 const qty = quantities[p.id] ?? p.minOrderQuantity ?? 1;
-                const unit = Number(p.discountPrice ?? p.price);
+                const unit = priceFor(p, choices[p.id] ?? {}).unit;
                 return (
                   <div key={p.id} className={`flex items-center gap-2.5 ${isOn ? '' : 'opacity-50'}`}>
                     {products.length > 1 && (

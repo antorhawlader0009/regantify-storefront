@@ -938,6 +938,8 @@ export interface StorefrontLandingPageProduct {
   options?: { name: string; values: string[] }[];
   /** The option combinations that are sold out. */
   soldOut?: Record<string, string>[];
+  /** Combinations with their own price (null = the product's). */
+  variantPrices?: { options: Record<string, string>; price: string | null; discountPrice: string | null }[];
 }
 
 export interface StorefrontLandingPageData {
