@@ -620,6 +620,9 @@ export function HomeView({
                               <span className="font-semibold text-[13px] text-ink">{r.customerName ?? 'Anonymous'}</span>
                               <Stars count={r.rating} />
                             </div>
+                            {r.verified && (
+                              <span className="block text-[10px] font-semibold uppercase tracking-wide text-success mb-1">{t('Verified buyer')}</span>
+                            )}
                             <p className="m-0 text-[13px] font-semibold text-ink mb-0.5">{r.title}</p>
                             {r.content && <p className="m-0 text-[12.5px] text-muted leading-relaxed">{r.content}</p>}
                           </div>

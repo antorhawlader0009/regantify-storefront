@@ -41,6 +41,8 @@ export interface Customer {
   // Typed with the two zones every theme knows. A StorePal order can also save 'AROUND_DHAKA' here (Store > Delivery
   // Charge > Around Dhaka), which only StorePal's checkout and profile read; the other themes' zone selects ignore it.
   deliveryZone?: 'DHAKA' | 'OUTSIDE_DHAKA' | null;
+  /** False for an account opened with Google until the shopper sets a password (Account > Change Password). */
+  hasPassword?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -345,6 +347,16 @@ export function deleteMyAddress(accessToken: string, id: string): Promise<SavedA
   return authFetch<SavedAddressList>(`/v1/customer-auth/me/addresses/${encodeURIComponent(id)}`, accessToken, { method: 'DELETE' });
 }
 
+/** Account > Change Password for an account opened with Google (no password yet), step 1: a code to the account's phone. */
+export function sendSetPasswordCode(accessToken: string, subdomain: string): Promise<{ sent: boolean; phone: string }> {
+  return authFetch('/v1/customer-auth/me/password/send-code', accessToken, { method: 'POST', body: { subdomain } });
+}
+
+/** Step 2: the code and the new password. */
+export function setMyPassword(accessToken: string, code: string, newPassword: string): Promise<{ message: string }> {
+  return authFetch('/v1/customer-auth/me/password/set', accessToken, { method: 'POST', body: { code, newPassword } });
+}
+
 /** Account > Change Password (requires the current password). */
 export function changeMyPassword(accessToken: string, currentPassword: string, newPassword: string) {
   return authFetch<{ message: string }>('/v1/customer-auth/me/password', accessToken, {
@@ -422,8 +434,35 @@ export interface CustomerPurchase {
   received: boolean;
   /** Opens the product page's review form as a verified buyer; null when it can't be reviewed (yet or any more). */
   reviewToken: string | null;
-  /** Their own review of it, if written. */
-  review: { rating: number; approved: boolean } | null;
+  /** Their own review of it, if written. `editable`: kept on this account, so they can edit or delete it. */
+  review: {
+    id: string;
+    title: string;
+    content: string | null;
+    rating: number;
+    approved: boolean;
+    photos: string[];
+    videoUrl: string | null;
+    editable: boolean;
+  } | null;
+}
+
+export interface OwnReviewInput {
+  title: string;
+  content?: string;
+  rating: number;
+  removePhotos?: boolean;
+  removeVideo?: boolean;
+}
+
+/** Account > My purchases > Edit review. An edited review waits for the store's approval again. */
+export function updateOwnReview(subdomain: string, accessToken: string, reviewId: string, input: OwnReviewInput): Promise<{ id: string; changed: boolean }> {
+  return authFetch(`/v1/store/${subdomain}/customer/reviews/${encodeURIComponent(reviewId)}`, accessToken, { method: 'PATCH', body: input });
+}
+
+/** Account > My purchases > Delete review (with its photos and video). */
+export function deleteOwnReview(subdomain: string, accessToken: string, reviewId: string): Promise<{ success: boolean }> {
+  return authFetch(`/v1/store/${subdomain}/customer/reviews/${encodeURIComponent(reviewId)}`, accessToken, { method: 'DELETE' });
 }
 
 export async function fetchCustomerPurchases(subdomain: string, accessToken: string): Promise<CustomerPurchase[]> {

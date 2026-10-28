@@ -260,7 +260,8 @@ export interface StorefrontDesignSettings {
   /** Scheduled banners (TellMe idea 110); the one whose time is on now replaces the usual banner. */
   /** The store's counted figures (TellMe idea 147), already rounded down; null/missing = nothing to show. */
   reputation?: { orders?: number; rating?: { avg: number; count: number }; reviews?: { percent: number; count: number }; since?: number } | null;
-  trustStrip?: { enabled: boolean; items: { icon: string; title: string; text: string }[]; product: boolean; checkout: boolean; home: boolean };
+  /** `fastDelivery`: "Fast delivery" under the Buy button; missing (older saved rows) means on. */
+  trustStrip?: { enabled: boolean; items: { icon: string; title: string; text: string }[]; product: boolean; checkout: boolean; home: boolean; fastDelivery?: boolean };
   bannerSchedule?: { id: string; content: string; startAt: string | null; endAt: string | null; style: 'MARQUEE' | 'STATIC' | null; backgroundColor: string | null }[];
   bannerContent: string | null;
   bannerStyle: 'STATIC' | 'MARQUEE';
@@ -797,6 +798,8 @@ export interface StorefrontReview {
   customerName: string | null;
   featured: boolean;
   createdAt: string;
+  /** The reviewer's Completed order held the product (server decides, same rule as the product page). */
+  verified?: boolean;
 }
 
 // Homepage "Customer Reviews" section — falls back to an empty array

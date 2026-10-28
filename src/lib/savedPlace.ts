@@ -10,6 +10,8 @@ const OLD_DISTRICT_KEY = 'storepal-delivery-district:';
 export interface SavedPlace {
   district: string;
   thana: string;
+  /** The area inside the thana (optional, "Mirpur-10"); older saves have none. */
+  area?: string;
 }
 
 export function readSavedPlace(subdomain: string): SavedPlace | null {
@@ -18,7 +20,11 @@ export function readSavedPlace(subdomain: string): SavedPlace | null {
     if (raw) {
       const p = JSON.parse(raw) as Partial<SavedPlace>;
       if (typeof p.district === 'string' && p.district.trim()) {
-        return { district: p.district.slice(0, 100), thana: typeof p.thana === 'string' ? p.thana.slice(0, 100) : '' };
+        return {
+          district: p.district.slice(0, 100),
+          thana: typeof p.thana === 'string' ? p.thana.slice(0, 100) : '',
+          area: typeof p.area === 'string' ? p.area.slice(0, 100) : '',
+        };
       }
     }
     const old = localStorage.getItem(OLD_DISTRICT_KEY + subdomain);
@@ -30,7 +36,15 @@ export function readSavedPlace(subdomain: string): SavedPlace | null {
 
 export function writeSavedPlace(subdomain: string, place: SavedPlace): void {
   try {
-    if (place.district.trim()) localStorage.setItem(KEY + subdomain, JSON.stringify({ district: place.district, thana: place.thana }));
+    if (place.district.trim()) {
+      // A save that doesn't name an area (the checkout) keeps the one already saved for the same thana.
+      let area = place.area;
+      if (area === undefined) {
+        const before = readSavedPlace(subdomain);
+        area = before && before.district === place.district && before.thana === place.thana ? (before.area ?? '') : '';
+      }
+      localStorage.setItem(KEY + subdomain, JSON.stringify({ district: place.district, thana: place.thana, area }));
+    }
     else localStorage.removeItem(KEY + subdomain);
     localStorage.removeItem(OLD_DISTRICT_KEY + subdomain);
   } catch {

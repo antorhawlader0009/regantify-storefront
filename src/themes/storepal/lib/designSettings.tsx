@@ -27,7 +27,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   productBadgeColor: null,
   bannerEnabled: true,
   bannerSchedule: [],
-  trustStrip: { enabled: false, items: [], product: true, checkout: true, home: false },
+  trustStrip: { enabled: false, items: [], product: true, checkout: true, home: false, fastDelivery: true },
   reputation: null,
   bannerContent: null,
   bannerStyle: 'MARQUEE',

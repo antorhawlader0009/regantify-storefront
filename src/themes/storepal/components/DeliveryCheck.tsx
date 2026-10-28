@@ -23,27 +23,34 @@ const ZONE_EN = { DHAKA: 'Inside Dhaka', AROUND_DHAKA: 'Around Dhaka', OUTSIDE_D
 const ZONE_BN = { DHAKA: 'ঢাকার ভিতরে', AROUND_DHAKA: 'ঢাকার আশেপাশে', OUTSIDE_DHAKA: 'ঢাকার বাইরে' };
 
 const LABELS = {
+  // Shown like a courier's picker: "City › Zone › Area" (district › thana/upazila › ward/union), each part grey until picked.
   en: {
-    district: 'District',
-    thana: 'Thana / Upazila',
-    districtPlaceholder: 'Select your district and thana',
-    thanaPlaceholder: 'Thana / Upazila',
-    thanaNeedsDistrict: 'Choose a district first',
+    district: 'City',
+    thana: 'Zone',
+    area: 'Area',
+    districtPlaceholder: 'City',
+    thanaPlaceholder: 'Zone',
+    areaPlaceholder: 'Area',
+    thanaNeedsDistrict: 'Choose a city first',
     other: 'Other (type it)',
-    typeDistrict: 'Type your district',
-    typeThana: 'Type your thana / upazila',
+    typeDistrict: 'Type your city / district',
+    typeThana: 'Type your zone / thana',
+    typeArea: 'Type your area',
     place: 'Delivery: how much, and when?',
     search: 'Search',
   },
   bn: {
     district: 'জেলা',
-    thana: 'থানা / উপজেলা',
-    districtPlaceholder: 'আপনার জেলা ও থানা বাছুন',
-    thanaPlaceholder: 'থানা / উপজেলা',
+    thana: 'থানা',
+    area: 'এলাকা',
+    districtPlaceholder: 'জেলা',
+    thanaPlaceholder: 'থানা',
+    areaPlaceholder: 'এলাকা',
     thanaNeedsDistrict: 'আগে জেলা বাছুন',
     other: 'অন্যান্য (নিজে লিখুন)',
     typeDistrict: 'আপনার জেলা লিখুন',
     typeThana: 'আপনার থানা / উপজেলা লিখুন',
+    typeArea: 'আপনার এলাকা লিখুন',
     place: 'ডেলিভারি কত, কবে?',
     search: 'খুঁজুন',
   },
@@ -62,6 +69,8 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
   const bn = design.storeLanguage === 'bn';
   const [district, setDistrict] = useState('');
   const [thana, setThana] = useState('');
+  // The area inside the thana is only remembered (the charge and date depend on district and thana).
+  const [area, setArea] = useState('');
   const [quote, setQuote] = useState<Quote | null>(null);
   const [failed, setFailed] = useState(false);
 
@@ -70,6 +79,7 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
     if (saved) {
       setDistrict(saved.district);
       setThana(saved.thana);
+      setArea(saved.area ?? '');
     }
   }, [subdomain]);
 
@@ -90,7 +100,7 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
     };
   }, [district, thana, subdomain]);
 
-  const save = (next: { district: string; thana: string }) => {
+  const save = (next: { district: string; thana: string; area: string }) => {
     if (next.district && next.district !== district) trackFeature('DELIVERY_CHECK');
     writeSavedPlace(subdomain, next);
   };
@@ -101,13 +111,18 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
       <BdAddressPicker
         district={district}
         thana={thana}
+        area={area}
         onDistrict={(value) => {
           setDistrict(value);
-          save({ district: value, thana: '' });
+          save({ district: value, thana: '', area: '' });
         }}
         onThana={(value) => {
           setThana(value);
-          save({ district, thana: value });
+          save({ district, thana: value, area: '' });
+        }}
+        onArea={(value) => {
+          setArea(value);
+          save({ district, thana, area: value });
         }}
         lang={bn ? 'bn' : 'en'}
         labels={LABELS[bn ? 'bn' : 'en']}

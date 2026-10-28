@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Minus, Plus, Truck, ShieldCheck, Banknote, PlayCircle } from 'lucide-react';
+import { CheckCircle2, Minus, Plus, PlayCircle } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { ProductVideo } from '@/components/ProductVideo';
 import { HoverZoom, PhotoViewer } from '@/components/ProductImageViewer';
@@ -775,21 +775,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         )}
           </>
         )}
-        {/* What every order gets, right under the buttons where the decision is made. */}
-        <ul className="mt-4 mb-0 grid grid-cols-3 list-none divide-x divide-line rounded-lg border border-line p-0 text-center">
-          <li className="flex flex-col items-center gap-1 px-2 py-2.5 text-[11.5px] leading-tight text-muted">
-            <Truck size={16} className="text-ink shrink-0" aria-hidden />
-            {product.isPreOrder ? t('Delivery in 20–25 days') : t('Fast delivery')}
-          </li>
-          <li className="flex flex-col items-center gap-1 px-2 py-2.5 text-[11.5px] leading-tight text-muted">
-            <Banknote size={16} className="text-ink shrink-0" aria-hidden />
-            {t('Cash on delivery')}
-          </li>
-          <li className="flex flex-col items-center gap-1 px-2 py-2.5 text-[11.5px] leading-tight text-muted">
-            <ShieldCheck size={16} className="text-ink shrink-0" aria-hidden />
-            {t('Quality checked')}
-          </li>
-        </ul>
+        {/* The row under the buttons ("Fast delivery", "Cash on delivery", the store's own items) is ProductTrustRow, first in leadSlots.after. */}
         {leadSlots?.after}
 
         {/* The summary can hold editor HTML; shown as plain text (it used to print the tags as words). */}

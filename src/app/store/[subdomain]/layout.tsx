@@ -3,6 +3,7 @@ import { getStoreInfo, siteUrl, StoreNotFoundError, type StorefrontLmsForms } fr
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
+import { OrdersOffBar } from '@/components/OrdersOffBar';
 import { WebVitalsBeacon } from '@/components/WebVitalsBeacon';
 import { ShopperStoreScope } from '@/components/ShopperStoreScope';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
@@ -298,6 +299,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       )}
       <ThemeProvider theme={theme}>
         <UsdPriceProvider rate={usdRate}>
+        {/* Red "orders are off" strip on every template while the store takes no new orders (wallet below -৳100 and so on). */}
+        {storeExists && <OrdersOffBar subdomain={subdomain} lang={designSettings?.storeLanguage === 'bn' ? 'bn' : 'en'} />}
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (

@@ -5,11 +5,14 @@
  * vendor's dashboard, the courier matching and the delivery reports all see one spelling.
  */
 
-/** A district: English name, Bangla name, and its thanas/upazilas as [English, Bangla] pairs. */
+/** A thana/upazila: [English, Bangla] and, when the data has them, its areas (wards, unions) as [English, Bangla] pairs. */
+export type BdThana = [string, string] | [string, string, [string, string][]];
+
+/** A district: English name, Bangla name, and its thanas/upazilas. */
 export interface BdDistrict {
   n: string;
   b: string;
-  t: [string, string][];
+  t: BdThana[];
 }
 
 export interface BdLocations {
@@ -76,8 +79,21 @@ export function findDistrict(data: BdLocations, text: string): BdDistrict | null
 }
 
 /** The thana/upazila of a district that a text stands for, or null. */
-export function findThana(district: BdDistrict, text: string): [string, string] | null {
+export function findThana(district: BdDistrict, text: string): BdThana | null {
   const key = normalizeName(text);
   if (!key) return null;
   return district.t.find((t) => normalizeName(t[0]) === key || normalizeName(t[1]) === key) ?? null;
+}
+
+/** The areas the data has for a thana (often none). */
+export function areasOf(thana: BdThana | null): [string, string][] {
+  return thana && thana.length === 3 ? thana[2] : [];
+}
+
+/** The area of a thana that a text stands for, or null. Digits count too, so "Mirpur-1" and "Mirpur-10" differ. */
+export function findArea(thana: BdThana | null, text: string): [string, string] | null {
+  const key = text.toLowerCase().replace(/[^a-z0-9ঀ-৿]/g, '');
+  if (!key) return null;
+  const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9ঀ-৿]/g, '');
+  return areasOf(thana).find((a) => norm(a[0]) === key || norm(a[1]) === key) ?? null;
 }

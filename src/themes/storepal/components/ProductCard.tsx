@@ -59,6 +59,8 @@ interface CardProduct {
   bundlePick?: number | null;
   /** Sold in packs (TellMe idea 102). */
   quantityStep?: number;
+  /** Most pieces one customer can order at once (the store's number or the default 5); null = no limit. */
+  maxOrderQuantity?: number | null;
   unitLabel?: string | null;
   /** Buyers in the store's social-proof window (TellMe idea 63). */
   soldRecent?: number;
@@ -199,6 +201,8 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       isPreOrder: product.isPreOrder,
       minOrderQuantity: product.minOrderQuantity,
       quantityStep: product.quantityStep,
+      // The cart never goes past the product's "most per order" (checkout refuses more anyway).
+      maxQuantity: product.maxOrderQuantity ?? undefined,
       productId: product.id,
       variantId: matchedVariant?.id,
     });

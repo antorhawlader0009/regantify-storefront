@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ShoppingBag, Star } from 'lucide-react';
-import { fetchCustomerPurchases, type CustomerPurchase } from '@/lib/customerAuthApi';
+import { deleteOwnReview, fetchCustomerPurchases, updateOwnReview, type CustomerPurchase } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { useStoreText } from '../../lib/storeText';
 import { AccountLayout } from '../../components/AccountLayout';
@@ -26,6 +26,12 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
   const accessToken = useCustomerAuthStore((s) => s.accessToken);
   const [items, setItems] = useState<CustomerPurchase[] | null>(null);
   const [error, setError] = useState(false);
+  // The review being edited, or the one asking "delete?" (one at a time).
+  const [editing, setEditing] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [actionError, setActionError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
 
   useEffect(() => {
     if (!accessToken) return;
@@ -37,7 +43,22 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
     return () => {
       live = false;
     };
-  }, [subdomain, accessToken]);
+  }, [subdomain, accessToken, reload]);
+
+  const removeReview = async (reviewId: string) => {
+    if (!accessToken) return;
+    setBusy(true);
+    setActionError(null);
+    try {
+      await deleteOwnReview(subdomain, accessToken, reviewId);
+      setDeleting(null);
+      setReload((n) => n + 1);
+    } catch (err) {
+      setActionError(err instanceof Error ? err.message : t('Something went wrong. Please try again.'));
+    } finally {
+      setBusy(false);
+    }
+  };
 
   const dateText = (iso: string) =>
     new Date(iso).toLocaleDateString(design.storeLanguage === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Dhaka' });
@@ -97,15 +118,73 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
                   </p>
 
                   <div className="mt-2">
-                    {it.review ? (
-                      <span className="inline-flex items-center gap-1.5 text-[12.5px] text-muted">
-                        <span className="inline-flex text-amber-400" aria-label={`${it.review.rating} / 5`}>
-                          {[1, 2, 3, 4, 5].map((n) => (
-                            <Star key={n} size={13} fill={n <= it.review!.rating ? 'currentColor' : 'none'} strokeWidth={n <= it.review!.rating ? 0 : 1.5} />
-                          ))}
+                    {it.review && editing === it.review.id && accessToken ? (
+                      <OwnReviewForm
+                        review={it.review}
+                        onCancel={() => setEditing(null)}
+                        onSave={async (input) => {
+                          await updateOwnReview(subdomain, accessToken, it.review!.id, input);
+                          setEditing(null);
+                          setReload((n) => n + 1);
+                        }}
+                      />
+                    ) : it.review ? (
+                      <div>
+                        <span className="inline-flex items-center gap-1.5 text-[12.5px] text-muted">
+                          <span className="inline-flex text-amber-400" aria-label={`${it.review.rating} / 5`}>
+                            {[1, 2, 3, 4, 5].map((n) => (
+                              <Star key={n} size={13} fill={n <= it.review!.rating ? 'currentColor' : 'none'} strokeWidth={n <= it.review!.rating ? 0 : 1.5} />
+                            ))}
+                          </span>
+                          {it.review.approved ? t('Reviewed') : t('Waiting for approval')}
                         </span>
-                        {it.review.approved ? t('Reviewed') : t('Waiting for approval')}
-                      </span>
+                        {it.review.editable && (
+                          <div className="mt-1.5 flex flex-wrap items-center gap-3 text-[12.5px]">
+                            {deleting === it.review.id ? (
+                              <>
+                                <span className="text-ink">{t('Delete your review?')}</span>
+                                <button
+                                  type="button"
+                                  disabled={busy}
+                                  onClick={() => removeReview(it.review!.id)}
+                                  className="font-semibold text-accent hover:underline disabled:opacity-60"
+                                >
+                                  {t('Yes, delete')}
+                                </button>
+                                <button type="button" onClick={() => setDeleting(null)} className="text-muted hover:underline">
+                                  {t('Cancel')}
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActionError(null);
+                                    setDeleting(null);
+                                    setEditing(it.review!.id);
+                                  }}
+                                  className="font-semibold text-ink hover:underline"
+                                >
+                                  {t('Edit review')}
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setActionError(null);
+                                    setEditing(null);
+                                    setDeleting(it.review!.id);
+                                  }}
+                                  className="text-muted hover:text-accent hover:underline"
+                                >
+                                  {t('Delete review')}
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        )}
+                        {actionError && deleting === it.review.id && <p className="m-0 mt-1 text-[12px] text-accent">{actionError}</p>}
+                      </div>
                     ) : it.reviewToken && href ? (
                       <Link
                         href={`${href}?order=${encodeURIComponent(it.reviewToken)}`}
@@ -127,5 +206,90 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
         </ul>
       )}
     </AccountLayout>
+  );
+}
+
+/** Edit one's own review in place: stars, title, text, and taking its photos or video off. */
+function OwnReviewForm({
+  review,
+  onSave,
+  onCancel,
+}: {
+  review: NonNullable<CustomerPurchase['review']>;
+  onSave: (input: { title: string; content?: string; rating: number; removePhotos?: boolean; removeVideo?: boolean }) => Promise<void>;
+  onCancel: () => void;
+}) {
+  const t = useStoreText();
+  const [rating, setRating] = useState(review.rating);
+  const [title, setTitle] = useState(review.title);
+  const [content, setContent] = useState(review.content ?? '');
+  const [removePhotos, setRemovePhotos] = useState(false);
+  const [removeVideo, setRemoveVideo] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      setError(t('Please give your review a title.'));
+      return;
+    }
+    setSaving(true);
+    setError(null);
+    try {
+      await onSave({ title: title.trim(), content: content.trim(), rating, removePhotos, removeVideo });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('Something went wrong. Please try again.'));
+      setSaving(false);
+    }
+  };
+
+  return (
+    <form onSubmit={submit} className="mt-1 space-y-2.5 rounded-md border border-line bg-canvas p-3">
+      <div className="flex items-center gap-1 text-amber-400" role="radiogroup" aria-label={t('Your rating')}>
+        {[1, 2, 3, 4, 5].map((n) => (
+          <button key={n} type="button" role="radio" aria-checked={n === rating} aria-label={`${n} / 5`} onClick={() => setRating(n)}>
+            <Star size={20} fill={n <= rating ? 'currentColor' : 'none'} strokeWidth={n <= rating ? 0 : 1.5} />
+          </button>
+        ))}
+      </div>
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value.slice(0, 150))}
+        maxLength={150}
+        placeholder={t('Review title')}
+        className="w-full px-3 py-2 rounded-md border border-line-strong bg-surface text-[13px] outline-none focus:border-ink"
+      />
+      <textarea
+        value={content}
+        onChange={(e) => setContent(e.target.value.slice(0, 3000))}
+        maxLength={3000}
+        rows={3}
+        placeholder={t('Your review')}
+        className="w-full px-3 py-2 rounded-md border border-line-strong bg-surface text-[13px] outline-none focus:border-ink resize-y"
+      />
+      {review.photos.length > 0 && (
+        <label className="flex items-center gap-2 text-[12.5px] text-ink">
+          <input type="checkbox" checked={removePhotos} onChange={(e) => setRemovePhotos(e.target.checked)} />
+          {t('Remove my photos')}
+        </label>
+      )}
+      {review.videoUrl && (
+        <label className="flex items-center gap-2 text-[12.5px] text-ink">
+          <input type="checkbox" checked={removeVideo} onChange={(e) => setRemoveVideo(e.target.checked)} />
+          {t('Remove my video')}
+        </label>
+      )}
+      <p className="m-0 text-[12px] text-muted">{t('After you save, the store checks your review again before it shows.')}</p>
+      {error && <p className="m-0 text-[12px] text-accent">{error}</p>}
+      <div className="flex gap-2">
+        <button type="submit" disabled={saving} className="px-4 py-2 rounded-md bg-ink hover:bg-ink/90 text-white text-[12.5px] font-bold disabled:opacity-60">
+          {saving ? t('Saving…') : t('Save')}
+        </button>
+        <button type="button" onClick={onCancel} className="px-4 py-2 rounded-md border border-line-strong text-[12.5px] text-ink">
+          {t('Cancel')}
+        </button>
+      </div>
+    </form>
   );
 }
