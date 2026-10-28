@@ -6,8 +6,9 @@ import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, ChevronDown } from 'lucide-react';
 import { ReputationStrip } from './ReputationStrip';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
-import { getGiftCardSale, getStoreHasBlog, getStoreContactInfo, getStoreHasFaq, getStoreHasLocations, getStorePages, getStorePaymentMethods, type StoreContactInfo, type StorefrontPageSummary } from '../lib/storeNavApi';
+import { getGiftCardSale, getStoreHasBlog, getStoreContactInfo, getStoreHasFaq, getStoreHasLocations, getStorePages, type StoreContactInfo, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate } from '@/lib/footerTemplates';
+import { missingDemoPages } from '@/lib/demoPages';
 import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
 import { BusinessHoursTable } from './BusinessHoursTable';
@@ -126,8 +127,6 @@ export function StoreFooter({
   footerConfig: footerConfigProp,
 }: StoreFooterProps) {
   const t = useStoreText();
-  // The payment methods this store's checkout really offers ("We accept" row).
-  const [paymentMethods, setPaymentMethods] = useState<string[]>([]);
   const [fetched, setFetched] = useState<{
     logoUrl?: string | null;
     socialLinks: SocialLinks;
@@ -138,6 +137,8 @@ export function StoreFooter({
   // case today) needs this for the original hardcoded INFORMATION
   // column below.
   const [pages, setPages] = useState<StorefrontPageSummary[]>([]);
+  // Default pages (lib/demoPages.ts): only once the store's own list is in, so a page it did write never flashes a demo link.
+  const [pagesLoaded, setPagesLoaded] = useState(false);
   // Store > Magazine (TellMe idea 106): a "Magazine" link once there is a published post.
   const [hasBlog, setHasBlog] = useState(false);
   // Store FAQ (TellMe idea 122): a "FAQ" link once a question is switched on.
@@ -160,13 +161,15 @@ export function StoreFooter({
   }, [subdomain, haveAllProps]);
 
   useEffect(() => {
-    getStorePages(subdomain).then(setPages);
+    getStorePages(subdomain).then((list) => {
+      setPages(list);
+      setPagesLoaded(true);
+    });
     getStoreHasBlog(subdomain).then(setHasBlog);
     getStoreHasFaq(subdomain).then(setHasFaq);
     getStoreContactInfo(subdomain).then(setContact);
     getStoreHasLocations(subdomain).then(setHasLocations);
     getGiftCardSale(subdomain).then((c) => setHasGiftCards(!!c?.enabled && c.amounts.length > 0));
-    getStorePaymentMethods(subdomain).then(setPaymentMethods);
   }, [subdomain]);
 
   const socialLinks = socialLinksProp ?? fetched?.socialLinks ?? {};
@@ -176,6 +179,11 @@ export function StoreFooter({
 
   // Same choice as the header (Store > Design > Header Editor): logo and name both by default, the name always there if nothing else would be.
   const design = useStorePalDesign();
+  // A footer the store never saved also lists the standard pages it has not written yet; they open a demo text.
+  const demoLang = design.storeLanguage === 'bn' ? 'bn' : 'en';
+  const demoLinks = pagesLoaded
+    ? missingDemoPages(pages).map((d) => ({ kind: d.kind, label: d.title[demoLang], url: `/store/${subdomain}/page/${d.slug}` }))
+    : [];
   const showLogo = !!logoUrl && (design.headerShowLogo ?? true);
   const showName = (design.headerShowStoreName ?? true) || !showLogo;
   const Logo = (
@@ -202,7 +210,7 @@ export function StoreFooter({
             target="_blank"
             rel="noopener noreferrer"
             aria-label={label}
-            className="w-8 h-8 rounded flex items-center justify-center bg-ink text-white hover:bg-accent transition-colors"
+            className="w-8 h-8 rounded flex items-center justify-center bg-white/10 text-white hover:bg-white/20 transition-colors"
           >
             <Icon size={15} />
           </a>
@@ -211,36 +219,39 @@ export function StoreFooter({
     </>
   );
 
-  // "We accept": worked out from the checkout's real payment methods, never typed in by the seller, so it can't
-  // show a method the shopper can't use. A saved footer can switch it off; a store with no saved footer shows it.
-  const paymentVisible = !footerConfig || footerConfig.showPaymentIcons;
-  const PaymentStrip = paymentVisible && paymentMethods.length > 0 && (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
-      <p className="text-[13px] font-semibold text-ink mb-2">{t('We accept')}</p>
-      <div className="flex flex-wrap gap-1.5">
-        {paymentMethods.map((label) => (
-          <span key={label} className="px-2.5 py-1 rounded border border-line-strong bg-surface text-[12px] font-semibold text-ink">
-            {t(label)}
-          </span>
-        ))}
-      </div>
-    </div>
-  );
+  // The "We accept" row (the checkout's payment methods) was removed on 2026-10-28 at the owner's request.
   const trackLink = { label: t('Track order'), url: `/store/${subdomain}/orders` };
 
   // Not yet configured — original hardcoded 3-column footer, unchanged
   // from before Store > Footer existed. See this component's own
   // "BACKWARD COMPATIBILITY" doc comment above.
   if (!footerConfig) {
+    // A store that never saved a footer gets the recommended one (the same layout Store > Footer opens with, see the
+    // dashboard's lib/footerRecommended.ts): delivery and returns as their own links (Baymard), the store's pages, contact
+    // details and social links. Pages the store has not written yet link to their demo text (lib/demoPages.ts).
+    const linkClass = 'text-accent hover:text-accent-dark transition-colors w-fit';
+    const helpDemo = demoLinks.filter((l) => l.kind === 'DELIVERY' || l.kind === 'RETURN');
+    const storeDemo = demoLinks.filter((l) => l.kind !== 'DELIVERY' && l.kind !== 'RETURN');
+    const about = aboutBlurb?.trim();
     return (
       <footer data-rg="footer" className="bg-canvas border-t border-line mt-8">
         <ReputationStrip />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-3">
-          <div>
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+          <div className="sm:col-span-2 lg:col-span-1">
             {Logo}
-            {SocialIcons}
-            {/* A new store's footer had no way to reach the shop: the Contact page's own phone and address (owner phone and
-                Settings > Address unless the store changed them there), only while that page is on. */}
+            {about ? (
+              <div
+                className="mt-3 max-w-sm text-[13px] text-muted leading-relaxed [&_p]:mb-2 line-clamp-6"
+                // eslint-disable-next-line react/no-danger
+                dangerouslySetInnerHTML={{ __html: about }}
+              />
+            ) : (
+              <p className="mt-3 max-w-sm text-[13px] text-muted leading-relaxed">
+                {t('{name} brings you carefully chosen products at fair prices, delivered all over Bangladesh.').replace('{name}', storeName)}
+              </p>
+            )}
+            {/* The Contact page's own phone and address (owner phone and Settings > Address unless the store changed them
+                there), only while that page is on. */}
             {contact && (contact.phone || contact.basedIn) && (
               <div className="mt-4 flex flex-col gap-1.5 text-[13px] text-muted">
                 {contact.basedIn && <p className="m-0 whitespace-pre-line">{contact.basedIn}</p>}
@@ -251,62 +262,62 @@ export function StoreFooter({
                 )}
               </div>
             )}
+            {SocialIcons}
           </div>
 
-          <FooterSection title={t('INFORMATION')}>
+          <FooterSection title={t('Customer help')}>
             <div className="flex flex-col gap-2.5 text-[13px]">
-                <Link href={trackLink.url} className="text-accent hover:text-accent-dark transition-colors w-fit">
-                  {trackLink.label}
+              <Link href={trackLink.url} className={linkClass}>
+                {trackLink.label}
+              </Link>
+              {helpDemo.map((link) => (
+                <Link key={link.url} href={link.url} className={linkClass}>
+                  {link.label}
                 </Link>
-                {pages.map((page) => (
-                  <Link
-                    key={page.slug}
-                    href={`/store/${subdomain}/page/${page.slug}`}
-                    className="text-accent hover:text-accent-dark transition-colors w-fit"
-                  >
-                    {page.title}
-                  </Link>
-                ))}
-                {hasBlog && (
-                  <Link href={`/store/${subdomain}/blog`} className="text-accent hover:text-accent-dark transition-colors w-fit">
-                    {t('Magazine')}
-                  </Link>
-                )}
-                {hasFaq && (
-                  <Link href={`/store/${subdomain}/faq`} className="text-accent hover:text-accent-dark transition-colors w-fit">
-                    {t('FAQ')}
-                  </Link>
-                )}
-                {hasContact && (
-                  <Link href={`/store/${subdomain}/contact`} className="text-accent hover:text-accent-dark transition-colors w-fit">
-                    {t('Contact us')}
-                  </Link>
-                )}
-                {hasLocations && (
-                  <Link href={`/store/${subdomain}/locations`} className="text-accent hover:text-accent-dark transition-colors w-fit">
-                    {t('Our shops')}
-                  </Link>
-                )}
-                {hasGiftCards && (
-                  <Link href={`/store/${subdomain}/gift-card`} className="text-accent hover:text-accent-dark transition-colors w-fit">
-                    {t('Gift cards')}
-                  </Link>
-                )}
+              ))}
+              {hasFaq && (
+                <Link href={`/store/${subdomain}/faq`} className={linkClass}>
+                  {t('FAQ')}
+                </Link>
+              )}
+              {hasContact && (
+                <Link href={`/store/${subdomain}/contact`} className={linkClass}>
+                  {t('Contact us')}
+                </Link>
+              )}
             </div>
           </FooterSection>
 
-          {aboutBlurb?.trim() && (
-            <div>
-              <div
-                className="text-[13px] text-muted leading-relaxed [&_p]:mb-2 line-clamp-6"
-                // eslint-disable-next-line react/no-danger
-                dangerouslySetInnerHTML={{ __html: aboutBlurb }}
-              />
+          <FooterSection title={t('Our store')}>
+            <div className="flex flex-col gap-2.5 text-[13px]">
+              {pages.map((page) => (
+                <Link key={page.slug} href={`/store/${subdomain}/page/${page.slug}`} className={linkClass}>
+                  {page.title}
+                </Link>
+              ))}
+              {storeDemo.map((link) => (
+                <Link key={link.url} href={link.url} className={linkClass}>
+                  {link.label}
+                </Link>
+              ))}
+              {hasBlog && (
+                <Link href={`/store/${subdomain}/blog`} className={linkClass}>
+                  {t('Magazine')}
+                </Link>
+              )}
+              {hasLocations && (
+                <Link href={`/store/${subdomain}/locations`} className={linkClass}>
+                  {t('Our shops')}
+                </Link>
+              )}
+              {hasGiftCards && (
+                <Link href={`/store/${subdomain}/gift-card`} className={linkClass}>
+                  {t('Gift cards')}
+                </Link>
+              )}
             </div>
-          )}
+          </FooterSection>
         </div>
-
-        {PaymentStrip}
 
         <div className="border-t border-line">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[13px] text-muted flex flex-col items-center gap-1 sm:flex-row sm:justify-between">
@@ -358,7 +369,7 @@ export function StoreFooter({
   const infoItems =
     footerConfig.infoLinks.length > 0
       ? footerConfig.infoLinks
-      : [trackLink, ...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : []), ...(hasFaq ? [{ label: t('FAQ'), url: `/store/${subdomain}/faq` }] : []), ...(hasContact ? [{ label: t('Contact us'), url: `/store/${subdomain}/contact` }] : []), ...(hasLocations ? [{ label: t('Our shops'), url: `/store/${subdomain}/locations` }] : [])];
+      : [trackLink, ...pages.map((p) => ({ label: p.title, url: `/store/${subdomain}/page/${p.slug}` })), ...demoLinks, ...(hasBlog ? [{ label: t('Magazine'), url: `/store/${subdomain}/blog` }] : []), ...(hasFaq ? [{ label: t('FAQ'), url: `/store/${subdomain}/faq` }] : []), ...(hasContact ? [{ label: t('Contact us'), url: `/store/${subdomain}/contact` }] : []), ...(hasLocations ? [{ label: t('Our shops'), url: `/store/${subdomain}/locations` }] : [])];
   const InfoColumn = infoItems.length > 0 && (
     <FooterSection title={footerConfig.infoTitle} upper>
       <div className="flex flex-col gap-2.5 text-[13px]">
@@ -443,7 +454,6 @@ export function StoreFooter({
         ))}
       </div>
 
-      {PaymentStrip}
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
         <BusinessHoursTable />

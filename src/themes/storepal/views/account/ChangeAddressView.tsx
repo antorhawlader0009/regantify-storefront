@@ -275,6 +275,8 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
                 other: t('Other (type it)'),
                 typeDistrict: t('Type your district'),
                 typeThana: t('Type your city or thana'),
+                place: t('District & Thana / Upazila'),
+                search: t('Search'),
               }}
               labelClassName={labelClass}
               controlClassName={inputClass}

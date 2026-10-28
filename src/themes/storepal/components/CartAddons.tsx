@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useShallow } from 'zustand/react/shallow';
 import { Plus } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
-import { formatPrice as plainPrice } from '@/lib/productDisplay';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 

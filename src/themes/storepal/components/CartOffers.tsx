@@ -5,7 +5,7 @@ import { useShallow } from 'zustand/react/shallow';
 import { Gift, Tag, Truck } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { previewDiscounts, fetchDiscountOffers, type AutomaticDiscounts, type DiscountOffer } from '@/lib/checkoutApi';
-import { formatPrice as plainPrice } from '@/lib/productDisplay';
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { isStoreWide, offerBenefit } from '../lib/offers';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 

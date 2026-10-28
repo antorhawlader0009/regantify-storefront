@@ -28,7 +28,7 @@ export function SocialFeedSection({ feed }: { feed: StorefrontSocialFeed }) {
 
   return (
     <section>
-      <h2 className="mb-4 text-center text-[20px] font-bold uppercase text-ink">{feed.title || t('Watch us on YouTube')}</h2>
+      <h2 className="mb-4 text-center text-[20px] font-bold text-ink">{feed.title || t('Watch us on YouTube')}</h2>
       <div className="overflow-hidden rounded-lg border border-black/5 bg-white">
         {feed.showHeader && (
           <div className="flex items-center gap-3 p-4">

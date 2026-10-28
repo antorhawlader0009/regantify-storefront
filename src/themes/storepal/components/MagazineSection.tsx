@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import Image from 'next/image';
+import { ChevronRight } from 'lucide-react';
 import type { StorefrontBlogCard } from '@/lib/storefrontApi';
 import { useStoreText } from '../lib/storeText';
 
@@ -31,7 +32,7 @@ export function MagazineSection({ subdomain, storeName, posts, total }: { subdom
   if (posts.length === 0) return null;
   return (
     <section>
-      <h2 className="text-center text-[22px] font-bold uppercase text-ink">{t('Magazine')}</h2>
+      <h2 className="text-center text-[20px] font-bold text-ink">{t('Magazine')}</h2>
       <p className="mb-5 text-center text-[13px] text-muted">{t('Latest from the store')}</p>
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
         {posts.slice(0, 5).map((post) => (
@@ -40,8 +41,9 @@ export function MagazineSection({ subdomain, storeName, posts, total }: { subdom
       </div>
       {total > 5 && (
         <div className="mt-4 text-center">
-          <Link href={`/store/${subdomain}/blog`} className="text-[12.5px] font-medium text-accent hover:text-accent-dark">
-            {t('View all posts')} →
+          <Link href={`/store/${subdomain}/blog`} className="inline-flex items-center gap-0.5 text-[13px] font-medium text-accent hover:text-accent-dark">
+            {t('View all posts')}
+            <ChevronRight size={15} aria-hidden />
           </Link>
         </div>
       )}

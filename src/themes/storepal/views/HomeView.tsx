@@ -28,7 +28,7 @@ import { useStorePalDesign } from '../lib/designSettings';
 import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
-import { SlidersHorizontal, X, Tag, Flame } from 'lucide-react';
+import { SlidersHorizontal, X, Tag, ChevronRight } from 'lucide-react';
 import { bnDigits, useStoreText } from '../lib/storeText';
 import { RecentlyViewed } from '../components/RecentlyViewed';
 import { ComebackNudge } from '../components/ComebackNudge';
@@ -374,17 +374,25 @@ export function HomeView({
                   />
                 </div>
               )}
-              <div className="flex items-center justify-between">
-                <h1 className="text-[16px] font-bold text-ink">
-                  {pickRank ? t('Shown by our assistant') : search?.trim() ? `Results for "${search}"` : (activeCategory ?? activeBrand)}
-                </h1>
-                <div className="flex items-center gap-3">
-                  <span className="text-[12.5px] text-muted">{filtered.length} products</span>
+              {/* Phones: the title and its count get their own row and sort + Filters share the row below (they used to squeeze the
+                  title into a narrow column over three lines). From the small breakpoint up it is one row again. */}
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <h1 className="text-[17px] font-bold text-ink break-words">
+                    {pickRank
+                      ? t('Shown by our assistant')
+                      : search?.trim()
+                        ? t('Results for "{q}"').replace('{q}', search.trim())
+                        : (activeCategory ?? activeBrand)}
+                  </h1>
+                  <p className="m-0 mt-0.5 text-[12.5px] text-muted">{t('{n} products').replace('{n}', String(filtered.length))}</p>
+                </div>
+                <div className="flex items-center gap-2 sm:gap-3 sm:shrink-0">
                   <select
                     value={sortBy}
                     onChange={(e) => setSortBy(e.target.value as typeof sortBy)}
-                    aria-label="Sort products"
-                    className="text-[12.5px] font-medium text-ink bg-surface border border-line-strong rounded-md px-2.5 py-1.5 outline-none focus:border-ink cursor-pointer"
+                    aria-label={t('Sort products')}
+                    className="flex-1 sm:flex-none min-w-0 text-[13px] font-medium text-ink bg-surface border border-line-strong rounded-md px-2.5 py-2 outline-none focus:border-ink cursor-pointer"
                   >
                     <option value="latest">{t('Sort by latest')}</option>
                     <option value="price-asc">{t('Price: low to high')}</option>
@@ -392,7 +400,7 @@ export function HomeView({
                   </select>
                   <button
                     onClick={() => setMobileFiltersOpen(true)}
-                    className="lg:hidden flex items-center gap-1.5 text-[12.5px] font-semibold text-ink border border-line-strong rounded-md px-2.5 py-1.5"
+                    className="lg:hidden flex shrink-0 items-center gap-1.5 text-[13px] font-semibold text-ink bg-surface border border-line-strong rounded-md px-3 py-2"
                   >
                     <SlidersHorizontal size={13} />
                     {t('Filters')}
@@ -512,11 +520,8 @@ export function HomeView({
                   <div key={id} className={HOME_WRAP}>
                     {topSelling.length > 0 && (
                       <section>
-                        <h2 className="text-[18px] font-bold text-ink mb-4 flex items-center justify-center gap-2">
-                          <Flame size={18} className="text-orange-500" aria-hidden />
-                          {t('Top Selling')}
-                          <Flame size={18} className="text-orange-500" aria-hidden />
-                        </h2>
+                        {/* Same heading as the category rows below, so the home page reads as one list of sections. */}
+                        <h2 className="text-[17px] font-bold text-ink mb-4">{t('Top Selling')}</h2>
                         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                           {topSelling.map((product) => (
                             <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
@@ -546,7 +551,7 @@ export function HomeView({
                                 </div>
                               )}
                             </div>
-                            <span className="text-[12.5px] font-medium text-ink text-center leading-tight lowercase">
+                            <span className="text-[12.5px] font-medium text-ink text-center leading-tight">
                               {cat.name}
                             </span>
                           </Link>
@@ -561,12 +566,14 @@ export function HomeView({
                     {grouped?.map((section) => (
                       <section key={section.name}>
                         <div className="flex items-center justify-between mb-4">
-                          <h2 className="text-[16px] font-bold text-ink uppercase">{section.name}</h2>
+                          {/* The category name as the seller wrote it (no forced capitals, which were hard to read). */}
+                          <h2 className="text-[17px] font-bold text-ink">{section.name}</h2>
                           <Link
                             href={`/store/${subdomain}?category=${encodeURIComponent(section.name)}`}
-                            className="text-[12.5px] font-medium text-accent hover:text-accent-dark"
+                            className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-accent hover:text-accent-dark"
                           >
-                            View all →
+                            {t('View all')}
+                            <ChevronRight size={15} aria-hidden />
                           </Link>
                         </div>
                         <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">

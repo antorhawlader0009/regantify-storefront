@@ -995,6 +995,12 @@ export interface StorefrontPageData {
 // Policy, etc — see reference screenshot at
 // storepal.com.bd/page/about-us). Only ever a PUBLISHED page — see
 // StorefrontService.getStorePage on the backend.
+/** The store's published pages (title + slug), cached with the store; an empty list if the call fails. Used for the demo pages. */
+export async function getStorePageList(subdomain: string): Promise<Array<{ slug: string; title: string }>> {
+  const data = await fetchJson<Array<{ slug: string; title: string }>>(`/v1/store/${subdomain}/pages`, [`store:${subdomain}`]).catch(() => null);
+  return Array.isArray(data) ? data : [];
+}
+
 export async function getStorePage(subdomain: string, slug: string): Promise<StorefrontPageData> {
   const data = await fetchJson<StorefrontPageData>(`/v1/store/${subdomain}/pages/${slug}`, [
     `store:${subdomain}`,

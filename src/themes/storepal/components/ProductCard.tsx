@@ -4,7 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Check, Heart } from 'lucide-react';
+import { Check, Heart, ShoppingCart } from 'lucide-react';
+import { plainText } from '@/lib/plainText';
 import type { StorefrontVariant, StorefrontVariationOption } from '@/lib/storefrontApi';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
@@ -316,7 +317,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         <Link
           href={href}
           data-rg="product-card-title"
-          className="text-[13px] font-semibold text-ink uppercase tracking-tight leading-snug line-clamp-2 min-h-[2.4em] hover:text-accent transition-colors"
+          className="text-[13.5px] font-semibold text-ink leading-snug line-clamp-2 min-h-[2.6em] hover:text-accent transition-colors"
         >
           {product.name}
         </Link>
@@ -332,8 +333,8 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
           />
         )}
 
-        {design.cardShowSummary && product.summary && (
-          <p className="text-[12px] text-muted leading-snug line-clamp-2">{product.summary}</p>
+        {design.cardShowSummary && plainText(product.summary) && (
+          <p className="text-[12px] text-muted leading-snug line-clamp-2">{plainText(product.summary)}</p>
         )}
 
         {lowStockText && !quoteOnly && <p className="text-[11.5px] font-semibold text-accent-dark">{lowStockText}</p>}
@@ -424,14 +425,21 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
                   type="button"
                   onClick={() => purchase('add')}
                   data-rg="product-card-add-to-cart"
-                  className="flex-1 flex items-center justify-center gap-1 py-2 rounded-md border border-ink text-[12.5px] font-semibold text-ink hover:bg-ink hover:text-white transition-colors"
+                  aria-label={t('Add to Cart')}
+                  // With Buy Now beside it, a phone's two-column card has no room for both words: Add to Cart shrinks to a
+                  // cart icon there and Buy Now takes the width. Alone, or from the small breakpoint up, it keeps its words.
+                  className={`${showBuyNow ? 'w-10 flex-none sm:w-auto sm:flex-1' : 'flex-1'} flex items-center justify-center gap-1 py-2 rounded-md border border-ink text-[12.5px] font-semibold text-ink hover:bg-ink hover:text-white transition-colors`}
                 >
                   {added ? (
                     <>
-                      <Check size={13} /> {t('Added')}
+                      <Check size={13} aria-hidden />
+                      <span className={showBuyNow ? 'hidden sm:inline' : ''}>{t('Added')}</span>
                     </>
                   ) : (
-                    t('Add to Cart')
+                    <>
+                      {showBuyNow && <ShoppingCart size={15} className="sm:hidden" aria-hidden />}
+                      <span className={showBuyNow ? 'hidden sm:inline' : ''}>{t('Add to Cart')}</span>
+                    </>
                   )}
                 </button>
               )}

@@ -114,6 +114,24 @@
   --shadow-popover: 0 12px 32px rgba(26, 43, 60, 0.16), 0 4px 10px rgba(26, 43, 60, 0.07);
 }
 
+/* StorePal footer: dark navy with light text (2026-10-28, the owner's choice), the bg-ink white-text look the storefront's
+   very first footer had. Every footer, saved template or not. The footer's parts are built from the colour tokens, so they
+   are re-pointed here instead of recoloured one by one; this rule is outside the utilities layer, so its background beats
+   the template's bg-canvas / bg-surface class. Links go light rather than the store's accent, which may be too dark on navy. */
+[data-theme='storepal'] footer[data-rg='footer'] {
+  background-color: #1a2b3c;
+  border-top-color: transparent;
+  color: #ffffff;
+  --color-ink: #ffffff;
+  --color-muted: #b6c2d1;
+  --color-line: rgba(255, 255, 255, 0.12);
+  --color-line-strong: rgba(255, 255, 255, 0.24);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: rgba(255, 255, 255, 0.08);
+  --color-accent: #ffffff;
+  --color-accent-dark: #cbd5e1;
+}
+
 /* Store > Branding's heading font (lib/storeFonts.ts): the store layout marks its wrapper with data-brand-heading when one
    is chosen, and headings take it (the store name already uses font-display). */
 [data-brand-heading] :is(h1, h2, h3) {

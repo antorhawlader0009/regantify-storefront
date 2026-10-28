@@ -73,7 +73,7 @@ function SampleCard({ art, price, className }: { art: (typeof SAMPLE_PRODUCTS)[n
         <PlaceholderArt name={art} className="absolute inset-0 h-full w-full" />
       </div>
       <div className={`flex flex-col gap-1.5 ${asCard ? 'p-3' : 'pt-2.5'}`}>
-        <p className="m-0 text-[13px] font-semibold uppercase leading-snug tracking-tight text-ink">{t('Product title')}</p>
+        <p className="m-0 text-[13.5px] font-semibold leading-snug text-ink">{t('Product title')}</p>
         <span className="text-[15px] font-bold text-accent">{formatPrice(price)}</span>
       </div>
     </div>

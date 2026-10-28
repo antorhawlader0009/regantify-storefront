@@ -34,6 +34,11 @@ import { useWishlist } from '../lib/wishlist';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { searchProducts } from '../lib/searchMatch';
 
+// The category / site menu bars scroll sideways; a soft fade at the right edge shows there is more (a name used to be cut
+// mid-word with no hint). The fade sits over the bar's own right padding, so a bar that fits shows no fade on its items.
+// Dropdowns open through a portal, outside the bar, so the mask never clips them.
+const MENU_FADE = '[mask-image:linear-gradient(to_right,#000_calc(100%-40px),transparent)]';
+
 interface StoreHeaderProps {
   subdomain: string;
   storeName: string;
@@ -746,7 +751,7 @@ export function StoreHeader({
           larger screens; phones keep the strip. */}
       {hasSiteMenu && (
         <div className="hidden sm:block border-t border-line">
-          <nav data-rg="menu" className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
+          <nav data-rg="menu" className={`max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3 ${MENU_FADE}`}>
             {design.siteMenu.map((item) => (
               <MenuLink
                 key={item.id}
@@ -769,7 +774,7 @@ export function StoreHeader({
           } ${hasSiteMenu ? 'sm:hidden' : ''}`}
         >
         <div className={`min-h-0 overflow-hidden border-line ${stripHidden ? 'border-t-0 sm:border-t' : 'border-t'}`}>
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
+          <div className={`max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3 ${MENU_FADE}`}>
             {visibleCategories.map((cat) => {
               const children = childrenByCategory.get(cat) ?? [];
               const hasDropdown = children.length > 0;

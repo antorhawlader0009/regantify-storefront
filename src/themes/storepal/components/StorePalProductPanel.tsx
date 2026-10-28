@@ -8,7 +8,9 @@ import { CheckCircle2, Check, Minus, Plus, Truck, ShieldCheck, Banknote, PlayCir
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { ProductVideo } from '@/components/ProductVideo';
 import { HoverZoom, PhotoViewer } from '@/components/ProductImageViewer';
-import { formatPrice as plainPrice, isOutOfStock } from '@/lib/productDisplay';
+import { isOutOfStock } from '@/lib/productDisplay';
+// Whole taka like the cards, cart and checkout (the shared formatter shows ".00").
+import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { useUsdPrice } from '@/lib/usdPrice';
@@ -19,6 +21,7 @@ import { priceWithBreaks } from '@/lib/priceBreaks';
 import { SizeGuideLink } from './SizeGuideLink';
 import { useWholesalePrices } from '../lib/wholesale';
 import { trackFeature } from '@/lib/featureUse';
+import { plainText } from '@/lib/plainText';
 
 interface StorePalProductPanelProps {
   subdomain: string;
@@ -730,7 +733,12 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         )}
         {leadSlots?.after}
 
-        {product.summary && <p data-rg="product-summary" className="text-[13px] text-muted leading-relaxed mt-5">{product.summary}</p>}
+        {/* The summary can hold editor HTML; shown as plain text (it used to print the tags as words). */}
+        {plainText(product.summary) && (
+          <p data-rg="product-summary" className="text-[13.5px] text-muted leading-relaxed mt-5 whitespace-pre-line">
+            {plainText(product.summary)}
+          </p>
+        )}
 
         {product.weight && (
           <p className="text-[11.5px] text-muted mt-3">

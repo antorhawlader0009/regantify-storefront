@@ -2,7 +2,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 // Theme-agnostic (see ProductView.tsx's own comment on why) — reused
 // as-is from Medium rather than a near-duplicate rebuild.
-import { CartList } from '../../medium/components/CartList';
+import { StorePalCartList } from '../components/StorePalCartList';
 import { CartViewTracker } from '../components/CartViewTracker';
 import { CartOffers } from '../components/CartOffers';
 import { CartAddons } from '../components/CartAddons';
@@ -21,7 +21,7 @@ export function CartView({ subdomain, storeName, categories }: CartViewProps) {
       <main className="max-w-4xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
         <h1 className="text-[24px] font-bold text-ink mb-5"><StoreLabel text="Cart" /></h1>
         <div className="bg-surface border border-line rounded-lg p-4 sm:p-6">
-          <CartList subdomain={subdomain} storeName={storeName} />
+          <StorePalCartList subdomain={subdomain} />
         </div>
         <CartOffers subdomain={subdomain} />
         <CartAddons subdomain={subdomain} />

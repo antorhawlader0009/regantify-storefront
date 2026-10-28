@@ -4,7 +4,7 @@ import { TrustStrip } from './TrustStrip';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Minus, Plus, X, Tag, ShieldCheck, Truck, Gift } from 'lucide-react';
+import { Minus, Plus, X, Tag, Gift } from 'lucide-react';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatReturnDay } from '@/lib/storeAway';
 import { suggestZone } from '@/lib/deliveryZone';
@@ -51,7 +51,7 @@ type Lang = 'bn' | 'en';
 const EN = {
   placeOrder: 'Place Order',
   close: 'Close',
-  name: 'Name',
+  name: 'Full Name',
   ordersFull: 'Today’s orders are full. Please order again tomorrow morning.',
   fewOrdersLeft: (n: number) => `Only ${n} ${n === 1 ? 'order' : 'orders'} left today.`,
   afterCutoff: (time: string) => `You are ordering after ${time}, so this counts as tomorrow’s order and delivery is counted from tomorrow.`,
@@ -74,13 +74,17 @@ const EN = {
   altPhone: 'Second phone number',
   email: 'Email',
   optional: '(optional)',
-  address: 'Address',
-  addressPlaceholder: 'Your full address including upazila',
+  address: 'Full Address',
+  addressPlaceholder: 'House, road, area or village, and a nearby landmark',
   addressHint: 'Add a house or road number, a village name or a nearby landmark so the rider can find you.',
   thana: 'Thana / Upazila',
   district: 'District',
-  districtPlaceholder: 'Please select district',
-  thanaPlaceholder: 'Select thana / upazila',
+  districtPlaceholder: 'Select your district and thana',
+  thanaPlaceholder: 'Thana / Upazila',
+  place: 'District & Thana / Upazila',
+  searchPlace: 'Search',
+  homeDelivery: 'Home delivery',
+  deliveryFound: (zone: string, price: string) => `${zone} delivery: ${price}`,
   thanaNeedsDistrict: 'Choose a district first',
   otherPlace: 'Other (type it)',
   typeDistrict: 'Type your district',
@@ -159,6 +163,7 @@ const EN = {
   total: 'Total',
   haveCoupon: 'Coupon code',
   haveGift: 'Gift card',
+  haveCodes: 'Have a coupon or gift card?',
   applied: 'applied',
   couponPlaceholder: 'Enter coupon code',
   giftPlaceholder: 'Enter gift card code',
@@ -177,7 +182,7 @@ type Copy = typeof EN;
 const BN: Copy = {
   placeOrder: 'অর্ডার করুন',
   close: 'বন্ধ করুন',
-  name: 'নাম',
+  name: 'পূর্ণ নাম',
   ordersFull: 'আজকের অর্ডার শেষ, কাল সকাল থেকে আবার নেব।',
   fewOrdersLeft: (n: number) => `আজকের মাত্র ${n}টা অর্ডার বাকি।`,
   afterCutoff: (time: string) => `${time}-এর পরে অর্ডার করছেন, তাই এটা কালকের অর্ডার হিসেবে ধরা হবে, ডেলিভারির দিনও কাল থেকে গোনা হবে।`,
@@ -200,13 +205,17 @@ const BN: Copy = {
   altPhone: 'দ্বিতীয় ফোন নম্বর',
   email: 'ইমেইল',
   optional: '(ঐচ্ছিক)',
-  address: 'ঠিকানা',
-  addressPlaceholder: 'উপজেলাসহ আপনার সম্পূর্ণ ঠিকানা',
+  address: 'পূর্ণ ঠিকানা',
+  addressPlaceholder: 'বাড়ি, রোড, এলাকা বা গ্রাম, আর কাছের চেনা জায়গা',
   addressHint: 'বাড়ি বা রোড নম্বর, গ্রামের নাম বা কাছের কোনো চেনা জায়গা লিখুন, যাতে রাইডার সহজে খুঁজে পান।',
   thana: 'থানা / উপজেলা',
   district: 'জেলা',
-  districtPlaceholder: 'জেলা নির্বাচন করুন',
-  thanaPlaceholder: 'থানা / উপজেলা নির্বাচন করুন',
+  districtPlaceholder: 'আপনার জেলা ও থানা বাছুন',
+  thanaPlaceholder: 'থানা / উপজেলা',
+  place: 'জেলা ও থানা / উপজেলা',
+  searchPlace: 'খুঁজুন',
+  homeDelivery: 'বাসায় ডেলিভারি',
+  deliveryFound: (zone: string, price: string) => `${zone} ডেলিভারি: ${price}`,
   thanaNeedsDistrict: 'আগে জেলা বাছুন',
   otherPlace: 'অন্যান্য (নিজে লিখুন)',
   typeDistrict: 'আপনার জেলা লিখুন',
@@ -284,6 +293,7 @@ const BN: Copy = {
   total: 'সর্বমোট',
   haveCoupon: 'কুপন কোড',
   haveGift: 'গিফট কার্ড',
+  haveCodes: 'কুপন বা গিফট কার্ড আছে?',
   applied: 'প্রয়োগ হয়েছে',
   couponPlaceholder: 'কুপন কোড দিন',
   giftPlaceholder: 'গিফট কার্ড কোড দিন',
@@ -324,6 +334,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     errors,
     placing,
     placeError,
+    chargesReady,
     subtotal,
     deliveryCharge,
     deliveryChargeByZone,
@@ -429,15 +440,21 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   // Store > Store Away: "browse only" stops the order here (the server refuses it too).
   const ordersPaused = storeAway?.mode === 'BROWSE_ONLY';
   const awayDay = storeAway?.returnDate ? formatReturnDay(storeAway.returnDate, lang) : null;
-  // Around Dhaka: while the store offers it and the shopper has not picked a shipping option themselves, the zone
-  // follows the district and thana they type (see lib/deliveryZone.ts). Stores without it behave as before.
-  const zoneChosenByShopper = useRef(false);
+  // The delivery zone always follows the district and thana (2026-10-28, the owner's request: no "Shipping Option"
+  // dropdown, lib/deliveryZone.ts decides). An around-Dhaka address counts as Outside Dhaka at a store that doesn't offer
+  // Around Dhaka (the server and useCheckout do the same). Store pickup is the shopper's own choice and is never undone.
   useEffect(() => {
-    if (!aroundDhaka || zoneChosenByShopper.current) return;
+    if (zone === 'PICKUP') return;
     const suggested = suggestZone(form.district, form.city);
-    if (suggested && suggested !== zone) updateField('zone', suggested);
+    if (!suggested) return;
+    const next = suggested === 'AROUND_DHAKA' && !aroundDhaka ? 'OUTSIDE_DHAKA' : suggested;
+    if (next !== zone) updateField('zone', next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aroundDhaka, form.district, form.city]);
+  }, [aroundDhaka, form.district, form.city, zone]);
+  const zoneLabel = zone === 'DHAKA' ? t.insideDhaka : zone === 'AROUND_DHAKA' ? t.aroundDhaka : t.outsideDhaka;
+  // Coupon and gift card boxes: folded until the shopper asks, open by themselves when a code is already in play.
+  const [codesOpen, setCodesOpen] = useState(false);
+  const codesShown = codesOpen || !!appliedCoupon || !!appliedGiftCard || !!couponCode.trim() || !!giftCardCode.trim();
   const isCodSelected = paymentGateways.find((g) => g.id === paymentMethod)?.type === 'COD';
   const showCodOtp = isCodSelected && codOtpPhone !== null;
 
@@ -589,10 +606,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                       <button
                         key={a.id}
                         type="button"
-                        onClick={() => {
-                          zoneChosenByShopper.current = true;
-                          applyAddress(a);
-                        }}
+                        onClick={() => applyAddress(a)}
                         className={`rounded-full border px-3.5 min-h-[36px] text-[13px] font-semibold transition-colors ${
                           pickedAddressId === a.id ? 'border-ink bg-ink text-white' : 'border-line-strong bg-surface text-ink hover:border-ink'
                         }`}
@@ -724,11 +738,19 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   other: t.otherPlace,
                   typeDistrict: t.typeDistrict,
                   typeThana: t.typeThana,
+                  place: t.place,
+                  search: t.searchPlace,
                 }}
                 labelClassName="block text-[13.5px] font-medium text-ink mb-1.5"
                 controlClassName="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
               />
               {errors.city && <p className="-mt-2 text-[12px] text-accent">{tr(errors.city)}</p>}
+              {/* What the address works out to (there is no zone dropdown any more). */}
+              {form.district.trim() && (
+                <p role="status" className="-mt-2 text-[12.5px] text-muted">
+                  {t.deliveryFound(zoneLabel, formatPrice(deliveryChargeByZone[zone as keyof typeof deliveryChargeByZone] ?? deliveryCharge))}
+                </p>
+              )}
                 </>
               )}
 
@@ -819,22 +841,33 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                 </div>
               )}
 
-              <div>
-                <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.shipping}</label>
-                <select
-                  value={zone}
-                  onChange={(e) => {
-                    zoneChosenByShopper.current = true;
-                    updateField('zone', e.target.value);
-                  }}
-                  className="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
-                >
-                  <option value="DHAKA">{t.insideDhaka} — {formatPrice(deliveryChargeByZone.DHAKA)}</option>
-                  {aroundDhaka && <option value="AROUND_DHAKA">{t.aroundDhaka} — {formatPrice(deliveryChargeByZone.AROUND_DHAKA)}</option>}
-                  <option value="OUTSIDE_DHAKA">{t.outsideDhaka} — {formatPrice(deliveryChargeByZone.OUTSIDE_DHAKA)}</option>
-                  {pickup && <option value="PICKUP">{t.pickupOption}</option>}
-                </select>
-              </div>
+              {/* No "Shipping Option" dropdown: the zone comes from the district and thana (effect above). A store with shop
+                  pickup still lets the shopper choose it, since an address can't tell us that. */}
+              {pickup && (
+                <div className="grid grid-cols-2 gap-2" role="radiogroup" aria-label={t.shipping}>
+                  {(['HOME', 'PICKUP'] as const).map((kind) => {
+                    const on = kind === 'PICKUP' ? zone === 'PICKUP' : zone !== 'PICKUP';
+                    return (
+                      <label
+                        key={kind}
+                        className={`flex cursor-pointer items-center gap-2.5 rounded-md border px-3.5 py-2.5 text-[13.5px] text-ink ${on ? 'border-ink bg-surface' : 'border-line-strong bg-surface'}`}
+                      >
+                        <input
+                          type="radio"
+                          name="delivery-kind"
+                          checked={on}
+                          onChange={() => {
+                            if (kind === 'PICKUP') return updateField('zone', 'PICKUP');
+                            const suggested = suggestZone(form.district, form.city) ?? 'DHAKA';
+                            updateField('zone', suggested === 'AROUND_DHAKA' && !aroundDhaka ? 'OUTSIDE_DHAKA' : suggested);
+                          }}
+                        />
+                        {kind === 'PICKUP' ? t.pickupOption : t.homeDelivery}
+                      </label>
+                    );
+                  })}
+                </div>
+              )}
 
               {/* Express delivery (TellMe idea 132): two radios while the store offers it for this area. The extra is added to the delivery charge. */}
               {express && (
@@ -929,7 +962,15 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-start justify-between gap-2">
-                      <p className="text-[13.5px] text-ink leading-tight">{line.name}</p>
+                      <div className="min-w-0">
+                        <p className="m-0 text-[13.5px] text-ink leading-tight">{line.name}</p>
+                        {/* The options picked for this line (size, colour...), so the shopper sees exactly what they order. */}
+                        {Object.keys(line.selectedOptions ?? {}).length > 0 && (
+                          <p className="m-0 mt-1 text-[12px] text-muted">
+                            {Object.entries(line.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(' · ')}
+                          </p>
+                        )}
+                      </div>
                       <div className="text-right shrink-0">
                         {line.originalUnitPrice && (
                           <span className="block text-[11.5px] text-muted line-through">
@@ -939,7 +980,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                         <span className="text-[13px] font-bold text-accent">{formatPrice(line.unitPrice)}</span>
                       </div>
                     </div>
-                    <p className="text-[11.5px] text-muted font-mono mt-0.5">{line.productSlug}</p>
+
                     {line.customDisplay && line.customDisplay.length > 0 && (
                       <p className="text-[11.5px] text-ink mt-0.5">{line.customDisplay.map((v) => `${v.label}: ${v.value}`).join(' · ')}</p>
                     )}
@@ -983,7 +1024,12 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               </div>
               <div className="flex justify-between">
                 <span className="text-ink">{t.delivery}</span>
-                <span className="font-semibold text-accent">{formatPrice(deliveryCharge)}</span>
+                {/* Until the store's own charges arrive, a placeholder rather than the fallback number (it used to jump). */}
+                {chargesReady ? (
+                  <span className="font-semibold text-accent">{formatPrice(deliveryCharge)}</span>
+                ) : (
+                  <span className="h-4 w-12 animate-pulse rounded bg-line motion-reduce:animate-none" aria-hidden />
+                )}
               </div>
               {weightExtra > 0 && deliveryCharge > 0 && <p className="m-0 -mt-1 text-[11.5px] text-muted">{t.heavyExtra(formatPrice(weightExtra))}</p>}
               {/* Reseller system Step 17: products that ship separately from another seller, each its own parcel and delivery charge. */}
@@ -1112,7 +1158,11 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               )}
               <div className="flex justify-between pt-2 border-t border-line text-[15px] font-bold text-ink">
                 <span>{t.total}</span>
-                <span>{formatPrice(visibleGrandTotal)}</span>
+                {chargesReady ? (
+                  <span>{formatPrice(visibleGrandTotal)}</span>
+                ) : (
+                  <span className="h-5 w-20 animate-pulse rounded bg-line motion-reduce:animate-none" aria-hidden />
+                )}
               </div>
               {/* Gift senders abroad: the total in dollars at the store's own rate (a guide only; the card pays in taka). */}
               {usd(visibleGrandTotal) && (
@@ -1134,7 +1184,22 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               )}
             </div>
 
-            {/* Coupon and gift card boxes are always open (no "Have Coupon?" toggle). */}
+            {/* Coupon and gift card boxes stay folded behind one link until asked for (2026-10-28, the owner's request); they
+                open by themselves when a code is already there (applied, typed, or brought by a coupon link). */}
+            {!codesShown && (
+              <div className="mt-3 pt-3 border-t border-line">
+                <button
+                  type="button"
+                  onClick={() => setCodesOpen(true)}
+                  aria-expanded={false}
+                  className="inline-flex items-center gap-1.5 text-[13px] font-medium text-accent hover:text-accent-dark"
+                >
+                  <Tag size={13} aria-hidden />
+                  {t.haveCodes}
+                </button>
+              </div>
+            )}
+            {codesShown && (
             <div className="mt-3 pt-3 border-t border-line">
                 <p className="mb-1.5 text-[12.5px] font-medium text-ink">{t.haveCoupon}</p>
                 {appliedCoupon ? (
@@ -1169,6 +1234,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </div>
                 )}
             </div>
+            )}
 
             {rewards && (
               <label className="mt-3 flex cursor-pointer items-start gap-2 rounded-md border border-line px-3 py-2 text-[12.5px] text-ink">
@@ -1180,6 +1246,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               </label>
             )}
 
+            {codesShown && (
             <div className="mt-3">
                 <p className="mb-1.5 text-[12.5px] font-medium text-ink">{t.haveGift}</p>
                 {appliedGiftCard ? (
@@ -1223,6 +1290,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   </div>
                 )}
             </div>
+            )}
           </div>
 
             <TrustStrip where="checkout" />
@@ -1406,19 +1474,19 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     ? t.verifySubmit
                     : codAdvance
                       ? t.submitAdvance(formatPrice(codAdvance.amount))
-                      : t.submit}
+                      : chargesReady
+                        ? (
+                            // The action and the amount it pays, split by a thin line so the total reads at a glance.
+                            <span className="flex items-center justify-center gap-3">
+                              <span>{t.submit}</span>
+                              <span className="h-5 w-px bg-white/45" aria-hidden />
+                              <span className="text-[15.5px] font-extrabold tabular-nums tracking-tight">{formatPrice(visibleGrandTotal)}</span>
+                            </span>
+                          )
+                        : t.submit}
             </button>
 
-            <div className="flex flex-wrap gap-2 mt-4">
-              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
-                <Truck size={13} className="text-accent shrink-0" />
-                {t.codBadge}
-              </div>
-              <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
-                <ShieldCheck size={13} className="text-accent shrink-0" />
-                {t.genuineBadge}
-              </div>
-            </div>
+            {/* The "Cash on delivery all over Bangladesh" / "100% genuine products" chips were removed (the owner's request, 2026-10-28). */}
           </div>
         </div>
       </div>

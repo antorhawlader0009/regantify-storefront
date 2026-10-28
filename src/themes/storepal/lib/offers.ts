@@ -1,5 +1,5 @@
 import type { DiscountOffer } from '@/lib/checkoutApi';
-import { formatPrice } from '@/lib/productDisplay';
+import { formatPrice } from './formatPrice';
 
 /** True when the offer covers the whole store (no product or category limit). */
 export function isStoreWide(offer: DiscountOffer): boolean {

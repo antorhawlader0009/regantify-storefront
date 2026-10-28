@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { deliveryAreaRefusal } from '@/lib/deliveryArea';
+import { readSavedPlace, writeSavedPlace } from '@/lib/savedPlace';
 import { useRouter } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
@@ -181,8 +182,12 @@ export function useCheckout(
     orderCutoff: { time: string; passed: boolean } | null;
     storeAway: StorefrontStoreAway | null;
   } | null>(null);
+  // True once the charges fetch has finished (either way), so a checkout can show a placeholder instead of the fallback
+  // numbers for that first moment (they used to flash ৳60 / no VAT, then jump to the store's own charges).
+  const [chargesSettled, setChargesSettled] = useState(false);
   useEffect(() => {
     let cancelled = false;
+    setChargesSettled(false);
     getStoreDeliveryCharges(subdomain).then((charges) => {
       if (cancelled || !charges) return;
       setVendorCharges({
@@ -206,7 +211,11 @@ export function useCheckout(
         orderCutoff: charges.orderCutoff ?? null,
         storeAway: stillAway(charges.storeAway),
       });
-    });
+    })
+      .catch(() => undefined)
+      .finally(() => {
+        if (!cancelled) setChargesSettled(true);
+      });
     return () => {
       cancelled = true;
     };
@@ -383,16 +392,18 @@ export function useCheckout(
     form.address.trim().length >= 3 &&
     !savedAddresses.some((a) => a.address === form.address.trim() && a.phone === form.phone.trim());
 
-  // The district picked in the product page's delivery check (TellMe idea 68) starts the checkout, when nothing else has filled it.
+  // The remembered delivery place (lib/savedPlace.ts, set in the product page's delivery check or an earlier checkout) starts
+  // the checkout when nothing else has filled it, and a place picked here is remembered for the product pages.
   useEffect(() => {
-    try {
-      const saved = localStorage.getItem(`storepal-delivery-district:${subdomain}`);
-      if (saved) setForm((prev) => (prev.district === '' ? { ...prev, district: saved } : prev));
-    } catch {
-      // Storage blocked: nothing to prefill.
+    const saved = readSavedPlace(subdomain);
+    if (saved) {
+      setForm((prev) => (prev.district === '' ? { ...prev, district: saved.district, city: prev.city || saved.thana } : prev));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain]);
+  useEffect(() => {
+    if (form.district.trim()) writeSavedPlace(subdomain, { district: form.district.trim(), thana: form.city.trim() });
+  }, [subdomain, form.district, form.city]);
 
   // A logged-in shopper's order must be saved to their account, which the server only does for a valid
   // token. The 15-minute access token may have run out by the time they press Place Order, so take a
@@ -1024,6 +1035,7 @@ export function useCheckout(
 
   return {
     hydrated,
+    chargesReady: chargesSettled,
     lines,
     setQuantity,
     removeLine,

@@ -23,7 +23,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   cardOptionsAsSelect: false,
   cardDisplayAsCard: true,
   cardShowVideo: false,
-  cardShowWishlist: false,
+  cardShowWishlist: true,
   productBadgeColor: null,
   bannerEnabled: true,
   bannerSchedule: [],
