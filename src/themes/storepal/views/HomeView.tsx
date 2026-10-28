@@ -36,6 +36,7 @@ import { SocialFeedSection } from '../components/SocialFeedSection';
 import type { StorefrontSocialFeed } from '@/lib/storefrontApi';
 import { searchProducts } from '../lib/searchMatch';
 import { AskAssistantButton } from '../components/AskAssistantButton';
+import { CoverFloating } from '@/lib/floatingCover';
 
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
@@ -430,6 +431,7 @@ export function HomeView({
 
               {mobileFiltersOpen && (
                 <div className="fixed inset-0 z-40 lg:hidden">
+                  <CoverFloating />
                   <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileFiltersOpen(false)} />
                   <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-canvas overflow-y-auto p-4">
                     <div className="flex items-center justify-between mb-3">

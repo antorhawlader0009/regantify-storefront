@@ -7,6 +7,7 @@ import { usePhotoSearch } from '@/lib/photoSearch';
 import { PhotoSearchDrop } from '@/components/PhotoSearchDrop';
 import { ProductCard } from './ProductCard';
 import { useStoreText } from '../lib/storeText';
+import { CoverFloating } from '@/lib/floatingCover';
 
 /** How long the photo button stands out after the voice call asked the shopper to use it. */
 const HINT_MS = 10_000;
@@ -38,6 +39,7 @@ export function PhotoSearchPanel({ subdomain, storeName }: { subdomain: string; 
       <PhotoSearchDrop subdomain={subdomain} label={t('Drop the photo to find similar products')} />
       {open && (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/45 p-4 sm:p-8 overflow-y-auto" onClick={close}>
+          <CoverFloating />
           <div
             role="dialog"
             aria-modal="true"

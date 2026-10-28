@@ -6,6 +6,7 @@ import { Play, X, Youtube } from 'lucide-react';
 import type { StorefrontSocialFeed, StorefrontSocialPost } from '@/lib/storefrontApi';
 import { bnDigits, useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
+import { CoverFloating } from '@/lib/floatingCover';
 
 const GRID: Record<number, string> = {
   3: 'grid-cols-2 sm:grid-cols-3',
@@ -91,6 +92,7 @@ function VideoLightbox({ post, onClose }: { post: StorefrontSocialPost; onClose:
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-3" role="dialog" aria-modal="true" aria-label={post.title} onClick={onClose}>
+      <CoverFloating />
       <div className="w-full max-w-3xl" onClick={(e) => e.stopPropagation()}>
         <div className="mb-2 flex justify-end">
           <button type="button" onClick={onClose} aria-label={t('Close')} className="rounded-full bg-white/10 p-2 text-white hover:bg-white/20">

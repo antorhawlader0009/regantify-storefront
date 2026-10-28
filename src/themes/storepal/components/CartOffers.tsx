@@ -51,7 +51,7 @@ export function CartOffers({ subdomain }: { subdomain: string }) {
     const timer = setTimeout(() => {
       previewDiscounts(
         subdomain,
-        lines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity })),
+        lines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity, selectedOptions: l.selectedOptions })),
       ).then((result) => {
         if (!cancelled) setOffers(result);
       });

@@ -253,6 +253,8 @@ export interface ValidatedCoupon {
 export interface CouponPreviewLine {
   productSlug: string;
   quantity: number;
+  /** The options picked (Size: M...), so the server prices that variation, as checkout does. */
+  selectedOptions?: Record<string, string>;
 }
 
 /**

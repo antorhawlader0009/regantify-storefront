@@ -477,7 +477,7 @@ export function useCheckout(
     const timer = setTimeout(() => {
       previewDiscounts(
         subdomain,
-        lines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity })),
+        lines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity, selectedOptions: l.selectedOptions })),
       ).then((result) => {
         if (!cancelled) setAutomaticDiscounts(result);
       });
@@ -736,7 +736,7 @@ export function useCheckout(
         code,
         form.phone.trim(),
         // A coupon applies to the main part only (Step 17).
-        mainLines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity })),
+        mainLines.map((l) => ({ productSlug: l.productSlug, quantity: l.quantity, selectedOptions: l.selectedOptions })),
       );
       setAppliedCoupon(result);
     } catch (err) {

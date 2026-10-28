@@ -27,6 +27,7 @@ import { useFormatPrice } from '../lib/storeText';
 import { phoneInput } from '@/lib/phoneInput';
 import { trackFeature } from '@/lib/featureUse';
 import { useUsdPrice } from '@/lib/usdPrice';
+import { CoverFloating } from '@/lib/floatingCover';
 
 // Fallback label for a gateway row with no vendor-set displayLabel — see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
@@ -1558,6 +1559,7 @@ export function CheckoutDialog({ subdomain }: { subdomain: string }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6">
+      <CoverFloating />
       <div
         className={`absolute inset-0 bg-black/50 transition-opacity motion-reduce:transition-none ${shown ? 'opacity-100' : 'opacity-0'}`}
         style={{ transitionDuration: `${FADE_MS}ms` }}

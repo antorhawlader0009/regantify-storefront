@@ -18,6 +18,7 @@ import { useAuthDialog, type AuthDialogMode } from '../lib/authDialog';
 import { RegantifySignInButton } from './RegantifySignIn';
 import { useStoreText } from '../lib/storeText';
 import { phoneInput, emailOrPhoneInput } from '@/lib/phoneInput';
+import { CoverFloating } from '@/lib/floatingCover';
 
 const RESEND_SECONDS = 30;
 
@@ -555,6 +556,7 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-4">
+      <CoverFloating />
       <div
         className={`absolute inset-0 bg-black/50 transition-opacity duration-200 motion-reduce:transition-none ${shown ? 'opacity-100' : 'opacity-0'}`}
         onClick={close}

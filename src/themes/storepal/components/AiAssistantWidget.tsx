@@ -5,6 +5,7 @@ import { useStorePalDesign } from '../lib/designSettings';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHeaderPresence } from '../lib/headerPresence';
+import { useFloatingCovered } from '@/lib/floatingCover';
 import Image from 'next/image';
 import { MessageCircle, Send, X, ImagePlus, Mic, Check, History, SquarePen, Trash2, Phone, Minimize2, Maximize2 } from 'lucide-react';
 import {
@@ -927,6 +928,11 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const { hidden: scrolledAway, reveal } = useFloatingHidden(open || cartOpen);
   // Mounted once in the store layout: shown only on pages that have the store header (headerPresence.ts).
   const headerHere = useHeaderPresence((s) => s.count > 0);
+  // The round bubble and its teaser step out of the way while something full-screen is open (checkout, sign-in, photo
+  // viewer, quick add, size guide, menus: lib/floatingCover.tsx) and on the cart page, where they would sit on the
+  // total and the Checkout button. An open chat or a call is never hidden by this.
+  const layerOpen = useFloatingCovered();
+  const bubbleCovered = layerOpen || checkoutOpen || /\/cart\/?$/.test(pathname ?? '');
   // The call is offered: this browser can do it, the store has it on, and the chat can answer.
   const callable = canCall && voiceOn && available === true;
   // The shopper opened the assistant (or a call link): the voice files start downloading quietly in the background
@@ -1017,7 +1023,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
       {voiceCallScreen}
       {callInviteCard}
       {/* The round bubble only opens the chat; while it is open, the close button is in the panel's header. */}
-      {!open && call.phase === 'idle' && (
+      {!open && call.phase === 'idle' && !bubbleCovered && (
       <button
         onClick={() => {
           setOpen(true);
@@ -1038,7 +1044,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
         <MessageCircle size={26} strokeWidth={2.2} />
       </button>
       )}
-      {teaser && !open && call.phase === 'idle' && !cartOpen && !scrolledAway && (
+      {teaser && !open && call.phase === 'idle' && !cartOpen && !scrolledAway && !bubbleCovered && (
         <div className={`fixed ${assistantBottom} ${onLeft ? 'left-[86px]' : 'right-[86px]'} z-30 flex h-14 items-center storepal-fade-up`}>
           <div className="relative flex items-center rounded-full border border-line bg-surface shadow-[0_0_4px_rgba(16,24,40,0.20),0_0_12px_rgba(16,24,40,0.18)]">
             <button

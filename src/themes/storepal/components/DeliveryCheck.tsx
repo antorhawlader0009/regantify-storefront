@@ -97,7 +97,7 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
 
   const zoneName = (z: Quote['zone']) => (bn ? ZONE_BN : ZONE_EN)[z];
   return (
-    <div className="mt-3 rounded-md border border-line bg-canvas px-3.5 py-3 text-[13px] text-ink">
+    <div className="mt-3 rounded-lg bg-canvas px-4 py-3.5 text-[13px] text-ink">
       <BdAddressPicker
         district={district}
         thana={thana}

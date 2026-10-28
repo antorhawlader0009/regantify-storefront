@@ -33,6 +33,7 @@ import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSe
 import { useWishlist } from '../lib/wishlist';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { searchProducts } from '../lib/searchMatch';
+import { CoverFloating } from '@/lib/floatingCover';
 
 // The category / site menu bars scroll sideways; a soft fade at the right edge shows there is more (a name used to be cut
 // mid-word with no hint). The fade sits over the bar's own right padding, so a bar that fits shows no fade on its items.
@@ -843,6 +844,7 @@ export function StoreHeader({
           pages, account/*). */}
       {hasMobileMenu && mobileMenuOpen && (
         <div className="fixed inset-0 z-50 sm:hidden">
+          <CoverFloating />
           <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileMenuOpen(false)} />
           <nav className="absolute inset-y-0 left-0 w-[80%] max-w-[300px] bg-surface overflow-y-auto shadow-popover">
             <div className="flex items-center justify-between px-4 py-3.5 border-b border-line">

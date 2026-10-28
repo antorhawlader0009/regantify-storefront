@@ -4,7 +4,7 @@ import { useEffect, useState, type ReactNode } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { CheckCircle2, Check, Minus, Plus, Truck, ShieldCheck, Banknote, PlayCircle } from 'lucide-react';
+import { CheckCircle2, Minus, Plus, Truck, ShieldCheck, Banknote, PlayCircle } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { ProductVideo } from '@/components/ProductVideo';
 import { HoverZoom, PhotoViewer } from '@/components/ProductImageViewer';
@@ -22,6 +22,7 @@ import { SizeGuideLink } from './SizeGuideLink';
 import { useWholesalePrices } from '../lib/wholesale';
 import { trackFeature } from '@/lib/featureUse';
 import { plainText } from '@/lib/plainText';
+import { CoverFloating } from '@/lib/floatingCover';
 
 interface StorePalProductPanelProps {
   subdomain: string;
@@ -385,7 +386,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           src={activePhotoUrl}
           onOpen={() => setViewerIndex(activePhoto)}
           label={t('Open photo')}
-          className={`bg-canvas border border-line rounded-lg overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : 'aspect-square'}`}
+          className={`bg-canvas rounded-xl overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : 'aspect-square'}`}
         >
           {activePhotoUrl ? (
             <Image
@@ -425,11 +426,13 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
               <button
                 key={url + i}
                 onClick={() => setActivePhoto(i)}
-                className={`relative w-14 h-14 shrink-0 overflow-hidden p-0 cursor-pointer bg-canvas rounded-md transition-all ${
-                  i === activePhoto ? 'ring-2 ring-accent' : 'ring-1 ring-line hover:ring-line-strong opacity-75 hover:opacity-100'
+                aria-label={`${t('Open photo')} ${i + 1}`}
+                aria-current={i === activePhoto ? 'true' : undefined}
+                className={`relative w-16 h-16 shrink-0 overflow-hidden p-0 cursor-pointer bg-canvas rounded-lg transition-all ${
+                  i === activePhoto ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : 'ring-1 ring-line hover:ring-line-strong opacity-70 hover:opacity-100'
                 }`}
               >
-                <Image src={url} alt="" fill sizes="56px" className="object-cover" />
+                <Image src={url} alt="" fill sizes="64px" className="object-cover" />
               </button>
             ))}
           </div>
@@ -471,24 +474,24 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             {product.badgeText}
           </span>
         )}
-        {product.brand && <span className="text-[11.5px] text-muted uppercase tracking-wider font-medium">{product.brand}</span>}
+        {product.brand && <p className="m-0 text-[13px] font-medium text-muted">{product.brand}</p>}
         <div className="flex items-start justify-between gap-3">
-          <h1 data-rg="product-title" className="mt-1 mb-2.5 text-[19px] sm:text-[22px] font-bold leading-snug text-ink tracking-tight">{product.name}</h1>
+          <h1 data-rg="product-title" className="mt-0.5 mb-2 text-[22px] sm:text-[28px] font-bold leading-[1.15] text-ink tracking-[-0.015em] [text-wrap:balance]">{product.name}</h1>
           {titleExtra}
         </div>
 
         {(product.category || product.secondaryCategories.length > 0) && (
-          <div className="flex gap-1.5 flex-wrap mb-3.5">
+          <div className="flex gap-1.5 flex-wrap mb-5">
             {product.category && (
               <Link
                 href={`/store/${subdomain}?category=${encodeURIComponent(product.category)}`}
-                className="text-[11px] text-muted bg-canvas border border-line rounded px-2 py-0.5 no-underline hover:border-accent hover:text-accent transition-colors"
+                className="text-[12px] text-muted bg-canvas rounded-full px-2.5 py-1 no-underline hover:bg-accent-light hover:text-accent transition-colors"
               >
                 {product.category}
               </Link>
             )}
             {product.secondaryCategories.map((c) => (
-              <span key={c} className="text-[11px] text-muted bg-canvas border border-line rounded px-2 py-0.5">
+              <span key={c} className="text-[12px] text-muted bg-canvas rounded-full px-2.5 py-1">
                 {c}
               </span>
             ))}
@@ -497,25 +500,30 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
 
         {leadSlots?.price ?? (
           <>
-        {/* Boxed price panel — a soft accent-tinted background makes this
-            the clear visual anchor of the page, matching how established
-            BD e-commerce product pages foreground the price block. */}
-        <div data-rg="product-price" className="bg-accent-light border border-accent/15 rounded-lg p-4 mb-4">
-          <div className="flex gap-2.5 items-baseline flex-wrap">
-            <span className="text-[28px] font-bold text-accent tracking-tight">{formatPrice(breakApplied ? brokenPrice : displayPrice)}</span>
+        {/* Open price block between two hairlines: the big number is the
+            anchor, in the store accent only when it is a sale price, so the
+            panel no longer reads like a tinted warning box. */}
+        <div data-rg="product-price" className="border-y border-line py-4 mb-5">
+          <div className="flex gap-x-3 gap-y-2 items-baseline flex-wrap">
+            <span className={`text-[30px] sm:text-[34px] leading-none font-extrabold tracking-tight tabular-nums ${displayOriginalPrice || breakApplied ? 'text-accent' : 'text-ink'}`}>{formatPrice(breakApplied ? brokenPrice : displayPrice)}</span>
             {product.unitLabel && <span className="text-muted text-[14px]">/ {product.unitLabel}</span>}
             {usd(breakApplied ? brokenPrice : displayPrice) && (
               <span className="text-muted text-[13px]">{usd(breakApplied ? brokenPrice : displayPrice)}</span>
             )}
             {wholesaleApplied && <span className="rounded bg-accent px-1.5 py-0.5 text-[11px] font-semibold text-white">{t('Wholesale price')}</span>}
             {breakApplied ? (
-              <span className="text-muted line-through text-[15px]">{formatPrice(displayOriginalPrice ?? displayPrice)}</span>
+              <span className="text-muted line-through text-[16px] tabular-nums">{formatPrice(displayOriginalPrice ?? displayPrice)}</span>
             ) : (
-              displayOriginalPrice && <span className="text-muted line-through text-[15px]">{formatPrice(displayOriginalPrice)}</span>
+              displayOriginalPrice && <span className="text-muted line-through text-[16px] tabular-nums">{formatPrice(displayOriginalPrice)}</span>
+            )}
+            {displayOriginalPrice && (
+              <span className="self-center rounded-full bg-success-bg px-2.5 py-1 text-[12px] font-semibold leading-none text-save">
+                {t('You save')} {formatPrice(saveAmount)}
+              </span>
             )}
           </div>
           {breaks.length > 0 && (
-            <div className="mt-2.5 rounded-md border border-accent/20 bg-surface px-3 py-2 text-[12.5px] text-ink">
+            <div className="mt-3 rounded-lg bg-canvas px-3 py-2 text-[12.5px] text-ink">
               <p className="m-0 mb-1 font-semibold">{display?.language === 'bn' ? 'বেশি কিনলে কম দাম' : 'Buy more, pay less'}</p>
               <table className="w-full border-collapse">
                 <tbody>
@@ -533,11 +541,6 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                 </tbody>
               </table>
             </div>
-          )}
-          {displayOriginalPrice && (
-            <p className="m-0 mt-1.5 inline-flex items-center gap-1 text-[12.5px] text-save font-semibold bg-success-bg px-2 py-0.5 rounded w-fit">
-              You save {formatPrice(saveAmount)} ({percentOff}%)
-            </p>
           )}
 
           {product.isPreOrder ? (
@@ -562,21 +565,6 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           </>
         )}
 
-        <div className="flex flex-wrap gap-2 mb-4">
-          <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
-            <Truck size={13} className="text-accent shrink-0" />
-            {product.isPreOrder ? t('Delivery in 20–25 days') : t('Fast delivery')}
-          </div>
-          <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
-            <Banknote size={13} className="text-accent shrink-0" />
-            {t('Cash on delivery')}
-          </div>
-          <div className="flex items-center gap-1.5 text-[11.5px] text-ink bg-canvas border border-line rounded-full px-2.5 py-1.5">
-            <ShieldCheck size={13} className="text-accent shrink-0" />
-            {t('Quality checked')}
-          </div>
-        </div>
-
         {sizeGuide && product.variationOptions.length === 0 && (
           <div className="mb-4">
             <SizeGuideLink guide={sizeGuide} />
@@ -586,7 +574,14 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         {product.variationOptions.map((opt) => (
           <div key={opt.id} className="mb-4">
             <div className="mb-2 flex items-center justify-between gap-3">
-              <p className="m-0 text-[12px] font-semibold text-ink">{opt.name}</p>
+              <p className="m-0 text-[13px] text-muted">
+                {opt.name}
+                {selected[opt.name] ? (
+                  <>
+                    : <span className="font-semibold text-ink">{selected[opt.name]}</span>
+                  </>
+                ) : null}
+              </p>
               {sizeGuide && opt.id === sizeGuideOptionId && <SizeGuideLink guide={sizeGuide} />}
             </div>
             <div className="flex gap-1.5 flex-wrap">
@@ -605,12 +600,13 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                       setSelected((prev) => ({ ...prev, [opt.name]: val }));
                       setVariantWarning(false);
                     }}
-                    className={`flex items-center gap-1.5 pl-1.5 pr-3.5 py-1.5 rounded-md text-[12.5px] font-medium transition-all border ${
-                      swatchPhoto ? '' : 'px-3.5'
+                    aria-pressed={isSelected}
+                    className={`flex min-h-10 min-w-11 items-center justify-center gap-1.5 py-1.5 rounded-lg text-[13px] transition-colors border bg-surface text-ink ${
+                      swatchPhoto ? 'pl-1.5 pr-3.5' : 'px-3.5'
                     } ${
                       isSelected
-                        ? 'border-accent bg-accent text-white shadow-sm'
-                        : 'border-line text-ink hover:border-accent hover:bg-accent-light'
+                        ? 'border-ink ring-1 ring-ink font-semibold'
+                        : 'border-line font-medium hover:border-line-strong'
                     }`}
                   >
                     {swatchPhoto && (
@@ -618,7 +614,6 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                         <Image src={swatchPhoto} alt="" fill sizes="24px" className="object-cover" />
                       </span>
                     )}
-                    {isSelected && <Check size={12} />}
                     {val}
                   </button>
                 );
@@ -675,16 +670,17 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         {leadSlots?.purchase ?? (
           <>
         <div className="mb-5">
-          <p className="m-0 mb-2 text-[12px] font-semibold text-ink">{t('Quantity')}</p>
-          <div className="inline-flex items-center border border-line rounded-md overflow-hidden bg-canvas">
-            <button onClick={() => setQuantity((q) => Math.max(minQty, q - packStep))} className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors">
+          <p className="m-0 mb-2 text-[13px] text-muted">{t('Quantity')}</p>
+          <div className="inline-flex items-center border border-line rounded-lg overflow-hidden bg-canvas">
+            <button onClick={() => setQuantity((q) => Math.max(minQty, q - packStep))} aria-label="-" className="w-10 h-10 flex items-center justify-center hover:bg-line/60 transition-colors">
               <Minus size={13} />
             </button>
-            <span className="w-10 text-center text-[13.5px] font-semibold bg-surface h-9 flex items-center justify-center">{quantity}</span>
+            <span className="w-11 text-center text-[14px] font-semibold tabular-nums bg-surface h-10 flex items-center justify-center">{quantity}</span>
             <button
               onClick={() => setQuantity((q) => (quantityCap !== undefined ? Math.max(q, Math.floor(Math.min(quantityCap, q + packStep) / packStep) * packStep) : q + packStep))}
               disabled={quantityCap !== undefined && quantity + packStep > quantityCap}
-              className="w-9 h-9 flex items-center justify-center hover:bg-line/60 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
+              aria-label="+"
+              className="w-10 h-10 flex items-center justify-center hover:bg-line/60 transition-colors disabled:opacity-40 disabled:hover:bg-transparent"
             >
               <Plus size={13} />
             </button>
@@ -700,7 +696,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             disabled={!canPurchase}
             onClick={handleAddToCart}
             data-rg="add-to-cart"
-            className={`flex-1 py-3 rounded-md border-2 border-ink text-ink text-[13px] font-bold transition-all ${
+            className={`flex-1 h-12 rounded-lg border-[1.5px] border-ink text-ink text-[14px] font-bold transition-colors ${
               canPurchase ? 'hover:bg-ink hover:text-white' : 'opacity-40 cursor-not-allowed'
             }`}
           >
@@ -710,8 +706,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             disabled={!canPurchase}
             onClick={handleBuyNow}
             data-rg="buy-now"
-            className={`flex-1 py-3 rounded-md text-[13px] font-bold transition-colors shadow-sm ${
-              canPurchase ? 'bg-accent hover:bg-accent-dark text-white' : 'bg-line text-muted cursor-not-allowed shadow-none'
+            className={`flex-1 h-12 rounded-lg text-[14px] font-bold transition-colors ${
+              canPurchase ? 'bg-accent hover:bg-accent-dark text-white' : 'bg-line text-muted cursor-not-allowed'
             }`}
           >
             {t('Buy Now')}
@@ -731,6 +727,21 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         )}
           </>
         )}
+        {/* What every order gets, right under the buttons where the decision is made. */}
+        <ul className="mt-4 mb-0 grid grid-cols-3 list-none divide-x divide-line rounded-lg border border-line p-0 text-center">
+          <li className="flex flex-col items-center gap-1 px-2 py-2.5 text-[11.5px] leading-tight text-muted">
+            <Truck size={16} className="text-ink shrink-0" aria-hidden />
+            {product.isPreOrder ? t('Delivery in 20–25 days') : t('Fast delivery')}
+          </li>
+          <li className="flex flex-col items-center gap-1 px-2 py-2.5 text-[11.5px] leading-tight text-muted">
+            <Banknote size={16} className="text-ink shrink-0" aria-hidden />
+            {t('Cash on delivery')}
+          </li>
+          <li className="flex flex-col items-center gap-1 px-2 py-2.5 text-[11.5px] leading-tight text-muted">
+            <ShieldCheck size={16} className="text-ink shrink-0" aria-hidden />
+            {t('Quality checked')}
+          </li>
+        </ul>
         {leadSlots?.after}
 
         {/* The summary can hold editor HTML; shown as plain text (it used to print the tags as words). */}
@@ -754,6 +765,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           className="fixed inset-0 z-[70] flex items-center justify-center bg-black/40 px-4"
           onClick={() => setPendingBackorderAction(null)}
         >
+          <CoverFloating />
           <div
             role="dialog"
             aria-modal="true"

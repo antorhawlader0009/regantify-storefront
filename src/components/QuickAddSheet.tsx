@@ -3,6 +3,7 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
 import { swatchColor } from '@/lib/swatchColor';
+import { CoverFloating } from '@/lib/floatingCover';
 
 /**
  * Quick add (TellMe "StorePal 1" idea 2), shared by every template: a product with sizes or colours opens this sheet
@@ -77,6 +78,7 @@ export function QuickAddSheet({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center sm:items-center" role="presentation">
+      <CoverFloating />
       <div className="absolute inset-0 bg-black/45" onClick={onClose} aria-hidden />
       <div
         ref={panelRef}

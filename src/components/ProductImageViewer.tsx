@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState, type PointerEvent as ReactPointerEvent, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, Expand, X, ZoomIn, ZoomOut } from 'lucide-react';
 import { variantUrl } from '@/lib/imageVariants';
+import { CoverFloating } from '@/lib/floatingCover';
 
 /**
  * Product photo zoom (TellMe "StorePal 1" idea 3), shared by every template:
@@ -184,6 +185,7 @@ export function PhotoViewer({
 
   return (
     <div className="fixed inset-0 z-[80] flex flex-col bg-neutral-950/95" role="dialog" aria-modal="true" aria-label={title}>
+      <CoverFloating />
       <div className="flex items-center justify-between px-4 pt-4">
         <span className="rounded-full bg-white/10 px-3 py-1 text-xs font-medium tabular-nums text-white/85">
           {i + 1} / {photos.length}

@@ -6,6 +6,7 @@ import { Ruler, X } from 'lucide-react';
 import type { StorefrontSizeGuide } from '@/lib/storefrontApi';
 import { useStoreText } from '../lib/storeText';
 import { trackFeature } from '@/lib/featureUse';
+import { CoverFloating } from '@/lib/floatingCover';
 
 /**
  * The "Size guide" link beside a product's Size choice (Store > Product > Size Guides), opening the vendor's table
@@ -47,6 +48,7 @@ export function SizeGuideLink({ guide }: { guide: StorefrontSizeGuide }) {
       {open &&
         createPortal(
           <div className="fixed inset-0 z-[70] flex items-end sm:items-center justify-center bg-black/50 p-0 sm:p-4" onClick={() => setOpen(false)}>
+            <CoverFloating />
             <div
               role="dialog"
               aria-modal="true"

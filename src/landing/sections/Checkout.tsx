@@ -5,6 +5,8 @@ import type { StorefrontLandingPageProduct } from '@/lib/storefrontApi';
 import { formatPrice } from '@/lib/productDisplay';
 import { submitLandingPageLead } from '@/lib/checkoutApi';
 import { useCheckout } from '@/lib/useCheckout';
+import { suggestZone } from '@/lib/deliveryZone';
+import { BdAddressPicker } from '@/components/BdAddressPicker';
 import { formatReturnDay } from '@/lib/storeAway';
 import { useStoreTheme } from '@/providers/theme-provider';
 import type { CartLine } from '@/stores/cart-store';
@@ -13,13 +15,12 @@ import { trackMetaInitiateCheckout, trackMetaLead } from '@/lib/metaPixelEvents'
 import { trackBeginCheckout, trackGenerateLead } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
 
-// A handful of common Bangladeshi districts for the "quick-select" chips
-// (landing-page-sections.md §6.1 / landing-plan.md §1.2 item 6) — this is
-// a UX shortcut that fills the free-text district input, not a
-// constrained enum (the input stays free text, matching the existing
-// storefront checkout's own District field — see CheckoutView.tsx), so an
-// unlisted district is always still typeable by hand.
-const QUICK_DISTRICTS = ['Dhaka', 'Chattogram', 'Khulna', 'Rajshahi', 'Sylhet', 'Barishal', 'Rangpur', 'Mymensingh'];
+/** True when every option of the product is picked and that exact combination is sold out. */
+function soldOutPick(p: StorefrontLandingPageProduct, picked: Record<string, string>): boolean {
+  const opts = p.options ?? [];
+  if (opts.length === 0 || opts.some((o) => !picked[o.name])) return false;
+  return (p.soldOut ?? []).some((combo) => opts.every((o) => combo[o.name] === picked[o.name]));
+}
 
 const PHONE_PATTERN = /^01[0-9]{9}$/;
 
@@ -77,6 +78,9 @@ export function CheckoutFormSection({
     Object.fromEntries(products.map((p) => [p.id, orderable(p)])),
   );
   const [quantities, setQuantities] = useState<Record<string, number>>({});
+  // The options picked per product (Size, Colour...), shown under the product like the store's own checkout.
+  const [choices, setChoices] = useState<Record<string, Record<string, string>>>({});
+  const [optionError, setOptionError] = useState<string | null>(null);
 
   const lines = useMemo<CartLine[]>(
     () =>
@@ -85,8 +89,9 @@ export function CheckoutFormSection({
         .map((p) => {
           const price = Number(p.price);
           const discount = p.discountPrice != null ? Number(p.discountPrice) : null;
+          const picked = choices[p.id] ?? {};
           return {
-            id: p.id,
+            id: Object.keys(picked).length ? `${p.id}:${JSON.stringify(picked)}` : p.id,
             subdomain,
             storeName: '',
             productSlug: p.slug,
@@ -96,12 +101,12 @@ export function CheckoutFormSection({
             originalUnitPrice: discount != null && discount < price ? price : undefined,
             quantity: quantities[p.id] ?? p.minOrderQuantity ?? 1,
             minOrderQuantity: p.minOrderQuantity,
-            selectedOptions: {},
+            selectedOptions: picked,
             isPreOrder: p.isPreOrder,
             productId: p.id,
           };
         }),
-    [products, selected, quantities, subdomain],
+    [products, selected, quantities, choices, subdomain],
   );
 
   const {
@@ -109,6 +114,7 @@ export function CheckoutFormSection({
     errors,
     placing,
     placeError,
+    chargesReady,
     subtotal,
     deliveryCharge,
     deliveryChargeByZone,
@@ -166,8 +172,35 @@ export function CheckoutFormSection({
       return;
     }
     setNoProductError(null);
+    // Every option of every ordered product must be picked, and not a sold-out combination (the server needs the choice).
+    for (const p of products) {
+      if (!selected[p.id] || !orderable(p)) continue;
+      const picked = choices[p.id] ?? {};
+      const missing = (p.options ?? []).find((o) => !picked[o.name]);
+      if (missing) {
+        setOptionError(`Choose ${missing.name} for ${p.name}.`);
+        return;
+      }
+      if (soldOutPick(p, picked)) {
+        setOptionError(`${p.name} (${Object.values(picked).join(', ')}) is out of stock. Choose another option.`);
+        return;
+      }
+    }
+    setOptionError(null);
     handlePlaceOrder();
   };
+
+  // The delivery zone follows the district and thana (no "Shipping Option" choice), as in StorePal's checkout: an
+  // around-Dhaka address counts as Outside Dhaka at a store that doesn't offer Around Dhaka (the server does the same).
+  useEffect(() => {
+    if (!collect.district) return;
+    const suggested = suggestZone(form.district, form.city);
+    if (!suggested) return;
+    const next = suggested === 'AROUND_DHAKA' && !aroundDhaka ? 'OUTSIDE_DHAKA' : suggested;
+    if (next !== zone) updateField('zone', next);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [aroundDhaka, form.district, form.city, zone, collect.district]);
+  const zoneLabel = zone === 'DHAKA' ? 'Inside Dhaka' : zone === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka';
 
   // Never below the product's minimum order; at least 99 above it.
   const setQuantity = (id: string, qty: number) => {
@@ -211,41 +244,48 @@ export function CheckoutFormSection({
                 inputMode="numeric"
               />
             </Field>
-            <Field label="Delivery Address" required error={errors.address}>
+            <Field label="Full Address" required error={errors.address}>
               <textarea
                 value={form.address}
                 onChange={(e) => updateField('address', e.target.value)}
                 className={`${INPUT_CLASS} min-h-[72px] resize-none`}
-                placeholder="House, road, area"
+                placeholder="House, road, area or village, and a nearby landmark"
               />
             </Field>
             {collect.district && (
-              <Field label="District">
-                <input
-                  value={form.district}
-                  onChange={(e) => updateField('district', e.target.value)}
-                  className={`${INPUT_CLASS} mb-2`}
-                  placeholder="Select or type your district"
+              <div className="flex flex-col gap-1.5">
+                {/* One "District & Thana" field (the same picker as StorePal's checkout); the delivery zone follows it. */}
+                <BdAddressPicker
+                  district={form.district}
+                  thana={form.city}
+                  onDistrict={(value) => updateField('district', value)}
+                  onThana={(value) => updateField('city', value)}
+                  lang="en"
+                  labels={{
+                    district: 'District',
+                    thana: 'Thana / Upazila',
+                    districtPlaceholder: 'Select your district and thana',
+                    thanaPlaceholder: 'Thana / Upazila',
+                    thanaNeedsDistrict: 'Choose a district first',
+                    other: 'Other (type it)',
+                    typeDistrict: 'Type your district',
+                    typeThana: 'Type your thana / upazila',
+                    place: 'District & Thana / Upazila',
+                    search: 'Search',
+                  }}
+                  labelClassName="mb-1.5 block text-[13px] font-medium text-neutral-800"
+                  controlClassName={INPUT_CLASS}
                 />
-                <div className="flex flex-wrap gap-1.5">
-                  {QUICK_DISTRICTS.map((d) => (
-                    <button
-                      key={d}
-                      type="button"
-                      onClick={() => updateField('district', d)}
-                      className={`rounded-full border px-3 py-1 text-[12px] transition-colors ${
-                        form.district === d
-                          ? 'border-orange-600 bg-orange-50 text-orange-700'
-                          : 'border-neutral-200 text-neutral-600 hover:border-neutral-300'
-                      }`}
-                    >
-                      {d}
-                    </button>
-                  ))}
-                </div>
-              </Field>
+                {errors.city && <p className="text-[12px] text-red-600">{errors.city}</p>}
+                {form.district.trim() && (
+                  <p role="status" className="text-[12.5px] text-neutral-500">
+                    {zoneLabel} delivery: {formatPrice(deliveryChargeByZone[zone as keyof typeof deliveryChargeByZone] ?? deliveryCharge)}
+                  </p>
+                )}
+              </div>
             )}
-            {collect.shippingOption && (
+            {/* Without a district there is nothing to work the zone out from, so the shopper still picks it. */}
+            {collect.shippingOption && !collect.district && (
               <Field label="Shipping Option">
                 <div className="flex flex-col gap-2">
                   {(aroundDhaka ? (['DHAKA', 'AROUND_DHAKA', 'OUTSIDE_DHAKA'] as const) : (['DHAKA', 'OUTSIDE_DHAKA'] as const)).map((z) => (
@@ -295,6 +335,38 @@ export function CheckoutFormSection({
                     )}
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-[13px] text-neutral-800">{p.name}</p>
+                      {canOrder && isOn && (p.options ?? []).map((o) => (
+                        <div key={o.name} className="mt-1.5">
+                          <p className="mb-1 text-[11.5px] text-neutral-500">
+                            {o.name}
+                            {choices[p.id]?.[o.name] ? <span className="font-semibold text-neutral-800">: {choices[p.id][o.name]}</span> : null}
+                          </p>
+                          <div className="flex flex-wrap gap-1">
+                            {o.values.map((v) => {
+                              const on = choices[p.id]?.[o.name] === v;
+                              return (
+                                <button
+                                  key={v}
+                                  type="button"
+                                  aria-pressed={on}
+                                  onClick={() => {
+                                    setChoices((prev) => ({ ...prev, [p.id]: { ...(prev[p.id] ?? {}), [o.name]: v } }));
+                                    setOptionError(null);
+                                  }}
+                                  className={`min-h-[30px] rounded-md border px-2.5 text-[12px] transition-colors ${
+                                    on ? 'border-neutral-900 font-semibold text-neutral-900 ring-1 ring-neutral-900' : 'border-neutral-300 text-neutral-700 hover:border-neutral-500'
+                                  }`}
+                                >
+                                  {v}
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                      {canOrder && isOn && soldOutPick(p, choices[p.id] ?? {}) && (
+                        <p className="mt-1 text-[11.5px] font-medium text-red-600">This option is out of stock</p>
+                      )}
                       {canOrder ? (
                         <div className="mt-1 flex items-center">
                           <div className="flex items-center overflow-hidden rounded border border-neutral-300">
@@ -329,7 +401,15 @@ export function CheckoutFormSection({
 
             <div className="mt-3 flex flex-col gap-1.5 border-t border-neutral-200 pt-3 text-[13px]">
               <Row label="Subtotal" value={formatPrice(subtotal)} />
-              <Row label="Delivery Charge" value={formatPrice(deliveryCharge)} />
+              {/* Until the store's own charges arrive, a placeholder rather than the fallback number (it used to jump). */}
+              {chargesReady ? (
+                <Row label="Delivery Charge" value={formatPrice(deliveryCharge)} />
+              ) : (
+                <div className="flex justify-between">
+                  <span className="text-neutral-700">Delivery Charge</span>
+                  <span className="h-4 w-12 animate-pulse rounded bg-neutral-200 motion-reduce:animate-none" aria-hidden />
+                </div>
+              )}
               {vatAmount > 0 && <Row label="VAT" value={formatPrice(vatAmount)} />}
               {visiblePlatformChargeAmount > 0 && (
                 <Row label="Platform Charge" value={formatPrice(visiblePlatformChargeAmount)} />
@@ -356,7 +436,11 @@ export function CheckoutFormSection({
               )}
               <div className="mt-1 flex justify-between border-t border-neutral-200 pt-2 text-[15px] font-bold text-neutral-900">
                 <span>Total</span>
-                <span>{formatPrice(visibleGrandTotal)}</span>
+                {chargesReady ? (
+                  <span>{formatPrice(visibleGrandTotal)}</span>
+                ) : (
+                  <span className="h-5 w-20 animate-pulse rounded bg-neutral-200 motion-reduce:animate-none" aria-hidden />
+                )}
               </div>
             </div>
 
@@ -459,6 +543,7 @@ export function CheckoutFormSection({
             {(noProductError || placeError) && (
               <p className="mt-3 text-[12.5px] text-red-600">{noProductError ?? placeError}</p>
             )}
+            {optionError && <p className="mt-3 text-[12.5px] text-red-600">{optionError}</p>}
 
             <button
               type="button"
@@ -474,7 +559,16 @@ export function CheckoutFormSection({
                     : 'Placing order…'
                   : showCodOtp
                     ? 'Verify & Place Order'
-                    : 'Place Order'}
+                    : chargesReady && lines.length > 0
+                      ? (
+                          // The action and the amount it pays, split by a thin line (as in StorePal's checkout).
+                          <span className="flex items-center justify-center gap-3">
+                            <span>Place Order</span>
+                            <span className="h-5 w-px bg-white/45" aria-hidden />
+                            <span className="text-[15.5px] font-extrabold tabular-nums tracking-tight">{formatPrice(visibleGrandTotal)}</span>
+                          </span>
+                        )
+                      : 'Place Order'}
             </button>
           </div>
         </div>

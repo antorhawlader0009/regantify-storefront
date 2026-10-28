@@ -4,7 +4,10 @@ import { useEffect, useState } from 'react';
 import { MessageCircle } from 'lucide-react';
 import { prefetchChatStatus } from '@/lib/chatApi';
 import { trackFeature } from '@/lib/featureUse';
+import { usePathname } from 'next/navigation';
 import { useHeaderPresence } from '../lib/headerPresence';
+import { useCheckoutDialog } from '../lib/checkoutDialog';
+import { useFloatingCovered } from '@/lib/floatingCover';
 import { rememberOpen } from '../lib/chatHistory';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
@@ -21,6 +24,11 @@ export function AiAssistantBubble({ subdomain }: { subdomain: string }) {
   const [available, setAvailable] = useState(false);
   const [pressed, setPressed] = useState(false);
   const headerHere = useHeaderPresence((s) => s.count > 0);
+  // Same hiding rule as the widget's own bubble (AiAssistantWidget.tsx).
+  const layerOpen = useFloatingCovered();
+  const checkoutOpen = useCheckoutDialog((s) => s.open);
+  const pathname = usePathname() ?? '';
+  const covered = layerOpen || checkoutOpen || /\/cart\/?$/.test(pathname);
   const cartOpen = useCartDrawer((s) => s.open);
   const { hidden: scrolledAway, reveal } = useFloatingHidden(cartOpen);
   const assistantBottom = useAssistantBottom();
@@ -41,7 +49,7 @@ export function AiAssistantBubble({ subdomain }: { subdomain: string }) {
     };
   }, [subdomain]);
 
-  if (!available || !headerHere || pressed) return null;
+  if (!available || !headerHere || pressed || covered) return null;
   return (
     <button
       onClick={() => {

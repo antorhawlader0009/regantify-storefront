@@ -94,7 +94,7 @@ export function ProductView({
         {!product.quoteOnly && product.flashSaleEndsAt && (
           <FlashSaleTimer variant="bar" endsAt={product.flashSaleEndsAt} className="mb-3" />
         )}
-        <div className="bg-surface border border-line rounded grid gap-8 p-4 sm:p-6 lg:[grid-template-columns:1.1fr_1fr]">
+        <div className="bg-surface border border-line rounded-xl grid gap-6 lg:gap-10 p-4 sm:p-6 lg:p-8 lg:[grid-template-columns:1.1fr_1fr]">
           <StorePalPurchasePanel
             subdomain={subdomain}
             storeName={storeName}
@@ -107,7 +107,7 @@ export function ProductView({
       </main>
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="bg-surface border border-line rounded mb-5">
+        <div className="bg-surface border border-line rounded-xl mb-5">
           <StorePalProductTabs subdomain={subdomain} slug={product.slug} description={product.description} infoTabs={product.infoTabs} />
         </div>
 

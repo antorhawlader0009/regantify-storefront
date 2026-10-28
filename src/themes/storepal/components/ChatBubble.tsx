@@ -5,6 +5,7 @@ import { useEffect, useState, type MouseEvent } from 'react';
 import { isOpenNow, nextOpening, timeLabel, type BusinessHours } from '@/lib/businessHours';
 import type { SocialLinks } from '@/lib/socialLinksApi';
 import { useCartDrawer } from '../lib/cartDrawer';
+import { useFloatingCovered } from '@/lib/floatingCover';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
 import { FLOATING_BUTTON, useFloatingSlot } from '../lib/floatingStack';
 import { useBusinessHours, useStorePalDesign } from '../lib/designSettings';
@@ -78,7 +79,9 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
   const shown = design.chatButtonEnabled !== false && pages.includes(kind) && !!link;
   // On the right it takes the bottom spot; the AI assistant then sits above it (lib/floatingStack.ts).
   useFloatingSlot(shown, onLeft ? 'left' : 'right');
-  if (!shown || !link) return null;
+  // Out of the way while something full-screen is open (lib/floatingCover.tsx) and on the cart page.
+  const covered = useFloatingCovered() || /\/cart\/?$/.test(pathname);
+  if (!shown || !link || covered) return null;
 
   // Outside the shop hours (TellMe idea 73) the bubble says so and when we answer again; the chat still opens.
   const closedNote = hoursNote(hours, design.storeLanguage);

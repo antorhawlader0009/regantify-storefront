@@ -5,6 +5,7 @@ import { BellRing, CheckCircle2, MessageCircleQuestion, X } from 'lucide-react';
 import { apiOrigin } from '@/lib/checkoutApi';
 import { useStoreText } from '../lib/storeText';
 import { phoneInput } from '@/lib/phoneInput';
+import { CoverFloating } from '@/lib/floatingCover';
 
 /*
  * LMS store forms on StorePal product pages (LMS-plan.md Step 9):
@@ -132,6 +133,7 @@ export function StoreLeadFormDialog({
 
   return (
     <div className="fixed inset-0 z-[70] flex items-end justify-center bg-black/40 px-0 sm:items-center sm:px-4" onClick={onClose}>
+      <CoverFloating />
       <div
         role="dialog"
         aria-modal="true"

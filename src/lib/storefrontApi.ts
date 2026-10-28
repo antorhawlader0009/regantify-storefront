@@ -934,6 +934,10 @@ export interface StorefrontLandingPageProduct {
   isPreOrder: boolean;
   inStock: boolean;
   minOrderQuantity?: number | null;
+  /** Size, Colour...: the landing checkout asks for each. Missing on an older server answer = none. */
+  options?: { name: string; values: string[] }[];
+  /** The option combinations that are sold out. */
+  soldOut?: Record<string, string>[];
 }
 
 export interface StorefrontLandingPageData {
