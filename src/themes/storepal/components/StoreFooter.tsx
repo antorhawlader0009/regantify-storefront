@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, ChevronDown } from 'lucide-react';
 import { ReputationStrip } from './ReputationStrip';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
-import { getGiftCardSale, getStoreHasBlog, getStoreHasContact, getStoreHasFaq, getStoreHasLocations, getStorePages, getStorePaymentMethods, type StorefrontPageSummary } from '../lib/storeNavApi';
+import { getGiftCardSale, getStoreHasBlog, getStoreContactInfo, getStoreHasFaq, getStoreHasLocations, getStorePages, getStorePaymentMethods, type StoreContactInfo, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate } from '@/lib/footerTemplates';
 import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
@@ -142,8 +142,9 @@ export function StoreFooter({
   const [hasBlog, setHasBlog] = useState(false);
   // Store FAQ (TellMe idea 122): a "FAQ" link once a question is switched on.
   const [hasFaq, setHasFaq] = useState(false);
-  // Contact page: a "Contact us" link while the store has it on.
-  const [hasContact, setHasContact] = useState(false);
+  // Contact page: a "Contact us" link while the store has it on, and (with no saved footer) its phone and address.
+  const [contact, setContact] = useState<StoreContactInfo | null>(null);
+  const hasContact = contact !== null;
   // Shop Locations: an "Our shops" link once the store has added a shop.
   const [hasLocations, setHasLocations] = useState(false);
   // Gift cards sold online (TellMe idea 135): a "Gift cards" link while the store sells them.
@@ -162,7 +163,7 @@ export function StoreFooter({
     getStorePages(subdomain).then(setPages);
     getStoreHasBlog(subdomain).then(setHasBlog);
     getStoreHasFaq(subdomain).then(setHasFaq);
-    getStoreHasContact(subdomain).then(setHasContact);
+    getStoreContactInfo(subdomain).then(setContact);
     getStoreHasLocations(subdomain).then(setHasLocations);
     getGiftCardSale(subdomain).then((c) => setHasGiftCards(!!c?.enabled && c.amounts.length > 0));
     getStorePaymentMethods(subdomain).then(setPaymentMethods);
@@ -238,6 +239,18 @@ export function StoreFooter({
           <div>
             {Logo}
             {SocialIcons}
+            {/* A new store's footer had no way to reach the shop: the Contact page's own phone and address (owner phone and
+                Settings > Address unless the store changed them there), only while that page is on. */}
+            {contact && (contact.phone || contact.basedIn) && (
+              <div className="mt-4 flex flex-col gap-1.5 text-[13px] text-muted">
+                {contact.basedIn && <p className="m-0 whitespace-pre-line">{contact.basedIn}</p>}
+                {contact.phone && (
+                  <a href={contact.phone.url} className="w-fit hover:text-ink">
+                    {contact.phone.label}
+                  </a>
+                )}
+              </div>
+            )}
           </div>
 
           <FooterSection title={t('INFORMATION')}>

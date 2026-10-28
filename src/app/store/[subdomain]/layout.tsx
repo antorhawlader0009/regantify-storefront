@@ -79,7 +79,9 @@ export async function generateMetadata({ params }: LayoutProps): Promise<Metadat
     try {
       const appName = store.designSettings?.appName?.trim() || store.storeName;
       metadata.manifest = await siteUrl(`/store/${subdomain}/manifest.webmanifest`);
-      metadata.icons = { ...(store.faviconUrl ? { icon: store.faviconUrl } : {}), apple: await siteUrl(`/store/${subdomain}/app-icon/180`) };
+      // No favicon uploaded: the store's own app icon (its logo, else its first letter on the accent colour), never the platform's.
+      const icon = store.faviconUrl || (await siteUrl(`/store/${subdomain}/app-icon/192`));
+      metadata.icons = { icon, apple: await siteUrl(`/store/${subdomain}/app-icon/180`) };
       metadata.appleWebApp = { capable: true, title: appName, statusBarStyle: 'default' };
     } catch {
       // No usable host (a build step): no manifest link.

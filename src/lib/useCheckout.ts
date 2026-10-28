@@ -52,10 +52,11 @@ import {
 // This export only remains as that same fallback value for the brief
 // window before the real per-vendor charges below have loaded.
 export const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
-  DHAKA: 70,
-  OUTSIDE_DHAKA: 130,
+  DHAKA: 60,
+  OUTSIDE_DHAKA: 120,
 };
-const FALLBACK_VAT_CHARGE = 10;
+// The column defaults for a new store (2026-10-28: delivery 60 / 120, no VAT); only shown until the store's own values load.
+const FALLBACK_VAT_CHARGE = 0;
 // Only used for the brief window before the real gateway list loads —
 // every vendor always has at least a COD row (see
 // PaymentGatewaysService.ensureBuiltins), so this is never shown, just a

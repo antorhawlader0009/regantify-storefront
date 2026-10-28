@@ -16,9 +16,9 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   preOrderMessage: null,
   cardShowSummary: false,
   cardShowDefaultButton: false,
-  cardShowViewButton: true,
-  cardShowBuyNow: false,
-  cardShowAddToCart: false,
+  cardShowViewButton: false,
+  cardShowBuyNow: true,
+  cardShowAddToCart: true,
   cardOptionsAsButtons: false,
   cardOptionsAsSelect: false,
   cardDisplayAsCard: true,
@@ -65,7 +65,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   chatButtonProductMessage: true,
   productShareEnabled: true,
   socialProofDays: 0,
-  wishlistAlertsEnabled: true,
+  wishlistAlertsEnabled: false,
 };
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);

@@ -14,8 +14,8 @@ import { useStoreText } from '../../lib/storeText';
 // Integration > Delivery Charge values load — same reasoning/values as
 // lib/useCheckout.ts's own DELIVERY_CHARGE fallback.
 const FALLBACK_DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
-  DHAKA: 70,
-  OUTSIDE_DHAKA: 130,
+  DHAKA: 60,
+  OUTSIDE_DHAKA: 120,
 };
 
 /** Account > Edit Profile — same sidebar layout as the other account pages. */

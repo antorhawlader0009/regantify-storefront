@@ -69,14 +69,25 @@ export async function getStoreHasLocations(subdomain: string): Promise<boolean> 
 }
 
 /** Whether the store's contact page is on, for the footer's "Contact us" link. */
-export async function getStoreHasContact(subdomain: string): Promise<boolean> {
+/**
+ * The Contact page's public answer, null while the page is off. The footer uses it for its "Contact us" link and, when the
+ * store never saved a footer, for a phone/address block (the same owner phone and Settings > Address the page falls back to).
+ */
+export interface StoreContactInfo {
+  enabled: boolean;
+  phone: { label: string; url: string } | null;
+  whatsapp: { label: string; url: string } | null;
+  basedIn: string | null;
+}
+
+export async function getStoreContactInfo(subdomain: string): Promise<StoreContactInfo | null> {
   try {
     const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/contact`);
-    if (!res.ok) return false;
-    const data = await res.json();
-    return data.enabled === true;
+    if (!res.ok) return null;
+    const data = (await res.json()) as StoreContactInfo;
+    return data.enabled === true ? data : null;
   } catch {
-    return false;
+    return null;
   }
 }
 
