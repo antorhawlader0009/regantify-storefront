@@ -138,6 +138,7 @@ const BN: Record<string, string> = {
   'Your number is added and your two accounts are now one.': 'আপনার নম্বর যোগ হয়েছে, আর আপনার দুটো অ্যাকাউন্ট এখন একটা।',
   Subtotal: 'সাবটোটাল',
   'Delivery, coupons and gift cards are applied at checkout.': 'ডেলিভারি চার্জ, কুপন আর গিফট কার্ড চেকআউটে যোগ হবে।',
+  'Minimum order is {amount}. Add {more} more to order.': 'সর্বনিম্ন অর্ডার {amount}। অর্ডার করতে আর {more} যোগ করুন।',
   Checkout: 'অর্ডার করুন',
   // Wishlist
   Wishlist: 'পছন্দের তালিকা',

@@ -13,6 +13,7 @@ import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { encodeCartLink } from '@/lib/cartLink';
 import { CartOffers } from './CartOffers';
 import { CartAddons } from './CartAddons';
+import { MinOrderNotice } from './MinOrderNotice';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { trackFeature } from '@/lib/featureUse';
 
@@ -227,6 +228,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
             </div>
 
             <div className="shrink-0 border-t border-line bg-canvas px-5 pb-5 pt-4 shadow-[0_-10px_18px_-14px_rgba(0,0,0,0.35)]">
+              <MinOrderNotice subdomain={subdomain} className="mb-3" />
               {saved > 0 && (
                 <p className="mb-1.5 flex items-center justify-between text-[13px] font-medium text-success">
                   <span>{t('You save')}</span>

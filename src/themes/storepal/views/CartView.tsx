@@ -7,6 +7,7 @@ import { CartViewTracker } from '../components/CartViewTracker';
 import { CartOffers } from '../components/CartOffers';
 import { CartAddons } from '../components/CartAddons';
 import { StoreLabel } from '../components/StoreLabel';
+import { MinOrderNotice } from '../components/MinOrderNotice';
 
 interface CartViewProps {
   subdomain: string;
@@ -23,6 +24,7 @@ export function CartView({ subdomain, storeName, categories }: CartViewProps) {
         <div className="bg-surface border border-line rounded-lg p-4 sm:p-6">
           <StorePalCartList subdomain={subdomain} />
         </div>
+        <MinOrderNotice subdomain={subdomain} className="mt-4" />
         <CartOffers subdomain={subdomain} />
         <CartAddons subdomain={subdomain} />
         <CartViewTracker subdomain={subdomain} />
