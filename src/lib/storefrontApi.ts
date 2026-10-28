@@ -942,6 +942,8 @@ export interface StorefrontLandingPageProduct {
   options?: { name: string; values: string[] }[];
   /** The option combinations that are sold out. */
   soldOut?: Record<string, string>[];
+  /** When a running flash sale lowering this price ends (null = none). Prices above already include campaigns and flash sales. */
+  flashSaleEndsAt?: string | null;
   /** Combinations with their own price (null = the product's). */
   variantPrices?: { options: Record<string, string>; price: string | null; discountPrice: string | null }[];
 }
