@@ -22,10 +22,14 @@ import { SizeGuideLink } from './SizeGuideLink';
 import { useWholesalePrices } from '../lib/wholesale';
 import { trackFeature } from '@/lib/featureUse';
 import { plainText } from '@/lib/plainText';
+import { ComingSoonNotify } from './ComingSoonNotify';
+import { RatingStars } from '@/components/RatingStars';
 import { CoverFloating } from '@/lib/floatingCover';
 
 interface StorePalProductPanelProps {
   subdomain: string;
+  /** Show "Tell me when it is back" under the buttons when the chosen size/colour is sold out (StorePalPurchasePanel decides). */
+  variantRestock?: boolean;
   storeName: string;
   product: StorefrontProduct;
   /**
@@ -96,7 +100,7 @@ interface StorePalProductPanelProps {
  * construction) is unchanged from the audited version — only the visual
  * treatment is refined here.
  */
-export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, titleExtra, onAddedToCart, onBuyNow }: StorePalProductPanelProps) {
+export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, titleExtra, onAddedToCart, onBuyNow, variantRestock = false }: StorePalProductPanelProps) {
   const formatPrice = useFormatPrice(plainPrice);
   // Gift senders abroad: "≈ US$X" beside the price, only for a visitor whose browser is not on Bangladesh time (lib/usdPrice.tsx).
   const usd = useUsdPrice();
@@ -128,6 +132,17 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
       : undefined;
 
   const needsVariantSelection = product.variationOptions.length > 0 && !matchedVariant;
+
+  // Sold-out sizes and colours are greyed and struck through, judged with the other options already picked: a value is
+  // sold out when every variation it can still make has no stock (or none exists). They stay pressable, so the shopper
+  // can pick one and ask to be told when it is back. Pre-order products and stores taking backorders sell regardless.
+  const markSoldOut = !product.isPreOrder && !backorder && product.variants.length > 0;
+  const valueSoldOut = (optName: string, val: string) => {
+    if (!markSoldOut) return false;
+    const want: Record<string, string> = { ...selected, [optName]: val };
+    const fits = product.variants.filter((v) => Object.entries(want).every(([k, x]) => v.optionValues[k] === x));
+    return fits.length === 0 || fits.every((v) => v.stock <= 0);
+  };
 
   // The size guide (Store > Product > Size Guides) sits beside the Size choice: the option named like a size, else
   // the first one; a product with no choices at all gets it as a plain link.
@@ -480,6 +495,18 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           {titleExtra}
         </div>
 
+        {/* Average stars (approved reviews only, from 3 of them); a tap opens the Reviews tab below. */}
+        {product.rating && (
+          <button
+            type="button"
+            onClick={() => window.dispatchEvent(new Event('storepal:open-reviews'))}
+            className="mb-3 -mt-1 flex items-center gap-1 rounded text-[13px] hover:underline underline-offset-2"
+          >
+            <RatingStars rating={product.rating} label={`Rated ${product.rating.average} out of 5 from ${product.rating.count} reviews`} />
+            <span className="text-muted">{t('reviews')}</span>
+          </button>
+        )}
+
         {(product.category || product.secondaryCategories.length > 0) && (
           <div className="flex gap-1.5 flex-wrap mb-5">
             {product.category && (
@@ -587,6 +614,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             <div className="flex gap-1.5 flex-wrap">
               {opt.values.map((val) => {
                 const isSelected = selected[opt.name] === val;
+                const soldOutValue = valueSoldOut(opt.name, val);
                 // A tiny swatch thumbnail for this value, if the vendor
                 // assigned photos to it — lets shoppers see which "Black"
                 // or "Blue" they're picking before selecting it, not just
@@ -601,16 +629,22 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                       setVariantWarning(false);
                     }}
                     aria-pressed={isSelected}
-                    className={`flex min-h-10 min-w-11 items-center justify-center gap-1.5 py-1.5 rounded-lg text-[13px] transition-colors border bg-surface text-ink ${
+                    aria-label={soldOutValue ? `${val}, ${t('Out of stock')}` : undefined}
+                    title={soldOutValue ? t('Out of stock') : undefined}
+                    className={`flex min-h-10 min-w-11 items-center justify-center gap-1.5 py-1.5 rounded-lg text-[13px] transition-colors border ${
                       swatchPhoto ? 'pl-1.5 pr-3.5' : 'px-3.5'
+                    } ${
+                      soldOutValue ? 'bg-canvas text-muted line-through decoration-1' : 'bg-surface text-ink'
                     } ${
                       isSelected
                         ? 'border-ink ring-1 ring-ink font-semibold'
-                        : 'border-line font-medium hover:border-line-strong'
+                        : soldOutValue
+                          ? 'border-dashed border-line font-medium hover:border-line-strong'
+                          : 'border-line font-medium hover:border-line-strong'
                     }`}
                   >
                     {swatchPhoto && (
-                      <span className="relative w-6 h-6 rounded overflow-hidden shrink-0 bg-canvas ring-1 ring-black/10">
+                      <span className={`relative w-6 h-6 rounded overflow-hidden shrink-0 bg-canvas ring-1 ring-black/10 ${soldOutValue ? 'opacity-50 grayscale' : ''}`}>
                         <Image src={swatchPhoto} alt="" fill sizes="24px" className="object-cover" />
                       </span>
                     )}
@@ -713,6 +747,20 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             {t('Buy Now')}
           </button>
         </div>
+
+        {/* The chosen size/colour is sold out while others are not: wait for this one (the whole-product form is shown by
+            StorePalPurchasePanel instead when everything is sold out). */}
+        {variantRestock && selectedVariantOutOfStock && !outOfStock && matchedVariant && (
+          <div className="mt-4">
+            <ComingSoonNotify
+              key={JSON.stringify(matchedVariant.optionValues)}
+              subdomain={subdomain}
+              slug={product.slug}
+              restock
+              options={matchedVariant.optionValues}
+            />
+          </div>
+        )}
 
         {added && (
           <div className="mt-3 flex items-center justify-between gap-3 px-3.5 py-2.5 rounded-md bg-success-bg text-success text-[13px]">

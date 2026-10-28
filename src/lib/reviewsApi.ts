@@ -54,16 +54,14 @@ export async function getProductReviews(subdomain: string, slug: string, sort: '
 }
 
 /**
- * Submits a new review from the product page. No auth — a shopper need
- * not have a Customer account (see SubmitReviewDto's own comment on the
- * backend). Always lands pending approval; the caller shows a "thanks,
- * pending approval" message rather than the review itself appearing
- * immediately.
+ * Submits a new review from the product page. Signed-in shoppers of this store only (the server refuses a guest since
+ * 2026-10-28), one review per account and product. Always lands pending approval; the caller shows a "thanks,
+ * pending approval" message rather than the review itself appearing immediately.
  */
-export async function submitProductReview(subdomain: string, slug: string, input: SubmitReviewInput): Promise<void> {
+export async function submitProductReview(subdomain: string, slug: string, input: SubmitReviewInput, accessToken: string): Promise<void> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
     body: JSON.stringify(input),
   });
 

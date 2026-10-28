@@ -301,6 +301,8 @@ export interface StorefrontDesignSettings {
   /** Store > Design > Chat Button — the floating bubble (see themes/storepal/components/ChatBubble.tsx). Missing = the bubble as it always was. */
   /** Share button on the product page (TellMe idea 61); missing = shown. */
   productShareEnabled?: boolean;
+  /** Average star rating on the product page, cards and Google; missing = shown. */
+  showRatings?: boolean;
   /** "Compare" tick box on cards and the compare bar (IDEA-13); missing = off. */
   compareEnabled?: boolean;
   /** "N bought in the last X days" window (TellMe idea 63): 0 or missing = off. */
@@ -462,6 +464,8 @@ export interface StorefrontProductVideo {
 
 export interface StorefrontProduct {
   id: string;
+  /** Average stars from approved reviews, only from 3 reviews and while the store shows ratings; null/missing = none. */
+  rating?: { average: number; count: number } | null;
   /** The store's own badge ("New", "Hot"); already empty once its end time has passed. StorePal shows it. */
   badgeText?: string | null;
   /** Hidden words that also find this product in StorePal's search (Product.searchKeywords); never shown. */
@@ -1112,12 +1116,20 @@ export async function getStoreSocialFeed(subdomain: string): Promise<StorefrontS
 }
 
 /** "Notify me" on a coming-soon product (TellMe idea 104): the phone joins the waitlist. */
-export async function joinProductWaitlist(subdomain: string, slug: string, phone: string, name?: string, kind: 'COMING' | 'RESTOCK' = 'COMING'): Promise<void> {
+export async function joinProductWaitlist(
+  subdomain: string,
+  slug: string,
+  phone: string,
+  name?: string,
+  kind: 'COMING' | 'RESTOCK' = 'COMING',
+  /** One sold-out size/colour to wait for; none = the whole product. */
+  options?: Record<string, string>,
+): Promise<void> {
   const origin = process.env.NEXT_PUBLIC_API_URL?.replace(/\/$/, '') ?? `${window.location.protocol}//${window.location.hostname}:4000`;
   const res = await fetch(`${origin}/v1/store/${encodeURIComponent(subdomain)}/products/${encodeURIComponent(slug)}/waitlist`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ phone, name: name?.trim() || undefined, kind }),
+    body: JSON.stringify({ phone, name: name?.trim() || undefined, kind, options }),
   });
   if (!res.ok) {
     const body = await res.json().catch(() => null);

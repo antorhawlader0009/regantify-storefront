@@ -11,6 +11,7 @@ import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { TrackOrderBody } from '../components/TrackOrderBody';
+import { MemoDownloadButton } from '../components/MemoDownloadButton';
 import { LangToggle } from './TrackOrderView';
 import type { TrackedOrder } from '@/lib/checkoutApi';
 import { phoneInput } from '@/lib/phoneInput';
@@ -22,25 +23,32 @@ function LiveResult({
   phone,
   whatsappUrl,
   lang,
+  storeName,
+  logoUrl,
 }: {
   subdomain: string;
   order: TrackedOrder;
   phone: string;
   whatsappUrl: string | null;
   lang: ReturnType<typeof useTrackLang>[0];
+  storeName: string;
+  logoUrl: string | null;
 }) {
   const reference = order.publicCode ?? order.invoiceNumber;
   const live = useLiveOrder(order, () => trackOrder(subdomain, reference, phone));
   return (
-    <TrackOrderBody
-      order={live.order}
-      lang={lang}
-      whatsappUrl={whatsappUrl}
-      checkedAt={live.checkedAt}
-      live={!live.finished}
-      subdomain={subdomain}
-      onOrderChanged={live.replace}
-    />
+    <>
+      <TrackOrderBody
+        order={live.order}
+        lang={lang}
+        whatsappUrl={whatsappUrl}
+        checkedAt={live.checkedAt}
+        live={!live.finished}
+        subdomain={subdomain}
+        onOrderChanged={live.replace}
+      />
+      <MemoDownloadButton order={live.order} storeName={storeName} logoUrl={logoUrl} label={lang === 'bn' ? 'মেমো ডাউনলোড (PDF)' : 'Download Memo (PDF)'} busyLabel={lang === 'bn' ? 'মেমো তৈরি হচ্ছে…' : 'Preparing memo…'} className="mt-4 w-full sm:w-auto" />
+    </>
   );
 }
 
@@ -129,7 +137,7 @@ export function TrackLookupView({ subdomain }: { subdomain: string }) {
         )}
 
         {order ? (
-          <LiveResult subdomain={subdomain} order={order} phone={lookedUpPhone || phone.trim()} whatsappUrl={socialLinks.whatsappUrl ?? null} lang={lang} />
+          <LiveResult subdomain={subdomain} order={order} phone={lookedUpPhone || phone.trim()} whatsappUrl={socialLinks.whatsappUrl ?? null} lang={lang} storeName={storeName} logoUrl={logoUrl} />
         ) : (
           rememberedOrders.length > 0 && (
             <section>

@@ -26,7 +26,8 @@ const KEY_PREFIX = 'regantify-checkout-form:';
 // included (a guest still has to retype it; only a logged-in Customer's
 // phone comes from their account) since retyping an 11-digit number is
 // exactly the kind of friction this feature exists to remove.
-type SavedFields = Omit<CheckoutFormState, 'note' | 'altPhone' | 'email'>;
+// The second phone too (2026-10-28): shoppers had to retype it every time.
+type SavedFields = Omit<CheckoutFormState, 'note' | 'email'>;
 
 export function loadSavedCheckoutForm(subdomain: string): Partial<SavedFields> | null {
   try {
@@ -47,11 +48,36 @@ export function loadSavedCheckoutForm(subdomain: string): Partial<SavedFields> |
 // autofill keeps an entry after you use it once, not just once.
 export function saveCheckoutForm(subdomain: string, form: CheckoutFormState): void {
   try {
-    const { fullName, phone, address, city, district, zone } = form;
-    const toSave: SavedFields = { fullName, phone, address, city, district, zone };
+    const { fullName, phone, altPhone, address, city, district, zone } = form;
+    const toSave: SavedFields = { fullName, phone, altPhone, address, city, district, zone };
     localStorage.setItem(`${KEY_PREFIX}${subdomain}`, JSON.stringify(toSave));
   } catch {
     // Storage blocked/full — auto-save silently doesn't happen, checkout
     // itself still works fine, the shopper just retypes next time.
+  }
+}
+
+/**
+ * A logged-in shopper's other details come from their account's address book, which has no second phone; it is kept
+ * here per store and account on this browser, so they don't retype it either. Another account on the same browser
+ * reads its own key.
+ */
+const ALT_PREFIX = 'regantify-checkout-alt:';
+
+export function loadSavedAltPhone(subdomain: string, customerId: string): string {
+  try {
+    return localStorage.getItem(`${ALT_PREFIX}${subdomain}:${customerId}`) ?? '';
+  } catch {
+    return '';
+  }
+}
+
+export function saveAltPhone(subdomain: string, customerId: string, altPhone: string): void {
+  try {
+    const key = `${ALT_PREFIX}${subdomain}:${customerId}`;
+    if (altPhone.trim()) localStorage.setItem(key, altPhone.trim());
+    else localStorage.removeItem(key);
+  } catch {
+    // Storage blocked: nothing remembered.
   }
 }

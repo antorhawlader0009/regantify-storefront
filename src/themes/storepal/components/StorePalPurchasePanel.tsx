@@ -109,6 +109,8 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
         display={display}
         titleExtra={<ShareButton name={product.name} price={Number(product.discountPrice ?? product.price)} />}
         leadSlots={leadSlots}
+        // A sold-out size/colour gets its own form, unless the LMS notify form, backorders or coming-soon take over.
+        variantRestock={!quoteOnly && !lmsForms?.notifyMe && !props.backorder && !comingSoon}
         onAddedToCart={openCartDrawer}
         onBuyNow={openCheckout}
       />

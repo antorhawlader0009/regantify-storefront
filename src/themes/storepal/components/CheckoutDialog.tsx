@@ -17,7 +17,7 @@ import { takePendingCoupon } from '../lib/pendingCoupon';
 import { takeInstantPrefill } from '@/lib/instantCheckout';
 import { useVoiceCheckoutFill } from '@/lib/voiceCheckout';
 import { useStorePalDesign } from '../lib/designSettings';
-import { loadSavedCheckoutForm, saveCheckoutForm } from '../lib/checkoutFormStorage';
+import { loadSavedAltPhone, loadSavedCheckoutForm, saveAltPhone, saveCheckoutForm } from '../lib/checkoutFormStorage';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
 import { trackBeginCheckout } from '@/lib/ecommerceEvents';
@@ -561,6 +561,19 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [voiceSeq]);
+  // A logged-in shopper's second phone (their address book has none): put back once, then kept as they type.
+  const customerId = useCustomerAuthStore((s) => s.customer?.id ?? null);
+  const altRestoredFor = useRef<string | null>(null);
+  useEffect(() => {
+    if (!customerId || altRestoredFor.current === customerId) return;
+    altRestoredFor.current = customerId;
+    const saved = loadSavedAltPhone(subdomain, customerId);
+    if (saved && !form.altPhone) updateField('altPhone', saved);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subdomain, customerId]);
+  useEffect(() => {
+    if (customerId && altRestoredFor.current === customerId) saveAltPhone(subdomain, customerId, form.altPhone);
+  }, [subdomain, customerId, form.altPhone]);
   useEffect(() => {
     // Not before the restore above has run, or the blank form would overwrite what was saved.
     if (!authHydrated || loggedIn || !formRestoredRef.current) return;

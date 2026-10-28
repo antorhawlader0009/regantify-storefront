@@ -9,7 +9,20 @@ import { phoneInput } from '@/lib/phoneInput';
  * The "Notify me" form of a coming-soon product (TellMe idea 104): a phone number and an optional name, no code. When the product goes on
  * sale the store texts the number once. Replaces the price box and Buy buttons on the product page.
  */
-export function ComingSoonNotify({ subdomain, slug, until, restock = false }: { subdomain: string; slug: string; until?: string | null; restock?: boolean }) {
+export function ComingSoonNotify({
+  subdomain,
+  slug,
+  until,
+  restock = false,
+  options,
+}: {
+  subdomain: string;
+  slug: string;
+  until?: string | null;
+  restock?: boolean;
+  /** One size/colour that is sold out (the rest may be in stock): the shopper waits for that one only. */
+  options?: Record<string, string>;
+}) {
   const t = useStoreText();
   const [phone, setPhone] = useState('');
   const [name, setName] = useState('');
@@ -22,7 +35,7 @@ export function ComingSoonNotify({ subdomain, slug, until, restock = false }: { 
     setError(null);
     setBusy(true);
     try {
-      await joinProductWaitlist(subdomain, slug, phone.trim(), name, restock ? 'RESTOCK' : 'COMING');
+      await joinProductWaitlist(subdomain, slug, phone.trim(), name, restock ? 'RESTOCK' : 'COMING', options);
       setDone(true);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Could not save your number.');
@@ -35,7 +48,9 @@ export function ComingSoonNotify({ subdomain, slug, until, restock = false }: { 
 
   return (
     <div className="mb-5 rounded-lg border border-line bg-canvas p-4">
-      <p className="m-0 text-[14px] font-bold text-ink">{restock ? t('Out of stock') : t('Coming soon')}</p>
+      <p className="m-0 text-[14px] font-bold text-ink">
+        {restock ? (options ? `${Object.values(options).join(' / ')}: ${t('Out of stock')}` : t('Out of stock')) : t('Coming soon')}
+      </p>
       {!restock && when && <p className="m-0 mt-0.5 text-[12.5px] text-muted">{t('Expected')}: {when}</p>}
       {done ? (
         <p role="status" className="m-0 mt-2 text-[13px] text-success">

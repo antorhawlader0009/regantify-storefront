@@ -6,6 +6,7 @@ import { User, Check } from 'lucide-react';
 import { getMyProfile, updateMyProfile } from '@/lib/customerAuthApi';
 import { getStoreDeliveryCharges } from '@/lib/checkoutApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
+import { AddPhoneCard } from '../../components/AddPhoneCard';
 import { AccountLayout } from '../../components/AccountLayout';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
 import { useStoreText } from '../../lib/storeText';
@@ -113,6 +114,13 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
   return (
     <AccountLayout subdomain={subdomain} storeName={storeName}>
       <h1 className="text-[22px] font-bold text-ink mb-5">{t('Edit Profile')}</h1>
+
+      {/* An account opened with Google has no phone: add one (and join the old phone account, if there is one). */}
+      {customer && !customer.phone && (
+        <div className="max-w-lg mb-4">
+          <AddPhoneCard subdomain={subdomain} />
+        </div>
+      )}
 
       <div className="bg-surface border border-line rounded-lg p-5 sm:p-6 max-w-lg">
         {loadError && <div className="text-[13px] text-accent mb-4">{loadError}</div>}

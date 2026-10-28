@@ -88,11 +88,10 @@ export default async function ProductPage({ params }: PageProps) {
   // price and stock directly in search results ("rich snippets").
   // Entirely generated from fields the vendor already filled in on Add
   // Product (name, description, price, stock, brand) — nothing extra for
-  // them to configure. Deliberately no aggregateRating/review markup:
-  // Google's structured-data policy prohibits fake or placeholder review
-  // data, and this project only has placeholder reviews (see
-  // placeholderContent.ts) — add real rating markup once a genuine
-  // review feature exists.
+  // them to configure. aggregateRating comes only from the server's `rating`:
+  // real shopper reviews the store approved, from 3 of them, while the store
+  // shows ratings (server storefront/product-rating.ts). Google's rules forbid
+  // made-up or placeholder review data, so nothing else is ever sent.
   const outOfStock = isOutOfStock(product);
   const lowestPrice = product.variants.length > 0
     ? Math.min(...product.variants.map((v) => Number(v.discountPrice ?? v.listPrice ?? product.price)))
@@ -150,6 +149,9 @@ export default async function ProductPage({ params }: PageProps) {
     // A price-on-request product publishes no price anywhere, search results included.
     url: productUrl,
     category: product.category || undefined,
+    aggregateRating: product.rating
+      ? { '@type': 'AggregateRating', ratingValue: product.rating.average, reviewCount: product.rating.count, bestRating: 5, worstRating: 1 }
+      : undefined,
     offers: product.quoteOnly ? undefined : {
       '@type': 'Offer',
       url: productUrl,

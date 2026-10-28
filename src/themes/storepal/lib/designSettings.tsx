@@ -64,6 +64,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   chatButtonPages: ['HOME', 'PRODUCT', 'OTHER'],
   chatButtonProductMessage: true,
   productShareEnabled: true,
+  showRatings: true,
   socialProofDays: 0,
   wishlistAlertsEnabled: false,
 };

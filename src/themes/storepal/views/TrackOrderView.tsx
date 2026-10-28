@@ -7,6 +7,7 @@ import { fetchTrackedOrderByLink } from '@/lib/checkoutApi';
 import { useLiveOrder } from '@/lib/useLiveOrder';
 import { ui, useTrackLang, type TrackLang } from '@/lib/trackingI18n';
 import { TrackOrderBody } from '../components/TrackOrderBody';
+import { MemoDownloadButton } from '../components/MemoDownloadButton';
 import { InStoreReceipt } from '../components/InStoreReceipt';
 
 export function LangToggle({ lang, onChange }: { lang: TrackLang; onChange: (lang: TrackLang) => void }) {
@@ -81,6 +82,7 @@ export function TrackOrderView({
               subdomain={subdomain}
               onOrderChanged={replace}
             />
+            <MemoDownloadButton order={order} storeName={storeName} logoUrl={logoUrl} label={lang === 'bn' ? 'মেমো ডাউনলোড (PDF)' : 'Download Memo (PDF)'} busyLabel={lang === 'bn' ? 'মেমো তৈরি হচ্ছে…' : 'Preparing memo…'} className="mt-4 w-full sm:w-auto" />
           </>
         )}
       </main>

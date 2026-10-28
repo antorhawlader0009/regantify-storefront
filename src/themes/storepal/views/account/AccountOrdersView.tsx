@@ -14,6 +14,9 @@ import { AccountLayout } from '../../components/AccountLayout';
 import { CourierTrackingLine } from '../../components/CourierTrackingCard';
 import { orderLabel } from '@/lib/orderLabel';
 import { useStoreDisplayName } from '../../lib/useStoreDisplayName';
+import { MemoDownloadButton } from '../../components/MemoDownloadButton';
+import { getStoreSocialLinks } from '@/lib/socialLinksApi';
+import type { TrackedOrder } from '@/lib/checkoutApi';
 
 /** Account > Orders — matches the reference "Your Orders" (Invoice/Status/Amount) screenshot. Also used as "Dashboard" (see reference "Hi, Name" screenshot), which is the same list with a greeting on top. */
 export function AccountOrdersView({ subdomain }: { subdomain: string }) {
@@ -33,6 +36,10 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
   const [rewards, setRewards] = useState<CustomerRewards | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [again, setAgain] = useState<{ orderId: string; text: string } | null>(null);
+  const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  useEffect(() => {
+    void getStoreSocialLinks(subdomain).then((b) => setLogoUrl(b.logoUrl ?? null)).catch(() => undefined);
+  }, [subdomain]);
 
   // "Buy again": the order's lines come back at today's price and stock and go into the cart; nothing is ordered.
   async function buyAgain(orderId: string) {
@@ -173,6 +180,17 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
                       <RotateCcw size={13} aria-hidden />
                       {busyId === order.id ? '…' : t('Buy again')}
                     </button>
+                    {/* The memo of any order, not only on the thank-you page (the account answer carries the full order). */}
+                    {order.status !== 'PAYMENT_INITIATED' && order.status !== 'PAYMENT_FAILED' && (
+                      <MemoDownloadButton
+                        order={order as unknown as TrackedOrder}
+                        storeName={storeName}
+                        logoUrl={logoUrl}
+                        label={t('Memo')}
+                        busyLabel="…"
+                        className="mt-1.5 ml-1.5 !px-3 !py-1.5 !text-[12.5px]"
+                      />
+                    )}
                     {again?.orderId === order.id && <p className="m-0 mt-1 text-[12px] text-muted">{again.text}</p>}
                   </td>
                 </tr>

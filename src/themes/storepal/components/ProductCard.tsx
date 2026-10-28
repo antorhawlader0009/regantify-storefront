@@ -12,6 +12,7 @@ import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { SoldRecentLine } from './SoldRecentLine';
 import { useCompare } from '../lib/compare';
+import { RatingStars } from '@/components/RatingStars';
 import { lowStockLabel, useLowStock, useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { FlashSaleTimer } from './FlashSaleTimer';
@@ -35,6 +36,8 @@ import { trackFeature } from '@/lib/featureUse';
 // inline Add to Cart / Buy Now only works for it; lean cards send those
 // buttons to the product page instead.
 interface CardProduct {
+  /** Average stars from approved reviews (server storefront/product-rating.ts); null/missing = none. */
+  rating?: { average: number; count: number } | null;
   /** Reseller system: the supplier key of a product this store resells (the cart keeps one seller per order). */
   resaleGroup?: string | null;
   // For the Meta pixel (cart line / AddToWishlist); every caller passes it,
@@ -321,6 +324,15 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         >
           {product.name}
         </Link>
+
+        {product.rating && (
+          <RatingStars
+            rating={product.rating}
+            size={12}
+            className="text-[11.5px]"
+            label={`Rated ${product.rating.average} out of 5 from ${product.rating.count} reviews`}
+          />
+        )}
 
         {product.swatches && !quoteOnly && !showOptions && (
           <CardSwatches

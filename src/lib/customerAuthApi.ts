@@ -96,6 +96,16 @@ async function authFetch<T>(path: string, accessToken: string, init?: { method?:
   return res.json();
 }
 
+/** Account > Add phone number, step 1: a code to the number. `joinsAccount` = the number already has an account here. */
+export async function sendAddPhoneCode(accessToken: string, phone: string, subdomain: string): Promise<{ joinsAccount: boolean }> {
+  return authFetch('/v1/customer-auth/me/phone/send-code', accessToken, { method: 'POST', body: { phone, subdomain } });
+}
+
+/** Step 2: adds the number, or joins this account with the one that has it. Starts a new sign-in (new tokens). */
+export async function verifyAddPhone(accessToken: string, phone: string, code: string, subdomain: string): Promise<AuthResult & { joined: boolean }> {
+  return authFetch('/v1/customer-auth/me/phone/verify', accessToken, { method: 'POST', body: { phone, code, subdomain } });
+}
+
 /** The account's saved cart (see CustomerCart on the server) — lines are the storefront's CartLine shape. */
 export async function getMyCart(accessToken: string): Promise<CartLine[]> {
   const result = await authFetch<{ lines: CartLine[] }>('/v1/customer-auth/me/cart', accessToken);
@@ -394,6 +404,36 @@ export async function fetchCustomerRewards(subdomain: string, accessToken: strin
   });
   if (!res.ok) throw new Error('Could not load your reward points.');
   return res.json();
+}
+
+/** Account > My purchases: one row per product this shopper bought here (server ReviewsService.purchasesForCustomer). */
+export interface CustomerPurchase {
+  productId: string | null;
+  name: string;
+  photo: string | null;
+  /** Null when the product is no longer on the store (it can't be opened or reviewed). */
+  slug: string | null;
+  /** The sizes/colours bought, e.g. "M / Navy". */
+  options: string[];
+  quantity: number;
+  orders: number;
+  lastBoughtAt: string;
+  /** One of its orders was delivered. */
+  received: boolean;
+  /** Opens the product page's review form as a verified buyer; null when it can't be reviewed (yet or any more). */
+  reviewToken: string | null;
+  /** Their own review of it, if written. */
+  review: { rating: number; approved: boolean } | null;
+}
+
+export async function fetchCustomerPurchases(subdomain: string, accessToken: string): Promise<CustomerPurchase[]> {
+  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/customer/purchases`, {
+    credentials: 'include',
+    headers: { Authorization: `Bearer ${accessToken}` },
+    cache: 'no-store',
+  });
+  if (!res.ok) throw new Error('Could not load your purchases.');
+  return ((await res.json()) as { items: CustomerPurchase[] }).items;
 }
 
 /** One earlier order's lines at today's price and stock (server StorefrontService.getBuyAgainLines). */

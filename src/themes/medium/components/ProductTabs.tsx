@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Stars } from './Stars';
 import { getProductReviews, submitProductReview, type ProductReview } from '@/lib/reviewsApi';
+import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 
 /** Rendered inside the parent page's own bordered card — no outer
  * section/border/max-width here, this is just the tab content. */
@@ -95,9 +96,16 @@ function WriteReviewForm({ subdomain, slug }: { subdomain: string; slug: string 
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
 
+  // Reviews need a shopper signed in on this store (the server refuses a guest since 2026-10-28).
+  const accessToken = useCustomerAuthStore((s) => s.accessToken);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+    if (!accessToken) {
+      setError('Please log in to your account to write a review.');
+      return;
+    }
     if (!title.trim() || !name.trim()) {
       setError('Please enter your name and a review title.');
       return;
@@ -110,7 +118,7 @@ function WriteReviewForm({ subdomain, slug }: { subdomain: string; slug: string 
         rating,
         customerName: name.trim(),
         customerEmail: email.trim() || undefined,
-      });
+      }, accessToken);
       setSubmitted(true);
       setOpen(false);
     } catch (err) {

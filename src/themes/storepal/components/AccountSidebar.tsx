@@ -19,6 +19,8 @@ interface AccountSidebarProps {
 const NAV_ITEMS: { label: string; href: (subdomain: string) => string }[] = [
   { label: 'Dashboard', href: (s) => `/store/${s}/account/orders` },
   { label: 'Orders', href: (s) => `/store/${s}/account/orders` },
+  // Everything bought here, with a review button for delivered products.
+  { label: 'My purchases', href: (s) => `/store/${s}/account/purchases` },
   { label: 'Coupons', href: (s) => `/store/${s}/account/coupons` },
   { label: 'My Addresses', href: (s) => `/store/${s}/account/address` },
   { label: 'Change Password', href: (s) => `/store/${s}/account/change-password` },

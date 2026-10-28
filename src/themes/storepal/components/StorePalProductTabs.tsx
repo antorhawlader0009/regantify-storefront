@@ -56,6 +56,16 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
       setActiveTab('reviews');
     }
   }, []);
+  // The stars under the product name open this tab and bring it into view.
+  const tabsRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const open = () => {
+      setActiveTab('reviews');
+      tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    };
+    window.addEventListener('storepal:open-reviews', open);
+    return () => window.removeEventListener('storepal:open-reviews', open);
+  }, []);
   // Reviews this browser already voted for, so the button reads "Thanks" and a second tap does nothing.
   const [voted, setVoted] = useState<Set<string>>(new Set());
   useEffect(() => {
@@ -89,7 +99,7 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
   }, [subdomain, slug, sort]);
 
   return (
-    <div data-rg="product-tabs" className="p-4 sm:p-6">
+    <div ref={tabsRef} data-rg="product-tabs" className="p-4 sm:p-6 scroll-mt-24">
       <div className="flex gap-6 border-b border-line mb-4 overflow-x-auto whitespace-nowrap">
         {['description', ...extraTabs.map((_, i) => `info:${i}`), 'reviews', 'questions'].map((tab) => (
           <button
@@ -238,6 +248,14 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
   const customer = useCustomerAuthStore((s) => s.customer);
   const accessToken = useCustomerAuthStore((s) => s.accessToken);
   const openLogin = useAuthDialog((s) => s.openLogin);
+  // Arriving from Account > My purchases (or the tracking page's "Review your products") with ?order=...: the form opens
+  // by itself, with the account's name filled in.
+  useEffect(() => {
+    if (orderToken && accessToken) setOpen(true);
+  }, [orderToken, accessToken]);
+  useEffect(() => {
+    if (customer?.fullName) setName((prev) => prev || customer.fullName || '');
+  }, [customer?.fullName]);
   const [canAddPhotos, setCanAddPhotos] = useState(false);
   const [photos, setPhotos] = useState<{ blob: Blob; preview: string }[]>([]);
   const [shrinking, setShrinking] = useState(false);
@@ -333,10 +351,14 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
         orderToken,
       };
       const sendVideo = video && canAddVideo ? video.file : null;
-      if ((photos.length > 0 || sendVideo) && canAddPhotos && accessToken) {
+      if (!accessToken) {
+        openLogin();
+        return;
+      }
+      if ((photos.length > 0 || sendVideo) && canAddPhotos) {
         await submitProductReviewWithPhotos(subdomain, slug, input, photos.map((p) => p.blob), accessToken, sendVideo);
       } else {
-        await submitProductReview(subdomain, slug, input);
+        await submitProductReview(subdomain, slug, input, accessToken);
       }
       setSubmitted(true);
       setOpen(false);
@@ -351,6 +373,22 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
     return (
       <div className="bg-canvas border border-line rounded-lg p-4 text-[13px] text-ink">
         Thanks for your review — it&apos;ll show up here once the store approves it.
+      </div>
+    );
+  }
+
+  // Only a shopper signed in on this store can review (the server refuses a guest).
+  if (!accessToken) {
+    return (
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="button"
+          onClick={openLogin}
+          className="px-4 py-2 rounded-md border border-line text-[12.5px] font-semibold text-ink hover:border-ink transition-colors"
+        >
+          {t('Log in to write a review')}
+        </button>
+        <span className="text-[12px] text-muted">{t('Only customers with an account can write reviews.')}</span>
       </div>
     );
   }
