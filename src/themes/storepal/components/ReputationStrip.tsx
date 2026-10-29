@@ -3,8 +3,8 @@
 import { BadgeCheck, CalendarDays, PackageCheck, Star, ThumbsUp, type LucideIcon } from 'lucide-react';
 import { useStorePalDesign, useVerifiedSeller } from '../lib/designSettings';
 
-const BN_DIGITS = '০১২৩৪৫৬৭৮৯';
-const toBn = (text: string) => text.replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)]);
+// Numbers are always shown in English digits, also in Bangla text (the owner's rule, 2026-10-29).
+const toBn = (text: string) => text;
 
 /**
  * The store's reputation numbers (TellMe idea 147): true figures the server counted (orders delivered, delivery rating, share of 4-5 star
@@ -34,14 +34,14 @@ export function ReputationStrip() {
     items.push({
       icon: Star,
       text: bn
-        ? `ডেলিভারি রেটিং ${num(reputation.rating.avg.toFixed(1))}/৫ (${big(reputation.rating.count)}+ জন ক্রেতার)`
+        ? `ডেলিভারি রেটিং ${num(reputation.rating.avg.toFixed(1))}/5 (${big(reputation.rating.count)}+ জন ক্রেতার)`
         : `${reputation.rating.avg.toFixed(1)}/5 delivery rating (${big(reputation.rating.count)}+ customers)`,
     });
   }
   if (reputation.reviews) {
     items.push({
       icon: ThumbsUp,
-      text: bn ? `${num(reputation.reviews.percent)}% রিভিউ ৪ বা ৫ স্টারের` : `${reputation.reviews.percent}% of reviews are 4 or 5 stars`,
+      text: bn ? `${num(reputation.reviews.percent)}% রিভিউ 4 বা 5 স্টারের` : `${reputation.reviews.percent}% of reviews are 4 or 5 stars`,
     });
   }
   if (reputation.since) items.push({ icon: CalendarDays, text: bn ? `${num(reputation.since)} সাল থেকে আছি` : `Serving since ${reputation.since}` });

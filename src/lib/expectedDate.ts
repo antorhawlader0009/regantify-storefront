@@ -4,7 +4,7 @@
 export function formatExpectedDate(value: string, lang: 'en' | 'bn' = 'en'): string {
   const date = new Date(value.length === 10 ? `${value}T00:00:00Z` : value);
   if (Number.isNaN(date.getTime())) return '';
-  const parts = new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD' : 'en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' }).formatToParts(date);
+  const parts = new Intl.DateTimeFormat(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { timeZone: 'UTC', weekday: 'short', day: 'numeric', month: 'short' }).formatToParts(date);
   const pick = (type: string) => parts.find((p) => p.type === type)?.value ?? '';
   return `${pick('weekday')} ${pick('day')} ${pick('month')}`;
 }

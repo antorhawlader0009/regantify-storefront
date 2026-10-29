@@ -24,7 +24,7 @@ const BN: Record<string, string> = {
   'Add photos': 'ছবি যোগ করুন',
   'Remove photo': 'ছবি সরান',
   'Photos from this review': 'এই রিভিউর ছবি',
-  'You bought this. Add up to 2 photos of what you got.': 'আপনি এটি কিনেছেন। যা পেয়েছেন তার ২টি পর্যন্ত ছবি দিন।',
+  'You bought this. Add up to 2 photos of what you got.': 'আপনি এটি কিনেছেন। যা পেয়েছেন তার 2টি পর্যন্ত ছবি দিন।',
   'Bought this with your account? Sign in to add photos.': 'অ্যাকাউন্ট দিয়ে কিনেছেন? ছবি দিতে লগইন করুন।',
   'Photos can be added by customers who bought this with their account.': 'অ্যাকাউন্ট দিয়ে যারা কিনেছেন, শুধু তারাই ছবি দিতে পারেন।',
   'Sign in': 'লগইন',
@@ -78,7 +78,7 @@ const BN: Record<string, string> = {
   'Cash on delivery': 'ক্যাশ অন ডেলিভারি',
   'Quality checked': 'মান যাচাই করা',
   'Fast delivery': 'দ্রুত ডেলিভারি',
-  'Delivery in 20–25 days': '২০–২৫ দিনে ডেলিভারি',
+  'Delivery in 20–25 days': '20–25 দিনে ডেলিভারি',
   Cancel: 'বাতিল',
   Continue: 'চালিয়ে যান',
   'View Product': 'বিস্তারিত দেখুন',
@@ -100,7 +100,7 @@ const BN: Record<string, string> = {
   'Sub Category': 'সাব ক্যাটাগরি',
   Menu: 'মেনু',
   'Cash On Delivery All Over Bangladesh': 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি',
-  'Guaranteed Pre-order Delivery in 20-25 Days': 'প্রি-অর্ডার ২০-২৫ দিনে ডেলিভারি',
+  'Guaranteed Pre-order Delivery in 20-25 Days': 'প্রি-অর্ডার 20-25 দিনে ডেলিভারি',
   // Store Away banner
   'We are away for a few days.': 'আমরা কয়েক দিনের জন্য ছুটিতে আছি।',
   'Orders are paused until': 'অর্ডার নেওয়া বন্ধ থাকবে, খুলবে',
@@ -260,7 +260,7 @@ const BN: Record<string, string> = {
   'You may also like': 'আরও দেখুন',
   Add: 'যোগ করুন',
   'Reward points': 'রিওয়ার্ড পয়েন্ট',
-  'Use them at checkout. 1 point = ৳1.': 'চেকআউটে ব্যবহার করুন। ১ পয়েন্ট = ১ টাকা।',
+  'Use them at checkout. 1 point = ৳1.': 'চেকআউটে ব্যবহার করুন। 1 পয়েন্ট = 1 টাকা।',
   // Install as app
   'Add to your home screen': 'হোম স্ক্রিনে যোগ করুন',
   'Open the shop like an app, one tap from your home screen.': 'অ্যাপের মতো খুলুন, হোম স্ক্রিন থেকে এক চাপে।',
@@ -312,10 +312,10 @@ const BN: Record<string, string> = {
   "Create an account": "অ্যাকাউন্ট খুলুন",
   "Enter your name, phone number and a password.": "আপনার নাম, ফোন নম্বর আর একটি পাসওয়ার্ড দিন।",
   "Could not create your account.": "অ্যাকাউন্ট খোলা গেল না।",
-  "Enter the 6-digit code.": "৬ সংখ্যার কোডটি দিন।",
+  "Enter the 6-digit code.": "6 সংখ্যার কোডটি দিন।",
   "Could not verify your code.": "কোডটি যাচাই করা গেল না।",
   "Could not send a new code.": "নতুন কোড পাঠানো গেল না।",
-  "6-digit code": "৬ সংখ্যার কোড",
+  "6-digit code": "6 সংখ্যার কোড",
   "Verifying…": "যাচাই হচ্ছে…",
   "Verify and continue": "যাচাই করে এগিয়ে যান",
   "Change number": "নম্বর বদলান",
@@ -330,7 +330,7 @@ const BN: Record<string, string> = {
   "Enter your phone number.": "আপনার ফোন নম্বর দিন।",
   "Could not send the code.": "কোড পাঠানো গেল না।",
   "Could not verify that code.": "কোডটি যাচাই করা গেল না।",
-  "Password must be at least 6 characters.": "পাসওয়ার্ড অন্তত ৬ অক্ষরের হতে হবে।",
+  "Password must be at least 6 characters.": "পাসওয়ার্ড অন্তত 6 অক্ষরের হতে হবে।",
   "Could not reset your password.": "পাসওয়ার্ড বদলানো গেল না।",
   "Your password has been changed. Log in with the new one.": "আপনার পাসওয়ার্ড বদলানো হয়েছে। নতুন পাসওয়ার্ড দিয়ে লগইন করুন।",
   "New password": "নতুন পাসওয়ার্ড",
@@ -347,12 +347,12 @@ const BN: Record<string, string> = {
   "Decrease quantity": "পরিমাণ কমান",
   "Increase quantity": "পরিমাণ বাড়ান",
   "Applied automatically at checkout. Have a coupon code? Add it there.": "চেকআউটে নিজে থেকেই যোগ হবে। কুপন কোড আছে? সেখানে দিন।",
-  "Enter the 6-digit code from the SMS.": "SMS-এ আসা ৬ সংখ্যার কোডটি দিন।",
+  "Enter the 6-digit code from the SMS.": "SMS-এ আসা 6 সংখ্যার কোডটি দিন।",
   "Could not verify the code. Please try again.": "কোডটি যাচাই করা গেল না। আবার চেষ্টা করুন।",
   "A new code is on its way.": "নতুন কোড পাঠানো হচ্ছে।",
   "Could not resend the code. Please try again.": "আবার কোড পাঠানো গেল না। আবার চেষ্টা করুন।",
   "Confirm your order": "আপনার অর্ডার কনফার্ম করুন",
-  "We sent a 6-digit code to your phone. Enter it to confirm this Cash on Delivery order. Your order is on hold until you do.": "আপনার ফোনে ৬ সংখ্যার একটি কোড পাঠানো হয়েছে। এই ক্যাশ অন ডেলিভারি অর্ডারটি কনফার্ম করতে কোডটি দিন। কোড না দেওয়া পর্যন্ত অর্ডারটি হোল্ডে থাকবে।",
+  "We sent a 6-digit code to your phone. Enter it to confirm this Cash on Delivery order. Your order is on hold until you do.": "আপনার ফোনে 6 সংখ্যার একটি কোড পাঠানো হয়েছে। এই ক্যাশ অন ডেলিভারি অর্ডারটি কনফার্ম করতে কোডটি দিন। কোড না দেওয়া পর্যন্ত অর্ডারটি হোল্ডে থাকবে।",
   "Enter code": "কোড দিন",
   "Verification code": "যাচাই কোড",
   "Confirm Order": "অর্ডার কনফার্ম করুন",
@@ -403,7 +403,7 @@ const BN: Record<string, string> = {
   "Could not load your addresses.": "আপনার ঠিকানাগুলো খোলা গেল না।",
   "Give this address a name, like Home or Office.": "ঠিকানাটির একটি নাম দিন, যেমন বাসা বা অফিস।",
   "Enter the receiver’s name.": "যিনি নেবেন তার নাম দিন।",
-  "Enter a valid 11-digit phone number.": "সঠিক ১১ সংখ্যার ফোন নম্বর দিন।",
+  "Enter a valid 11-digit phone number.": "সঠিক 11 সংখ্যার ফোন নম্বর দিন।",
   "Enter the full address.": "পুরো ঠিকানা দিন।",
   "Could not save the address.": "ঠিকানা সেভ করা গেল না।",
   "Could not change the default address.": "ডিফল্ট ঠিকানা বদলানো গেল না।",
@@ -432,7 +432,7 @@ const BN: Record<string, string> = {
   "Delivery area": "ডেলিভারি এলাকা",
   "Use as my default address": "এটি আমার ডিফল্ট ঠিকানা",
   "Save address": "ঠিকানা সেভ করুন",
-  "Enter your current password and a new password of at least 6 characters.": "বর্তমান পাসওয়ার্ড আর অন্তত ৬ অক্ষরের নতুন পাসওয়ার্ড দিন।",
+  "Enter your current password and a new password of at least 6 characters.": "বর্তমান পাসওয়ার্ড আর অন্তত 6 অক্ষরের নতুন পাসওয়ার্ড দিন।",
   "Could not change your password.": "পাসওয়ার্ড বদলানো গেল না।",
   "Log in to change your password": "পাসওয়ার্ড বদলাতে লগইন করুন",
   "Change Password": "পাসওয়ার্ড বদলান",
@@ -450,7 +450,7 @@ const BN: Record<string, string> = {
   "Shop now": "এখনই কিনুন",
   "Enter the code sent to your phone.": "আপনার ফোনে আসা কোডটি দিন।",
   "Send": "পাঠান",
-  "We sent a 6-digit code by SMS to {phone}.": "{phone} নম্বরে SMS-এ ৬ সংখ্যার কোড পাঠানো হয়েছে।",
+  "We sent a 6-digit code by SMS to {phone}.": "{phone} নম্বরে SMS-এ 6 সংখ্যার কোড পাঠানো হয়েছে।",
   "Verify": "যাচাই করুন",
   "Your password has been reset. You can now log in with your new password.": "আপনার পাসওয়ার্ড বদলানো হয়েছে। এখন নতুন পাসওয়ার্ড দিয়ে লগইন করতে পারবেন।",
   "Go to Login": "লগইনে যান",
@@ -580,19 +580,22 @@ const BN: Record<string, string> = {
   "You signed up with Google, so your account has no password yet. Set one to also log in with your phone number.": "আপনি গুগল দিয়ে অ্যাকাউন্ট খুলেছেন, তাই এখনো কোনো পাসওয়ার্ড নেই। পাসওয়ার্ড সেট করলে ফোন নম্বর দিয়েও লগইন করতে পারবেন।",
   "Add your phone number first. You will log in with it and the new password.": "আগে আপনার ফোন নম্বর যোগ করুন। এই নম্বর আর নতুন পাসওয়ার্ড দিয়ে লগইন করবেন।",
   "Add phone number": "ফোন নম্বর যোগ করুন",
-  "We will text a 6-digit code to your phone to make sure it is you.": "আপনিই কিনা নিশ্চিত হতে আপনার ফোনে ৬ সংখ্যার একটা কোড পাঠানো হবে।",
+  "We will text a 6-digit code to your phone to make sure it is you.": "আপনিই কিনা নিশ্চিত হতে আপনার ফোনে 6 সংখ্যার একটা কোড পাঠানো হবে।",
   "Code sent to {phone}.": "{phone} নম্বরে কোড পাঠানো হয়েছে।",
   "Code": "কোড",
   "Set password": "পাসওয়ার্ড সেট করুন",
   "Send the code again": "আবার কোড পাঠান",
-  "Enter the 6-digit code and a new password of at least 6 characters.": "৬ সংখ্যার কোড আর অন্তত ৬ অক্ষরের নতুন পাসওয়ার্ড দিন।",
+  "Enter the 6-digit code and a new password of at least 6 characters.": "6 সংখ্যার কোড আর অন্তত 6 অক্ষরের নতুন পাসওয়ার্ড দিন।",
   "Could not send the code. Please try again.": "কোড পাঠানো যায়নি। আবার চেষ্টা করুন।",
   "Your password is set. You can now log in with your phone number and this password.": "পাসওয়ার্ড সেট হয়েছে। এখন ফোন নম্বর আর এই পাসওয়ার্ড দিয়ে লগইন করতে পারবেন।",
 };
 
-/** Bangla digits for numbers shown inside a Bangla label. */
+/**
+ * Numbers inside a Bangla label. Since 2026-10-29 (the owner's rule) numbers are always shown in English digits, also in
+ * Bangla text, so this returns the number as it is; it is kept so the many callers need no change.
+ */
 export function bnDigits(value: string | number): string {
-  return String(value).replace(/\d/g, (d) => '০১২৩৪৫৬৭৮৯'[Number(d)]);
+  return String(value);
 }
 
 /** `t('Add to Cart')`: the store's language for StorePal's own labels (English stays as is). */
@@ -602,13 +605,11 @@ export function useStoreText(): (english: string) => string {
 }
 
 /**
- * A price formatter in the store's digits (IDEA-7): Bangla digits (৳১,২৫০) when the store is in Bangla and the owner turned on "Show
- * prices in Bangla digits", else the formatter as it is. Components shadow the imported formatter with it:
- * `const formatPrice = useFormatPrice(plainPrice);`. Plain helpers outside components (PDF memo, offer texts) keep Latin digits.
+ * The store's price formatter. Prices are always in English digits (the owner's rule, 2026-10-29), so the old "Show prices in
+ * Bangla digits" setting (`storeBanglaDigits`) is no longer read. Components still call `const formatPrice = useFormatPrice(plainPrice);`.
  */
 export function useFormatPrice(base: (value: string | number) => string = formatPrice): (value: string | number) => string {
-  const { storeLanguage, storeBanglaDigits } = useStorePalDesign();
-  return storeLanguage === 'bn' && storeBanglaDigits ? (value) => bnDigits(base(value)) : base;
+  return base;
 }
 
 /** Same, outside React (e.g. the stock messages built from the design settings). */

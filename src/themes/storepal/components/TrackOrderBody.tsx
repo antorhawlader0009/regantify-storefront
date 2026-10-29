@@ -22,7 +22,7 @@ import { useFormatPrice } from '../lib/storeText';
 const STOPPED_STATUSES = ['CANCELLED', 'RETURN', 'REFUNDED', 'PAYMENT_FAILED', 'STOCK_OUT'];
 
 function formatWhen(iso: string, lang: TrackLang): string {
-  return new Date(iso).toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-GB', {
+  return new Date(iso).toLocaleString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', {
     day: 'numeric',
     month: 'short',
     hour: 'numeric',
@@ -202,7 +202,7 @@ export function TrackOrderBody({
             <p className="text-[12px] text-muted">{ui(lang, 'order')}</p>
             <p className="text-[17px] sm:text-[18px] font-bold text-ink break-all">{orderLabel(order)}</p>
             <p className="text-[12px] text-muted mt-0.5">
-              {ui(lang, 'placed')} {new Date(order.createdAt).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              {ui(lang, 'placed')} {new Date(order.createdAt).toLocaleDateString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
             </p>
           </div>
           <span
@@ -265,7 +265,7 @@ export function TrackOrderBody({
           <ul className="m-0 mt-1.5 list-none p-0 space-y-1">
             {order.refundsPaid!.map((r, i) => {
               const how = REFUND_METHOD[r.method]?.[lang === 'bn' ? 'bn' : 'en'] ?? r.method;
-              const when = new Date(r.paidAt).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+              const when = new Date(r.paidAt).toLocaleDateString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
               return (
                 <li key={i}>
                   <span className="font-semibold">{formatPrice(r.amount)}</span>{' '}
@@ -414,7 +414,7 @@ export function TrackOrderBody({
       {live && checkedAt && (
         <p className="text-center text-[11.5px] text-muted">
           {ui(lang, 'liveNote')} {ui(lang, 'lastChecked')}{' '}
-          {checkedAt.toLocaleTimeString(lang === 'bn' ? 'bn-BD' : 'en-GB', { hour: 'numeric', minute: '2-digit' })}
+          {checkedAt.toLocaleTimeString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { hour: 'numeric', minute: '2-digit' })}
         </p>
       )}
     </div>

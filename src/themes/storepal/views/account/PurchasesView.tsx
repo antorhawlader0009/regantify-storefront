@@ -61,7 +61,7 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
   };
 
   const dateText = (iso: string) =>
-    new Date(iso).toLocaleDateString(design.storeLanguage === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Dhaka' });
+    new Date(iso).toLocaleDateString(design.storeLanguage === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'Asia/Dhaka' });
 
   if (hydrated && !customer) {
     return (

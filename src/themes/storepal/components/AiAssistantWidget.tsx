@@ -1218,7 +1218,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                 )}
 
                 {m.products && m.products.length > 0 && (
-                  // One grouped list (rows, not a card per product): the numbers are what the shopper says ("২ নম্বরটা").
+                  // One grouped list (rows, not a card per product): the numbers are what the shopper says ("2 নম্বরটা").
                   <ul className={`mt-2 w-full max-w-[92%] rounded-2xl border border-line bg-surface divide-y divide-line overflow-hidden ${SOFT_SHADOW}`}>
                     {m.products.map((p, n) => {
                       const on = selection?.msg === i && selection.slugs.includes(p.slug);

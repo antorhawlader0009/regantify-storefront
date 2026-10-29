@@ -25,9 +25,9 @@ export function stillAway(away: StorefrontStoreAway | null | undefined): Storefr
   return away;
 }
 
-/** "15 October" / "১৫ অক্টোবর" for the return day. */
+/** "15 October" / "15 অক্টোবর" for the return day. */
 export function formatReturnDay(day: string, language: 'en' | 'bn' = 'en'): string {
-  return new Date(`${day}T00:00:00+06:00`).toLocaleDateString(language === 'bn' ? 'bn-BD' : 'en-GB', {
+  return new Date(`${day}T00:00:00+06:00`).toLocaleDateString(language === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', {
     day: 'numeric',
     month: 'long',
     timeZone: 'Asia/Dhaka',

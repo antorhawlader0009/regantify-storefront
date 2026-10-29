@@ -471,7 +471,7 @@ export function HomeView({
                 <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                   {sorted.map((product, i) =>
                     pickRank ? (
-                      // The voice call's picks are numbered, so the shopper can say "২ নম্বরটা".
+                      // The voice call's picks are numbered, so the shopper can say "2 নম্বরটা".
                       <div key={product.id} className="relative">
                         <ProductCard product={product} subdomain={subdomain} storeName={storeName} />
                         <span className="pointer-events-none absolute left-2 top-2 z-10 flex h-7 min-w-7 items-center justify-center rounded-full bg-ink px-1.5 text-[13px] font-bold text-white shadow" aria-hidden>

@@ -121,10 +121,10 @@ export async function photoThumbnail(file: File, side = 160): Promise<string> {
   return canvas.toDataURL('image/jpeg', 0.7);
 }
 
-/** "এইমাত্র", "৫ মিনিট আগে", "৩ ঘণ্টা আগে", "২ দিন আগে": the chat is in Bangla, so its past-chats list is too. */
+/** "এইমাত্র", "5 মিনিট আগে", "3 ঘণ্টা আগে", "2 দিন আগে": the chat is in Bangla, so its past-chats list is too. */
 export function ago(ts: number): string {
   const s = Math.max(0, Math.floor((Date.now() - ts) / 1000));
-  const bn = (n: number) => n.toLocaleString('bn-BD');
+  const bn = (n: number) => n.toLocaleString('bn-BD-u-nu-latn');
   if (s < 60) return 'এইমাত্র';
   if (s < 3600) return `${bn(Math.floor(s / 60))} মিনিট আগে`;
   if (s < 86400) return `${bn(Math.floor(s / 3600))} ঘণ্টা আগে`;

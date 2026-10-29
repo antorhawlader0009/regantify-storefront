@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { ChevronRight, Home } from 'lucide-react';
 import type {
   StorefrontProduct,
   StorefrontCardProduct,
@@ -60,7 +61,7 @@ export function ProductView({
 }: ProductViewProps) {
   const visibleRelated = visibleInListings(related, stockSettings);
   return (
-    <div className="min-h-screen bg-canvas text-ink pb-[70px] sm:pb-0">
+    <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader
         subdomain={subdomain}
         storeName={storeName}
@@ -71,24 +72,38 @@ export function ProductView({
         chatProductName={product.name}
       />
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 text-[12px] text-muted">
-        <Link href={`/store/${subdomain}`} className="hover:text-accent transition-colors">
-          <StoreLabel text="Shop" />
-        </Link>
-        {product.category && (
-          <>
-            {' / '}
-            <Link
-              href={`/store/${subdomain}?category=${encodeURIComponent(product.category)}`}
-              className="hover:text-accent transition-colors"
-            >
-              {product.category}
+      {/* Breadcrumb: bold, with chevrons and a home icon; a long product name is cut to one line. */}
+      <nav aria-label="Breadcrumb" data-rg="breadcrumb" className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
+        <ol className="flex min-w-0 items-center gap-1.5 text-[13px] font-semibold">
+          <li className="shrink-0">
+            <Link href={`/store/${subdomain}`} className="inline-flex items-center gap-1 text-ink/70 hover:text-accent transition-colors">
+              <Home size={14} strokeWidth={2.25} aria-hidden />
+              <StoreLabel text="Shop" />
             </Link>
-          </>
-        )}
-        {' / '}
-        <span className="text-ink">{product.name}</span>
-      </div>
+          </li>
+          {product.category && (
+            <>
+              <li aria-hidden className="shrink-0 text-muted">
+                <ChevronRight size={14} strokeWidth={2.5} />
+              </li>
+              <li className="min-w-0 shrink-0 max-w-[45%]">
+                <Link
+                  href={`/store/${subdomain}?category=${encodeURIComponent(product.category)}`}
+                  className="block truncate text-ink/70 hover:text-accent transition-colors"
+                >
+                  {product.category}
+                </Link>
+              </li>
+            </>
+          )}
+          <li aria-hidden className="shrink-0 text-muted">
+            <ChevronRight size={14} strokeWidth={2.5} />
+          </li>
+          <li className="min-w-0 truncate font-bold text-ink" aria-current="page">
+            {product.name}
+          </li>
+        </ol>
+      </nav>
 
       <main className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
         {!product.quoteOnly && product.flashSaleEndsAt && (
@@ -128,9 +143,8 @@ export function ProductView({
       {/* This product is remembered, and the others viewed lately are shown (StorePal only). */}
       <RecentlyViewed subdomain={subdomain} storeName={storeName} currentSlug={product.slug} />
 
-      <div className="hidden sm:block">
-        <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
-      </div>
+      {/* Shown on phones too (2026-10-29): it was hidden there while the page had a sticky buy bar, which is gone. */}
+      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
     </div>
   );
 }

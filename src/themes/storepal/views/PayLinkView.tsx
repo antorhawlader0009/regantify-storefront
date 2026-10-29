@@ -66,7 +66,7 @@ export function PayLinkView({
   }
 
   const expires = info?.expiresAt
-    ? new Date(info.expiresAt).toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Dhaka' })
+    ? new Date(info.expiresAt).toLocaleString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Dhaka' })
     : null;
 
   return (

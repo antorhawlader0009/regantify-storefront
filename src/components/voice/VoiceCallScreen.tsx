@@ -27,8 +27,8 @@ export interface CallProduct {
 
 const two = (n: number) => String(n).padStart(2, '0');
 const clock = (s: number) => `${two(Math.floor(s / 60))}:${two(s % 60)}`;
-const BN = '০১২৩৪৫৬৭৮৯';
-const bnDigits = (s: string) => s.replace(/\d/g, (d) => BN[Number(d)]);
+// Numbers are always shown in English digits, also in Bangla text (the owner's rule, 2026-10-29).
+const bnDigits = (s: string) => s;
 const taka = (v: number | string) => `৳${bnDigits(Number(v).toLocaleString('en-IN'))}`;
 
 const HEAD = 64; // the chat head's size, px

@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, ChevronDown } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
 import { ReputationStrip } from './ReputationStrip';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
 import { getGiftCardSale, getStoreHasBlog, getStoreContactInfo, getStoreHasFaq, getStoreHasLocations, getStorePages, type StoreContactInfo, type StorefrontPageSummary } from '../lib/storeNavApi';
@@ -70,21 +70,14 @@ function DeveloperCredit() {
   );
 }
 
-/** A footer link column: always open from the small breakpoint up, a tap-to-open section on phones so the footer stays short. */
+/** A footer link column with its title. */
 function FooterSection({ title, upper, children }: { title: string; upper?: boolean; children: React.ReactNode }) {
-  const [open, setOpen] = useState(false);
+  // Always open: on phones a tap-to-open section hid the links, so shoppers saw only the titles (2026-10-29). Phones
+  // put two link columns side by side instead, so the footer still stays short.
   return (
-    <div className="border-b border-line sm:border-0 pb-3 sm:pb-0">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-center justify-between text-left sm:pointer-events-none sm:cursor-default sm:mb-3"
-      >
-        <span className={`text-[15px] font-semibold text-ink ${upper ? 'uppercase' : ''}`}>{title}</span>
-        <ChevronDown size={16} className={`sm:hidden text-muted transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      <div className={`${open ? 'block mt-3' : 'hidden'} sm:block sm:mt-0`}>{children}</div>
+    <div>
+      <p className={`mb-3 text-[15px] font-semibold text-ink ${upper ? 'uppercase' : ''}`}>{title}</p>
+      {children}
     </div>
   );
 }
@@ -236,8 +229,8 @@ export function StoreFooter({
     return (
       <footer data-rg="footer" className="bg-canvas border-t border-line mt-8">
         <ReputationStrip />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
-          <div className="sm:col-span-2 lg:col-span-1">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+          <div className="col-span-2 lg:col-span-1">
             {Logo}
             {about ? (
               <div
@@ -320,7 +313,7 @@ export function StoreFooter({
         </div>
 
         <div className="border-t border-line">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[13px] text-muted flex flex-col items-center gap-1 sm:flex-row sm:justify-between">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-24 sm:pb-4 text-[13px] text-muted flex flex-col items-center gap-1 text-center sm:text-left sm:flex-row sm:justify-between">
             <span>
               © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
             </span>
@@ -448,9 +441,12 @@ export function StoreFooter({
   return (
     <footer data-rg="footer" className={`${def.background === 'band' ? 'bg-canvas' : 'bg-surface'} border-t border-line mt-8`}>
       <ReputationStrip />
-      <div className={`max-w-6xl mx-auto px-4 sm:px-6 py-10 grid gap-8 ${gridColsClass}`}>
+      <div className={`max-w-6xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 ${gridColsClass}`}>
         {visibleColumns.map((c) => (
-          <div key={c}>{columnContent[c]}</div>
+          // Phones: the two link columns sit side by side, everything else takes the full width.
+          <div key={c} className={c === 'menu' || c === 'info' ? '' : 'col-span-2 sm:col-span-1'}>
+            {columnContent[c]}
+          </div>
         ))}
       </div>
 
@@ -460,7 +456,7 @@ export function StoreFooter({
       </div>
 
       <div className="border-t border-line">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[13px] text-muted flex flex-col items-center gap-1 sm:flex-row sm:justify-between">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-24 sm:pb-4 text-[13px] text-muted flex flex-col items-center gap-1 text-center sm:text-left sm:flex-row sm:justify-between">
           <span>
             © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
           </span>

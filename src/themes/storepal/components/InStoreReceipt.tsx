@@ -29,7 +29,7 @@ export function InStoreReceipt({ order, lang }: { order: TrackedOrder; lang: Tra
           <p className="text-[17px] sm:text-[18px] font-bold text-ink break-all">{orderLabel(order)}</p>
           <p className="text-[12px] text-muted mt-0.5">
             {ui(lang, 'boughtInStore')}{' '}
-            {new Date(order.createdAt).toLocaleString(lang === 'bn' ? 'bn-BD' : 'en-GB', {
+            {new Date(order.createdAt).toLocaleString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', {
               timeZone: 'Asia/Dhaka',
               day: 'numeric',
               month: 'short',

@@ -12,45 +12,45 @@ const DEFAULT_HIGHLIGHTS = [
   { id: 'default-3', icon: 'HAND_COINS', title: 'Cash on delivery', text: 'Pay when your order arrives at your door.' },
 ];
 
-// Rows are centred and wrap, so 1, 2, 4, 5, 7 or 8 highlights all sit neatly instead of leaving a gap on
-// the right. Four fit on one desktop row; every other count uses three.
-const ITEM_WIDTH_CLASS = {
-  four: 'w-full sm:w-[calc(50%-1rem)] lg:w-[calc(25%-1.5rem)]',
-  three: 'w-full sm:w-[calc(50%-1rem)] lg:w-[calc(33.333%-1.35rem)]',
-};
+// Desktop columns by count: up to 4 sit on one row with a thin line between them; 5 or more wrap in rows of 3.
+const LG_COLS: Record<number, string> = { 1: 'lg:grid-cols-1', 2: 'lg:grid-cols-2', 3: 'lg:grid-cols-3', 4: 'lg:grid-cols-4' };
 
 /**
- * The home page's highlights band (Store > Design > Customize): short points with
- * an icon, such as free delivery or easy returns, from the vendor's own list
- * (up to 9), or StorePal's three built-in ones when they never wrote any. An
- * optional heading sits above. Phones show them one per row.
+ * The home page's highlights (Store > Design > Customize): short points with an icon, such as free delivery or easy
+ * returns, from the vendor's own list (up to 9), or StorePal's three built-in ones when they never wrote any. An
+ * optional heading sits above. Drawn as one card in the page's own column, like the product cards (2026-10-29: it was a
+ * full-width white band that broke out of the layout): icon left, words right, a thin line between points.
  */
 export function HomeHighlights() {
   const t = useStoreText();
   const design = useStorePalDesign();
   const items = design.homeHighlights.length > 0 ? design.homeHighlights : DEFAULT_HIGHLIGHTS;
   const heading = design.homeHighlightsHeading?.trim();
-  const widthClass = items.length === 4 ? ITEM_WIDTH_CLASS.four : ITEM_WIDTH_CLASS.three;
+  const oneRow = items.length <= 4;
 
   return (
-    <section className="bg-surface border-y border-line" aria-label={heading || 'Why shop with us'}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
-        {heading && <h2 className="text-[15px] font-bold text-ink text-center mb-6">{heading}</h2>}
-        <div className="flex flex-wrap justify-center gap-x-8 gap-y-7">
-          {items.map((item) => {
-            const Icon = highlightIcon(item.icon);
-            return (
-              <div key={item.id} className={`${widthClass} flex flex-col items-center text-center gap-2`}>
-                <div className="w-12 h-12 rounded-full bg-accent-light flex items-center justify-center">
-                  <Icon size={22} className="text-accent" aria-hidden />
-                </div>
-                <p className="font-bold text-[13.5px] text-ink">{t(item.title)}</p>
-                {item.text && <p className="text-[12.5px] text-muted leading-relaxed max-w-[240px]">{t(item.text)}</p>}
-              </div>
-            );
-          })}
-        </div>
-      </div>
+    <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6" aria-label={heading || 'Why shop with us'}>
+      {heading && <h2 className="mb-3 text-[18px] font-bold text-ink">{heading}</h2>}
+      <ul
+        className={`m-0 grid list-none grid-cols-1 rounded-md border border-line bg-surface p-0 shadow-card divide-y divide-line sm:grid-cols-2 sm:divide-y-0 ${
+          oneRow ? `${LG_COLS[items.length]} lg:divide-x` : 'lg:grid-cols-3'
+        }`}
+      >
+        {items.map((item) => {
+          const Icon = highlightIcon(item.icon);
+          return (
+            <li key={item.id} className="flex items-start gap-3 px-4 py-4 sm:px-5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-md bg-accent-light text-accent">
+                <Icon size={20} strokeWidth={2} aria-hidden />
+              </span>
+              <span className="min-w-0 pt-0.5">
+                <span className="block text-[14px] font-bold leading-snug text-ink">{t(item.title)}</span>
+                {item.text && <span className="mt-0.5 block text-[12.5px] leading-snug text-muted">{t(item.text)}</span>}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
     </section>
   );
 }

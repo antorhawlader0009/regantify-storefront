@@ -22,7 +22,7 @@ const TEXT = {
 } as const;
 
 const dayLabel = (day: string, lang: TrackLang) =>
-  new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
+  new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' });
 
 /**
  * "Pick a new delivery day" on the tracking page after a failed delivery attempt (TellMe idea 106). The server decides when it shows

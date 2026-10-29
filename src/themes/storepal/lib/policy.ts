@@ -37,7 +37,7 @@ export function resolvePolicy(product: ProductPolicyFields, settings: Storefront
 }
 
 const WARRANTY_EN: Record<string, string> = { NONE: 'No warranty', D7: '7 days warranty', M1: '1 month warranty', M6: '6 months warranty', Y1: '1 year warranty' };
-const WARRANTY_BN: Record<string, string> = { NONE: 'ওয়ারেন্টি নেই', D7: '৭ দিনের ওয়ারেন্টি', M1: '১ মাসের ওয়ারেন্টি', M6: '৬ মাসের ওয়ারেন্টি', Y1: '১ বছরের ওয়ারেন্টি' };
+const WARRANTY_BN: Record<string, string> = { NONE: 'ওয়ারেন্টি নেই', D7: '7 দিনের ওয়ারেন্টি', M1: '1 মাসের ওয়ারেন্টি', M6: '6 মাসের ওয়ারেন্টি', Y1: '1 বছরের ওয়ারেন্টি' };
 
 /** One short line each, in the store's language; null for a part that is not set. */
 export function policyLines(policy: ResolvedPolicy | null, language: string | undefined): { warranty: string | null; returns: string | null } {

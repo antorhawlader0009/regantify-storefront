@@ -248,7 +248,7 @@ const BN: Copy = {
   mmpSender: 'যে নম্বর থেকে পাঠিয়েছেন',
   mmpTrx: 'ট্রানজেকশন আইডি (TrxID)',
   verifyTitle: 'আপনার ফোন নম্বর যাচাই করুন',
-  verifyBody: (phone) => `${phone} নম্বরে একটি ৬ সংখ্যার কোড পাঠানো হয়েছে। অর্ডার করতে কোডটি দিন।`,
+  verifyBody: (phone) => `${phone} নম্বরে একটি 6 সংখ্যার কোড পাঠানো হয়েছে। অর্ডার করতে কোডটি দিন।`,
   enterCode: 'কোড দিন',
   codeAria: 'যাচাইকরণ কোড',
   resend: 'আবার কোড পাঠান',
@@ -281,7 +281,7 @@ const BN: Copy = {
   awayOpen: (day) => (day ? `অর্ডার করতে পারবেন। ডেলিভারি শুরু হবে ${day} থেকে।` : 'অর্ডার করতে পারবেন। দোকান খুললে ডেলিভারি শুরু হবে।'),
   awayClosed: (day) => (day ? `${day} পর্যন্ত অর্ডার নেওয়া বন্ধ।` : 'এখন অর্ডার নেওয়া বন্ধ। কিছুদিন পর আবার দেখুন।'),
   codBadge: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি',
-  genuineBadge: '১০০% আসল পণ্য',
+  genuineBadge: '100% আসল পণ্য',
   yourCart: 'আপনার কার্ট',
   remove: 'সরিয়ে দিন',
   cartTotal: 'কার্ট মোট',
@@ -300,7 +300,7 @@ const BN: Copy = {
   giftCard: (code) => `গিফট কার্ড ${code}`,
   rewardPoints: 'রিওয়ার্ড পয়েন্ট',
   usePoints: (n) => `আমার ${n} পয়েন্ট ব্যবহার করব`,
-  pointsHint: (pct) => `১ পয়েন্ট = ১ টাকা। অর্ডারের সর্বোচ্চ ${pct}% পর্যন্ত।`,
+  pointsHint: (pct) => `1 পয়েন্ট = 1 টাকা। অর্ডারের সর্বোচ্চ ${pct}% পর্যন্ত।`,
   total: 'সর্বমোট',
   haveCoupon: 'কুপন কোড',
   haveGift: 'গিফট কার্ড',
@@ -318,7 +318,7 @@ const BN: Copy = {
   // useCheckout's validation messages arrive in English; matched by exact text, anything else shows as sent.
   errors: {
     'Enter your full name.': 'আপনার পূর্ণ নাম দিন।',
-    'Enter a valid 11-digit phone number.': 'সঠিক ১১ সংখ্যার ফোন নম্বর দিন।',
+    'Enter a valid 11-digit phone number.': 'সঠিক 11 সংখ্যার ফোন নম্বর দিন।',
     'Enter your delivery address.': 'আপনার ডেলিভারি ঠিকানা দিন।',
     'Choose your district.': 'আপনার জেলা বাছাই করুন।',
     'Choose your thana or area.': 'আপনার থানা বা এলাকা বাছাই করুন।',
@@ -942,7 +942,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     <option value="">{t.noPreference}</option>
                     {preferredDays.map((day) => (
                       <option key={day} value={day}>
-                        {new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })}
+                        {new Date(`${day}T00:00:00Z`).toLocaleDateString(lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-GB', { weekday: 'short', day: 'numeric', month: 'short', timeZone: 'UTC' })}
                       </option>
                     ))}
                   </select>
