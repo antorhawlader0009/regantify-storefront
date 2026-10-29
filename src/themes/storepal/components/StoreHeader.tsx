@@ -32,6 +32,7 @@ import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefr
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
 import { LanguageSwitch } from './LanguageSwitch';
+import { useRememberStorePage } from '../lib/accountReturn';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { searchProducts } from '../lib/searchMatch';
 import { CoverFloating } from '@/lib/floatingCover';
@@ -177,6 +178,8 @@ export function StoreHeader({
 }: StoreHeaderProps) {
   const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
+  // The account dialog's × returns to the last store page (lib/accountReturn.ts).
+  useRememberStorePage(subdomain);
   const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
   const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
   const [searchDraft, setSearchDraft] = useState(search);
