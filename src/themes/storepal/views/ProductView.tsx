@@ -14,7 +14,7 @@ import { FlashSaleTimer } from '../components/FlashSaleTimer';
 import { ProductOffers } from '../components/ProductOffers';
 // The purchase panel (wrapped in StorePalPurchasePanel for Store > Design
 // > Product Display Options) and tabs are theme-agnostic (built entirely from
-// the shared CSS-variable design tokens — bg-surface, text-ink, etc —
+// the shared CSS-variable design tokens - bg-surface, text-ink, etc -
 // see globals.css's [data-theme='storepal'] block), so StorePal reuses
 // Medium's own components rather than a near-duplicate rebuild. Only
 // the surrounding page chrome (header/footer/breadcrumb/layout) is
@@ -32,7 +32,7 @@ interface ProductViewProps {
   storeName: string;
   product: StorefrontProduct;
   categories: string[];
-  // Real subcategories per category name — same prop StoreHeader takes
+  // Real subcategories per category name - same prop StoreHeader takes
   // on the homepage (see HomeView), so the header's dropdown shows up
   // here too instead of only on the homepage. Optional/defaulted since
   // getStoreSidebar's fetch is non-fatal (see the product page's
@@ -41,9 +41,9 @@ interface ProductViewProps {
   related: StorefrontCardProduct[];
   socialLinks?: SocialLinks;
   logoUrl?: string | null;
-  /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
+  /** Store > Footer - see StoreFooter's own prop-or-fetch doc comment. */
   footerConfig?: StoreFooterConfig | null;
-  /** Store > Stock Settings — backorder on the purchase panel, and hiding sold-out related products. */
+  /** Store > Stock Settings - backorder on the purchase panel, and hiding sold-out related products. */
   stockSettings?: StorefrontStockSettings;
 }
 

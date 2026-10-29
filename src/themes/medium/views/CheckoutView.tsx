@@ -25,7 +25,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   } = useCheckout(subdomain);
 
   // Wait for the cart to finish reading localStorage before deciding it's
-  // empty — otherwise a cart with items briefly flashes "empty" on first
+  // empty - otherwise a cart with items briefly flashes "empty" on first
   // paint (see CartStoreProvider / useCartHydrated).
   if (!hydrated) return null;
 
@@ -111,7 +111,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                         form.zone === zone ? 'border-accent bg-accent text-white' : 'border-line bg-canvas text-ink'
                       }`}
                     >
-                      {zone === 'DHAKA' ? `Inside Dhaka — ${formatPrice(DELIVERY_CHARGE.DHAKA)}` : `Outside Dhaka — ${formatPrice(DELIVERY_CHARGE.OUTSIDE_DHAKA)}`}
+                      {zone === 'DHAKA' ? `Inside Dhaka - ${formatPrice(DELIVERY_CHARGE.DHAKA)}` : `Outside Dhaka - ${formatPrice(DELIVERY_CHARGE.OUTSIDE_DHAKA)}`}
                     </button>
                   ))}
                 </div>
@@ -127,7 +127,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               />
 
               <div className="px-3.5 py-2.5 rounded-md bg-canvas border border-line text-[12.5px] text-muted">
-                Payment: <span className="text-ink font-semibold">Cash on Delivery</span> — pay when your order arrives.
+                Payment: <span className="text-ink font-semibold">Cash on Delivery</span> - pay when your order arrives.
               </div>
             </div>
           </div>
@@ -196,7 +196,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               disabled={placing}
               className="w-full mt-4 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[13.5px] font-bold disabled:opacity-60 shadow-sm transition-colors"
             >
-              {placing ? 'Placing order…' : 'Place Order — Cash on Delivery'}
+              {placing ? 'Placing order…' : 'Place Order - Cash on Delivery'}
             </button>
           </div>
         </div>

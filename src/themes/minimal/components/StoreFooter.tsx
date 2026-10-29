@@ -27,7 +27,7 @@ const PLATFORMS: { key: keyof SocialLinks; label: string; Icon: typeof Facebook 
 
 /**
  * Store > Footer's configurable, template-driven footer for the Minimal
- * theme — same design as Medium/StorePal's StoreFooter (see StorePal's
+ * theme - same design as Medium/StorePal's StoreFooter (see StorePal's
  * own doc comment for the full reasoning); this copy keeps Minimal's
  * quiet, understated visual chrome (light background, rule lines instead
  * of card borders, no bold uppercase labels).
@@ -81,8 +81,8 @@ export function StoreFooter({ subdomain, storeName, logoUrl: logoUrlProp, social
           <div>
             <p className="text-[11px] font-medium text-muted mb-3.5 tracking-[0.08em] uppercase">Delivery</p>
             <div className="flex flex-col gap-2.5 text-[13px] text-ink">
-              <span>Inside Dhaka — ৳70</span>
-              <span>Outside Dhaka — ৳130</span>
+              <span>Inside Dhaka - ৳70</span>
+              <span>Outside Dhaka - ৳130</span>
               <span>Cash on delivery</span>
             </div>
           </div>

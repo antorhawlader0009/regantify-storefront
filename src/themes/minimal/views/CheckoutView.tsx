@@ -108,7 +108,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
                         form.zone === zone ? 'border-ink bg-ink text-white' : 'border-line text-ink'
                       }`}
                     >
-                      {zone === 'DHAKA' ? `Inside Dhaka — ${formatPrice(DELIVERY_CHARGE.DHAKA)}` : `Outside Dhaka — ${formatPrice(DELIVERY_CHARGE.OUTSIDE_DHAKA)}`}
+                      {zone === 'DHAKA' ? `Inside Dhaka - ${formatPrice(DELIVERY_CHARGE.DHAKA)}` : `Outside Dhaka - ${formatPrice(DELIVERY_CHARGE.OUTSIDE_DHAKA)}`}
                     </button>
                   ))}
                 </div>
@@ -124,7 +124,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               />
 
               <div className="text-[12px] text-muted pt-2">
-                Payment: <span className="text-ink">Cash on Delivery</span> — pay when your order arrives.
+                Payment: <span className="text-ink">Cash on Delivery</span> - pay when your order arrives.
               </div>
             </div>
           </div>
@@ -193,7 +193,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
               disabled={placing}
               className="w-full mt-5 py-4 bg-ink hover:bg-accent-dark text-white text-[12.5px] tracking-[0.04em] uppercase disabled:opacity-60 transition-colors"
             >
-              {placing ? 'Placing order…' : 'Place Order — Cash on Delivery'}
+              {placing ? 'Placing order…' : 'Place Order - Cash on Delivery'}
             </button>
           </div>
         </div>

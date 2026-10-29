@@ -6,7 +6,7 @@ import { PaymentCallbackView } from '@/themes/storepal/views/PaymentCallbackView
 import { storeSubdomain } from '@/lib/storeAddress';
 
 // Only StorePal's checkout offers "Online Payment" (see
-// themes/storepal/views/CheckoutView.tsx's Payment Method choice) — so
+// themes/storepal/views/CheckoutView.tsx's Payment Method choice) - so
 // only StorePal's checkout ever sends a shopper's browser to PayStation
 // with a callback_url pointing here (see PaymentsService.initiateForOrder).
 // Medium/Minimal have no Online Payment option and so never generate a

@@ -5,7 +5,7 @@ import type { StorefrontLandingPageProduct } from '@/lib/storefrontApi';
 import { formatPrice } from '@/lib/productDisplay';
 import type { CountdownTimerProps, PriceOfferProps, SelectProductsProps, StickyOrderBarProps } from '../types';
 
-/** Resolves this section's productId(s) against the page-level product map — see StorefrontService.getStoreLandingPage's own comment on why this is batched server-side rather than fetched per-section. A productId with no match (deleted/unpublished) is silently skipped, not an error. */
+/** Resolves this section's productId(s) against the page-level product map - see StorefrontService.getStoreLandingPage's own comment on why this is batched server-side rather than fetched per-section. A productId with no match (deleted/unpublished) is silently skipped, not an error. */
 function resolveProducts(ids: string[], byId: Map<string, StorefrontLandingPageProduct>): StorefrontLandingPageProduct[] {
   return ids.map((id) => byId.get(id)).filter((p): p is StorefrontLandingPageProduct => !!p);
 }
@@ -79,7 +79,7 @@ export function PriceOfferSection({
   const product = props.productId ? productsById.get(props.productId) : undefined;
   // Independently editable even when a product is set (landing-page-
   // sections.md §3.2's own note: "an offer price doesn't have to match
-  // the real product price exactly") — so wasPrice/nowPrice from props
+  // the real product price exactly") - so wasPrice/nowPrice from props
   // always win, the product is only used for the fallback when the
   // vendor left them at 0.
   const wasPrice = props.wasPrice || (product ? Number(product.price) : 0);
@@ -113,7 +113,7 @@ export function CountdownTimerSection({ props }: { props: CountdownTimerProps })
     return () => clearInterval(timer);
   }, [props.endsAt]);
 
-  // Renders nothing on the server / before the first client tick — a
+  // Renders nothing on the server / before the first client tick - a
   // countdown is inherently "now"-relative, so there's no correct SSR
   // value to show before hydration; a brief blank beats a mismatched
   // hydration flash.

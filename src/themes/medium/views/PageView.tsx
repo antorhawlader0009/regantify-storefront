@@ -9,7 +9,7 @@ interface PageViewProps {
   content: string | null;
 }
 
-/** Store > Pages' public rendering under the Medium theme — a plain content card, same border/shadow/spacing conventions every other Medium page uses. */
+/** Store > Pages' public rendering under the Medium theme - a plain content card, same border/shadow/spacing conventions every other Medium page uses. */
 export function PageView({ subdomain, storeName, categories, title, content }: PageViewProps) {
   return (
     <div className="min-h-screen bg-canvas text-ink">

@@ -4,7 +4,7 @@ import { use } from 'react';
 import { CouponsView } from '@/themes/storepal/views/account/CouponsView';
 import { storeSubdomain } from '@/lib/storeAddress';
 
-// "Your Coupons" — new in this task, no Medium/Minimal equivalent exists
+// "Your Coupons" - new in this task, no Medium/Minimal equivalent exists
 // yet (see StorePal theme's own build notes), so this route isn't
 // theme-branched the way every other account/* route is: it always
 // renders StorePal's view regardless of which theme the store has

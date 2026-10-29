@@ -1,15 +1,16 @@
 'use client';
 
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { LogoutConfirm } from './LogoutConfirm';
 import { useRouter } from 'next/navigation';
-import { X } from 'lucide-react';
+import { LogOut, X } from 'lucide-react';
 import { StoreHeader } from './StoreHeader';
 import { AccountSidebar } from './AccountSidebar';
 import { GoogleConnectBadge } from './GoogleConnectBadge';
 import { CoverFloating } from '@/lib/floatingCover';
 import { useStoreText } from '../lib/storeText';
 import { closeAccountDialog } from '../lib/accountReturn';
-import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
+import { useCustomerAuthHydrated, useCustomerAuthStore, useCustomerLogout } from '@/providers/customer-auth-store-provider';
 
 interface AccountLayoutProps {
   subdomain: string;
@@ -36,6 +37,11 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
   const hydrated = useCustomerAuthHydrated();
   const customerName = useCustomerAuthStore((s) => s.customer?.fullName);
   const firstName = hydrated ? customerName?.trim().split(/\s+/)[0] : undefined;
+  const signedIn = hydrated && !!customerName;
+  const logout = useCustomerLogout();
+  // "Log out?" is asked first (LogoutConfirm).
+  const [askLogout, setAskLogout] = useState(false);
+  const cancelLogout = useCallback(() => setAskLogout(false), []);
   const close = useCallback(() => closeAccountDialog(router, subdomain), [router, subdomain]);
 
   // Esc closes; the page behind doesn't scroll while the dialog is open.
@@ -61,6 +67,14 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
       <CoverFloating />
+      <LogoutConfirm
+        open={askLogout}
+        onCancel={cancelLogout}
+        onConfirm={() => {
+          setAskLogout(false);
+          logout();
+        }}
+      />
       <div className="fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-6">
         <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={close} aria-hidden />
         <div
@@ -78,8 +92,19 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
               </h1>
               {firstName && <p className="m-0 truncate text-[12.5px] text-muted">{t('Hi, {name}').replace('{name}', firstName)}</p>}
             </div>
-            {/* "Connect Google" for a phone account, "Google connected" once attached. */}
-            <div className="ml-auto min-w-0">
+            {/* Phones: Log Out sits here (the side menu, with its own Log Out, is a chip row there). Then "Connect Google" for a
+                phone account, "Google connected" once attached. */}
+            <div className="ml-auto flex min-w-0 items-center gap-2">
+              {signedIn && (
+                <button
+                  type="button"
+                  onClick={() => setAskLogout(true)}
+                  className="inline-flex h-9 shrink-0 items-center gap-1.5 rounded-full border border-line px-3 text-[12.5px] font-semibold text-red-600 transition-colors hover:border-red-300 hover:bg-red-50 sm:hidden"
+                >
+                  <LogOut size={15} strokeWidth={2} aria-hidden />
+                  {t('Log Out')}
+                </button>
+              )}
               <GoogleConnectBadge />
             </div>
             <button

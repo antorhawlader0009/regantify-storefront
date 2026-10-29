@@ -1,6 +1,6 @@
 @import 'tailwindcss';
 
-/* Dense, professional multi-vendor storefront — modeled on established
+/* Dense, professional multi-vendor storefront - modeled on established
    BD e-commerce conventions (startech.com.bd, daraz.com.bd): a neutral
    light-gray page background with white bordered product cards, clear
    sale badges (percent-off + amount saved), and a busy, deal-forward
@@ -23,7 +23,7 @@
   --color-success-bg: #e8f6ee;
   --color-save: #1a7a4c;
 
-  /* Fraunces carries the store name in the header only — everywhere
+  /* Fraunces carries the store name in the header only - everywhere
      else on this dense layout uses Hanken Grotesk, matching how real
      BD storefronts set nearly everything in one workhorse sans and
      reserve any serif for the wordmark. the Bangla font (Hind Siliguri) falls in
@@ -31,7 +31,7 @@
   --font-display: var(--font-fraunces), var(--font-bangla-store, var(--font-bangla)), serif;
   --font-sans: var(--font-hanken), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
 
-  /* A restrained elevation scale — one level for resting cards, one for
+  /* A restrained elevation scale - one level for resting cards, one for
      hover/active. Kept subtle (low blur, low opacity) so density never
      reads as heavy or "card soup." */
   --shadow-card: 0 1px 2px rgba(16, 18, 22, 0.04), 0 1px 1px rgba(16, 18, 22, 0.03);
@@ -39,18 +39,18 @@
   --shadow-popover: 0 12px 32px rgba(16, 18, 22, 0.14), 0 4px 10px rgba(16, 18, 22, 0.06);
 }
 
-/* Minimal theme — a spacious, editorial/boutique storefront built as the
+/* Minimal theme - a spacious, editorial/boutique storefront built as the
    deliberate opposite of Medium's dense marketplace look above: an
    off-white (not gray) canvas, a near-black ink used sparingly rather
    than a loud accent color everywhere, generous line/shadow weights, and
    an entirely different font pairing (Newsreader + Archivo, see
    fonts.ts) so nothing about it reads as a reskin. Every semantic token
-   name is identical to Medium's above — only the values differ — so
+   name is identical to Medium's above - only the values differ - so
    every component can be written once with the same utility classes
    (bg-canvas, text-ink, border-line, ...) and simply render correctly
    under whichever theme wraps it. Scoped under [data-theme="minimal"],
    set on a wrapper div by the store/[subdomain] segment layout from the
-   vendor's resolved theme — see lib/theme.ts and
+   vendor's resolved theme - see lib/theme.ts and
    app/store/[subdomain]/layout.tsx. */
 [data-theme='minimal'] {
   --color-ink: #1c1c1a;
@@ -66,26 +66,26 @@
   --color-success-bg: #eaf1ec;
   --color-save: #3f6b4f;
 
-  /* Newsreader carries headings and the store name throughout — Minimal
+  /* Newsreader carries headings and the store name throughout - Minimal
      leans on its display serif far more than Medium does, since a quiet
      editorial feel is the whole point. Archivo is the plain workhorse
      sans for body copy, prices, and forms. */
   --font-display: var(--font-newsreader), var(--font-bangla-store, var(--font-bangla)), serif;
   --font-sans: var(--font-archivo), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
 
-  /* A quieter, more diffuse elevation scale than Medium's — softer blur,
-     lower opacity, no hard popover shadow — matching the theme's overall
+  /* A quieter, more diffuse elevation scale than Medium's - softer blur,
+     lower opacity, no hard popover shadow - matching the theme's overall
      restraint. */
   --shadow-card: 0 1px 3px rgba(28, 28, 26, 0.03);
   --shadow-card-hover: 0 12px 28px rgba(28, 28, 26, 0.06);
   --shadow-popover: 0 16px 40px rgba(28, 28, 26, 0.1);
 }
 
-/* StorePal theme — modeled directly on the storepal.com.bd reference
+/* StorePal theme - modeled directly on the storepal.com.bd reference
    screenshots: a light blue-gray canvas, white cards, a dark navy
    wordmark/nav accent, and a hot-pink/red CTA accent (the "subscribe"
    button, price highlights). Every semantic token name is identical to
-   Medium/Minimal's above — only the values differ — so every shared
+   Medium/Minimal's above - only the values differ - so every shared
    component (ProductPurchasePanel, CartList, useCheckout, ProductTabs)
    renders correctly under this theme with zero changes of its own. */
 [data-theme='storepal'] {
@@ -102,8 +102,8 @@
   --color-success-bg: #e8f6ee;
   --color-save: #dc2626;
 
-  /* One plain grotesque sans for everything — including the wordmark
-     itself — matching the reference site's single-font UI (see
+  /* One plain grotesque sans for everything - including the wordmark
+     itself - matching the reference site's single-font UI (see
      lib/fonts.ts's own comment on why Poppins rather than a serif
      pairing here). */
   --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), sans-serif;
@@ -150,7 +150,7 @@ body {
   color: var(--color-accent-dark);
 }
 
-/* Sticky Add to Cart / Buy Now bar on the product page — hidden on
+/* Sticky Add to Cart / Buy Now bar on the product page - hidden on
    desktop, shown as a fixed bottom bar on small screens. */
 @media (max-width: 760px) {
   .storefront-sticky-bar {
@@ -164,7 +164,7 @@ body {
   }
 }
 
-/* StorePal theme's scrolling top announcement bar — see
+/* StorePal theme's scrolling top announcement bar - see
    themes/storepal/components/MarqueeTrack.tsx. It sets --marquee-shift (minus
    the width of one repeated set) and the duration itself, so the loop point is an
    identical frame. Paused on hover so a shopper can read a line before it moves
@@ -198,7 +198,7 @@ body {
 
 /* Thank-you page's success checkmark (see themes/storepal/views/
    ThankYouView.tsx): the circle scales in first, then the check
-   stroke draws itself via a dashoffset animation — a standard SVG
+   stroke draws itself via a dashoffset animation - a standard SVG
    "self-drawing" line technique (stroke-dasharray set to the path's
    own length, stroke-dashoffset animated from that length to 0). */
 @keyframes storepal-pop-in {

@@ -188,7 +188,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
                       zone === z ? 'border-ink bg-ink text-white' : 'border-line text-ink'
                     }`}
                   >
-                    {z === 'DHAKA' ? `Inside Dhaka — ৳${DELIVERY_CHARGE.DHAKA}` : `Outside Dhaka — ৳${DELIVERY_CHARGE.OUTSIDE_DHAKA}`}
+                    {z === 'DHAKA' ? `Inside Dhaka - ৳${DELIVERY_CHARGE.DHAKA}` : `Outside Dhaka - ৳${DELIVERY_CHARGE.OUTSIDE_DHAKA}`}
                   </button>
                 ))}
               </div>

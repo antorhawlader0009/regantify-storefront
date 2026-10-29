@@ -26,11 +26,11 @@ import { QuickAddSheet } from '@/components/QuickAddSheet';
 import type { StorefrontCardSwatches } from '@/lib/storefrontApi';
 import { trackFeature } from '@/lib/featureUse';
 
-// Minimal shape ProductCard actually reads — satisfied by both the full
+// Minimal shape ProductCard actually reads - satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
 // StorefrontCardProduct (product detail page's related-products
 // sidebar, see getStoreSidebar) without needing two near-identical
-// card components — same convention as Medium's own ProductCard. Only
+// card components - same convention as Medium's own ProductCard. Only
 // the full shape carries variationOptions + per-variant prices, so
 // inline Add to Cart / Buy Now only works for it; lean cards send those
 // buttons to the product page instead.
@@ -65,9 +65,9 @@ interface CardProduct {
   soldRecent?: number;
   /** Expected restock day while sold out (TellMe idea 114). */
   restockDate?: string | null;
-  /** The store's own badge ("New", "Hot") — shown in the image's corner. */
+  /** The store's own badge ("New", "Hot") - shown in the image's corner. */
   badgeText?: string | null;
-  /** Running Flash Sale end (ISO) — shows the sale badge with a countdown. */
+  /** Running Flash Sale end (ISO) - shows the sale badge with a countdown. */
   flashSaleEndsAt?: string | null;
   variants: ({ stock: number } & Partial<Omit<StorefrontVariant, 'stock'>>)[];
   variationOptions?: StorefrontVariationOption[];
@@ -127,8 +127,8 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
     fullData && !outOfStock && hasVariations && wantsPurchaseButtons && (design.cardOptionsAsButtons || design.cardOptionsAsSelect);
   // Inline purchase needs the full product data, stock, and (for a
   // product with variations) the option pickers on the card. Anything
-  // else — including backorder, whose confirm popup lives on the product
-  // page — goes to the product page.
+  // else - including backorder, whose confirm popup lives on the product
+  // page - goes to the product page.
   // A box the shopper fills (IDEA-22) needs its items picked, so it always opens the product page.
   const canBuyInline = fullData && !outOfStock && !product.bundlePick && (!hasVariations || showOptions);
   // A product with variations whose choices aren't on the card opens the quick add sheet instead.

@@ -19,7 +19,7 @@ interface TiktokPixelProps {
 }
 
 /**
- * Store > Integrations > TikTok Pixel — mounted once in
+ * Store > Integrations > TikTok Pixel - mounted once in
  * store/[subdomain]/layout.tsx for every StorePal store, even one without
  * a store pixel, since a landing page can have its own (see
  * lib/tiktokPixel.ts). Renders nothing; loads nothing until a page

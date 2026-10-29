@@ -21,7 +21,7 @@ import { MemoDownloadButton } from '../../components/MemoDownloadButton';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import type { TrackedOrder } from '@/lib/checkoutApi';
 
-/** Account > Orders — matches the reference "Your Orders" (Invoice/Status/Amount) screenshot. Also used as "Dashboard" (see reference "Hi, Name" screenshot), which is the same list with a greeting on top. */
+/** Account > Orders - matches the reference "Your Orders" (Invoice/Status/Amount) screenshot. Also used as "Dashboard" (see reference "Hi, Name" screenshot), which is the same list with a greeting on top. */
 export function AccountOrdersView({ subdomain }: { subdomain: string }) {
   const formatPrice = useFormatPrice(plainPrice);
   const storeName = useStoreDisplayName(subdomain);

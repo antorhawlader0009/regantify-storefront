@@ -9,7 +9,7 @@ import { clearShopperData } from '@/lib/clearShopperData';
 export type CustomerAuthStoreApi = ReturnType<typeof createCustomerAuthStore>;
 
 const CustomerAuthStoreContext = createContext<CustomerAuthStoreApi | undefined>(undefined);
-// Same purpose as CartHydratedContext — lets a page tell "definitely
+// Same purpose as CartHydratedContext - lets a page tell "definitely
 // logged out" apart from "haven't finished checking yet" so it doesn't
 // flash a logged-out state before the silent refresh below has a chance
 // to run.
@@ -30,7 +30,7 @@ export function CustomerAuthProvider({ children }: { children: ReactNode }) {
     const unsub = store.persist.onFinishHydration(() => {
       // Once the persisted `customer` profile (if any) has been read
       // back from localStorage, try to silently turn that into a real
-      // session using the httpOnly refresh cookie — the access token
+      // session using the httpOnly refresh cookie - the access token
       // itself is never persisted (see customer-auth-store.ts), so a
       // fresh page load always needs this to actually be "logged in"
       // again rather than just showing a stale name with no working

@@ -30,7 +30,7 @@ import type {
 } from './types';
 
 /**
- * Dispatches one section entry to its own component, by `type` — the
+ * Dispatches one section entry to its own component, by `type` - the
  * single shared, theme-independent render tree landing-plan.md §6 calls
  * for ("one shared `landing/` render tree in storefront/src/ consumes
  * the section JSON directly", not per-theme). Every section is wrapped in
@@ -39,13 +39,13 @@ import type {
  *
  * `productsById` is the page-level product-resolution map built once by
  * LandingPageView (see StorefrontService.getStoreLandingPage's own
- * comment on the backend) — passed down rather than re-resolved per
+ * comment on the backend) - passed down rather than re-resolved per
  * section so a page with many product-referencing sections only pays for
  * one lookup.
  *
  * An unrecognized `type` (e.g. a section saved by a newer build this
  * deployment doesn't know about yet) renders nothing rather than
- * crashing the whole page — same defensive-render discipline the rest of
+ * crashing the whole page - same defensive-render discipline the rest of
  * storefront already applies to missing/unexpected data.
  */
 export function SectionRenderer({
@@ -117,7 +117,7 @@ export function SectionRenderer({
   if (content === null) return null;
 
   // sticky-order-bar is fixed-position by design (see its own component)
-  // — wrapping it in SectionShell's plain <section> is still correct
+  // - wrapping it in SectionShell's plain <section> is still correct
   // (SectionShell applies no positioning of its own), but it does NOT get
   // an `id` (a fixed bar has no natural in-page scroll anchor).
   return (

@@ -14,17 +14,17 @@ interface CampaignViewProps {
 }
 
 /**
- * Marketing > Campaigns' public landing page — Medium theme only (see
+ * Marketing > Campaigns' public landing page - Medium theme only (see
  * the user's own instruction: campaigns are being built for the
  * default theme, not Minimal, and the two themes' files must never mix
- * — this view lives entirely under themes/medium/ and imports nothing
+ * - this view lives entirely under themes/medium/ and imports nothing
  * from themes/minimal/, same isolation every other Medium-only piece
  * already has). Structurally a simplified HomeView: header, an optional
- * cover-photo hero, and the campaign's product grid — no category
+ * cover-photo hero, and the campaign's product grid - no category
  * grouping or search filtering, since a campaign page is already a
  * curated, single-purpose product list. Every product's price here is
  * already the campaign-adjusted price (see
- * StorefrontService.applyCampaignPricing on the backend) — the exact
+ * StorefrontService.applyCampaignPricing on the backend) - the exact
  * same price checkout will charge, no separate campaign-pricing logic
  * needed in this component.
  */

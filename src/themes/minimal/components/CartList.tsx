@@ -60,7 +60,7 @@ export function CartList({ subdomain }: CartListProps) {
                       {Object.entries(line.selectedOptions).map(([k, v]) => `${k}: ${v}`).join(' · ')}
                     </p>
                   )}
-                  {line.isPreOrder && <p className="text-[11px] text-muted mt-1">Pre-order — ships in 20–25 days</p>}
+                  {line.isPreOrder && <p className="text-[11px] text-muted mt-1">Pre-order - ships in 20–25 days</p>}
                 </div>
                 <button
                   onClick={() => removeLine(line.id)}
@@ -102,7 +102,7 @@ export function CartList({ subdomain }: CartListProps) {
       </div>
 
       <div className="pt-5 mt-1 border-t border-line flex items-center justify-between">
-        <span className="text-[12px] text-muted">Subtotal — delivery calculated at checkout</span>
+        <span className="text-[12px] text-muted">Subtotal - delivery calculated at checkout</span>
         <span className="text-[19px] text-ink">{formatPrice(subtotal)}</span>
       </div>
 

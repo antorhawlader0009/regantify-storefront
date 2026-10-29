@@ -1,6 +1,7 @@
 'use client';
 
-import { useLayoutEffect, useRef } from 'react';
+import { useCallback, useLayoutEffect, useRef, useState } from 'react';
+import { LogoutConfirm } from './LogoutConfirm';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, KeyRound, LogIn, LogOut, MapPin, Package, ShoppingBag, Ticket, UserRound, type LucideIcon } from 'lucide-react';
@@ -54,6 +55,9 @@ export function AccountSidebar({ subdomain }: AccountSidebarProps) {
   const t = useStoreText();
   const pathname = usePathname() ?? '';
   const logout = useCustomerLogout();
+  // "Log out?" is asked first (LogoutConfirm).
+  const [askLogout, setAskLogout] = useState(false);
+  const cancelLogout = useCallback(() => setAskLogout(false), []);
   const hydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
   const { slugs } = useWishlist(subdomain);
@@ -135,17 +139,8 @@ export function AccountSidebar({ subdomain }: AccountSidebarProps) {
         aria-label={t('My account')}
         className="flex shrink-0 gap-2 overflow-x-auto border-b border-line bg-surface px-4 py-2.5 [scrollbar-width:none] sm:hidden"
       >
+        {/* Log Out is in the dialog's header on phones (AccountLayout), not in this row. */}
         {GROUPS.flatMap((g) => g.items).map((item) => itemLink(item, true))}
-        {signedIn && (
-          <button
-            type="button"
-            onClick={logout}
-            className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-full border border-line bg-surface px-3 py-1.5 text-[13px] text-red-600 transition-colors hover:border-red-300"
-          >
-            <LogOut size={15} strokeWidth={2} aria-hidden />
-            {t('Log Out')}
-          </button>
-        )}
       </nav>
 
       {/* Larger screens: a column with the shopper's card on top, the two groups, and Log Out at the bottom. */}
@@ -193,7 +188,7 @@ export function AccountSidebar({ subdomain }: AccountSidebarProps) {
           <div className="border-t border-line p-2.5">
             <button
               type="button"
-              onClick={logout}
+              onClick={() => setAskLogout(true)}
               className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-[14px] text-red-600 transition-colors hover:bg-red-50"
             >
               <LogOut size={18} strokeWidth={1.9} aria-hidden />
@@ -202,6 +197,14 @@ export function AccountSidebar({ subdomain }: AccountSidebarProps) {
           </div>
         )}
       </nav>
+      <LogoutConfirm
+        open={askLogout}
+        onCancel={cancelLogout}
+        onConfirm={() => {
+          setAskLogout(false);
+          logout();
+        }}
+      />
     </>
   );
 }

@@ -11,7 +11,7 @@ export interface ProductFilterState {
   maxPrice: number;
   categories: string[];
   brands: string[];
-  /** Selected values per variation-option name (e.g. `{ Color: ['Red'], Storage: ['128GB'] }`) — see the variant-facet section below. */
+  /** Selected values per variation-option name (e.g. `{ Color: ['Red'], Storage: ['128GB'] }`) - see the variant-facet section below. */
   variantOptions: Record<string, string[]>;
 }
 
@@ -19,23 +19,23 @@ interface ProductFiltersProps {
   products: StorefrontProduct[];
   value: ProductFilterState;
   onChange: (next: ProductFilterState) => void;
-  /** Absolute floor/ceiling derived from the full product set — the slider's own range never narrows as filters are applied, only `value` does. */
+  /** Absolute floor/ceiling derived from the full product set - the slider's own range never narrows as filters are applied, only `value` does. */
   bounds: { min: number; max: number };
   /**
    * Override for the Category section's checkbox options. HomeView passes
    * this when the listing is already scoped to one category (activeCategory)
-   * — that category's own subcategories (Category.parentId, same data as
+   * - that category's own subcategories (Category.parentId, same data as
    * the header nav dropdown) are far more useful here than the store's full
    * top-level category list, which just duplicates the header nav and
    * can't narrow anything within the current page. Pass an empty array to
    * hide the Category section entirely (a leaf category with no
    * subcategories has nothing left to filter by). Omit to fall back to
-   * deriving options from `products` — the un-scoped browse/search view.
+   * deriving options from `products` - the un-scoped browse/search view.
    */
   categoryOptions?: string[];
 }
 
-/** Collapsible section — matches the reference site's "Color"/"Size" accordions (see screenshot 2). */
+/** Collapsible section - matches the reference site's "Color"/"Size" accordions (see screenshot 2). */
 function FilterSection({ title, defaultOpen = true, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
   return (
@@ -53,7 +53,7 @@ function FilterSection({ title, defaultOpen = true, children }: { title: string;
 }
 
 /**
- * Price range / category / brand filter panel for the shop listing —
+ * Price range / category / brand filter panel for the shop listing -
  * matches the reference site's own Price Filter slider plus checkbox
  * accordions (see storepal.com.bd's "Branded Shoes"/"Mega Deal"
  * screenshots). Purely client-side: HomeView already has every product
@@ -69,7 +69,7 @@ export function ProductFilters({ products, value, onChange, bounds, categoryOpti
   );
   const categories = categoryOptions ?? derivedCategories;
   // Only a real "Category" list (the store-wide fallback, no activeCategory)
-  // when categoryOptions wasn't passed — once HomeView scopes this to one
+  // when categoryOptions wasn't passed - once HomeView scopes this to one
   // category's own subcategories, the heading should say so.
   const categoryFilterLabel = categoryOptions ? t('Sub Category') : t('Category');
   const brands = useMemo(
@@ -77,7 +77,7 @@ export function ProductFilters({ products, value, onChange, bounds, categoryOpti
     [products],
   );
 
-  // Variant facets (Color, Storage, Size, ...) — built from real variant
+  // Variant facets (Color, Storage, Size, ...) - built from real variant
   // data rather than the products' own variationOptions lists, since a
   // product can declare an option value (e.g. "Storage: 256GB") with no
   // in-stock variant actually offering it; only in-stock combinations are
@@ -175,7 +175,7 @@ export function ProductFilters({ products, value, onChange, bounds, categoryOpti
             />
           </div>
           <p className="mt-2 text-[12px] text-muted">
-            {formatPrice(value.minPrice)} — {formatPrice(value.maxPrice)}
+            {formatPrice(value.minPrice)} - {formatPrice(value.maxPrice)}
           </p>
         </div>
       </FilterSection>

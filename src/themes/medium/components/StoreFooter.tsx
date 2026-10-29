@@ -10,7 +10,7 @@ import { resolveFooterTemplate, PAYMENT_ICON_LABELS } from '@/lib/footerTemplate
 interface StoreFooterProps {
   subdomain: string;
   storeName: string;
-  // Same prop-or-fetch convention as StorePal's StoreFooter — pages with
+  // Same prop-or-fetch convention as StorePal's StoreFooter - pages with
   // no server-fetched StorefrontInfo in scope simply omit these and this
   // component fetches them itself (see the effect below).
   logoUrl?: string | null;
@@ -29,7 +29,7 @@ const PLATFORMS: { key: keyof SocialLinks; label: string; Icon: typeof Facebook 
 
 /**
  * Store > Footer's configurable, template-driven footer for the Medium
- * theme — same design as StorePal's StoreFooter (see that file's own doc
+ * theme - same design as StorePal's StoreFooter (see that file's own doc
  * comment for the full reasoning); this copy renders with Medium's own
  * dark-block visual chrome instead. Structure (columns/blocks) is fully
  * configurable; colors/fonts/spacing stay Medium's own.
@@ -84,8 +84,8 @@ export function StoreFooter({ subdomain, storeName, logoUrl: logoUrlProp, social
           <div>
             <p className="text-[11.5px] font-bold text-white mb-3 uppercase tracking-wider">Delivery</p>
             <div className="flex flex-col gap-2.5 text-[12.5px] text-white/60">
-              <span>Inside Dhaka — ৳70</span>
-              <span>Outside Dhaka — ৳130</span>
+              <span>Inside Dhaka - ৳70</span>
+              <span>Outside Dhaka - ৳130</span>
               <span>Cash on delivery</span>
             </div>
           </div>

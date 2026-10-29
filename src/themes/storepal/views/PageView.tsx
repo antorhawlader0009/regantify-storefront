@@ -9,7 +9,7 @@ interface PageViewProps {
   content: string | null;
 }
 
-/** Store > Pages' public rendering (About Us, Contact Us, etc — see reference screenshot). */
+/** Store > Pages' public rendering (About Us, Contact Us, etc - see reference screenshot). */
 export function PageView({ subdomain, storeName, categories, title, content }: PageViewProps) {
   return (
     <div className="min-h-screen bg-canvas text-ink">

@@ -1,4 +1,4 @@
-// Store > Integrations > TikTok Pixel — the browser side. Browser-only
+// Store > Integrations > TikTok Pixel - the browser side. Browser-only
 // module: components/TiktokPixel.tsx sets it up, and the storefront's
 // ecommerce events reach it through lib/ecommerceEvents.ts.
 //

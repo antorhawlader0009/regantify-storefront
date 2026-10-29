@@ -2,7 +2,7 @@ import type { NextConfig } from 'next';
 
 const nextConfig: NextConfig = {
   // Produces a minimal self-contained .next/standalone build (only the
-  // files actually needed at runtime) so the Docker image stays small —
+  // files actually needed at runtime) so the Docker image stays small -
   // see storefront/Dockerfile.
   output: 'standalone',
   // Security F-56: don't advertise the framework, and send the standard safety headers on every page. HSTS without

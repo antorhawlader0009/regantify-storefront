@@ -1,5 +1,5 @@
 // Client-side (browser) fetch helper for Store > Social's public links
-// — used only by client-component pages (account/*, which read cart/
+// - used only by client-component pages (account/*, which read cart/
 // customer-auth state from localStorage) that don't already have a
 // server-fetched StorefrontInfo in scope (see storefrontApi.ts, which
 // only runs server-side). Same host-detection pattern as
@@ -22,11 +22,11 @@ export interface SocialLinks {
   whatsappUrl?: string | null;
 }
 
-// Store > Footer — same shape as StorefrontFooterConfig in
+// Store > Footer - same shape as StorefrontFooterConfig in
 // storefrontApi.ts, duplicated here rather than imported since this file
 // is the CLIENT-side (browser fetch) counterpart used by pages that
 // don't have a server-fetched StorefrontInfo in scope (see this file's
-// own header comment) — kept in lockstep by hand, same convention as
+// own header comment) - kept in lockstep by hand, same convention as
 // every other type in this file.
 export interface StoreFooterLink {
   label: string;
@@ -58,13 +58,13 @@ export interface StoreFooterConfig {
   showCredit?: boolean;
 }
 
-// Store > Logo — bundled into the same fetch/shape as social links
+// Store > Logo - bundled into the same fetch/shape as social links
 // below since both live on the same public /v1/store/:subdomain
 // response; no separate round trip needed for account pages that need
 // one but not the other.
 export interface StoreBranding extends SocialLinks {
   logoUrl?: string | null;
-  // Store > Footer — null when the vendor's never saved one (see
+  // Store > Footer - null when the vendor's never saved one (see
   // FooterConfig's own "singleton, optional" schema comment); the
   // StoreFooter component falls back to its own hardcoded content in
   // that case, same as every other caller of this config.
@@ -75,7 +75,7 @@ const EMPTY_LINKS: StoreBranding = {};
 
 /**
  * Public store-info lookup, but this file only ever reads the logo +
- * social-link + footer-config fields off it — a page with its own
+ * social-link + footer-config fields off it - a page with its own
  * server-fetched StorefrontInfo (home, product, cart, checkout) should
  * pass those fields straight through as a prop instead of calling this,
  * since that's already the same data with no extra round trip. Falls

@@ -100,7 +100,7 @@ function injectInlineScript(code: string, target: HTMLElement, id: string) {
   safeAppend(target, script);
 }
 
-// An inline script with a syntax error isn't thrown by appendChild — the
+// An inline script with a syntax error isn't thrown by appendChild - the
 // browser reports it as a global error (Next's dev overlay then shows it
 // as a crash). Parsing it first with `new Function` (which parses without
 // running) turns that into a catchable SyntaxError, so a broken vendor

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 
-// Same minimal shape Medium's ProductCard reads — see that file's own
+// Same minimal shape Medium's ProductCard reads - see that file's own
 // comment for why this isn't the full StorefrontProduct type.
 interface CardProduct {
   slug: string;
@@ -23,10 +23,10 @@ interface ProductCardProps {
 }
 
 /**
- * Borderless, image-forward card — no card "box," no percent-off
+ * Borderless, image-forward card - no card "box," no percent-off
  * badge shouting from a corner. Sale is communicated quietly: a struck
  * price beside the new one, nothing more. This is the deliberate
- * opposite of Medium's bordered, badge-heavy card — the image does the
+ * opposite of Medium's bordered, badge-heavy card - the image does the
  * selling, not the chrome around it.
  */
 export function ProductCard({ product, subdomain }: ProductCardProps) {

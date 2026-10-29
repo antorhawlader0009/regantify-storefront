@@ -2,7 +2,7 @@ import type { CourierTracking } from './courierTracking';
 import type { CartLine } from '@/stores/cart-store';
 
 // Client-side (browser) fetch helper for the storefront's customer
-// account system (signup/login/OTP/refresh/logout) — see
+// account system (signup/login/OTP/refresh/logout) - see
 // server/src/customer-auth/. Same host-detection pattern as
 // checkoutApi.ts; see that file's header comment for why this can't use
 // the server-only API_URL from storefrontApi.ts.
@@ -61,10 +61,10 @@ async function post<T>(path: string, body: unknown): Promise<T> {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     // Required so the httpOnly refresh-token cookie (set on the
-    // /v1/customer-auth/* path — see CustomerAuthController) is sent
+    // /v1/customer-auth/* path - see CustomerAuthController) is sent
     // and stored despite the storefront (port 3000) and API (port 4000)
     // being different origins. The API's CORS config already allows
-    // credentialed requests from this app — see server/src/main.ts.
+    // credentialed requests from this app - see server/src/main.ts.
     credentials: 'include',
     body: JSON.stringify(body),
   });
@@ -80,7 +80,7 @@ async function post<T>(path: string, body: unknown): Promise<T> {
 
 // Same shape as post() above but for authenticated GET/PATCH calls that
 // carry a bearer access token instead of (or in addition to) a JSON
-// body — used by the Account > Edit Profile page.
+// body - used by the Account > Edit Profile page.
 async function authFetch<T>(path: string, accessToken: string, init?: { method?: string; body?: unknown }): Promise<T> {
   const res = await fetch(`${apiOrigin()}${path}`, {
     method: init?.method ?? 'GET',
@@ -111,7 +111,7 @@ export async function verifyAddPhone(accessToken: string, phone: string, code: s
   return authFetch('/v1/customer-auth/me/phone/verify', accessToken, { method: 'POST', body: { phone, code, subdomain } });
 }
 
-/** The account's saved cart (see CustomerCart on the server) — lines are the storefront's CartLine shape. */
+/** The account's saved cart (see CustomerCart on the server) - lines are the storefront's CartLine shape. */
 export async function getMyCart(accessToken: string): Promise<CartLine[]> {
   const result = await authFetch<{ lines: CartLine[] }>('/v1/customer-auth/me/cart', accessToken);
   return result.lines;
@@ -158,17 +158,17 @@ export function resendSignupOtp(
   });
 }
 
-/** Step 2 of signup — verifies the code and creates the account, returning a full session. */
+/** Step 2 of signup - verifies the code and creates the account, returning a full session. */
 export function verifyCustomerSignup(phone: string, code: string) {
   return post<AuthResult>('/v1/customer-auth/signup/verify-otp', { phone, code, subdomain: storeOrThrow() });
 }
 
-/** "Email Login" — identifier can be either an email or a phone number (see CustomerLoginDto). */
+/** "Email Login" - identifier can be either an email or a phone number (see CustomerLoginDto). */
 export function customerLogin(identifier: string, password: string) {
   return post<AuthResult>('/v1/customer-auth/login', { identifier, password, subdomain: storeOrThrow() });
 }
 
-/** "OTP Login" — step 1: sends a login code to an existing account's phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
+/** "OTP Login" - step 1: sends a login code to an existing account's phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
 export function otpLoginSend(phone: string, subdomain?: string) {
   return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/otp-login/send', {
     phone,
@@ -176,12 +176,12 @@ export function otpLoginSend(phone: string, subdomain?: string) {
   });
 }
 
-/** "OTP Login" — step 2: verifies the code and returns a full session. */
+/** "OTP Login" - step 2: verifies the code and returns a full session. */
 export function otpLoginVerify(phone: string, code: string) {
   return post<AuthResult>('/v1/customer-auth/otp-login/verify', { phone, code, subdomain: storeOrThrow() });
 }
 
-/** "Change Password" (forgot-password) — step 1: texts a reset code to the account's phone. */
+/** "Change Password" (forgot-password) - step 1: texts a reset code to the account's phone. */
 export function forgotPasswordSendOtp(phone: string, subdomain?: string) {
   return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/forgot-password/send-otp', {
     phone,
@@ -255,7 +255,7 @@ export async function customerLogout(accessToken: string): Promise<void> {
     credentials: 'include',
     headers: { Authorization: `Bearer ${accessToken}` },
   }).catch(() => {
-    // Best-effort — even if this fails (e.g. token already expired),
+    // Best-effort - even if this fails (e.g. token already expired),
     // the caller always clears local state right after calling this.
   });
 }
@@ -298,7 +298,7 @@ export interface UpdateAddressInput {
   zipCode?: string;
 }
 
-/** Account > Change Address — see UpdateCustomerAddressDto's own comment on why these four fields join into one. */
+/** Account > Change Address - see UpdateCustomerAddressDto's own comment on why these four fields join into one. */
 export function updateMyAddress(accessToken: string, input: UpdateAddressInput): Promise<Customer> {
   return authFetch<Customer>('/v1/customer-auth/me/address', accessToken, { method: 'PATCH', body: input });
 }

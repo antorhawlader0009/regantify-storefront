@@ -2,7 +2,7 @@ import type { StorefrontStockSettings } from '@/lib/storefrontApi';
 import { isOutOfStock } from '@/lib/productDisplay';
 
 // StorePal's fallback wording when the vendor enabled backorder but left
-// a message blank — keep in sync with client's
+// a message blank - keep in sync with client's
 // pages/vendor/store/StockSettings.tsx placeholders.
 const DEFAULT_POPUP_MESSAGE_HTML =
   '<p>This product is currently out of stock. If you order this product, delivery time will be 2-3 weeks.</p>';
@@ -27,7 +27,7 @@ export function resolveBackorder(settings: StorefrontStockSettings | undefined):
 }
 
 /**
- * Store > Stock Settings' "Show out-of-stock products in shop pages" —
+ * Store > Stock Settings' "Show out-of-stock products in shop pages" -
  * drops sold-out products from a StorePal listing when the vendor turned
  * it off. A product page reached by direct link still renders.
  */

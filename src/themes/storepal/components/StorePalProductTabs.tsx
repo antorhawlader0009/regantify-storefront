@@ -23,7 +23,7 @@ import { ProductQuestionsTab } from './ProductQuestionsTab';
 /**
  * StorePal's own copy of Medium's product tabs (Medium/Minimal are never edited for StorePal), kept in step by hand.
  * The one difference: a review the store has answered shows the store's reply under it (Reviews > Edit review > Your
- * reply). Rendered inside the parent page's own bordered card — no outer section/border/max-width here, this is just
+ * reply). Rendered inside the parent page's own bordered card - no outer section/border/max-width here, this is just
  * the tab content.
  */
 export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: { subdomain: string; slug: string; description?: string | null; infoTabs?: { title: string; text: string }[] | null }) {
@@ -148,7 +148,7 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
           {!reviewsError && reviews === null && <p className="text-[13px] text-muted mb-4">Loading reviews…</p>}
 
           {reviews && reviews.length === 0 && (
-            <p className="text-[13px] text-muted mb-4">No reviews yet — be the first to write one.</p>
+            <p className="text-[13px] text-muted mb-4">No reviews yet - be the first to write one.</p>
           )}
 
           {reviews && reviews.length > 1 && (
@@ -245,6 +245,9 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
   const [content, setContent] = useState('');
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
+  const openField =
+    'w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none transition-colors focus:border-ink focus:bg-surface';
+  const lockedField = 'w-full cursor-not-allowed px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-dashed border-line-strong text-muted outline-none';
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
@@ -254,6 +257,9 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
   const customer = useCustomerAuthStore((s) => s.customer);
   const accessToken = useCustomerAuthStore((s) => s.accessToken);
   const openLogin = useAuthDialog((s) => s.openLogin);
+  // The signed-in account's own name and email (Edit Profile / Google): shown locked instead of a box to type in.
+  const accountName = customer?.fullName?.trim() || '';
+  const accountEmail = customer?.email?.trim() || '';
   // Arriving from Account > My purchases (or the tracking page's "Review your products") with ?order=...: the form opens
   // by itself, with the account's name filled in.
   useEffect(() => {
@@ -342,7 +348,7 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
-    if (!title.trim() || !name.trim()) {
+    if (!title.trim() || !(accountName || name).trim()) {
       setError('Please enter your name and a review title.');
       return;
     }
@@ -352,8 +358,8 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
         title: title.trim(),
         content: content.trim() || undefined,
         rating,
-        customerName: name.trim(),
-        customerEmail: email.trim() || undefined,
+        customerName: (accountName || name).trim(),
+        customerEmail: (accountEmail || email).trim() || undefined,
         orderToken,
       };
       const sendVideo = video && canAddVideo ? video.file : null;
@@ -378,7 +384,7 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
   if (submitted) {
     return (
       <div className="bg-canvas border border-line rounded-lg p-4 text-[13px] text-ink">
-        Thanks for your review — it&apos;ll show up here once the store approves it.
+        Thanks for your review - it&apos;ll show up here once the store approves it.
       </div>
     );
   }
@@ -442,19 +448,25 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
         rows={3}
         className="w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none resize-y font-[inherit] transition-colors focus:border-ink focus:bg-surface"
       />
+      {/* The name is the account's and can't be changed here; the email too when the account has one (the owner's rule). The
+          server uses the account's name and email anyway. */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
         <input
-          value={name}
+          value={accountName || name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Your name"
-          className="w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none transition-colors focus:border-ink focus:bg-surface"
+          readOnly={!!accountName}
+          aria-label={t('Your name')}
+          placeholder={t('Your name')}
+          className={accountName ? lockedField : openField}
         />
         <input
           type="email"
-          value={email}
+          value={accountEmail || email}
           onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email (optional)"
-          className="w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none transition-colors focus:border-ink focus:bg-surface"
+          readOnly={!!accountEmail}
+          aria-label={t('Email (optional)')}
+          placeholder={t('Email (optional)')}
+          className={accountEmail ? lockedField : openField}
         />
       </div>
 

@@ -7,7 +7,7 @@ import { rememberGuestOrder, loadRememberedOrders, type RememberedOrder } from '
 
 // Set by the checkout page right after a successful order (see
 // HANDOFF_KEY in useCheckout.ts) so this page can look the order up
-// automatically on redirect — this is also what makes the confirmation
+// automatically on redirect - this is also what makes the confirmation
 // survive a refresh: nothing about the "order placed" state lives only
 // in React state, it's always re-fetched from the server via the same
 // invoice+phone lookup a returning shopper would use manually.
@@ -20,7 +20,7 @@ export function useTrackOrder(subdomain: string) {
   const [error, setError] = useState<string | null>(null);
   const [order, setOrder] = useState<TrackedOrder | null>(null);
   const [justPlaced, setJustPlaced] = useState(false);
-  // "Your recent orders" (see guestOrderMemory.ts) — every invoice+phone
+  // "Your recent orders" (see guestOrderMemory.ts) - every invoice+phone
   // this browser has successfully looked up or just placed, most recent
   // first, so a returning guest can re-open one without re-typing its
   // invoice number. Loaded once on mount; re-read after each successful
@@ -61,7 +61,7 @@ export function useTrackOrder(subdomain: string) {
       setJustPlaced(true);
       lookup(reference, handoff.phone);
     } catch {
-      // malformed handoff data — ignore, just show the empty lookup form
+      // malformed handoff data - ignore, just show the empty lookup form
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain]);
@@ -77,7 +77,7 @@ export function useTrackOrder(subdomain: string) {
     await lookup(reference, phone.trim());
   };
 
-  // "Your recent orders" list item click — re-runs the exact same
+  // "Your recent orders" list item click - re-runs the exact same
   // lookup a manual submit would, just pre-filled from what's
   // remembered instead of typed.
   const selectRememberedOrder = async (remembered: RememberedOrder) => {

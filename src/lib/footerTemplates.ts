@@ -1,5 +1,5 @@
 /**
- * Storefront mirror of the shared footer template registry — canonical
+ * Storefront mirror of the shared footer template registry - canonical
  * copy lives at server/src/vendor/footer-templates.ts. Keep the two in
  * sync by hand (same convention CLAUDE.md documents for storefrontApi.ts
  * across repos). See that file's own header comment for the full
@@ -46,7 +46,7 @@ export const FOOTER_TEMPLATES: Record<string, FooterTemplateDef> = {
 
 const DEFAULT_TEMPLATE_KEY = 'CLASSIC';
 
-/** Narrow whatever template key the API returns to a known one, defaulting to CLASSIC — same "never crash on an unrecognized value" reasoning as lib/theme.ts's resolveTheme. */
+/** Narrow whatever template key the API returns to a known one, defaulting to CLASSIC - same "never crash on an unrecognized value" reasoning as lib/theme.ts's resolveTheme. */
 export function resolveFooterTemplate(template: string | null | undefined): FooterTemplateDef {
   if (template && FOOTER_TEMPLATES[template]) return FOOTER_TEMPLATES[template];
   return FOOTER_TEMPLATES[DEFAULT_TEMPLATE_KEY];

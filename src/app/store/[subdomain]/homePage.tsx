@@ -24,7 +24,7 @@ import { socialMeta } from '@/lib/shareMeta';
 import { storeParams } from '@/lib/storeRequest';
 
 // The reserved "use as homepage" sentinel (LandingPage.slug's own schema
-// comment, landing-plan.md §6) — a vendor can publish at most one
+// comment, landing-plan.md §6) - a vendor can publish at most one
 // LandingPage with this literal slug (enforced by the model's own
 // @@unique([vendorId, slug])), and when one exists PUBLISHED, it
 // overrides this route entirely instead of the normal product-grid
@@ -59,14 +59,14 @@ interface HomeProps {
 export async function homeMetadata({ params, query }: HomeProps): Promise<Metadata> {
   const { subdomain } = await storeParams(params);
 
-  // Homepage-override check (see HOMEPAGE_LANDING_SLUG's own comment) —
+  // Homepage-override check (see HOMEPAGE_LANDING_SLUG's own comment) -
   // tried first so a vendor's landing-page SEO fields (metaTitle/
   // metaDescription/coverImageUrl) win over the generic store metadata
   // below whenever one is set as the homepage.
   try {
     const { store, landingPage } = await getStoreLandingPage(subdomain, HOMEPAGE_LANDING_SLUG);
     const canonicalPath = `/store/${subdomain}`;
-    const title = landingPage.metaTitle || `${landingPage.title} — ${store.storeName}`;
+    const title = landingPage.metaTitle || `${landingPage.title} - ${store.storeName}`;
     return {
       title: { absolute: title },
       description: landingPage.metaDescription || undefined,
@@ -76,12 +76,12 @@ export async function homeMetadata({ params, query }: HomeProps): Promise<Metada
     };
   } catch (err) {
     if (!(err instanceof LandingPageNotFoundError) && !(err instanceof StoreNotFoundError)) throw err;
-    // No homepage-override landing page (the common case) — fall through
+    // No homepage-override landing page (the common case) - fall through
     // to the normal store metadata below.
   }
 
   // Store > Branding fallback (Vendor.brandCoverImageUrl/brandMetaTitle/
-  // brandMetaDescription) — one level below the homepage-override landing
+  // brandMetaDescription) - one level below the homepage-override landing
   // page above (which already returned by now if one exists), one level
   // above the fully-generic "Shop {storeName} online" fallback further
   // below. A vendor who's set these on Store > Branding gets their own
@@ -101,7 +101,7 @@ export async function homeMetadata({ params, query }: HomeProps): Promise<Metada
     const title = listing ? `${listing} | ${store.storeName}` : homeTitle;
     const description = listing
       ? `Shop ${listing} at ${store.storeName}. Browse products, fast delivery, cash on delivery available.`
-      : store.brandMetaDescription || `Shop ${store.storeName} online — browse products, fast delivery, cash on delivery available.`;
+      : store.brandMetaDescription || `Shop ${store.storeName} online - browse products, fast delivery, cash on delivery available.`;
     const canonical = (await siteUrl(canonicalPath)) + listingQuery;
     return {
       // The home page's title is the vendor's own words: the layout's " | Store name" is added to listings only.
@@ -120,7 +120,7 @@ export async function HomePage({ params, query }: HomeProps) {
   const { subdomain } = await storeParams(params);
   const { category: activeCategory, q: search, coupon: couponLink, brand: activeBrand } = query;
 
-  // Homepage-override check — same resolution-order reasoning as
+  // Homepage-override check - same resolution-order reasoning as
   // generateMetadata above. A PUBLISHED LandingPage at slug "/" takes
   // over this entire route; only once that lookup 404s (no override set)
   // does this fall through to the regular product-grid homepage.
@@ -142,7 +142,7 @@ export async function HomePage({ params, query }: HomeProps) {
     return <LandingPageView subdomain={subdomain} data={landingData} />;
   } catch (err) {
     if (!(err instanceof LandingPageNotFoundError) && !(err instanceof StoreNotFoundError)) throw err;
-    // No homepage-override landing page — fall through to the regular
+    // No homepage-override landing page - fall through to the regular
     // homepage below. A StoreNotFoundError here gets re-thrown as a
     // real 404 by the getStoreProducts call immediately below anyway,
     // so swallowing it here just avoids doing that check twice.
@@ -202,7 +202,7 @@ export async function HomePage({ params, query }: HomeProps) {
     search,
   };
 
-  // Store > Logo / Social — only StorePal's HomeView accepts these
+  // Store > Logo / Social - only StorePal's HomeView accepts these
   // props today (see that view's own HomeViewProps); passed separately
   // rather than folded into viewProps above so Medium/Minimal's spread
   // stays exactly the shape their own HomeViewProps expects.
@@ -245,7 +245,7 @@ export async function HomePage({ params, query }: HomeProps) {
             <StorepalHomeView
               {...viewProps}
               // Store > Stock Settings' "Show out-of-stock products in
-              // shop pages" off — StorePal-only, like couponLink below.
+              // shop pages" off - StorePal-only, like couponLink below.
               products={visibleInListings(viewProps.products, store.stockSettings)}
               logoUrl={store.logoUrl}
               socialLinks={socialLinks}
@@ -260,13 +260,13 @@ export async function HomePage({ params, query }: HomeProps) {
               siteCoverOnly={store.brandSiteCoverOnly}
               // A store with no public product yet shows the drawn sample shop and the setup steps (store-empty-preview.md).
               setup={data.setup}
-              // "Create custom link for this coupon" — only StorePal
+              // "Create custom link for this coupon" - only StorePal
               // reads this (see [[theme-scope-storepal-only]]);
               // Medium/Minimal's own viewProps spread never includes
               // it, so a shared /store/:subdomain?coupon=... link is a
               // no-op there.
               couponLink={couponLink}
-              // Store > Design menu items of type Brand — StorePal-only, like couponLink.
+              // Store > Design menu items of type Brand - StorePal-only, like couponLink.
               activeBrand={activeBrand}
               // The products the voice call is showing (?picks=).
               picks={pickSlugs(query.picks)}

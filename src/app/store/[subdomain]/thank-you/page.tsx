@@ -6,7 +6,7 @@ import { ThankYouView } from '@/themes/storepal/views/ThankYouView';
 import { storeSubdomain } from '@/lib/storeAddress';
 
 // Only StorePal's checkout redirects here (see useCheckout.ts's
-// post-order router.push) — Medium/Minimal still redirect straight to
+// post-order router.push) - Medium/Minimal still redirect straight to
 // /orders, which already renders their own "Order placed successfully"
 // confirmation banner (see themes/medium/views/OrdersView.tsx), so this
 // route only ever needs to render StorePal's own view. Guarded anyway

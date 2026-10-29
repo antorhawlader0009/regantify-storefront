@@ -60,13 +60,13 @@ interface LayoutProps {
 }
 
 /**
- * Store > Branding's favicon (Vendor.faviconUrl) — set at this segment's
+ * Store > Branding's favicon (Vendor.faviconUrl) - set at this segment's
  * layout level (Next's metadata API merges this with every page/route's
  * own generateMetadata under /store/[subdomain]) so it applies to every
  * route for this vendor, not just the homepage. Falls back to omitting
  * `icons` entirely when unset, which lets Next/the browser fall through
  * to the platform's own default favicon (e.g. the root layout's, or the
- * browser's blank-page default) — same "nullable, falls back to
+ * browser's blank-page default) - same "nullable, falls back to
  * platform default" contract as this field's schema comment.
  */
 export async function generateMetadata({ params }: LayoutProps): Promise<Metadata> {
@@ -130,19 +130,19 @@ export async function generateViewport({ params }: LayoutProps): Promise<Viewpor
 /**
  * Applies the vendor's chosen storefront theme (see StoreTheme,
  * Store > Theme on the dashboard) as a `data-theme` attribute wrapping
- * every route under /store/[subdomain] — globals.css's
+ * every route under /store/[subdomain] - globals.css's
  * [data-theme="minimal"] block then overrides every color/font/shadow
  * token for that whole subtree, so Medium and Minimal pages can share
  * the exact same utility classes (bg-canvas, text-ink, ...) and simply
  * render with the right theme's values. Also provides the resolved
  * theme via ThemeProvider so 'use client' routes (checkout, order
- * tracking, account/*) — which can't reach the server-only API_URL env
- * var themselves — know which component tree to render without a
+ * tracking, account/*) - which can't reach the server-only API_URL env
+ * var themselves - know which component tree to render without a
  * second fetch (see providers/theme-provider.tsx).
  *
  * Store > Branding's accentColor/bodyBackgroundColor are applied here too,
  * as inline `--color-accent`/`--color-canvas` custom properties on this
- * same wrapper div — the EXACT variable names every theme's globals.css
+ * same wrapper div - the EXACT variable names every theme's globals.css
  * already defines per [data-theme] block (see that file's own `@theme`/
  * [data-theme='...'] rules), so every theme's existing bg-accent/
  * text-accent/bg-canvas utility classes pick these up automatically via
@@ -151,16 +151,16 @@ export async function generateViewport({ params }: LayoutProps): Promise<Viewpor
  * with zero per-theme changes needed. Unset (null) fields are simply
  * omitted from the style object, which leaves the theme's own default in
  * effect. brandHeadingFont/brandBodyFont are injected the same way
- * landing pages already do it (lib/storeFonts.ts, which also sets the wrapper's own font-family) — a runtime
+ * landing pages already do it (lib/storeFonts.ts, which also sets the wrapper's own font-family) - a runtime
  * Google Fonts <link>, since next/font/google requires a static import
  * and can't load an arbitrary vendor-typed family name. Reuses the same
  * getStoreInfo call generateMetadata above already makes (Next.js
- * dedupes identical fetches within one render pass — see
+ * dedupes identical fetches within one render pass - see
  * storefrontApi.ts's own comment on this), so branding never costs a
  * second round trip beyond what this segment already fetches.
  *
  * A missing/unknown store still renders here (resolveTheme defaults to
- * MEDIUM) — the actual "store not found" decision and UI stay with each
+ * MEDIUM) - the actual "store not found" decision and UI stay with each
  * page/not-found.tsx as before; this layout only ever adds a wrapper
  * div, never blocks rendering.
  */
@@ -227,7 +227,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     businessHours = storeAway ? null : ((store.businessHours as BusinessHours | null | undefined) ?? null);
   } catch (err) {
     if (!(err instanceof StoreNotFoundError)) throw err;
-    // Store not found — leave the default theme; not-found.tsx handles
+    // Store not found - leave the default theme; not-found.tsx handles
     // the actual 404 UI for this segment. storeExists stays false so we
     // never beacon a "visit" to a store that isn't real.
   }
@@ -243,7 +243,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   return (
     // The query hook every theme's header uses, safe on a kept page (see StoreQueryAdapter and revalidate above).
     <StoreQueryAdapter>
-    {/* data-layout: Store > Design > Layout Settings (StorePal only) — see
+    {/* data-layout: Store > Design > Layout Settings (StorePal only) - see
         globals.css for what EXTENDED widens. */}
     <div
       data-theme={theme.toLowerCase()}
@@ -258,35 +258,35 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       {fontHref && <link rel="stylesheet" href={fontHref} />}
       {/* Which store a shopper's sign-in is for (security F-46). Renders nothing. */}
       <ShopperStoreScope subdomain={subdomain} />
-      {/* Monthly Visit tracking (PLAN.md Step 5) — mounted here, not
+      {/* Monthly Visit tracking (PLAN.md Step 5) - mounted here, not
           inside any theme's own tree, so every theme is counted equally.
           Renders nothing; see VisitBeacon's own doc comment. Only for a
-          store that actually resolved — see storeExists above. */}
+          store that actually resolved - see storeExists above. */}
       {storeExists && <VisitBeacon subdomain={subdomain} />}
       {/* "Your cart is full" and the like (lib/shopLimits.ts), every template. */}
       <LimitNotice />
       {/* Real shoppers' page speed for Super Admin > System status (PERFORMANCE-PLAN.md Step 1). Renders nothing. */}
       {storeExists && <WebVitalsBeacon subdomain={subdomain} />}
-      {/* Store > Integrations > Facebook Pixel — StorePal only, like GDPR
+      {/* Store > Integrations > Facebook Pixel - StorePal only, like GDPR
           Prompt below (landing pages included, since they render inside
           this layout). Waits for GDPR consent when the prompt is on. See
           lib/metaPixel.ts. */}
       {storeExists && theme === 'STOREPAL' && (
         <MetaPixel subdomain={subdomain} metaPixel={metaPixel} consentRequired={!!gdprPrompt} />
       )}
-      {/* Store > Integrations > TikTok Pixel — same rule as the Meta pixel,
+      {/* Store > Integrations > TikTok Pixel - same rule as the Meta pixel,
           and mounted even without a store pixel since a landing page can
           have its own. See lib/tiktokPixel.ts. */}
       {storeExists && theme === 'STOREPAL' && (
         <TiktokPixel subdomain={subdomain} tiktokPixel={tiktokPixel} consentRequired={!!gdprPrompt} />
       )}
-      {/* Store > Integrations > Google Analytics 4 — same StorePal-only,
+      {/* Store > Integrations > Google Analytics 4 - same StorePal-only,
           consent-aware rule as the pixel above. Only mounted when the
           vendor set a Measurement ID. See lib/googleAnalytics.ts. */}
       {storeExists && theme === 'STOREPAL' && googleAnalytics && (
         <GoogleAnalytics subdomain={subdomain} googleAnalytics={googleAnalytics} consentRequired={!!gdprPrompt} />
       )}
-      {/* Store > Integrations > Google Tag Manager — same StorePal-only,
+      {/* Store > Integrations > Google Tag Manager - same StorePal-only,
           consent-aware rule. See lib/googleTagManager.ts. Google's
           <noscript> fallback only when the GDPR Prompt is off: a visitor
           without JavaScript can't be asked for consent. */}
@@ -330,15 +330,15 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         )}
         </UsdPriceProvider>
       </ThemeProvider>
-      {/* Store > GDPR Prompt — StorePal only by design, same as the AI
+      {/* Store > GDPR Prompt - StorePal only by design, same as the AI
           chat widget; null unless the vendor turned it on. */}
       {theme === 'STOREPAL' && gdprPrompt && <GdprPrompt subdomain={subdomain} prompt={gdprPrompt} />}
-      {/* Marketing > Campaigns > Popup — StorePal only, like the GDPR Prompt. Which popup shows where, when
+      {/* Marketing > Campaigns > Popup - StorePal only, like the GDPR Prompt. Which popup shows where, when
           and to whom is worked out in the browser; see PopupCampaigns.tsx. */}
       {storeExists && theme === 'STOREPAL' && popupCampaigns.length > 0 && (
         <LazyPopupCampaigns subdomain={subdomain} popups={popupCampaigns} accentColor={accentColor ?? null} />
       )}
-      {/* Store > Design > Custom CSS / Head Scripts / JavaScript Code —
+      {/* Store > Design > Custom CSS / Head Scripts / JavaScript Code -
           StorePal only, like GDPR above. The CSS is server-rendered after
           the page so it wins over theme styles at equal specificity and
           never flashes unstyled; a literal "</style" in it is escaped so

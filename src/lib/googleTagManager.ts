@@ -1,4 +1,4 @@
-// Store > Integrations > Google Tag Manager — the browser side. Browser-
+// Store > Integrations > Google Tag Manager - the browser side. Browser-
 // only module: components/GoogleTagManager.tsx sets it up, and the
 // storefront's ecommerce events (lib/ecommerceEvents.ts) are pushed to the
 // dataLayer from here in GA4's format, so vendors can trigger their own

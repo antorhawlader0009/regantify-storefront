@@ -21,10 +21,10 @@ import { useStoreText } from '../lib/storeText';
 const HANDOFF_KEY = 'regantify-last-order';
 
 // SSLCommerz's own invoice numbers are generated as `RGF-SSL-<ts>-<rand>`
-// (see VendorGatewayTransactionsService.createInvoiceNumber) — PayStation's
+// (see VendorGatewayTransactionsService.createInvoiceNumber) - PayStation's
 // are `RGF-<ts>-<rand>` (see PaymentsService.createInvoiceNumber), with no
 // "SSL" segment. This page has only the invoice number in its URL (both
-// gateways land the shopper's browser back here — see
+// gateways land the shopper's browser back here - see
 // SslcommerzReturnController's redirect and PaymentsService.
 // initiateForOrder's callback_url), so the prefix is what decides which
 // pair of reconcile/status endpoints to poll.
@@ -36,17 +36,17 @@ function isCustomGatewayInvoice(invoiceNumber: string): boolean {
 
 /**
  * Storefront checkout's "Online Payment" / custom-gateway landing page
- * (StorePal only — see CheckoutView.tsx's Payment Method choice) — both
+ * (StorePal only - see CheckoutView.tsx's Payment Method choice) - both
  * PayStation's `callback_url` (see PaymentsService.initiateForOrder) and
  * SslcommerzReturnController's redirect always point back here with
  * `?invoice=...`. Never trusts a query-param "it worked" signal from the
- * redirect itself — always calls the matching gateway's public reconcile
+ * redirect itself - always calls the matching gateway's public reconcile
  * endpoint, which re-verifies server-to-server before moving the order
  * out of PAYMENT_INITIATED (see PaymentsService.reconcileInternal /
  * VendorGatewayTransactionsService.reconcileInternal). On confirmed
  * success, hands off to /thank-you exactly the way a COD order does (same
  * sessionStorage key useTrackOrder already reads), so the rest of the
- * confirmation flow — memo download, "Track it anytime", etc. — is
+ * confirmation flow - memo download, "Track it anytime", etc. - is
  * unchanged regardless of which gateway was used.
  */
 export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
@@ -103,12 +103,12 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
           if (cancelled) return;
           if (payment?.order) {
             // Same handoff sessionStorage key a COD order sets right
-            // after placeOrder — /thank-you's useTrackOrder reads this
+            // after placeOrder - /thank-you's useTrackOrder reads this
             // to auto-load the confirmation via the same invoice+phone
             // lookup a returning shopper would use manually. The phone
             // comes from getOrderPaymentStatus (the order's own
             // customerPhone, collected at checkout) since this page has
-            // no React state of its own — it's a fresh navigation back
+            // no React state of its own - it's a fresh navigation back
             // from PayStation, not a continuation of the checkout form.
             sessionStorage.setItem(
               HANDOFF_KEY,

@@ -17,7 +17,7 @@ export function TextSection({ props }: { props: TextProps }) {
   return (
     <div
       className={`prose prose-neutral mx-auto max-w-3xl px-5 py-6 sm:px-8 ${alignClass(props.align)}`}
-      // Reuses the same trust model Page.content already gets — TipTap's
+      // Reuses the same trust model Page.content already gets - TipTap's
       // own output is trusted as-is (no client-supplied raw-HTML path
       // outside the vendor's own authenticated builder), same "confirm
       // and match Page.content's approach" note landing-page-sections.md

@@ -22,7 +22,7 @@ export function SignupView({ subdomain }: { subdomain: string }) {
   const [error, setError] = useState<string | null>(null);
   const [resent, setResent] = useState(false);
   // Guards against a double-click/double-tap firing two resend requests
-  // before React re-renders the button as disabled — the server has its
+  // before React re-renders the button as disabled - the server has its
   // own per-phone cooldown (CustomerAuthService.issueOtpLocked) but this
   // is what stops a real double-SMS in practice; see that method's own
   // comment for the full reasoning.

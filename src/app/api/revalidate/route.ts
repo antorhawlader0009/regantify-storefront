@@ -2,21 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
 
 /**
- * On-demand revalidation endpoint — called by the backend (see
+ * On-demand revalidation endpoint - called by the backend (see
  * server/src/storefront/storefront-revalidate.service.ts) right after
  * any change that affects storefront data: a product created/updated/
  * deleted, its visibility toggled, or (landing-plan.md §6, §8) a landing
  * page published/updated/unpublished/deleted. Without this, the
  * storefront only picks up changes after the fetch cache's time-based
  * revalidate window (see REVALIDATE_SECONDS in storefrontApi.ts) expires
- * — which reads as "I have to wait or reload" to a vendor who just saved
+ * - which reads as "I have to wait or reload" to a vendor who just saved
  * something. This makes it instant instead.
  *
  * POST /api/revalidate
  * Body: { secret: string, subdomain: string, slug?: string, kind?: 'product' | 'landing-page' }
  *
  * Always revalidates the store's product list/store-info tag. When a
- * `slug` is given, also revalidates that one item's own detail tag —
+ * `slug` is given, also revalidates that one item's own detail tag -
  * `kind` (default 'product', backward compatible with every existing
  * caller that never sent it) picks which tag family `slug` belongs to,
  * so revalidating one landing page never needs to also claim to be a

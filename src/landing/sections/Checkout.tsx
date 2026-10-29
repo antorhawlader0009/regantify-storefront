@@ -44,7 +44,7 @@ function soldOutPick(p: StorefrontLandingPageProduct, picked: Record<string, str
 
 const PHONE_PATTERN = /^01[0-9]{9}$/;
 
-// Same fallback labels as StorePal's CheckoutView — a gateway row with no
+// Same fallback labels as StorePal's CheckoutView - a gateway row with no
 // vendor-set displayLabel.
 const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   COD: 'Cash on Delivery',
@@ -65,8 +65,8 @@ const INPUT_CLASS =
 /**
  * Checkout Form section (landing-page-sections.md §6.1, landing-plan.md
  * Step 9). Runs the SAME checkout logic as the storefront's cart checkout
- * — useCheckout() with the section's fixed products passed in as
- * `options.lines` instead of the shopper's cart — so delivery charge,
+ * - useCheckout() with the section's fixed products passed in as
+ * `options.lines` instead of the shopper's cart - so delivery charge,
  * VAT, Platform Charge, coupons, payment gateways (COD / Online Payment /
  * a connected custom gateway), COD Guard's SMS code and the Incomplete
  * Orders sync all behave exactly like the product checkout. Order.source
@@ -310,7 +310,7 @@ export function CheckoutFormSection({
                   {(aroundDhaka ? (['DHAKA', 'AROUND_DHAKA', 'OUTSIDE_DHAKA'] as const) : (['DHAKA', 'OUTSIDE_DHAKA'] as const)).map((z) => (
                     <label key={z} className="flex items-center gap-2 text-[13.5px] text-neutral-700">
                       <input type="radio" checked={zone === z} onChange={() => updateField('zone', z)} />
-                      {z === 'DHAKA' ? 'Inside Dhaka' : z === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka'} — {formatPrice(deliveryChargeByZone[z])}
+                      {z === 'DHAKA' ? 'Inside Dhaka' : z === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka'} - {formatPrice(deliveryChargeByZone[z])}
                     </label>
                   ))}
                 </div>
@@ -437,7 +437,7 @@ export function CheckoutFormSection({
                 <div className="flex justify-between text-green-700">
                   <span>{appliedCoupon.discountType === 'FREE_SHIPPING' ? 'Free shipping' : `Coupon ${appliedCoupon.code}`}</span>
                   <span className="font-medium">
-                    {appliedCoupon.discountType === 'FREE_SHIPPING' ? '—' : `-${formatPrice(couponDiscountAmount)}`}
+                    {appliedCoupon.discountType === 'FREE_SHIPPING' ? '-' : `-${formatPrice(couponDiscountAmount)}`}
                   </span>
                 </div>
               )}
@@ -517,7 +517,7 @@ export function CheckoutFormSection({
               </div>
             </div>
 
-            {/* Store > COD Guard "Before Checkout" — see useCheckout's codOtp. */}
+            {/* Store > COD Guard "Before Checkout" - see useCheckout's codOtp. */}
             {showCodOtp && (
               <div className="mt-4 rounded-md border border-orange-200 bg-orange-50 p-3.5">
                 <p className="text-[13px] font-semibold text-neutral-900">Verify your phone number</p>
@@ -612,7 +612,7 @@ function Row({ label, value }: { label: string; value: string }) {
  *    StorefrontService.submitLandingPageLead on the backend / Lead's own
  *    schema comment for why this is a new minimal table, not
  *    IncompleteOrder/Order).
- *  - "whatsapp": no backend call at all — just deep-links to
+ *  - "whatsapp": no backend call at all - just deep-links to
  *    wa.me/<number> with the shopper's own message prefilled, same
  *    "chat button" convention this landing-page feature already uses
  *    elsewhere (chatButtonLink).

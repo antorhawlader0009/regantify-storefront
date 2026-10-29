@@ -5,7 +5,7 @@ import type { StorefrontGdprPrompt } from '@/lib/storefrontApi';
 import { grantGdprConsent, hasGdprConsent } from '@/lib/gdprConsent';
 import { useStoreText } from '../lib/storeText';
 
-// Shown when the vendor enabled the prompt but left the message blank —
+// Shown when the vendor enabled the prompt but left the message blank -
 // keep in sync with client's pages/vendor/store/GdprPrompt.tsx placeholder.
 const DEFAULT_MESSAGE_HTML =
   '<p><strong>We Care About Your Privacy</strong></p><p>We use cookies to enhance your browsing experience in our site and offer personalized promotions.</p>';
@@ -18,14 +18,14 @@ const POSITION_CLASSES: Record<StorefrontGdprPrompt['position'], string> = {
 };
 
 /**
- * Store > GDPR Prompt — StorePal's cookie-consent banner, mounted once in
+ * Store > GDPR Prompt - StorePal's cookie-consent banner, mounted once in
  * store/[subdomain]/layout.tsx for StorePal stores only (like the AI chat
  * widget, other themes don't get it). The shopper's accept is remembered
  * per store in localStorage (lib/gdprConsent.ts) and never sent to the
  * server; the Meta pixel waits for it (lib/metaPixel.ts). Renders nothing
  * until mounted, so server HTML and first client render always match.
  *
- * `message` is the vendor's own RichTextEditor HTML, rendered raw — same
+ * `message` is the vendor's own RichTextEditor HTML, rendered raw - same
  * trust level as Store > Footer's aboutBlurb (see StoreFooter.tsx).
  */
 export function GdprPrompt({ subdomain, prompt }: { subdomain: string; prompt: StorefrontGdprPrompt }) {

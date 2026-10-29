@@ -53,11 +53,11 @@ interface HomeViewProps {
   storeName: string;
   products: StorefrontProduct[];
   categories: string[];
-  /** Store > Categories' own photos, when the category is PUBLIC — powers the shortcut row below and the cover banner on a filtered category view. */
+  /** Store > Categories' own photos, when the category is PUBLIC - powers the shortcut row below and the cover banner on a filtered category view. */
   categoryDetails?: StorefrontCategoryDetail[];
   reviews: StorefrontReview[];
   activeCategory?: string;
-  /** `?brand=` — Store > Design menu items of type Brand link here. StorePal-only. */
+  /** `?brand=` - Store > Design menu items of type Brand link here. StorePal-only. */
   activeBrand?: string;
   search?: string;
   /** `?picks=`: the products the AI voice call is showing the shopper, in its order (link names). */
@@ -76,9 +76,9 @@ interface HomeViewProps {
   /** Store > Branding > Website cover photo: the hero's first slide; siteCoverOnly drops the category covers after it. */
   siteCoverUrl?: string | null;
   siteCoverOnly?: boolean;
-  /** Store > Footer — see StoreFooter's own prop-or-fetch doc comment. */
+  /** Store > Footer - see StoreFooter's own prop-or-fetch doc comment. */
   footerConfig?: StoreFooterConfig | null;
-  /** "Create custom link for this coupon" — the `?coupon=` query param a shopper lands on from a vendor-shared link (see lib/pendingCoupon.ts). StorePal-only prop; Medium/Minimal's HomeView has no equivalent. */
+  /** "Create custom link for this coupon" - the `?coupon=` query param a shopper lands on from a vendor-shared link (see lib/pendingCoupon.ts). StorePal-only prop; Medium/Minimal's HomeView has no equivalent. */
   couponLink?: string;
   /** Present only while the store has no public product: the setup guide shows instead of the empty shop. */
   setup?: StorefrontSetupGuide | null;
@@ -93,13 +93,13 @@ const HOME_WRAP = 'max-w-6xl mx-auto px-3 sm:px-6 pt-5 pb-3 sm:pt-6 sm:pb-4 empt
 // Below "Top Selling", the reference site shows a row of small
 // image-backed shortcuts into a handful of its own top-level
 // categories (see storepal.com.bd: "men shoes", "watch", "belts",
-// "wallets", each with its own square photo) — a fast way back into
+// "wallets", each with its own square photo) - a fast way back into
 // the header's own nav without scrolling up. Built from whatever
 // categories this vendor actually has (up to 4). Prefers that
 // category's own Store > Categories square/cover photo (categoryDetails,
-// PUBLIC categories only — see StorefrontService.getStoreProducts) and
+// PUBLIC categories only - see StorefrontService.getStoreProducts) and
 // falls back to that category's first product's photo when the category
-// has no photo set (or isn't a real Category row at all — Category is a
+// has no photo set (or isn't a real Category row at all - Category is a
 // plain-text field on Product, see CategoryCombobox's doc comment, so a
 // typed-in name with no matching row is possible).
 const MAX_SHORTCUTS = 4;
@@ -135,12 +135,12 @@ export function HomeView({
   const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
   const homeSections = resolveHomeSections(design.homeSections);
 
-  // "Create custom link for this coupon" — resolve the shared link to a
+  // "Create custom link for this coupon" - resolve the shared link to a
   // real coupon code once, stash it for checkout to pick up (see
   // lib/pendingCoupon.ts), show a one-line confirmation, then strip
   // ?coupon= from the URL so it doesn't linger/re-trigger on a refresh
   // or get shared onward as a raw query param. A link that doesn't
-  // resolve (typo'd/deleted/deactivated coupon) fails silently — see
+  // resolve (typo'd/deleted/deactivated coupon) fails silently - see
   // resolveCouponLink's own comment.
   const [couponBannerCode, setCouponBannerCode] = useState<string | null>(null);
   useEffect(() => {
@@ -158,7 +158,7 @@ export function HomeView({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [couponLink, subdomain]);
   // Price bounds derived from the vendor's actual catalog (discounted
-  // price when set, since that's what a shopper actually pays) — the
+  // price when set, since that's what a shopper actually pays) - the
   // filter panel's slider/min-max inputs are scoped to this range
   // rather than an arbitrary fixed ceiling, matching the reference
   // site's own Price Filter (see screenshot 2/3: max reflects the real
@@ -201,7 +201,7 @@ export function HomeView({
 
   const filtered = products.filter((p) => {
     const matchesSearch = (searchHits ? searchRank.has(p) : true) && (pickRank ? pickRank.has(p.slug) : true);
-    // Matches on secondaryCategories too — a promo bucket like "50% OFF"
+    // Matches on secondaryCategories too - a promo bucket like "50% OFF"
     // (see the header nav) is typically tagged onto products from many
     // different primary categories purely via Secondary Categories, never
     // set as any product's own `category`.
@@ -215,7 +215,7 @@ export function HomeView({
       effectiveFilters.brands.length === 0 || (p.brand ? effectiveFilters.brands.includes(p.brand) : false);
     // A product matches a variant facet when at least one of its in-stock
     // variants carries a selected value for that option (OR within an
-    // option, AND across different options — standard faceted-filter
+    // option, AND across different options - standard faceted-filter
     // semantics: e.g. Color=Red AND Storage=128GB must both be satisfiable,
     // by the same or different variants).
     const matchesVariantOptions = Object.entries(effectiveFilters.variantOptions).every(
@@ -320,7 +320,7 @@ export function HomeView({
 
   // When browsing inside one category, the sidebar's Category filter
   // should offer that category's own subcategories (matching the header
-  // nav's dropdown) instead of the store's full top-level category list —
+  // nav's dropdown) instead of the store's full top-level category list -
   // see ProductFilters' categoryOptions doc comment. undefined (no
   // activeCategory, e.g. a search) keeps the old store-wide behavior.
   const activeCategorySubcategories = activeCategory
@@ -328,7 +328,7 @@ export function HomeView({
     : undefined;
 
   // ProductFilters derives its Brand list (and, absent categoryOptions
-  // above, its Category list) from whatever product array it's given —
+  // above, its Category list) from whatever product array it's given -
   // pass it only this category's own products so Brand doesn't mix in
   // brands from every other category in the store (e.g. Organic Food
   // brands showing up while browsing Phone).
@@ -367,7 +367,7 @@ export function HomeView({
           <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3">
             <span className="flex items-center gap-1.5">
               <Tag size={14} />
-              Coupon {couponBannerCode} is ready — it&apos;ll be applied at checkout.
+              Coupon {couponBannerCode} is ready - it&apos;ll be applied at checkout.
             </span>
             <button onClick={() => setCouponBannerCode(null)} className="hover:opacity-70">
               <X size={14} />
@@ -440,7 +440,7 @@ export function HomeView({
             </div>
           ) : isFiltered ? (
             <div className="grid gap-6 lg:[grid-template-columns:240px_1fr] items-start">
-              {/* Filter sidebar — desktop: static column; mobile: slide-over panel opened via the "Filters" button above. */}
+              {/* Filter sidebar - desktop: static column; mobile: slide-over panel opened via the "Filters" button above. */}
               <aside className="hidden lg:block lg:sticky lg:top-24">
                 <ProductFilters
                   products={categoryScopedProducts}

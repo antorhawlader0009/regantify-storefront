@@ -6,7 +6,7 @@ import { resendCodOrderOtp, verifyCodOrder } from '@/lib/checkoutApi';
 import { useStoreText } from '../lib/storeText';
 
 /**
- * Store > COD Guard "After Checkout" — shown on StorePal's thank-you page
+ * Store > COD Guard "After Checkout" - shown on StorePal's thank-you page
  * while the order waits On Hold for the SMS code texted to the shopper's
  * phone at checkout (see OrdersService.verifyCodOrder on the backend).
  * Calls onVerified once the order has moved on, so the page can drop this

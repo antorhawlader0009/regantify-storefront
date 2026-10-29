@@ -212,8 +212,8 @@ function greetingMessage(text: string | null | undefined): Message {
 }
 
 /**
- * Floating "Assistant" icon (Store AI Chat Bot — see Super Admin > AI
- * Settings, which picks the Workers AI model this actually calls) —
+ * Floating "Assistant" icon (Store AI Chat Bot - see Super Admin > AI
+ * Settings, which picks the Workers AI model this actually calls) -
  * stacked directly above the WhatsApp bubble at the same corner, same
  * convention as a typical storefront's "help" widgets clustering in one
  * spot rather than spreading floating buttons across the screen.

@@ -5,7 +5,7 @@ import { CART_MAX_LINES, useLimitNotice } from '@/lib/shopLimits';
 
 export interface CartLine {
   // productSlug + a stable string of the selected variant options is
-  // enough to uniquely identify a line — two lines with the same product
+  // enough to uniquely identify a line - two lines with the same product
   // but different variant selections (e.g. Size: M vs Size: L) must stay
   // separate.
   id: string;
@@ -51,12 +51,12 @@ export interface CartLine {
 }
 
 // Fired on window after every addLine, with the added line (including its
-// id) as detail — lets StorePal's Meta pixel send AddToCart without every
+// id) as detail - lets StorePal's Meta pixel send AddToCart without every
 // add-to-cart button knowing about tracking.
 export const CART_ADD_EVENT = 'storefront:cart-add';
 
 // Fired on window when a line is removed or its quantity lowered, with
-// the line (as it was) and how many were taken out — StorePal's Google
+// the line (as it was) and how many were taken out - StorePal's Google
 // Analytics remove_from_cart, same idea as CART_ADD_EVENT.
 export const CART_REMOVE_EVENT = 'storefront:cart-remove';
 
@@ -126,7 +126,7 @@ export function lineId(productSlug: string, selectedOptions: Record<string, stri
   return `${productSlug}::${optionsKey}${custom}${picks}`;
 }
 
-// Store factory — called fresh per request via CartStoreProvider (see
+// Store factory - called fresh per request via CartStoreProvider (see
 // zustand's official Next.js App Router guide). Never call createStore()
 // at module scope here: that would create one store shared across every
 // visitor the server handles, leaking one shopper's cart into another's
@@ -207,7 +207,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
           if (before) dispatchRemove(before, before.quantity - Math.max(quantity, 0));
         },
 
-        // Each vendor's storefront is a separate shop — clearing after an
+        // Each vendor's storefront is a separate shop - clearing after an
         // order should only clear that vendor's lines, not a shopper's
         // cart for a different store they also have open.
         clearStore: (subdomain) =>
@@ -232,7 +232,7 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
         // SSR-safe: the persist middleware skips hydration on the server
         // (no localStorage there) and rehydrates once mounted client-side,
         // which is also why cart-reading components should treat the
-        // store as empty until mounted — see CartStoreProvider.
+        // store as empty until mounted - see CartStoreProvider.
         skipHydration: true,
       },
     ),

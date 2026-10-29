@@ -13,10 +13,10 @@ interface FeaturedBannerProps {
 }
 
 /**
- * Auto-rotating banner strip — the "deal slider" every established BD
+ * Auto-rotating banner strip - the "deal slider" every established BD
  * e-commerce homepage opens with (startech.com.bd, daraz.com.bd). Built
  * entirely from the vendor's own best real discounts (the products with
- * the largest percent-off), never fabricated marketing copy — there's
+ * the largest percent-off), never fabricated marketing copy - there's
  * no banner/offer content model on the backend, so this is the honest
  * version of that slot: real products, real savings.
  */
@@ -38,7 +38,7 @@ export function FeaturedBanner({ subdomain, products }: FeaturedBannerProps) {
 
   return (
     <div className="relative bg-ink overflow-hidden">
-      {/* Soft blurred backdrop of the same product photo — adds depth
+      {/* Soft blurred backdrop of the same product photo - adds depth
           without needing separate banner artwork the backend doesn't have. */}
       {product.photoUrls[0] && (
         <div className="absolute inset-0 opacity-20">

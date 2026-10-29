@@ -1,4 +1,4 @@
-// Store > Integrations > Facebook Pixel (Meta) — the browser side. Browser-
+// Store > Integrations > Facebook Pixel (Meta) - the browser side. Browser-
 // only module: everything here is called from client components
 // (components/MetaPixel.tsx sets it up, theme views fire events). See
 // facebook-pixel.md in the workspace root for the full design.

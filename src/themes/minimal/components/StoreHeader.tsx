@@ -15,12 +15,12 @@ interface StoreHeaderProps {
 
 /**
  * Minimal's header is the opposite of Medium's: no dominant search bar,
- * no dark category strip underneath — just the store name set large in
+ * no dark category strip underneath - just the store name set large in
  * the display serif, a quiet row of category links, and small icon-only
  * actions. Search is tucked behind a toggle rather than always-open,
  * since a boutique storefront doesn't need to compete for attention the
  * way a dense marketplace header does. Same client-side URL-param
- * filtering as Medium (via nuqs) — only the presentation differs.
+ * filtering as Medium (via nuqs) - only the presentation differs.
  */
 export function StoreHeader({ subdomain, storeName, categories }: StoreHeaderProps) {
   const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });

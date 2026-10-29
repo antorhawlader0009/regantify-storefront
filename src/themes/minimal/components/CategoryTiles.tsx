@@ -8,11 +8,11 @@ interface CategoryTilesProps {
 }
 
 /**
- * A quiet, text-led category row — no thumbnail circles, no icon strip.
+ * A quiet, text-led category row - no thumbnail circles, no icon strip.
  * The opposite instinct from Medium's CategoryTiles (which leans on
  * imagery since a marketplace shopper scans visually); here the
  * typography itself is the navigation, in keeping with the theme's
- * editorial character. Real product counts, same as Medium — never
+ * editorial character. Real product counts, same as Medium - never
  * fabricated.
  */
 export function CategoryTiles({ subdomain, categories, products }: CategoryTilesProps) {

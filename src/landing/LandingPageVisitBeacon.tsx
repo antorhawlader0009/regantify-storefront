@@ -4,7 +4,7 @@ import { useEffect } from 'react';
 import { recordLandingPageVisit } from '@/lib/checkoutApi';
 
 // Same session-key-per-tab-group convention as the store-wide
-// VisitBeacon.tsx (see its own comment) — namespaced by
+// VisitBeacon.tsx (see its own comment) - namespaced by
 // subdomain+slug so visiting two different landing pages in one browser
 // session correctly counts as two visits.
 function getOrCreateSessionKey(subdomain: string, slug: string): string {
@@ -17,7 +17,7 @@ function getOrCreateSessionKey(subdomain: string, slug: string): string {
 }
 
 /**
- * Landing page visit beacon (landing-plan.md §6, §8) — fires once per
+ * Landing page visit beacon (landing-plan.md §6, §8) - fires once per
  * mount, capturing utm_source/utm_medium/utm_campaign from the page's own
  * URL (ad-driven traffic is the primary use case here, per landing-plan.md
  * §6) and the document referrer. Mounted once by LandingPageView, same
@@ -37,7 +37,7 @@ export function LandingPageVisitBeacon({ subdomain, slug }: { subdomain: string;
         utmCampaign: params.get('utm_campaign') || undefined,
       });
     } catch {
-      // sessionStorage can throw in some private-browsing modes — a
+      // sessionStorage can throw in some private-browsing modes - a
       // visit beacon is never worth breaking the page over, same
       // reasoning VisitBeacon.tsx's own try/catch gives.
     }

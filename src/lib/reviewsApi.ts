@@ -1,5 +1,5 @@
 // Client-side (browser) fetch helper for the storefront's product
-// reviews (product page "Reviews" tab — see ProductTabs.tsx, which is a
+// reviews (product page "Reviews" tab - see ProductTabs.tsx, which is a
 // Client Component). Same host-detection pattern as checkoutApi.ts; see
 // that file's header comment for why this can't use the server-only
 // API_URL from storefrontApi.ts.
@@ -36,7 +36,7 @@ export interface SubmitReviewInput {
   rating: number;
   customerName: string;
   customerEmail?: string;
-  // "Upload Photos" — already-uploaded picture URLs (see
+  // "Upload Photos" - already-uploaded picture URLs (see
   // SubmitReviewDto's own comment on the backend). Only the StorePal
   // theme's review form currently offers a photo upload control.
   photos?: string[];
@@ -44,7 +44,7 @@ export interface SubmitReviewInput {
   orderToken?: string;
 }
 
-/** Approved reviews for one product — see ReviewsService.listForProduct on the backend. */
+/** Approved reviews for one product - see ReviewsService.listForProduct on the backend. */
 export async function getProductReviews(subdomain: string, slug: string, sort: 'newest' | 'helpful' = 'newest'): Promise<ProductReview[]> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/reviews${sort === 'helpful' ? '?sort=helpful' : ''}`);
   if (!res.ok) {

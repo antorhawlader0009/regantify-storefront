@@ -2,7 +2,7 @@ import type { CourierTracking } from './courierTracking';
 import type { StorefrontStoreAway } from './storeAway';
 import type { PrepaidRule } from './prepaidDiscount';
 
-// Client-side (browser) fetch helper — used only by the checkout page,
+// Client-side (browser) fetch helper - used only by the checkout page,
 // which is a Client Component (needs cart state from localStorage) and
 // so can't use the server-only API_URL from storefrontApi.ts (that one
 // runs during SSR, where "localhost" means the server machine; here it
@@ -30,7 +30,7 @@ export interface CheckoutResponse {
   publicCode?: string | null;
   total: string;
   status: string;
-  // Store > COD Guard — PENDING means the order was placed On Hold and
+  // Store > COD Guard - PENDING means the order was placed On Hold and
   // the thank-you page must collect the SMS code (StorePal only).
   codVerificationStatus?: 'PENDING' | 'VERIFIED' | 'EXPIRED' | null;
   // Store > COD Guard > "Delivery charge in advance": a COD order whose delivery charge still has to be
@@ -58,9 +58,9 @@ async function apiError(res: Response, fallback: string): Promise<CheckoutApiErr
   return new CheckoutApiError(message || fallback, typeof body?.code === 'string' ? body.code : undefined);
 }
 
-// Store > Payment Gateway — one entry per gateway this vendor's checkout
+// Store > Payment Gateway - one entry per gateway this vendor's checkout
 // currently offers (already filtered server-side for enabled/connected
-// AND the admin's platform-wide switch — see PaymentGatewaysService.
+// AND the admin's platform-wide switch - see PaymentGatewaysService.
 // listActiveForStorefront). `id` is exactly the value to send back as
 // CreateOrderDto.paymentMethod at checkout: "COD"/"ONLINE_PAYMENT" for
 // the two built-ins, or this row's own VendorPaymentGateway id for a
@@ -77,9 +77,9 @@ export interface StorePaymentGateway {
   // the server).
   platformChargeBdt: string;
   platformChargePercent: string;
-  // Display-only — Plan.codFeeHidden/onlinePaymentFeeHidden (COD/
+  // Display-only - Plan.codFeeHidden/onlinePaymentFeeHidden (COD/
   // ONLINE_PAYMENT only, always false for a custom gateway). The fee
-  // itself is still charged server-side regardless — OrdersService
+  // itself is still charged server-side regardless - OrdersService
   // .create resolves it independently, never trusts anything the client
   // sends. When true, useCheckout folds platformChargeAmount into the
   // total silently instead of exposing it as its own line item.
@@ -89,7 +89,7 @@ export interface StorePaymentGateway {
   manualMobile?: { accounts: { wallet: string; number: string; kind: 'PERSONAL' | 'AGENT' | 'MERCHANT' }[]; instructions: string } | null;
 }
 
-// Settings > Courier Integration > Delivery Charge / Settings > VAT —
+// Settings > Courier Integration > Delivery Charge / Settings > VAT -
 // read client-side (same apiOrigin() reasoning as the rest of this file)
 // by useCheckout, which needs these before the shopper submits anything,
 // to price the order the same way OrdersService.create will. Picked out
@@ -100,11 +100,11 @@ export interface StoreDeliveryCharges {
   outsideDhakaCharge: string;
   vatChargeBdt: string;
   paymentGateways: StorePaymentGateway[];
-  // Store > COD Guard — when StorePal's checkout should ask for an SMS
+  // Store > COD Guard - when StorePal's checkout should ask for an SMS
   // code on COD orders. Always null on other themes (see the backend's
   // StorefrontService.findVendorBySubdomainOrThrow).
   codSmsVerification?: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
-  // Store > COD Guard > "Delivery charge in advance" — set only when StorePal's checkout should make a COD
+  // Store > COD Guard > "Delivery charge in advance" - set only when StorePal's checkout should make a COD
   // shopper pay the delivery charge online first (the server also needs Online Payment on).
   // minOrder: only for carts of at least this much; null = every order.
   // delivery: the delivery-charge advance is on (minOrder applies to it); preOrderPercent: the share of pre-order
@@ -162,10 +162,10 @@ export async function placeOrder(subdomain: string, payload: unknown, accessToke
   return res.json();
 }
 
-// StorePal theme's "Online Payment" option — called right after
+// StorePal theme's "Online Payment" option - called right after
 // placeOrder() when the shopper picked Online Payment, using the
 // orderId placeOrder just returned. Public, no auth (see
-// StorefrontPaymentsController on the backend) — a shopper is never
+// StorefrontPaymentsController on the backend) - a shopper is never
 // logged in during checkout.
 export interface InitiateOrderPaymentResponse {
   invoiceNumber: string;
@@ -195,7 +195,7 @@ export interface OrderPaymentStatusResponse {
   order: { invoiceNumber: number; status: string; customerPhone: string } | null;
 }
 
-/** payment-callback page's own re-verification — never trusts the redirect's own query params, always re-checks with PayStation server-to-server. */
+/** payment-callback page's own re-verification - never trusts the redirect's own query params, always re-checks with PayStation server-to-server. */
 export async function reconcileOrderPayment(invoiceNumber: string): Promise<{ status: OrderPaymentStatus; alreadyFulfilled: boolean }> {
   const res = await fetch(`${apiOrigin()}/v1/store-payments/reconcile/${invoiceNumber}`, { method: 'POST' });
   if (!res.ok) throw new Error('Could not verify this payment.');
@@ -209,10 +209,10 @@ export async function getOrderPaymentStatus(invoiceNumber: string): Promise<Orde
 }
 
 // The CUSTOM:<gatewayId> analog of initiateOrderPayment/
-// reconcileOrderPayment/getOrderPaymentStatus above — called instead of
+// reconcileOrderPayment/getOrderPaymentStatus above - called instead of
 // those three when the shopper picked a vendor-connected custom gateway
 // (e.g. SSLCommerz) rather than "Online Payment". Same
-// response shapes, same public/no-auth trust model — see
+// response shapes, same public/no-auth trust model - see
 // StorefrontGatewayPaymentsController on the backend.
 export async function initiateGatewayOrderPayment(orderId: string): Promise<InitiateOrderPaymentResponse> {
   const res = await fetch(`${apiOrigin()}/v1/store-gateway-payments/orders/${orderId}/initiate`, {
@@ -258,7 +258,7 @@ export interface CouponPreviewLine {
 }
 
 /**
- * Checkout's "Have Coupon?" preview (see reference screenshot) — see
+ * Checkout's "Have Coupon?" preview (see reference screenshot) - see
  * StorefrontService.validateCoupon on the backend for why this never
  * sends prices, only product/variant ids and quantities.
  */
@@ -283,7 +283,7 @@ export async function validateCoupon(
   return res.json();
 }
 
-/** Marketing > Gift Cards — a code the shopper can use, and what is left on it. */
+/** Marketing > Gift Cards - a code the shopper can use, and what is left on it. */
 export interface ValidatedGiftCard {
   code: string;
   balance: number;
@@ -304,7 +304,7 @@ export async function validateGiftCard(subdomain: string, code: string): Promise
   return res.json();
 }
 
-/** Marketing > Discounts — what an automatic-discount preview returns. */
+/** Marketing > Discounts - what an automatic-discount preview returns. */
 export interface AutomaticDiscounts {
   discount: { id: string; name: string; discountType: 'FIXED' | 'PERCENT'; discountAmount: number } | null;
   freeShipping: { id: string; name: string } | null;
@@ -384,10 +384,10 @@ export async function fetchDiscountOffers(subdomain: string): Promise<DiscountOf
 }
 
 /**
- * "Create custom link for this coupon" — resolves the `?coupon=` link a
+ * "Create custom link for this coupon" - resolves the `?coupon=` link a
  * shopper landed on back to the coupon's real code (see
  * StorefrontService.resolveCouponLink on the backend). Returns `null`
- * on no match/network error rather than throwing — a stale or bad
+ * on no match/network error rather than throwing - a stale or bad
  * shared link should never block the page it's attached to, it should
  * just fail to pre-fill a coupon.
  */
@@ -403,12 +403,12 @@ export async function resolveCouponLink(subdomain: string, link: string): Promis
 }
 
 // Debounced sync of an in-progress checkout to the vendor's "Incomplete
-// Orders" list (see server/src/incomplete-orders/) — called from
+// Orders" list (see server/src/incomplete-orders/) - called from
 // checkout/page.tsx a couple of seconds after the shopper stops typing,
 // not on every keystroke. Deliberately fire-and-forget: this is
 // background bookkeeping the shopper never sees, so a failure here
 // (network hiccup, store momentarily unreachable) must never interrupt
-// or show an error on the checkout page they're actively filling in —
+// or show an error on the checkout page they're actively filling in -
 // unlike placeOrder above, which is a deliberate action and does surface
 // errors.
 export function syncIncompleteOrder(subdomain: string, payload: unknown): void {
@@ -417,12 +417,12 @@ export function syncIncompleteOrder(subdomain: string, payload: unknown): void {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   }).catch(() => {
-    // Silently ignored — see comment above.
+    // Silently ignored - see comment above.
   });
 }
 
 /**
- * Store > Integrations > Facebook Pixel — sends a pixel event's details
+ * Store > Integrations > Facebook Pixel - sends a pixel event's details
  * to the server for its Conversions API copy (same event id, so Meta
  * keeps one). Fire-and-forget like syncIncompleteOrder: tracking must
  * never surface an error to the shopper. keepalive lets it finish even
@@ -435,7 +435,7 @@ export function relayMetaEvent(subdomain: string, payload: unknown): void {
     body: JSON.stringify(payload),
     keepalive: true,
   }).catch(() => {
-    // Silently ignored — see comment above.
+    // Silently ignored - see comment above.
   });
 }
 
@@ -524,27 +524,27 @@ export interface TrackedOrder {
   shippingDistrict?: string | null;
   subtotal: string;
   deliveryCharge: string;
-  // Flat VAT fee — applied to every order regardless of paymentMethod.
+  // Flat VAT fee - applied to every order regardless of paymentMethod.
   // Shown by StorePal's ThankYouView/orderMemoPdf as "VAT". See
   // Vendor.vatChargeBdt/Order.vatAmount in schema.prisma.
   vatAmount: string;
-  // Store > Payment Gateway's per-gateway Platform Charge — the gateway
+  // Store > Payment Gateway's per-gateway Platform Charge - the gateway
   // actually used for this order's own configured surcharge, independent
   // of vatAmount above. Shown as "Platform Charge". Always the REAL
   // amount the shopper was charged, regardless of platformChargeHidden.
   platformChargeAmount: string;
   // Snapshotted at order time from Plan.codFeeHidden/onlinePaymentFeeHidden
-  // — only suppresses the line item on checkout's own pre-payment cart
+  // - only suppresses the line item on checkout's own pre-payment cart
   // summary (CheckoutView.tsx/useCheckout). StorePal's ThankYouView and
   // order memo PDF deliberately IGNORE this flag and always show Platform
-  // Charge once the order exists — the shopper already paid it as part
+  // Charge once the order exists - the shopper already paid it as part
   // of `total`, so hiding it post-payment would just make their own
   // receipt look unexplained, not save the vendor anything.
   platformChargeHidden: boolean;
   discountAmount: string;
   total: string;
   paymentMethod: string;
-  // Store > COD Guard — PENDING while an after-checkout order waits On
+  // Store > COD Guard - PENDING while an after-checkout order waits On
   // Hold for the shopper's SMS code (see StorePal's ThankYouView).
   codVerificationStatus?: 'PENDING' | 'VERIFIED' | 'EXPIRED' | null;
   items: TrackedOrderItem[];
@@ -777,7 +777,7 @@ export async function trackOrder(subdomain: string, reference: number | string, 
 // -- Landing Page sections (landing-plan.md §6, §8, §9) -------------------
 // Both of these are called from Client Components inside the landing/
 // render tree (storefront/src/landing/sections/CheckoutForm.tsx,
-// LeadForm.tsx) — same reasoning as placeOrder/trackOrder above: a
+// LeadForm.tsx) - same reasoning as placeOrder/trackOrder above: a
 // landing page's Checkout Form / Lead Form are filled in the browser, so
 // they need this file's client-side apiOrigin(), not storefrontApi.ts's
 // server-only API_URL.
@@ -791,7 +791,7 @@ export interface SubmitLeadPayload {
 /**
  * Lead/Contact Form section, `destination: "vendor-dashboard"`
  * (landing-page-sections.md §6.2). See StorefrontService.submitLandingPageLead
- * on the backend — this is intentionally NOT placeOrder/CreateOrderDto,
+ * on the backend - this is intentionally NOT placeOrder/CreateOrderDto,
  * since a lead never has a cart or a price.
  */
 export async function submitLandingPageLead(
@@ -823,7 +823,7 @@ export interface RecordLandingPageVisitPayload {
 }
 
 /**
- * Landing page visit beacon (landing-plan.md §6, §8) — fire-and-forget,
+ * Landing page visit beacon (landing-plan.md §6, §8) - fire-and-forget,
  * same contract as VisitBeacon.tsx's store-wide beacon (never throws,
  * never blocks/delays the page). See
  * StorefrontService.recordLandingPageVisit on the backend.
@@ -835,12 +835,12 @@ export function recordLandingPageVisit(subdomain: string, slug: string, payload:
     body: JSON.stringify(payload),
     keepalive: true,
   }).catch(() => {
-    // Silently ignored — see VisitBeacon.tsx's own comment on why a
+    // Silently ignored - see VisitBeacon.tsx's own comment on why a
     // dropped beacon must never surface to the shopper.
   });
 }
 
-// Store > COD Guard — StorePal checkout's SMS verification (see
+// Store > COD Guard - StorePal checkout's SMS verification (see
 // CodVerificationService on the backend). The "before checkout" send is
 // safe to call for every COD order: it returns required: false, and texts
 // nothing, when this phone doesn't need a code.
@@ -857,7 +857,7 @@ export async function sendCodVerificationOtp(
   return res.json();
 }
 
-// "After checkout" — the thank-you page's code for an order placed On Hold.
+// "After checkout" - the thank-you page's code for an order placed On Hold.
 export async function verifyCodOrder(
   subdomain: string,
   orderId: string,

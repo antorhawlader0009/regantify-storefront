@@ -13,7 +13,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   const { subdomain } = await storeParams(params);
   try {
     const { store } = await getStoreProducts(subdomain);
-    return { title: { absolute: `Wishlist — ${store.storeName}` }, robots: { index: false } };
+    return { title: { absolute: `Wishlist - ${store.storeName}` }, robots: { index: false } };
   } catch {
     return { title: 'Wishlist' };
   }

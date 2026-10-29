@@ -1,6 +1,6 @@
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
-// Theme-agnostic (see ProductView.tsx's own comment on why) — reused
+// Theme-agnostic (see ProductView.tsx's own comment on why) - reused
 // as-is from Medium rather than a near-duplicate rebuild.
 import { StorePalCartList } from '../components/StorePalCartList';
 import { CartViewTracker } from '../components/CartViewTracker';

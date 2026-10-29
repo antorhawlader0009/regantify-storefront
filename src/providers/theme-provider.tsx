@@ -7,7 +7,7 @@ const ThemeContext = createContext<StoreTheme>('MEDIUM');
 
 /**
  * Carries the theme resolved server-side (see store/[subdomain]/layout.tsx)
- * down into client-component routes — checkout, order tracking, and every
+ * down into client-component routes - checkout, order tracking, and every
  * account/* page are all 'use client' (they need cart/customer-auth state
  * from localStorage), so they can't call the server-only storefrontApi.ts
  * functions themselves (see checkoutApi.ts's own comment on why

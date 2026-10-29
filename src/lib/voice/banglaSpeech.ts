@@ -176,7 +176,7 @@ export function speakableBangla(input: string): string {
 
   // Symbols that mean words.
   t = t.replace(/\s*&\s*/g, ' এবং ').replace(/\s*\+\s*/g, ' প্লাস ').replace(/\s*\/\s*/g, ', ').replace(/\s*[:;]\s*/g, ', ');
-  t = t.replace(/(?<=[A-Za-z])[-'](?=[A-Za-z])/g, ' ').replace(/\s[-–—]\s/g, ', ');
+  t = t.replace(/(?<=[A-Za-z])[-'](?=[A-Za-z])/g, ' ').replace(/\s[-–\u2014]\s/g, ', ');
 
   // English words.
   t = t.replace(/[A-Za-z]+/g, (w) => ` ${englishWord(w)} `);

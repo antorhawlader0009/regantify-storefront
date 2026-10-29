@@ -28,7 +28,7 @@ async function withAccountToken<T>(
     try {
       return await call(token);
     } catch {
-      // Probably an expired token — refresh below.
+      // Probably an expired token - refresh below.
     }
   }
   const session = await refreshCustomerSession();
@@ -54,14 +54,14 @@ function mergeLines(base: CartLine[], extra: CartLine[], addQuantities: boolean)
 }
 
 const CartStoreContext = createContext<CartStoreApi | undefined>(undefined);
-// Separate from the cart data itself — lets a page tell "cart is
+// Separate from the cart data itself - lets a page tell "cart is
 // genuinely empty" apart from "hasn't finished reading localStorage yet"
 // and avoid flashing an empty-cart message on first paint.
 const CartHydratedContext = createContext(false);
 
 export function CartStoreProvider({ children }: { children: ReactNode }) {
   // Created once per component instance (per request on the server, once
-  // on the client) — never at module scope, so one shopper's cart can
+  // on the client) - never at module scope, so one shopper's cart can
   // never leak into another's SSR response. See src/stores/cart-store.ts.
   const storeRef = useRef<CartStoreApi | null>(null);
   if (storeRef.current === null) {
@@ -71,7 +71,7 @@ export function CartStoreProvider({ children }: { children: ReactNode }) {
   const [hydrated, setHydrated] = useState(false);
 
   // persist() is created with skipHydration so server and first client
-  // render both start from the same empty state (no mismatch) — this
+  // render both start from the same empty state (no mismatch) - this
   // rehydrates from localStorage right after mount, and onFinishHydration
   // flips `hydrated` once that's actually done.
   useEffect(() => {

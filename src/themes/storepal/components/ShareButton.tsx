@@ -39,7 +39,7 @@ export function ShareButton({ name, price }: { name: string; price: number }) {
     url.search = '?ref=share';
     return url.toString();
   };
-  const text = `${name} — ${formatPrice(price)}`;
+  const text = `${name} - ${formatPrice(price)}`;
 
   const onClick = async () => {
     trackFeature('SHARE_OPEN');

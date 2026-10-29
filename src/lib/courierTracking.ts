@@ -1,4 +1,4 @@
-// A parcel's courier tracking as the shopper sees it — mirrors
+// A parcel's courier tracking as the shopper sees it - mirrors
 // server/src/courier/customer-tracking.ts (pathao-plan.md Step 13). Only
 // the courier's name, the tracking ID and a coarse stage; never the
 // courier's raw status, fees or errors.

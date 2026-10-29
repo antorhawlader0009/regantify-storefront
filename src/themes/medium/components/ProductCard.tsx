@@ -2,7 +2,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { formatPrice, isOutOfStock } from '@/lib/productDisplay';
 
-// Minimal shape ProductCard actually reads — satisfied by both the full
+// Minimal shape ProductCard actually reads - satisfied by both the full
 // StorefrontProduct (product listing/search) and the leaner
 // StorefrontCardProduct (product detail page's related-products sidebar,
 // see getStoreSidebar) without needing two near-identical card
@@ -27,7 +27,7 @@ interface ProductCardProps {
 
 /**
  * Bordered white card matching established BD e-commerce convention
- * (startech.com.bd, daraz.com.bd) — a real percent-off badge and a
+ * (startech.com.bd, daraz.com.bd) - a real percent-off badge and a
  * "Save ৳X" line computed from the product's own price/discountPrice,
  * never decorative filler. This pass adds real elevation on hover
  * (shadow, not just a border-color swap) and tightens the type scale so

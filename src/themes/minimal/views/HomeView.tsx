@@ -24,7 +24,7 @@ interface HomeViewProps {
 
 /**
  * Minimal's homepage flattens Medium's per-category boxed sections into
- * a single continuous grid — an editorial catalog reads as one
+ * a single continuous grid - an editorial catalog reads as one
  * considered collection, not a stack of merchandising modules. Same
  * underlying data and filtering rules as Medium's HomeView, only the
  * layout differs.

@@ -1,4 +1,4 @@
-// Static trust badges + placeholder reviews — decorative only, matching
+// Static trust badges + placeholder reviews - decorative only, matching
 // the level of polish common BD storefronts show (see storepal.com.bd),
 // until real review/trust-content features exist. Kept identical to the
 // Vite client's MediumTheme/ProductPage copies of the same content.

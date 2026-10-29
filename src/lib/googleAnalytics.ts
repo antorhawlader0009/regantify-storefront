@@ -1,4 +1,4 @@
-// Store > Integrations > Google Analytics 4 — the browser side. Browser-
+// Store > Integrations > Google Analytics 4 - the browser side. Browser-
 // only module: everything here is called from client components
 // (components/GoogleAnalytics.tsx sets it up, theme views fire events
 // through lib/ecommerceEvents.ts).

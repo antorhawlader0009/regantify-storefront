@@ -14,7 +14,7 @@ function Stars({ rating }: { rating: number }) {
 
 /**
  * These are vendor-authored testimonial entries, NOT pulled from the real
- * Review model — see CustomerReviewsProps's own doc comment in
+ * Review model - see CustomerReviewsProps's own doc comment in
  * landing-page-sections.md §4.1. When AI-drafted, the builder is
  * responsible for flagging them before publish (landing-plan.md §5 step
  * 3); this public render has no "flag" to show a shopper (a published

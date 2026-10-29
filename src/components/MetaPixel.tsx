@@ -22,7 +22,7 @@ interface MetaPixelProps {
 }
 
 /**
- * Store > Integrations > Facebook Pixel — mounted once in
+ * Store > Integrations > Facebook Pixel - mounted once in
  * store/[subdomain]/layout.tsx, StorePal stores only (see lib/metaPixel.ts
  * for which pages get which pixel). Renders nothing; loads nothing until
  * a page actually has a pixel and the shopper has consented.

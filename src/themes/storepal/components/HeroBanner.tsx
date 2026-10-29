@@ -23,13 +23,13 @@ interface HeroSlide {
 }
 
 // How many banners the hero cycles through at most, and how long each
-// one stays up before auto-advancing — see the component doc comment
+// one stays up before auto-advancing - see the component doc comment
 // below for why this is randomized per page load rather than a fixed
 // server-picked order.
 const MAX_SLIDES = 5;
 const AUTO_SLIDE_MS = 5000;
 
-/** Fisher-Yates shuffle — used instead of `sort(() => Math.random() - 0.5)`,
+/** Fisher-Yates shuffle - used instead of `sort(() => Math.random() - 0.5)`,
  * which is a common but statistically biased shuffle. */
 function shuffle<T>(items: T[]): T[] {
   const arr = [...items];
@@ -42,19 +42,19 @@ function shuffle<T>(items: T[]): T[] {
 
 /**
  * Home page hero: cycles through this vendor's own Store > Categories
- * cover photos (PUBLIC categories only — see StorefrontService's
+ * cover photos (PUBLIC categories only - see StorefrontService's
  * getStoreProducts categoryDetails). Renders nothing when no category
- * has a cover photo set — an empty hero is preferable to a placeholder
+ * has a cover photo set - an empty hero is preferable to a placeholder
  * that doesn't belong to this store. With exactly one cover photo
  * available, that one is shown with no dots/auto-advance (nothing to
  * cycle between). With more than one, a random subset of up to
  * MAX_SLIDES is picked fresh on every page load (so a vendor with more
  * categories than fit in the hero gets even rotation across visits
  * instead of always leading with the same one) and auto-advances every
- * AUTO_SLIDE_MS — the dots below still let a visitor jump to any slide.
+ * AUTO_SLIDE_MS - the dots below still let a visitor jump to any slide.
  * The shuffle happens client-side after mount (not during server
  * render) so the server-rendered HTML and the first client render
- * match — picking randomly during SSR would cause a hydration mismatch
+ * match - picking randomly during SSR would cause a hydration mismatch
  * since the server and client would each roll their own order.
  */
 export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCoverOnly }: HeroBannerProps) {
@@ -129,7 +129,7 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
   return (
     <section data-rg="hero" className="max-w-6xl mx-auto px-3 sm:px-6 pt-6">
       {/* Fixed aspect ratio, the SAME ratio on every screen size (mobile,
-          tablet, desktop, ultra-wide) — matches the reference site's
+          tablet, desktop, ultra-wide) - matches the reference site's
           own slider, which never changes shape, only scales with the
           container. A vendor's cover photos of any source size/shape
           all render at this one ratio via object-cover (crops to fill

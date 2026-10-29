@@ -29,10 +29,10 @@ interface PageProps {
 
 // This is the fix for the gap the vendor-dashboard version had: Add
 // Product's "Page title" / "Meta description" (SEO) fields were captured
-// but never actually applied to the page — here they drive the real
+// but never actually applied to the page - here they drive the real
 // <title>/<meta description>, canonical URL, and Open Graph/Twitter tags
 // search engines and link previews read. All of it comes straight from
-// fields the vendor already fills in on Add Product — no extra SEO work
+// fields the vendor already fills in on Add Product - no extra SEO work
 // for them, it's automatic the moment they save a product.
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { subdomain, slug } = await storeParams(params);
@@ -71,10 +71,10 @@ export default async function ProductPage({ params }: PageProps) {
 
   const { store, product } = data;
 
-  // Lean sidebar fetch (category strip + up to 4 related products) —
+  // Lean sidebar fetch (category strip + up to 4 related products) -
   // see getStoreSidebar: this is intentionally NOT getStoreProducts, which
   // would pull the vendor's entire catalog (every product's full
-  // relations — variationOptions, variationPhotos, description, etc) just
+  // relations - variationOptions, variationPhotos, description, etc) just
   // to compute a handful of cards. Non-fatal on failure: the product page
   // itself still renders fine without its sidebar.
   const sidebar = await getStoreSidebar(subdomain, slug, product.category).catch(() => ({
@@ -84,10 +84,10 @@ export default async function ProductPage({ params }: PageProps) {
   }));
   const { categories, categoryDetails, related } = sidebar;
 
-  // Structured data (schema.org Product) — this is what lets Google show
+  // Structured data (schema.org Product) - this is what lets Google show
   // price and stock directly in search results ("rich snippets").
   // Entirely generated from fields the vendor already filled in on Add
-  // Product (name, description, price, stock, brand) — nothing extra for
+  // Product (name, description, price, stock, brand) - nothing extra for
   // them to configure. aggregateRating comes only from the server's `rating`:
   // real shopper reviews the store approved, from 3 of them, while the store
   // shows ratings (server storefront/product-rating.ts). Google's rules forbid
@@ -182,7 +182,7 @@ export default async function ProductPage({ params }: PageProps) {
 
   return (
     <>
-      {/* Structured data for search engines — invisible to visitors,
+      {/* Structured data for search engines - invisible to visitors,
           read by crawlers to power rich results (price/stock/rating
           shown directly in Google search listings). */}
       <script

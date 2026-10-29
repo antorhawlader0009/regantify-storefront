@@ -20,7 +20,7 @@ function discountLabel(coupon: CustomerCoupon, t: (s: string) => string): string
   return `৳${coupon.amount}`;
 }
 
-/** Account > Coupons — matches the reference "Your Coupons" (Code/Discount) screenshot. */
+/** Account > Coupons - matches the reference "Your Coupons" (Code/Discount) screenshot. */
 export function CouponsView({ subdomain }: { subdomain: string }) {
   const t = useStoreText();
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
@@ -31,7 +31,7 @@ export function CouponsView({ subdomain }: { subdomain: string }) {
   const hasCartItems = useCartStore((s) => s.lines.some((l) => l.subdomain === subdomain));
 
   // Same hand-off CheckoutView reads for a shared custom link (see
-  // lib/pendingCoupon.ts) — lets a shopper go straight from "Your
+  // lib/pendingCoupon.ts) - lets a shopper go straight from "Your
   // Coupons" to a checkout that already has the code queued up, instead
   // of having to re-type it there.
   const useThisCoupon = (code: string) => {

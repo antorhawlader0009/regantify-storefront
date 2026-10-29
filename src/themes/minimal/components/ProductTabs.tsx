@@ -5,7 +5,7 @@ import { Stars } from './Stars';
 import { getProductReviews, submitProductReview, type ProductReview } from '@/lib/reviewsApi';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 
-/** Rendered inside the parent page's own section — no outer border here,
+/** Rendered inside the parent page's own section - no outer border here,
  * this is just the tab content, matching Medium's ProductTabs contract. */
 export function ProductTabs({ subdomain, slug, description }: { subdomain: string; slug: string; description?: string | null }) {
   const [activeTab, setActiveTab] = useState<'description' | 'reviews'>('description');
@@ -49,7 +49,7 @@ export function ProductTabs({ subdomain, slug, description }: { subdomain: strin
           {!reviewsError && reviews === null && <p className="text-[13px] text-muted mb-4">Loading reviews…</p>}
 
           {reviews && reviews.length === 0 && (
-            <p className="text-[13px] text-muted mb-4">No reviews yet — be the first to write one.</p>
+            <p className="text-[13px] text-muted mb-4">No reviews yet - be the first to write one.</p>
           )}
 
           {reviews && reviews.length > 0 && (
@@ -131,7 +131,7 @@ function WriteReviewForm({ subdomain, slug }: { subdomain: string; slug: string 
   if (submitted) {
     return (
       <div className="border-t border-line pt-5 text-[13px] text-ink">
-        Thanks for your review — it&apos;ll show up here once the store approves it.
+        Thanks for your review - it&apos;ll show up here once the store approves it.
       </div>
     );
   }

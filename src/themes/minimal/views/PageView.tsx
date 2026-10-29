@@ -9,7 +9,7 @@ interface PageViewProps {
   content: string | null;
 }
 
-/** Store > Pages' public rendering under the Minimal theme — spacious, editorial layout matching this theme's own restraint. */
+/** Store > Pages' public rendering under the Minimal theme - spacious, editorial layout matching this theme's own restraint. */
 export function PageView({ subdomain, storeName, categories, title, content }: PageViewProps) {
   return (
     <div className="min-h-screen bg-canvas text-ink">

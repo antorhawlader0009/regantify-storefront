@@ -15,7 +15,7 @@ interface GoogleTagManagerProps {
 }
 
 /**
- * Store > Integrations > Google Tag Manager — mounted once in
+ * Store > Integrations > Google Tag Manager - mounted once in
  * store/[subdomain]/layout.tsx, StorePal stores only (see
  * lib/googleTagManager.ts for page views and consent). Renders nothing.
  */

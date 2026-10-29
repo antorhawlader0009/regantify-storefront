@@ -1,4 +1,4 @@
-// Client-side (browser) fetch helper for the Store AI Chat Bot widget —
+// Client-side (browser) fetch helper for the Store AI Chat Bot widget -
 // same host-detection pattern as checkoutApi.ts (see its own header
 // comment for why this can't use the server-only API_URL).
 function apiOrigin(): string {
@@ -28,7 +28,7 @@ export interface ChatProductRef {
   slug: string;
   name: string;
   photoUrl: string | null;
-  /** Discounted price when set, otherwise regular price — same "what a shopper actually pays" priority as everywhere else. */
+  /** Discounted price when set, otherwise regular price - same "what a shopper actually pays" priority as everywhere else. */
   price: string;
 }
 
@@ -36,7 +36,7 @@ export interface ChatReply {
   reply: string;
   /** The order being taken in the chat (lib/chatOrder.ts), or null when the shopper is only asking. */
   order?: ChatOrder | null;
-  /** Products the assistant actually mentioned/recommended, in relevance order — see StorefrontController.chat. */
+  /** Products the assistant actually mentioned/recommended, in relevance order - see StorefrontController.chat. */
   products: ChatProductRef[];
   /** Voice call only: what to do on the shopper's screen (server chat-order.ts cleanActions). */
   actions?: ChatAction[];

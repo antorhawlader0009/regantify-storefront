@@ -72,8 +72,8 @@ async function loadDemoPage(subdomain: string, slug: string) {
 }
 
 // Store > Pages' public rendering (About Us, Contact Us, Privacy
-// Policy, etc — see the reference StorePal screenshots). Unlike
-// Campaigns (Medium-only), this works under every theme — a vendor's
+// Policy, etc - see the reference StorePal screenshots). Unlike
+// Campaigns (Medium-only), this works under every theme - a vendor's
 // written page content should render regardless of which storefront
 // look they've picked, so this fetches the same category list every
 // other page uses purely to give each theme's own StoreHeader its

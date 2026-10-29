@@ -1,6 +1,6 @@
 import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
 
-// Same host-detection pattern as checkoutApi.ts/socialLinksApi.ts — see
+// Same host-detection pattern as checkoutApi.ts/socialLinksApi.ts - see
 // either file's header comment for why this can't use the server-only
 // API_URL from storefrontApi.ts. Checkout/thank-you are Client
 // Components (they read cart state from localStorage), so they can't
@@ -22,7 +22,7 @@ const EMPTY_NAV: StoreNavData = { categories: [], categoryDetails: [] };
 
 /**
  * Just enough of the full product-list response (see
- * StorefrontListData) for StoreHeader's category strip + dropdowns —
+ * StorefrontListData) for StoreHeader's category strip + dropdowns -
  * checkout/thank-you don't need the actual product list, only the
  * category names/children, so this skips returning `products` entirely
  * rather than have those pages fetch (and discard) the whole catalog.
@@ -148,11 +148,11 @@ const EMPTY_SEARCH_INDEX: StoreSearchProduct[] = [];
 
 /**
  * Lean product list (name/slug/photo/price only) for StoreHeader's live
- * search-suggestions dropdown — same `/products` endpoint as
+ * search-suggestions dropdown - same `/products` endpoint as
  * getStoreNavData above (and the same reasoning: header components
  * don't have a server-fetched product list in scope on every page), but
  * this one keeps the `products` array instead of discarding it. Falls
- * back to an empty list rather than throwing — no suggestions dropdown
+ * back to an empty list rather than throwing - no suggestions dropdown
  * is a fine degraded state, Enter-to-search still works either way.
  */
 export async function getStoreSearchIndex(subdomain: string): Promise<StoreSearchProduct[]> {
@@ -180,7 +180,7 @@ export interface StorefrontPageSummary {
 }
 
 /**
- * Store > Pages nav list (title+slug, PUBLISHED only) — powers
+ * Store > Pages nav list (title+slug, PUBLISHED only) - powers
  * StoreFooter's "INFORMATION" column with whatever pages the vendor has
  * actually published, instead of a fixed guess at well-known slugs.
  * Falls back to an empty list rather than throwing: a footer with no

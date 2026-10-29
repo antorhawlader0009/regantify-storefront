@@ -7,7 +7,7 @@ import { trackFeature } from '@/lib/featureUse';
 import { WISHLIST_MAX, useLimitNotice } from '@/lib/shopLimits';
 
 // Store > Design > Product Card's "Show Wishlist Button". The wishlist is
-// a list of product slugs kept in the shopper's own browser, per store —
+// a list of product slugs kept in the shopper's own browser, per store -
 // nothing is stored server-side, so it works without logging in.
 const KEY_PREFIX = 'storepal-wishlist:';
 const EMPTY: string[] = [];
@@ -29,7 +29,7 @@ function read(subdomain: string): string[] {
     const parsed = raw ? JSON.parse(raw) : [];
     if (Array.isArray(parsed)) slugs = parsed.filter((s): s is string => typeof s === 'string');
   } catch {
-    // Corrupt value — treat as empty; the next toggle overwrites it.
+    // Corrupt value - treat as empty; the next toggle overwrites it.
   }
   cache.set(subdomain, { raw, slugs });
   return slugs;
@@ -39,7 +39,7 @@ function write(subdomain: string, slugs: string[]) {
   try {
     localStorage.setItem(KEY_PREFIX + subdomain, JSON.stringify(slugs));
   } catch {
-    // Storage full or blocked (private mode) — the heart just won't stick.
+    // Storage full or blocked (private mode) - the heart just won't stick.
   }
   listeners.forEach((l) => l());
 }

@@ -9,11 +9,11 @@ import { StoreFooter as StorepalStoreFooter } from '@/themes/storepal/components
 /**
  * WITH_STORE_CHROME landing pages (landing-plan.md §6) render with the
  * vendor's normal storefront header/footer around the landing/ render
- * tree — "for a landing page meant to feel like part of the regular
+ * tree - "for a landing page meant to feel like part of the regular
  * store" (LandingPageDisplayMode's own schema comment). Picks the
  * matching header/footer pair for the vendor's resolved theme, same
  * per-theme dispatch page/[slug]/page.tsx already does for Store > Pages
- * — reused here rather than duplicated, since Store > Pages' PageView
+ * - reused here rather than duplicated, since Store > Pages' PageView
  * components only ever pass subdomain/storeName/categories to their own
  * header (no logo/social props), the same minimal set this wrapper needs.
  */

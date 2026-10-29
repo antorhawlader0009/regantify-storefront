@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const { store } = await getStoreBlog(subdomain, 1);
     const path = `/store/${subdomain}/blog`;
-    return { title: `Magazine — ${store.storeName}`, alternates: { canonical: await siteUrl(path) }, ...socialMeta({ store, title: `Magazine — ${store.storeName}`, url: await siteUrl(path), locale: store.designSettings?.storeLanguage }) };
+    return { title: `Magazine - ${store.storeName}`, alternates: { canonical: await siteUrl(path) }, ...socialMeta({ store, title: `Magazine - ${store.storeName}`, url: await siteUrl(path), locale: store.designSettings?.storeLanguage }) };
   } catch {
     return { title: 'Magazine' };
   }

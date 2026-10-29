@@ -1,6 +1,6 @@
 // Server-side data fetching for the public storefront. Every function here
 // runs on the server (called from Server Components / generateMetadata),
-// never in the browser — so there's no auth token, no axios interceptor,
+// never in the browser - so there's no auth token, no axios interceptor,
 // just plain fetch() against the NestJS API. Field shapes are kept in
 // lockstep with client/src/lib/storefrontApi.ts (the vendor-dashboard
 // app's copy of the same public endpoints) since both read the same
@@ -15,7 +15,7 @@ const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
 export type StoreTheme = 'MEDIUM' | 'MINIMAL' | 'STOREPAL';
 
-// Store > Footer — kept in lockstep by hand with
+// Store > Footer - kept in lockstep by hand with
 // server/src/vendor/footer-templates.ts (the canonical registry) and its
 // mirrored copy at storefront/src/lib/footerTemplates.ts. See
 // FooterConfig in the server's schema.prisma for the field-by-field
@@ -56,7 +56,7 @@ export interface StorefrontLmsForms {
   callMeBack: boolean;
 }
 
-/** Store > SEO — mirrors the `seo` object StorefrontService.findVendorBySubdomainOrThrow adds to the public store answer. */
+/** Store > SEO - mirrors the `seo` object StorefrontService.findVendorBySubdomainOrThrow adds to the public store answer. */
 export interface StorefrontSeo {
   allowIndexing: boolean;
   appendStoreName: boolean;
@@ -65,7 +65,7 @@ export interface StorefrontSeo {
   bingVerification: string | null;
 }
 
-/** What a search engine may index on a store — mirrors StorefrontService.getSitemapData. Empty lists when `indexable` is false. */
+/** What a search engine may index on a store - mirrors StorefrontService.getSitemapData. Empty lists when `indexable` is false. */
 export interface StorefrontSitemapData {
   subdomain: string;
   customDomain: string | null;
@@ -90,11 +90,11 @@ export interface StorefrontInfo {
   verifiedSeller?: { since: string; dbid: string | null } | null;
   /** Gift option (StorePal): the wrap charge and the store's own taka-per-dollar rate for gift senders abroad (null = no dollar prices). */
   giftOption?: { charge: number; usdRate?: number | null } | null;
-  // Store > Logo — replaces the plain-text storeName wordmark wherever
+  // Store > Logo - replaces the plain-text storeName wordmark wherever
   // a theme's header/footer shows it, when set. Nullable: a vendor who
   // hasn't uploaded one yet keeps the existing text-wordmark fallback.
   logoUrl?: string | null;
-  // Store > Social — see StorefrontController's socialLinks selection
+  // Store > Social - see StorefrontController's socialLinks selection
   // on the backend. Every field is independently nullable; a vendor who
   // hasn't set a given platform simply omits that icon in the footer.
   facebookUrl?: string | null;
@@ -104,10 +104,10 @@ export interface StorefrontInfo {
   tiktokUrl?: string | null;
   linkedinUrl?: string | null;
   whatsappUrl?: string | null;
-  // Store > Branding — surfaced on every storefront response, same
+  // Store > Branding - surfaced on every storefront response, same
   // reasoning as the social fields above. Applied at the store/[subdomain]
   // layout (colors/favicon/fonts) and as the homepage's default meta
-  // fallback (see page.tsx's generateMetadata) — every field
+  // fallback (see page.tsx's generateMetadata) - every field
   // independently nullable, falling back to each theme's own built-in
   // default when unset.
   faviconUrl?: string | null;
@@ -127,45 +127,45 @@ export interface StorefrontInfo {
   customDomain?: string | null;
   /** Store > SEO: how search engines may see the store. Always present on the store answer (defaults when the vendor saved nothing). */
   seo?: StorefrontSeo;
-  // Store > Footer — null when the vendor has never saved one (see
+  // Store > Footer - null when the vendor has never saved one (see
   // FooterConfig's own "singleton, optional" schema comment); each
   // theme's StoreFooter falls back to its own current hardcoded content
   // in that case, so an unconfigured store looks exactly as it did
   // before this feature shipped.
   footerConfig?: StorefrontFooterConfig | null;
-  // Settings > Courier Integration > Delivery Charge — see
+  // Settings > Courier Integration > Delivery Charge - see
   // StorefrontController's select on the backend. Read by useCheckout
   // (shared by every theme) instead of a hardcoded constant.
   insideDhakaCharge: string;
   outsideDhakaCharge: string;
   codVatCharge: string;
-  // Store > Stock Settings / GDPR Prompt / COD Guard — the shopper-safe
+  // Store > Stock Settings / GDPR Prompt / COD Guard - the shopper-safe
   // slice from StoreSettingsService.toPublicStoreSettings on the backend.
   // Only the StorePal theme reads these. Optional so an older cached
   // response without them behaves like the defaults.
   stockSettings?: StorefrontStockSettings;
   gdprPrompt?: StorefrontGdprPrompt | null;
   codSmsVerification?: 'BEFORE_CHECKOUT' | 'AFTER_CHECKOUT' | null;
-  // Store > Design > Custom CSS / Head Scripts / JavaScript Code — only on
+  // Store > Design > Custom CSS / Head Scripts / JavaScript Code - only on
   // the store-info response, and null unless the theme is StorePal and the
   // vendor has set something (see StorefrontController.getStore).
   customCode?: StorefrontCustomCode | null;
   // Store > Design > Product Display / Product Card / Site Banner / Header
-  // Editor / Layout Settings — same "store-info only, StorePal only" rule
+  // Editor / Layout Settings - same "store-info only, StorePal only" rule
   // as customCode. Read through themes/storepal/lib/designSettings.tsx.
   designSettings?: StorefrontDesignSettings | null;
-  // Store > Integrations > Facebook Pixel — same "store-info only, StorePal
+  // Store > Integrations > Facebook Pixel - same "store-info only, StorePal
   // only" rule as customCode. Null when the vendor has no pixel and no
   // domain verification code. Never includes the CAPI token.
   metaPixel?: StorefrontMetaPixel | null;
-  // Store > Integrations > Google Analytics 4 — same "store-info only,
+  // Store > Integrations > Google Analytics 4 - same "store-info only,
   // StorePal only" rule. Null when the vendor has no Measurement ID.
   // Never includes the Measurement Protocol API secret.
   googleAnalytics?: StorefrontGoogleAnalytics | null;
-  // Store > Integrations > Google Tag Manager — same "store-info only,
+  // Store > Integrations > Google Tag Manager - same "store-info only,
   // StorePal only" rule. Null when the vendor has no container ID.
   googleTagManager?: StorefrontGoogleTagManager | null;
-  // Store > Integrations > TikTok Pixel — same "store-info only, StorePal
+  // Store > Integrations > TikTok Pixel - same "store-info only, StorePal
   // only" rule. Null when the vendor has no pixel. Never includes the
   // Events API token.
   tiktokPixel?: StorefrontTiktokPixel | null;
@@ -301,7 +301,7 @@ export interface StorefrontDesignSettings {
   storeLanguage?: 'en' | 'bn';
   /** Prices in Bangla digits while storeLanguage is "bn" (IDEA-7); missing = Latin digits. */
   storeBanglaDigits?: boolean;
-  /** Store > Design > Chat Button — the floating bubble (see themes/storepal/components/ChatBubble.tsx). Missing = the bubble as it always was. */
+  /** Store > Design > Chat Button - the floating bubble (see themes/storepal/components/ChatBubble.tsx). Missing = the bubble as it always was. */
   /** Share button on the product page (TellMe idea 61); missing = shown. */
   productShareEnabled?: boolean;
   /** Average star rating on the product page, cards and Google; missing = shown. */
@@ -426,7 +426,7 @@ export interface StorefrontVariant {
 }
 
 // Per-value photo set for ONE variation option (e.g. every "Color" value
-// gets its own photos) — set on Add/Edit Product's "Variation Photos"
+// gets its own photos) - set on Add/Edit Product's "Variation Photos"
 // section. Not necessarily present for every option; only the option the
 // vendor picked as "Photos by" has entries here.
 export interface StorefrontVariationValuePhoto {
@@ -543,7 +543,7 @@ export interface StorefrontProduct {
   variants: StorefrontVariant[];
   // Optional: only present once the backend has the VariationValuePhoto
   // migration deployed. Older cached responses (Next.js ISR) or an
-  // in-flight deploy can still omit this field — every consumer must
+  // in-flight deploy can still omit this field - every consumer must
   // treat it as possibly undefined, not assume it's always an array.
   variationPhotos?: StorefrontVariationValuePhoto[];
   createdAt: string;
@@ -553,7 +553,7 @@ export interface StorefrontCategoryDetail {
   name: string;
   coverPhotoUrl: string | null;
   squarePhotoUrl: string | null;
-  /** Real subcategories (Category.parentId) — powers StorePal's header dropdown (see StoreHeader.tsx). Optional: older cached responses may omit it. */
+  /** Real subcategories (Category.parentId) - powers StorePal's header dropdown (see StoreHeader.tsx). Optional: older cached responses may omit it. */
   children?: { name: string }[];
 }
 
@@ -561,7 +561,7 @@ export interface StorefrontListData {
   store: StorefrontInfo;
   products: StorefrontProduct[];
   categories: string[];
-  /** Store > Categories' own photos for the names in `categories`, when set — see StorePal's HomeView shortcut cards. */
+  /** Store > Categories' own photos for the names in `categories`, when set - see StorePal's HomeView shortcut cards. */
   categoryDetails?: StorefrontCategoryDetail[];
   /** Only while the store has no public product: which setup cards are already done and where the dashboard is. Null/absent once a product exists. */
   setup?: StorefrontSetupGuide | null;
@@ -578,10 +578,10 @@ export interface StorefrontDetailData {
   product: StorefrontProduct;
 }
 
-// Lean shape for the product detail page's sidebar — see
+// Lean shape for the product detail page's sidebar - see
 // getStoreSidebar/productCardSelect on the backend for why this is
 // deliberately NOT the same as StorefrontProduct (no description,
-// variationOptions, variationPhotos, etc — only what ProductCard reads).
+// variationOptions, variationPhotos, etc - only what ProductCard reads).
 export interface StorefrontCardProduct {
   id: string;
   /** The store's own badge ("New", "Hot"); StorePal shows it. */
@@ -609,7 +609,7 @@ export interface StorefrontCardProduct {
 
 export interface StorefrontSidebarData {
   categories: string[];
-  /** Real subcategories per category name — see StorefrontCategoryDetail; powers StorePal's header dropdown on the product page too. */
+  /** Real subcategories per category name - see StorefrontCategoryDetail; powers StorePal's header dropdown on the product page too. */
   categoryDetails?: StorefrontCategoryDetail[];
   related: StorefrontCardProduct[];
 }
@@ -617,7 +617,7 @@ export interface StorefrontSidebarData {
 // Store data changes whenever a vendor adds/edits a product, so a short
 // time-based revalidation window keeps pages fast (served from cache most
 // of the time) without going stale for long. Tune this per environment if
-// needed — it's not meant to be a hard architectural constant.
+// needed - it's not meant to be a hard architectural constant.
 const REVALIDATE_SECONDS = 60;
 
 class StoreNotFoundError extends Error {
@@ -671,10 +671,10 @@ export {
   LandingPageNotFoundError,
 };
 
-// Canonical absolute URL for a storefront path — used in generateMetadata
+// Canonical absolute URL for a storefront path - used in generateMetadata
 // (alternates.canonical, Open Graph og:url) and JSON-LD. A relative or
 // wrong-host og:url makes link-preview crawlers (Facebook Messenger,
-// WhatsApp, etc) silently drop the whole preview, including the image —
+// WhatsApp, etc) silently drop the whole preview, including the image -
 // so this must resolve to whatever host actually served the request:
 // the vendor's Store > Domain custom domain, a {subdomain}.ROOT_DOMAIN
 // host, or the bare IP path (/store/:subdomain) in local/LAN dev. Reads
@@ -777,7 +777,7 @@ export async function getStoreProducts(subdomain: string, options: { full?: bool
   return data;
 }
 
-// Lean vendor-only lookup (id/storeName/subdomain/theme) — no products,
+// Lean vendor-only lookup (id/storeName/subdomain/theme) - no products,
 // no categories. Used wherever a route only needs to know which theme
 // to render with (see the store/[subdomain] layout) rather than the
 // full catalog getStoreProducts fetches. Next.js's fetch cache
@@ -804,7 +804,7 @@ export interface StorefrontReview {
   verified?: boolean;
 }
 
-// Homepage "Customer Reviews" section — falls back to an empty array
+// Homepage "Customer Reviews" section - falls back to an empty array
 // rather than throwing, same reasoning as getStoreSidebar below: this
 // is decorative content, a hiccup here shouldn't ever break the whole
 // homepage from rendering.
@@ -833,7 +833,7 @@ export interface StorefrontCampaignData {
   categories: string[];
 }
 
-// Marketing > Campaigns' public landing page (Medium theme only — see
+// Marketing > Campaigns' public landing page (Medium theme only - see
 // themes/medium/views/CampaignView.tsx). Same tag shape as
 // getStoreProduct so a product/campaign change still revalidates
 // correctly (see StorefrontRevalidateService on the backend).
@@ -874,9 +874,9 @@ export interface StorefrontCampaignSummary {
   coverPhotoUrl: string | null;
 }
 
-// Campaign list with cover photos — powers the StorePal theme's
+// Campaign list with cover photos - powers the StorePal theme's
 // homepage hero banner (see themes/storepal/views/HomeView.tsx). Falls
-// back to an empty array rather than throwing — a store with no
+// back to an empty array rather than throwing - a store with no
 // campaigns yet (or a hiccup fetching them) just means no hero banner,
 // not a broken homepage.
 export async function getStoreCampaigns(subdomain: string): Promise<StorefrontCampaignSummary[]> {
@@ -892,7 +892,7 @@ export async function getStoreCampaigns(subdomain: string): Promise<StorefrontCa
 
 // -- Landing Pages (landing-plan.md §6, §8) ------------------------------
 // Kept in lockstep by hand with client/src/lib/landingPagesApi.ts's own
-// LandingPageSection shape and landing-page-sections.md's registry — same
+// LandingPageSection shape and landing-page-sections.md's registry - same
 // convention this file's own header comment already documents for every
 // other type here.
 
@@ -927,11 +927,11 @@ export interface StorefrontLandingPage {
 
 // Resolved product data for every productId/productIds referenced
 // anywhere in this page's sections (Select Products, Price Offer, Sticky
-// Order Bar) — see StorefrontService.getStoreLandingPage's own comment on
+// Order Bar) - see StorefrontService.getStoreLandingPage's own comment on
 // the backend for why this is batched server-side rather than the render
 // tree fetching product-by-product. A productId with no matching entry
 // here (deleted, or since made non-PUBLIC) should render as "not
-// selected", not an error — see landing-page-sections.md §3.1's render note.
+// selected", not an error - see landing-page-sections.md §3.1's render note.
 export interface StorefrontLandingPageProduct {
   id: string;
   name: string;
@@ -961,7 +961,7 @@ export interface StorefrontLandingPageData {
 
 /**
  * Store > Landing Pages' public rendering (landing-plan.md §6, §8). Only
- * ever returns a PUBLISHED page — see StorefrontService.getStoreLandingPage
+ * ever returns a PUBLISHED page - see StorefrontService.getStoreLandingPage
  * on the backend. Tagged separately from the product-list tag (`:landing:`
  * not `:product:`) so StorefrontRevalidateService's 'landing-page' kind
  * revalidates exactly this cache entry.
@@ -976,10 +976,10 @@ export async function getStoreLandingPage(subdomain: string, slug: string): Prom
 }
 
 // Category strip + related products for the product detail page's
-// sidebar — deliberately lean (see StorefrontSidebarData/
+// sidebar - deliberately lean (see StorefrontSidebarData/
 // productCardSelect on the backend) instead of reusing getStoreProducts,
 // which would fetch the vendor's ENTIRE catalog with every relation just
-// to show 4 cards. Falls back to an empty result rather than throwing —
+// to show 4 cards. Falls back to an empty result rather than throwing -
 // this is decorative sidebar content, so a hiccup here shouldn't ever
 // take down the whole product page (see the product page's .catch()).
 export async function getStoreSidebar(
@@ -1009,8 +1009,8 @@ export interface StorefrontPageData {
 }
 
 // Store > Pages' public rendering (About Us, Contact Us, Privacy
-// Policy, etc — see reference screenshot at
-// storepal.com.bd/page/about-us). Only ever a PUBLISHED page — see
+// Policy, etc - see reference screenshot at
+// storepal.com.bd/page/about-us). Only ever a PUBLISHED page - see
 // StorefrontService.getStorePage on the backend.
 /** The store's published pages (title + slug), cached with the store; an empty list if the call fails. Used for the demo pages. */
 export async function getStorePageList(subdomain: string): Promise<Array<{ slug: string; title: string }>> {

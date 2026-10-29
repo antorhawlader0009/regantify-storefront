@@ -22,6 +22,10 @@ import { CoverFloating } from '@/lib/floatingCover';
 
 const RESEND_SECONDS = 30;
 
+// The first box of Log in / Sign up / Forgot password gets the cursor on a computer only: on a phone that would pop the keyboard
+// up the moment the dialog opens (2026-10-29, the owner's request). The code boxes shown after "Send code" still take it.
+const focusOnOpen = typeof window !== 'undefined' && !!window.matchMedia?.('(pointer: fine)').matches;
+
 const INPUT_CLASS =
   'h-11 w-full rounded-lg border border-line-strong bg-surface px-3.5 text-[14px] text-ink outline-none transition-colors placeholder:text-muted/70 focus:border-ink focus-visible:ring-2 focus-visible:ring-accent/30';
 const PRIMARY_BUTTON_CLASS =
@@ -123,7 +127,7 @@ function LoginForm({ onDone }: { onDone: () => void }) {
           id={`${uid}-id`}
           value={identifier}
           onChange={(e) => setIdentifier(emailOrPhoneInput(e.target.value).slice(0, 150))}
-          autoFocus
+          autoFocus={focusOnOpen}
           maxLength={150}
           autoComplete="username"
           className={INPUT_CLASS}
@@ -280,7 +284,7 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
           id={`${uid}-name`}
           value={fullName}
           onChange={(e) => setFullName(e.target.value.slice(0, 100))}
-          autoFocus
+          autoFocus={focusOnOpen}
           maxLength={100}
           autoComplete="name"
           className={INPUT_CLASS}
@@ -486,7 +490,7 @@ function ForgotForm({ subdomain }: { subdomain: string }) {
           value={phone}
           onChange={(e) => setPhone(phoneInput(e.target.value).slice(0, 30))}
           placeholder="01XXXXXXXXX"
-          autoFocus
+          autoFocus={focusOnOpen}
           inputMode="tel"
           autoComplete="tel"
           maxLength={30}

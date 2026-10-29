@@ -13,12 +13,12 @@ interface FeaturedBannerProps {
 }
 
 /**
- * Minimal's hero is a quiet, large-format editorial split — full-bleed
+ * Minimal's hero is a quiet, large-format editorial split - full-bleed
  * product photo on one side, generous whitespace and a restrained price
  * treatment on the other. Same underlying data as Medium's
  * FeaturedBanner (the vendor's own best real discounts, largest
- * percent-off first — never fabricated), but no dark backdrop, no loud
- * "% OFF" badge, no auto-advancing carousel chrome — just a slow
+ * percent-off first - never fabricated), but no dark backdrop, no loud
+ * "% OFF" badge, no auto-advancing carousel chrome - just a slow
  * crossfade and a few small dots, so it reads as considered rather than
  * a "deal slider."
  */

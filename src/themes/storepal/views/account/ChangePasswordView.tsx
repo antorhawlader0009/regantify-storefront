@@ -13,7 +13,7 @@ const inputClass =
   'w-full px-3.5 py-2.5 rounded-md border border-line-strong bg-canvas text-[13.5px] outline-none focus:border-ink transition-colors';
 
 /**
- * Account > Change Password (already logged in) — matches the reference sidebar-layout screenshot. An account opened
+ * Account > Change Password (already logged in) - matches the reference sidebar-layout screenshot. An account opened
  * with Google has no password of its own yet (`hasPassword` false): it sets one with a code texted to its phone instead
  * of the current password, and needs a phone first (Edit Profile > Add phone number).
  */

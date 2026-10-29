@@ -5,15 +5,15 @@ import { encodeStoreSegment, storeSubdomain, type StoreAddress } from './lib/sto
 //             /store/:subdomain (same page, just a friendlier public URL).
 // Local dev / LAN testing: ROOT_DOMAIN is unset, so this middleware does
 //             nothing and everyone keeps using /store/:subdomain directly
-//             — exactly like today, and exactly what the tester team on
+//             - exactly like today, and exactly what the tester team on
 //             the LAN should keep doing (IP addresses have no subdomains).
 //
 // Set ROOT_DOMAIN once you have a real domain and this switches on with
-// no code changes — see .env.local.example.
+// no code changes - see .env.local.example.
 const ROOT_DOMAIN = process.env.ROOT_DOMAIN?.toLowerCase().trim();
 
 // Same API this app's server-side data layer talks to (see
-// src/lib/storefrontApi.ts) — used here to resolve a vendor's Store >
+// src/lib/storefrontApi.ts) - used here to resolve a vendor's Store >
 // Domain custom domain (e.g. gadgetdepobd.com, A-recorded at this
 // platform's IP) to their subdomain, so the request can be rewritten
 // to /store/:subdomain the same way a {subdomain}.ROOT_DOMAIN host is.
@@ -162,7 +162,7 @@ async function route(request: NextRequest): Promise<NextResponse> {
   }
 
   // Not a subdomain of our own root domain (or ROOT_DOMAIN isn't set at
-  // all yet) — could still be a vendor's own custom domain pointed at us
+  // all yet) - could still be a vendor's own custom domain pointed at us
   // via an A record. Skip the lookup for local/LAN hosts, where this is
   // never applicable and would just add a failed fetch to every request.
   const isLocalHost = /^(localhost|127\.0\.0\.1|\d+\.\d+\.\d+\.\d+)$/.test(host) || host.endsWith('.local');
@@ -172,7 +172,7 @@ async function route(request: NextRequest): Promise<NextResponse> {
     const subdomain = await resolveCustomDomain(host);
     if (subdomain) return rewriteToStore(request, subdomain);
   } catch {
-    // API unreachable — fall through to normal routing rather than
+    // API unreachable - fall through to normal routing rather than
     // failing the request over a lookup that's purely an enhancement.
   }
 
@@ -216,7 +216,7 @@ export async function middleware(request: NextRequest) {
 const SHOP_FROM_COOKIE = 'shop_from';
 
 export const config = {
-  // Skip Next.js internals and the favicon — only rewrite page requests. robots.txt and sitemap.xml go through too:
+  // Skip Next.js internals and the favicon - only rewrite page requests. robots.txt and sitemap.xml go through too:
   // on a store's own address they are that store's (app/store/[subdomain]/robots.txt and sitemap.xml), on any other
   // host they fall through to the platform's own (app/robots.ts).
   matcher: ['/((?!_next|favicon.ico).*)'],

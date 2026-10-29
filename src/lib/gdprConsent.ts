@@ -1,4 +1,4 @@
-// Store > GDPR Prompt's consent flag — the Accept click in StorePal's
+// Store > GDPR Prompt's consent flag - the Accept click in StorePal's
 // GdprPrompt writes it, and anything that tracks shoppers (lib/metaPixel.ts,
 // lib/googleAnalytics.ts, lib/googleTagManager.ts, lib/tiktokPixel.ts)
 // reads it. Per store, in localStorage only; never sent to the server.
@@ -20,7 +20,7 @@ export function grantGdprConsent(subdomain: string) {
   try {
     localStorage.setItem(storageKey(subdomain), 'accepted');
   } catch {
-    // Storage blocked (private mode etc.) — consent still counts for this page view.
+    // Storage blocked (private mode etc.) - consent still counts for this page view.
   }
   window.dispatchEvent(new CustomEvent(GDPR_CONSENT_EVENT, { detail: { subdomain } }));
 }

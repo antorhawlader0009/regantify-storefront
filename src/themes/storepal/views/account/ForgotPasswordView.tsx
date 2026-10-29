@@ -13,7 +13,7 @@ type Step = 'phone' | 'otp' | 'reset' | 'done';
 
 /**
  * Matches the reference "Change Password" screenshot (the logged-out,
- * forgot-password version) — 3 steps: text a code to the account's phone,
+ * forgot-password version) - 3 steps: text a code to the account's phone,
  * verify it, then set a new password. See
  * CustomerAuthService.forgotPasswordSendOtp/verifyOtp/resetPassword.
  */

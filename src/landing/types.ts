@@ -2,7 +2,7 @@
 // client's mirror of the shared contract at the workspace root,
 // `landing-page-sections.md`. All three are kept in sync by hand (same
 // convention CLAUDE.md already documents for storefrontApi.ts's types
-// across repos) — see that file for the authoritative prop shapes,
+// across repos) - see that file for the authoritative prop shapes,
 // defaults and render notes.
 //
 // This file only declares the per-type PROPS shapes the render tree

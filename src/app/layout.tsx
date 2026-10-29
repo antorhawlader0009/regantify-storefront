@@ -6,10 +6,10 @@ import { CustomerAuthProvider } from '@/providers/customer-auth-store-provider';
 import './globals.css';
 
 // metadataBase lets every page's relative OG/Twitter image URLs resolve to
-// full, absolute URLs automatically (required by most social platforms —
+// full, absolute URLs automatically (required by most social platforms -
 // a relative image URL is silently dropped by many link-preview crawlers).
 // Falls back to localhost in dev so nothing breaks before ROOT_DOMAIN is
-// set — see .env.local.example / middleware.ts.
+// set - see .env.local.example / middleware.ts.
 const rootDomain = process.env.ROOT_DOMAIN?.trim();
 
 export const metadata: Metadata = {

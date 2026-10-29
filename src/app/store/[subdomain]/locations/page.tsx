@@ -16,7 +16,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   try {
     const store = await getStoreInfo(subdomain);
     const path = `/store/${subdomain}/locations`;
-    const title = `Our shops — ${store.storeName}`;
+    const title = `Our shops - ${store.storeName}`;
     return { title, alternates: { canonical: await siteUrl(path) }, ...socialMeta({ store, title, url: await siteUrl(path), locale: store.designSettings?.storeLanguage }) };
   } catch {
     return { title: 'Our shops' };
@@ -44,7 +44,7 @@ export default async function LocationsPage({ params }: PageProps) {
   const jsonLd = items.map((l) => ({
     '@context': 'https://schema.org',
     '@type': 'Store',
-    name: `${store.storeName} — ${l.name}`,
+    name: `${store.storeName} - ${l.name}`,
     address: { '@type': 'PostalAddress', streetAddress: l.address, addressCountry: 'BD' },
     hasMap: l.openUrl,
     ...(l.phone ? { telephone: l.phone } : {}),

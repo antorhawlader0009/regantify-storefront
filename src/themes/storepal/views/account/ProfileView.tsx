@@ -13,14 +13,14 @@ import { useStoreText } from '../../lib/storeText';
 import { useStorePalDesign } from '../../lib/designSettings';
 
 // Frozen fallback until the vendor's real Settings > Courier
-// Integration > Delivery Charge values load — same reasoning/values as
+// Integration > Delivery Charge values load - same reasoning/values as
 // lib/useCheckout.ts's own DELIVERY_CHARGE fallback.
 const FALLBACK_DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
   DHAKA: 60,
   OUTSIDE_DHAKA: 120,
 };
 
-/** Account > Edit Profile — same sidebar layout as the other account pages. */
+/** Account > Edit Profile - same sidebar layout as the other account pages. */
 export function ProfileView({ subdomain }: { subdomain: string }) {
   const t = useStoreText();
   const storeName = useStoreDisplayName(subdomain);

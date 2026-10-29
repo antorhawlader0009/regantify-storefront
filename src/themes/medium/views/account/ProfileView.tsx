@@ -190,7 +190,7 @@ export function ProfileView({ subdomain }: { subdomain: string }) {
                         zone === z ? 'border-accent bg-accent text-white' : 'border-line bg-canvas text-ink'
                       }`}
                     >
-                      {z === 'DHAKA' ? `Inside Dhaka — ৳${DELIVERY_CHARGE.DHAKA}` : `Outside Dhaka — ৳${DELIVERY_CHARGE.OUTSIDE_DHAKA}`}
+                      {z === 'DHAKA' ? `Inside Dhaka - ৳${DELIVERY_CHARGE.DHAKA}` : `Outside Dhaka - ৳${DELIVERY_CHARGE.OUTSIDE_DHAKA}`}
                     </button>
                   ))}
                 </div>

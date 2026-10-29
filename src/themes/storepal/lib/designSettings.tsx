@@ -7,7 +7,7 @@ import { useShopperLanguage, type ShopperLanguage } from '@/lib/shopperLanguage'
 import type { StorefrontDesignSettings, StorefrontLmsForms, StorefrontMenuItem } from '@/lib/storefrontApi';
 
 // Store > Design settings the vendor never saved. Must render StorePal
-// exactly as it looked before those pages existed — keep in sync with the
+// exactly as it looked before those pages existed - keep in sync with the
 // server's DesignSettingsService.DEFAULTS.
 export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   productImageShape: 'SQUARE',

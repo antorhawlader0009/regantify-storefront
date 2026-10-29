@@ -45,17 +45,17 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [socialLinks, setSocialLinks] = useState<Awaited<ReturnType<typeof getStoreSocialLinks>>>({});
   const [downloadingMemo, setDownloadingMemo] = useState(false);
-  // Store > COD Guard "After Checkout" — flipped once the shopper enters
+  // Store > COD Guard "After Checkout" - flipped once the shopper enters
   // the SMS code, so the card goes away without re-fetching the order.
   const [codVerified, setCodVerified] = useState(false);
   // Same reasoning as CheckoutView: this is a Client Component with no
   // server-fetched StorefrontListData, so the full category nav for
-  // StoreHeader is fetched here — keeps the same complete header (with
+  // StoreHeader is fetched here - keeps the same complete header (with
   // its own logo at the left) on the confirmation page as everywhere
   // else, rather than a bare logo-only bar.
   const [nav, setNav] = useState<StoreNavData>({ categories: [], categoryDetails: [] });
   // Whether a handoff key is still sitting in sessionStorage right as
-  // this component first mounts — read synchronously (not in an
+  // this component first mounts - read synchronously (not in an
   // effect) so the loading state below covers the one-frame gap
   // before useTrackOrder's own effect has run and set loading=true.
   // Without this, that gap would briefly show the "order not found"
@@ -83,7 +83,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
   }
 
   // No handoff / order not found (e.g. a direct visit or page refresh
-  // after the handoff key was already consumed elsewhere) — send the
+  // after the handoff key was already consumed elsewhere) - send the
   // shopper to Track Order instead of showing a broken confirmation.
   if (!order) {
     return (
@@ -283,10 +283,10 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
                 <span>{formatPrice(order.vatAmount)}</span>
               </div>
             )}
-            {/* Platform Charge — deliberately ALWAYS shown here once the
+            {/* Platform Charge - deliberately ALWAYS shown here once the
                 order exists, ignoring order.platformChargeHidden (which
                 only hides it pre-payment, on checkout's own cart summary
-                — see useCheckout/CheckoutView.tsx). After payment, the
+                - see useCheckout/CheckoutView.tsx). After payment, the
                 shopper already paid this as part of order.total; hiding
                 it from their own receipt would just make the total look
                 unexplained/confusing, not save the vendor anything.

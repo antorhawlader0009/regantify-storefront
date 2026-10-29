@@ -6,7 +6,7 @@ import { apiOrigin, getOrCreateSessionKey } from '@/lib/visitSession';
 import { listenForStoreCartAdds } from '@/lib/storeEvents';
 
 /**
- * Monthly Visit tracking (PLAN.md Step 5) — fires one fire-and-forget
+ * Monthly Visit tracking (PLAN.md Step 5) - fires one fire-and-forget
  * beacon per browser session per store per day. Mounted once in
  * store/[subdomain]/layout.tsx, OUTSIDE any theme's own components tree
  * (see StoreLayout's doc comment) so it counts a real visit regardless
@@ -20,10 +20,10 @@ import { listenForStoreCartAdds } from '@/lib/storeEvents';
  * traffic within the cache window. This component only ever runs once
  * per real browser page load, cache or no cache.
  *
- * Renders nothing, never blocks/delays the page, and never throws —
+ * Renders nothing, never blocks/delays the page, and never throws -
  * silently gives up on failure (a dropped beacon just means one fewer
  * count towards a usage NOTICE, never something that can break the
- * storefront — see the server's own comment on why the visit cap is
+ * storefront - see the server's own comment on why the visit cap is
  * read-only, not an enforcement point).
  */
 export function VisitBeacon({ subdomain }: { subdomain: string }) {
@@ -32,7 +32,7 @@ export function VisitBeacon({ subdomain }: { subdomain: string }) {
     listenForStoreCartAdds(subdomain);
     try {
       const sessionKey = getOrCreateSessionKey(subdomain);
-      // Fire-and-forget — no loading state, no retry, nothing in this
+      // Fire-and-forget - no loading state, no retry, nothing in this
       // component ever needs to know whether it succeeded.
       void fetch(`${apiOrigin()}/v1/store/${subdomain}/visit`, {
         method: 'POST',
@@ -42,10 +42,10 @@ export function VisitBeacon({ subdomain }: { subdomain: string }) {
         keepalive: true,
       }).catch(() => {});
     } catch {
-      // sessionStorage can throw in some private-browsing modes — a
+      // sessionStorage can throw in some private-browsing modes - a
       // visit beacon is never worth breaking the page over.
     }
-    // subdomain is the only real dependency — a shopper navigating
+    // subdomain is the only real dependency - a shopper navigating
     // between pages within the same store must NOT refire this (that
     // would defeat the whole "one per session per day" dedup on the
     // client side, relying entirely on the server's upsert to save it,

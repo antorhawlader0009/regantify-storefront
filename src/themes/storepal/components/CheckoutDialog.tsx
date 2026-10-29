@@ -30,10 +30,10 @@ import { trackFeature } from '@/lib/featureUse';
 import { useUsdPrice } from '@/lib/usdPrice';
 import { CoverFloating } from '@/lib/floatingCover';
 
-// Fallback label for a gateway row with no vendor-set displayLabel — see
+// Fallback label for a gateway row with no vendor-set displayLabel - see
 // StorePaymentGateway.displayLabel's own comment. Only COD/ONLINE_PAYMENT
 // need one here; a custom gateway (SSLCommerz etc) always carries its own
-// displayLabel (set at connect time — see PaymentGatewaysService.
+// displayLabel (set at connect time - see PaymentGatewaysService.
 // connectSslcommerz), so those two are the only types this ever resolves.
 const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   COD: 'Cash on Delivery',
@@ -138,7 +138,7 @@ const EN = {
   preferredSlot: 'Preferred delivery time (optional)',
   slotFull: 'full',
   preferredDayNote: 'We will try to deliver on this day, but a courier cannot always promise it.',
-  pickupOption: 'Pick up from the shop — Free',
+  pickupOption: 'Pick up from the shop - Free',
   pickupFrom: 'Pick up from our shop',
   pickupNote: 'No address needed. We will text you when your order is ready.',
   submitAdvance: (advance: string) => `Pay ${advance} & Place Order`,
@@ -276,7 +276,7 @@ const BN: Copy = {
   preferredSlot: 'পছন্দের ডেলিভারির সময় (ঐচ্ছিক)',
   slotFull: 'ভরে গেছে',
   preferredDayNote: 'আমরা ওই দিনে পৌঁছে দেওয়ার চেষ্টা করব, তবে কুরিয়ার সবসময় দিন রাখতে পারে না।',
-  pickupOption: 'দোকান থেকে নিন — ফ্রি',
+  pickupOption: 'দোকান থেকে নিন - ফ্রি',
   pickupFrom: 'আমাদের দোকান থেকে নিয়ে যান',
   pickupNote: 'ঠিকানা লাগবে না। অর্ডার তৈরি হলে আপনাকে SMS করা হবে।',
   submitAdvance: (advance) => `${advance} দিয়ে অর্ডার করুন`,
@@ -494,9 +494,9 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   }, [hydrated, lines]);
 
   // "Create custom link for this coupon" hand-off from HomeView (see
-  // lib/pendingCoupon.ts) — a code stashed there pre-fills the coupon box
+  // lib/pendingCoupon.ts) - a code stashed there pre-fills the coupon box
   // here, then auto-applies itself the moment a valid phone number is
-  // on hand (validateCoupon requires one — see useCheckout.applyCoupon).
+  // on hand (validateCoupon requires one - see useCheckout.applyCoupon).
   // pendingRef both survives the one-time sessionStorage read (so a
   // re-render doesn't re-open a box the shopper already closed/edited)
   // and gates the auto-apply to fire exactly once.
@@ -519,10 +519,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [form.phone, couponCode, pendingConsumed]);
 
-  // Checkout form auto-save (see checkoutFormStorage.ts) — a returning
+  // Checkout form auto-save (see checkoutFormStorage.ts) - a returning
   // guest gets their name/phone/address/etc back without retyping.
   // Applied once, on mount only, and only into fields still at their
-  // untouched default at that point — so it can never clobber a
+  // untouched default at that point - so it can never clobber a
   // logged-in Customer's own account prefill (useCheckout's own effect,
   // which runs with the same "only if still all blank" guard) or
   // anything the shopper already typed in the brief window before this
@@ -605,7 +605,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
   // the order is created (see useCheckout's own comment on clearStore),
   // but for a redirect gateway (ONLINE_PAYMENT / a custom gateway) that
   // happens BEFORE the async initiateOrderPayment/initiateGatewayOrderPayment
-  // call resolves and window.location.href actually navigates away — so
+  // call resolves and window.location.href actually navigates away - so
   // without this guard, this component re-renders with an already-empty
   // cart and flashes "Your cart is empty" for that gap instead of staying
   // on the (correct) "Redirecting to payment…" button state until the
@@ -963,7 +963,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                         {slotOptions.map((s) => (
                           <option key={s.id} value={s.id} disabled={s.full}>
                             {s.label}
-                            {s.full ? ` — ${t.slotFull}` : ''}
+                            {s.full ? ` - ${t.slotFull}` : ''}
                           </option>
                         ))}
                       </select>
@@ -1117,12 +1117,12 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   <span className="font-semibold text-accent">{formatPrice(vatAmount)}</span>
                 </div>
               )}
-              {/* Store > Payment Gateway's Platform Charge — deliberately
+              {/* Store > Payment Gateway's Platform Charge - deliberately
                   only shown once a gateway with a nonzero, non-hidden
                   charge is the CURRENTLY SELECTED one (never advertised
                   on the payment method options themselves, see the radio
                   list above). Plan.codFeeHidden/onlinePaymentFeeHidden
-                  suppresses this line entirely — visiblePlatformChargeAmount
+                  suppresses this line entirely - visiblePlatformChargeAmount
                   is already 0 in that case, same as visibleGrandTotal
                   below already excludes it; the shopper is still
                   actually charged it (see useCheckout's own comment).
@@ -1144,7 +1144,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                     {appliedCoupon.discountType === 'FREE_SHIPPING' ? t.freeShipping : t.coupon(appliedCoupon.code)}
                   </span>
                   <span className="font-semibold">
-                    {appliedCoupon.discountType === 'FREE_SHIPPING' ? '—' : `-${formatPrice(couponDiscountAmount)}`}
+                    {appliedCoupon.discountType === 'FREE_SHIPPING' ? '-' : `-${formatPrice(couponDiscountAmount)}`}
                   </span>
                 </div>
               )}
@@ -1157,7 +1157,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   <span className="font-semibold">-{formatPrice(prepaidDiscountAmount)}</span>
                 </div>
               )}
-              {/* Marketing > Discounts — applied automatically, no code. */}
+              {/* Marketing > Discounts - applied automatically, no code. */}
               {automaticDiscount && (
                 <div className="flex justify-between text-success">
                   <span className="flex items-center gap-1">
@@ -1195,7 +1195,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   <span className="font-semibold">-{formatPrice(rewardPointsAmount)}</span>
                 </div>
               )}
-              {/* Marketing > Gift Cards — what the card pays of this order. */}
+              {/* Marketing > Gift Cards - what the card pays of this order. */}
               {appliedGiftCard && giftCardAmount > 0 && (
                 <div className="flex justify-between text-success">
                   <span className="flex items-center gap-1">
@@ -1348,10 +1348,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               <p className="text-[15px] font-semibold text-ink mb-3">{t.paymentMethod}</p>
               <div className="space-y-2.5">
                 {/* Store > Payment Gateway's enabled gateway list for this
-                    vendor — COD/Online Payment plus any
+                    vendor - COD/Online Payment plus any
                     connected custom gateway (e.g. SSLCommerz). Each
                     gateway's own Platform Charge is deliberately NOT shown
-                    here — it only appears once selected, in the cart
+                    here - it only appears once selected, in the cart
                     summary below (see the Platform Charge line). */}
                 {paymentGateways.filter((gateway) => !(codBlocked && gateway.type === 'COD')).map((gateway) => (
                   <label key={gateway.id} className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink cursor-pointer">
@@ -1446,7 +1446,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               )}
             </div>
 
-            {/* Store > COD Guard > "Delivery charge in advance" — see useCheckout's codAdvance. */}
+            {/* Store > COD Guard > "Delivery charge in advance" - see useCheckout's codAdvance. */}
             {codAdvance && (
               <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
                 <p className="m-0 text-[13px] font-semibold text-ink">
@@ -1460,7 +1460,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               </div>
             )}
 
-            {/* Store > COD Guard "Before Checkout" — see useCheckout's codOtp. */}
+            {/* Store > COD Guard "Before Checkout" - see useCheckout's codOtp. */}
             {showCodOtp && (
               <div className="mt-5 rounded-md border border-accent/25 bg-accent-light p-4">
                 <p className="m-0 text-[13px] font-semibold text-ink">{t.verifyTitle}</p>
@@ -1489,7 +1489,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               </div>
             )}
 
-            {/* Store > Store Away — see useCheckout's storeAway. */}
+            {/* Store > Store Away - see useCheckout's storeAway. */}
             {storeAway && (
               <div className="mt-5 rounded-md border border-amber-300 bg-amber-50 p-4">
                 <p className="m-0 text-[13px] font-semibold text-ink">{t.awayTitle}</p>

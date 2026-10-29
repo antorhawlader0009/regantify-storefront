@@ -5,7 +5,7 @@ import { useCartStore } from '@/providers/cart-store-provider';
 /**
  * Account pages are client components with only `subdomain` in scope
  * (see AccountLayout's own comment on why no server-fetched store row
- * is available there) — this best-effort resolves a display name from
+ * is available there) - this best-effort resolves a display name from
  * whatever's cheaply available client-side: a cart line for this store
  * already carries its own storeName (set when the line was added from
  * a server-rendered product page), so a shopper who has anything in

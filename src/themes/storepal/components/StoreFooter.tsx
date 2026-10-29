@@ -19,15 +19,15 @@ interface StoreFooterProps {
   subdomain: string;
   storeName: string;
   // A short "about" blurb shown in the footer's rightmost column on the
-  // reference site — sourced from the vendor's own "About Us" Store >
+  // reference site - sourced from the vendor's own "About Us" Store >
   // Pages content when one exists (see reference screenshot: the
   // footer repeats the same copy as the About Us page itself), falling
   // back to a generic line when the vendor hasn't written one yet. This
   // is raw RichTextEditor HTML (same as Page.content) when passed, not
-  // plain text — see how it's rendered below. Only used as a fallback
-  // when Store > Footer's own aboutBlurb isn't set — see footerConfig.
+  // plain text - see how it's rendered below. Only used as a fallback
+  // when Store > Footer's own aboutBlurb isn't set - see footerConfig.
   aboutBlurb?: string | null;
-  // Store > Logo — see Vendor.logoUrl. When set, replaces the plain-
+  // Store > Logo - see Vendor.logoUrl. When set, replaces the plain-
   // text wordmark below with the vendor's uploaded image. Same prop-
   // or-fetch convention as socialLinks below.
   logoUrl?: string | null;
@@ -35,18 +35,18 @@ interface StoreFooterProps {
   // that already have server-fetched StorefrontInfo (home, product,
   // cart, checkout) should pass these straight through; pages that
   // don't (account/*, which are client components with only
-  // subdomain/storeName in scope — see useStoreDisplayName's own
+  // subdomain/storeName in scope - see useStoreDisplayName's own
   // comment on why) can omit this and the footer fetches them itself
   // client-side (see getStoreSocialLinks) rather than every one of
   // those callers duplicating that fetch.
   socialLinks?: SocialLinks;
-  // Store > Footer — same prop-or-fetch convention as socialLinks above.
+  // Store > Footer - same prop-or-fetch convention as socialLinks above.
   // undefined (not fetched yet) is distinct from null (fetched, vendor
-  // never configured one) — see the fetch effect below.
+  // never configured one) - see the fetch effect below.
   footerConfig?: StoreFooterConfig | null;
 }
 
-// Ordered platform list — each maps a Vendor field to its icon and a
+// Ordered platform list - each maps a Vendor field to its icon and a
 // human label (for aria-label only; the reference footer shows icons
 // without visible text). WhatsApp uses MessageCircle since lucide-react
 // has no brand-specific WhatsApp glyph.
@@ -94,7 +94,7 @@ function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }
 }
 
 /**
- * Store > Footer's configurable, template-driven footer — see
+ * Store > Footer's configurable, template-driven footer - see
  * FooterConfig in the server's schema.prisma and footerTemplates.ts's
  * registry mirror for the full design. Structure (which columns, in
  * what order, which optional blocks) is fully configurable via the
@@ -105,10 +105,10 @@ function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }
  * BACKWARD COMPATIBILITY: a vendor who's never saved a FooterConfig
  * (footerConfig resolves to null/undefined after the fetch below) sees
  * the exact hardcoded 3-column footer this component always rendered
- * before this feature — see the `!footerConfig` branch below, which is
+ * before this feature - see the `!footerConfig` branch below, which is
  * a verbatim copy of that original markup, not a "CLASSIC template"
  * render (which would additionally include the copyright bar's exact
- * old wording etc. — keeping this as a literal fork removes any risk of
+ * old wording etc. - keeping this as a literal fork removes any risk of
  * template-registry logic drifting and silently changing a live store's
  * appearance).
  */
@@ -126,7 +126,7 @@ export function StoreFooter({
     socialLinks: SocialLinks;
     footerConfig: StoreFooterConfig | null;
   } | null>(null);
-  // Store > Pages' published list — still fetched independently of
+  // Store > Pages' published list - still fetched independently of
   // footerConfig.infoLinks: a vendor with no FooterConfig (the common
   // case today) needs this for the original hardcoded INFORMATION
   // column below.
@@ -148,7 +148,7 @@ export function StoreFooter({
   const haveAllProps = socialLinksProp && logoUrlProp !== undefined && footerConfigProp !== undefined;
 
   useEffect(() => {
-    if (haveAllProps) return; // Caller already has everything — no need to fetch.
+    if (haveAllProps) return; // Caller already has everything - no need to fetch.
     getStoreSocialLinks(subdomain).then((data) =>
       setFetched({ logoUrl: data.logoUrl, socialLinks: data, footerConfig: data.footerConfig ?? null }),
     );
@@ -216,7 +216,7 @@ export function StoreFooter({
   // The "We accept" row (the checkout's payment methods) was removed on 2026-10-28 at the owner's request.
   const trackLink = { label: t('Track order'), url: `/store/${subdomain}/orders` };
 
-  // Not yet configured — original hardcoded 3-column footer, unchanged
+  // Not yet configured - original hardcoded 3-column footer, unchanged
   // from before Store > Footer existed. See this component's own
   // "BACKWARD COMPATIBILITY" doc comment above.
   if (!footerConfig) {
@@ -330,7 +330,7 @@ export function StoreFooter({
     );
   }
 
-  // Configured — structure driven by the vendor's saved template/content,
+  // Configured - structure driven by the vendor's saved template/content,
   // rendered with StorePal's own visual chrome.
   const def = resolveFooterTemplate(footerConfig.template);
   const blurbHtml = footerConfig.aboutBlurb?.trim() || aboutBlurb?.trim();
@@ -362,7 +362,7 @@ export function StoreFooter({
   );
 
   // Falls back to the auto-populated Store > Pages list when the vendor
-  // hasn't curated any infoLinks of their own yet — same list the
+  // hasn't curated any infoLinks of their own yet - same list the
   // unconfigured branch above always showed, so switching TO a template
   // for the first time doesn't blank out this column.
   const infoItems =
@@ -438,7 +438,7 @@ export function StoreFooter({
   };
   const visibleColumns = ['contact', ...def.columns, 'location'].filter((c) => columnContent[c]);
   // Fixed Tailwind class per count (1-4) rather than an inline
-  // gridTemplateColumns — keeps this a plain utility-class grid like
+  // gridTemplateColumns - keeps this a plain utility-class grid like
   // every other layout in this theme, at the cost of only supporting up
   // to 4 columns (every current template registry entry has at most 4).
   const gridColsClass =

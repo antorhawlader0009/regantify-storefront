@@ -83,10 +83,10 @@ export function OrdersView({ subdomain, renderCourierTracking }: { subdomain: st
           {error && <p className="text-[12.5px] text-accent">{error}</p>}
 
           {/* "Your recent orders" (see guestOrderMemory.ts / useTrackOrder.ts)
-              — every invoice this browser has looked up or placed before,
+              - every invoice this browser has looked up or placed before,
               remembered in localStorage so a returning guest doesn't have
               to re-type/re-find the invoice number. Only the invoice+phone
-              pair is cached, never order data itself — clicking one
+              pair is cached, never order data itself - clicking one
               re-runs a real lookup the same as typing it in would. */}
           {rememberedOrders.length > 0 && (
             <div className="mt-4 pt-4 border-t border-line">

@@ -1,4 +1,4 @@
-// Store > Integrations > Facebook Pixel — the standard e-commerce events
+// Store > Integrations > Facebook Pixel - the standard e-commerce events
 // StorePal fires (facebook-pixel.md §4). Browser-only, like lib/metaPixel.ts,
 // and a no-op wherever <MetaPixel> isn't mounted (non-StorePal stores).
 //

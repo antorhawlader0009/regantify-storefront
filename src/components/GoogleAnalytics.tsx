@@ -13,7 +13,7 @@ interface GoogleAnalyticsProps {
 }
 
 /**
- * Store > Integrations > Google Analytics 4 — mounted once in
+ * Store > Integrations > Google Analytics 4 - mounted once in
  * store/[subdomain]/layout.tsx, StorePal stores only (see
  * lib/googleAnalytics.ts for page views and consent). Renders nothing.
  */

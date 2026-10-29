@@ -1,4 +1,4 @@
-/** Store > Landing Pages > Chat Button — a floating WhatsApp/Messenger-style link (landing-plan.md §4.2, LandingPage.chatButtonEnabled/Link/ImageUrl). Plain anchor, no client JS needed. */
+/** Store > Landing Pages > Chat Button - a floating WhatsApp/Messenger-style link (landing-plan.md §4.2, LandingPage.chatButtonEnabled/Link/ImageUrl). Plain anchor, no client JS needed. */
 export function ChatButton({ link, imageUrl }: { link: string; imageUrl?: string | null }) {
   return (
     <a

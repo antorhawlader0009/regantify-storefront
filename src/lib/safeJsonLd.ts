@@ -6,7 +6,7 @@
  * Why this exists: JSON.stringify() alone is NOT safe here. A product's
  * name/description/brand can contain arbitrary vendor-entered text
  * (e.g. `</script><script>alert(1)</script>`), and JSON.stringify does
- * nothing to it — it's valid JSON either way. The browser's HTML parser
+ * nothing to it - it's valid JSON either way. The browser's HTML parser
  * doesn't know or care that it's "inside JSON"; it just scans for the
  * literal characters "</script" and closes the tag right there,
  * letting whatever text follows run as a brand-new, real <script>. That

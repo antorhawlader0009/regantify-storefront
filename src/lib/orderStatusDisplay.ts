@@ -1,4 +1,4 @@
-// Customer-facing copy for order statuses — plainer language than the
+// Customer-facing copy for order statuses - plainer language than the
 // vendor dashboard's internal labels (see client/src/pages/vendor/order/
 // orderStatus.tsx), since a shopper doesn't need to know internal
 // pipeline states like STOCK_OUT or PARTIAL_PAYMENT_PENDING in those

@@ -95,9 +95,9 @@ interface StorePalProductPanelProps {
  * photo gallery selection, variant picking, quantity, Add to Cart / Buy
  * Now. Kept separate from the surrounding server-rendered page (name,
  * description, breadcrumb, related products) so only this part ships as
- * client JS — the rest stays server-rendered HTML for fast first paint
+ * client JS - the rest stays server-rendered HTML for fast first paint
  * and SEO. Purchase logic (stock check, variant matching, cart line
- * construction) is unchanged from the audited version — only the visual
+ * construction) is unchanged from the audited version - only the visual
  * treatment is refined here.
  */
 export function StorePalProductPanel({ subdomain, storeName, product, backorder, display, leadSlots, titleExtra, onAddedToCart, onBuyNow, variantRestock = false }: StorePalProductPanelProps) {
@@ -121,7 +121,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const [quantity, setQuantity] = useState(packStep > 1 ? Math.ceil(minQty / packStep) * packStep : minQty);
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
-  // Backorder confirm popup — holds the action (add / buy) to run on Continue.
+  // Backorder confirm popup - holds the action (add / buy) to run on Continue.
   const [pendingBackorderAction, setPendingBackorderAction] = useState<(() => void) | null>(null);
 
   const matchedVariant =
@@ -161,7 +161,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   // stray casing difference between VariationOption.name and
   // VariationValuePhoto.optionName/optionValue (or between either of
   // those and what's clicked here) can never silently break the photo
-  // lookup — the swatch/thumbnail would still show correctly by
+  // lookup - the swatch/thumbnail would still show correctly by
   // coincidence in that case, only the "jump to this photo" behavior
   // would quietly fail, which is exactly the bug this guards against.
   const normalize = (s: string) => s.trim().toLowerCase();
@@ -170,11 +170,11 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
       (vp) => normalize(vp.optionName) === normalize(optionName) && normalize(vp.optionValue) === normalize(optionValue),
     );
 
-  // Which single variation option (if any) has its own photo sets — set
+  // Which single variation option (if any) has its own photo sets - set
   // on Add/Edit Product's "Variation Photos" section (e.g. "Color").
   // There's at most one such option per product by design (see
   // VariationValuePhoto on the server), so this looks for the first
-  // entry that actually HAS photos — not just the array's first entry,
+  // entry that actually HAS photos - not just the array's first entry,
   // which could be a stale empty one (e.g. from a record saved before
   // ProductsService started filtering those out on save). Resolved back
   // against the product's own variationOptions list (matched
@@ -188,7 +188,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
 
   // The full gallery always shows everything: the product's base photos,
   // then every variation value's photos in that option's own value order
-  // (e.g. base photos, then Black's photos, then Blue's photos) — not
+  // (e.g. base photos, then Black's photos, then Blue's photos) - not
   // just the currently selected value's photos. A duplicate URL (the
   // vendor re-using the same image for the base product and a variant)
   // is only shown once, at its first occurrence.
@@ -212,7 +212,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     : undefined;
 
   // activePhoto (the index into allPhotos) is the single source of truth
-  // for what's displayed — this effect only ever *sets* it in reaction to
+  // for what's displayed - this effect only ever *sets* it in reaction to
   // a variant selection changing; a manual thumbnail click afterward sets
   // activePhoto directly and is left alone until the selection changes
   // again. Keyed on the selected value itself (not on selectedValuePhoto,
@@ -255,7 +255,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const availableStock = matchedVariant ? matchedVariant.stock : (product.stockQuantity ?? undefined);
   // A matched variant with its own zero stock must block purchase even
   // though the product as a whole isn't out of stock (isOutOfStock only
-  // checks whether EVERY variant is at zero) — otherwise a shopper could
+  // checks whether EVERY variant is at zero) - otherwise a shopper could
   // select a specific sold-out combination (e.g. Black, Size 30) while a
   // different one (Blue, Size 30) still has stock, and Add to Cart/Buy
   // Now would stay enabled for the combination that has none.
@@ -616,7 +616,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                 const isSelected = selected[opt.name] === val;
                 const soldOutValue = valueSoldOut(opt.name, val);
                 // A tiny swatch thumbnail for this value, if the vendor
-                // assigned photos to it — lets shoppers see which "Black"
+                // assigned photos to it - lets shoppers see which "Black"
                 // or "Blue" they're picking before selecting it, not just
                 // the text label.
                 const swatchPhoto =
@@ -810,7 +810,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             <p className="m-0 mb-2 text-[15px] font-bold text-ink">Backorder</p>
             <div
               className="text-[13.5px] text-ink leading-relaxed [&_p]:m-0 [&_p+p]:mt-2"
-              // Vendor's own RichTextEditor HTML — same trust level as
+              // Vendor's own RichTextEditor HTML - same trust level as
               // Store > Footer's aboutBlurb (see StorePal's StoreFooter).
               dangerouslySetInnerHTML={{ __html: backorder.popupMessageHtml }}
             />

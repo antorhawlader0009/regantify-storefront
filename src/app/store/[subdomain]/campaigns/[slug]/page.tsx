@@ -34,7 +34,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
   }
 }
 
-// Campaigns are built for the Medium and StorePal themes — a store on
+// Campaigns are built for the Medium and StorePal themes - a store on
 // Minimal genuinely 404s here rather than falling back to some improvised
 // Minimal rendering, since this was deliberately never built for Minimal.
 export default async function CampaignPage({ params }: PageProps) {

@@ -15,10 +15,10 @@ interface StoreHeaderProps {
 
 /**
  * White header with a dominant search bar (the convention shoppers
- * expect from a real e-commerce site — startech.com.bd, daraz.com.bd)
+ * expect from a real e-commerce site - startech.com.bd, daraz.com.bd)
  * and a solid dark category strip underneath. Client component because
  * it reads/writes URL search params interactively (via nuqs) and reads
- * live cart count — but it only ever navigates via the URL, so
+ * live cart count - but it only ever navigates via the URL, so
  * filtering/rendering stays server-side in page.tsx.
  */
 export function StoreHeader({ subdomain, storeName, categories }: StoreHeaderProps) {

@@ -10,7 +10,7 @@ interface CategoryTilesProps {
 
 /**
  * "Featured Category" row (startech.com.bd's icon strip below the
- * banner) — but this backend has no per-category icon/image field, so
+ * banner) - but this backend has no per-category icon/image field, so
  * each tile uses that category's own first product photo as a
  * representative thumbnail, plus the real product count underneath.
  * Real data throughout, not a placeholder icon set.

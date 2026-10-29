@@ -18,8 +18,8 @@ interface ProductPurchasePanelProps {
 /**
  * Minimal's version of the purchase panel. Every bit of purchase logic
  * (variant-photo matching, stock/pre-order rules, cart line building) is
- * identical to Medium's ProductPurchasePanel — copied verbatim, not
- * reimplemented — only the visual treatment differs: no boxed
+ * identical to Medium's ProductPurchasePanel - copied verbatim, not
+ * reimplemented - only the visual treatment differs: no boxed
  * accent-tinted price panel, no pill-shaped trust badges, quiet
  * outline/solid button pair instead of a bold two-tone pair, more
  * whitespace throughout. See Medium's ProductPurchasePanel for the

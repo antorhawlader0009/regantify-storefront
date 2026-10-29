@@ -45,14 +45,14 @@ interface StoreHeaderProps {
   subdomain: string;
   storeName: string;
   categories: string[];
-  // Store > Logo — see Vendor.logoUrl. When set, replaces the plain-
+  // Store > Logo - see Vendor.logoUrl. When set, replaces the plain-
   // text wordmark below with the vendor's uploaded image. Omit this
   // prop entirely (rather than passing null) on pages without their
-  // own server-fetched StorefrontInfo (account/*, cart, checkout) —
+  // own server-fetched StorefrontInfo (account/*, cart, checkout) -
   // the header then fetches it itself client-side, same prop-or-fetch
   // convention as StoreFooter's own logoUrl/socialLinks.
   logoUrl?: string | null;
-  // Store > Social — only ever read here for whatsappUrl (see
+  // Store > Social - only ever read here for whatsappUrl (see
   // ChatBubble below); everywhere else that needs the full set
   // (StoreFooter's icon row) still gets it as its own prop. Same
   // prop-or-fetch convention as logoUrl: omit entirely on pages with no
@@ -60,9 +60,9 @@ interface StoreHeaderProps {
   // itself client-side.
   socialLinks?: SocialLinks;
   // Real subcategories per category name (Category.parentId, PUBLIC
-  // only — see StorefrontService.getStoreProducts). Optional because
+  // only - see StorefrontService.getStoreProducts). Optional because
   // several pages that render this header (account/*, checkout) never
-  // fetch categoryDetails at all — those simply get a chevron-only nav
+  // fetch categoryDetails at all - those simply get a chevron-only nav
   // with no dropdown, same as before this prop existed.
   categoryDetails?: StorefrontCategoryDetail[];
   // The product page passes its product's name so the chat bubble can open
@@ -184,7 +184,7 @@ export function StoreHeader({
   const [searchDraft, setSearchDraft] = useState(search);
   const [fetchedLogoUrl, setFetchedLogoUrl] = useState<string | null>(null);
   const [fetchedSocialLinks, setFetchedSocialLinks] = useState<SocialLinks>({});
-  // Which category's dropdown is currently open on hover — null when
+  // Which category's dropdown is currently open on hover - null when
   // none. Only categories with at least one PUBLIC subcategory (see
   // categoryDetails below) ever open one.
   const [openCategory, setOpenCategory] = useState<string | null>(null);
@@ -192,7 +192,7 @@ export function StoreHeader({
   // dropdown panel below can render via a portal at `position: fixed`
   // instead of nested inside the category strip. The strip scrolls
   // horizontally (overflow-x-auto, for narrow screens) which clips any
-  // normal absolutely-positioned child to its own box — an
+  // normal absolutely-positioned child to its own box - an
   // `overflow-x-auto` element also clips the y-axis per the CSS spec, so
   // a plain `absolute` dropdown here gets cut off / rendered behind
   // whatever comes next in the page (e.g. the hero banner) instead of
@@ -246,7 +246,7 @@ export function StoreHeader({
   }, []);
 
   useEffect(() => {
-    // Skip the fetch entirely if the caller already gave us everything —
+    // Skip the fetch entirely if the caller already gave us everything -
     // most pages pass at least one of these (see each prop's own doc
     // comment on why), and a fetch that would only fill in an already-
     // covered field is wasted work.
@@ -293,10 +293,10 @@ export function StoreHeader({
 
   // Live "type to see matches" dropdown (reference site: typing "shoe"
   // shows matching Categories + a handful of products with thumb/price
-  // before you've even hit Enter — Enter still lands on the full
+  // before you've even hit Enter - Enter still lands on the full
   // "Results for ..." grid, unchanged, via the existing q query param).
   // The product list itself isn't in scope here (StoreHeader renders on
-  // pages — cart, checkout, account — that never fetch the catalog), so
+  // pages - cart, checkout, account - that never fetch the catalog), so
   // it's fetched client-side once, lazily, the same way logoUrl above
   // falls back to a client fetch when no prop is passed.
   const [searchIndex, setSearchIndex] = useState<StoreSearchProduct[] | null>(null);
@@ -903,7 +903,7 @@ export function StoreHeader({
 
       {/* Rendered from the header (not each page/view) so they show up on
           every StorePal page with no risk of a new view forgetting to add
-          them — StoreHeader is the one component every StorePal view
+          them - StoreHeader is the one component every StorePal view
           already renders (home, product, cart, checkout, thank-you,
           pages, account/*). */}
       {hasMobileMenu && mobileMenuOpen && (

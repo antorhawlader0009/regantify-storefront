@@ -44,12 +44,12 @@ import {
   type StoreDeliveryCharges,
 } from '@/lib/checkoutApi';
 
-// Frozen fallback — the exact old constant every theme's checkout used
+// Frozen fallback - the exact old constant every theme's checkout used
 // before Settings > Courier Integration > Delivery Charge made this
 // vendor-configurable (see Vendor.insideDhakaCharge etc in
 // schema.prisma). Medium/Minimal's own CheckoutView.tsx/ProfileView.tsx
 // still import/hardcode this literal 70/130 pairing directly for their
-// own "Inside Dhaka — ৳70" style option labels — kept as-is/untouched.
+// own "Inside Dhaka - ৳70" style option labels - kept as-is/untouched.
 // This export only remains as that same fallback value for the brief
 // window before the real per-vendor charges below have loaded.
 export const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
@@ -58,7 +58,7 @@ export const DELIVERY_CHARGE: Record<'DHAKA' | 'OUTSIDE_DHAKA', number> = {
 };
 // The column defaults for a new store (2026-10-28: delivery 60 / 120, no VAT); only shown until the store's own values load.
 const FALLBACK_VAT_CHARGE = 0;
-// Only used for the brief window before the real gateway list loads —
+// Only used for the brief window before the real gateway list loads -
 // every vendor always has at least a COD row (see
 // PaymentGatewaysService.ensureBuiltins), so this is never shown, just a
 // safe default so paymentMethod/vatAmount have something to resolve
@@ -84,11 +84,11 @@ export interface CheckoutFormState {
   fullName: string;
   phone: string;
   address: string;
-  // Optional finer-grained shipping fields — matches the reference
+  // Optional finer-grained shipping fields - matches the reference
   // checkout screenshot's separate Thana/Upazila and District inputs,
   // alongside the free-text Address field every theme already has.
   // Sent straight through to CreateOrderDto's own shippingCity/
-  // shippingDistrict (already existed there before this — see that
+  // shippingDistrict (already existed there before this - see that
   // DTO), which so far only Add Order (vendor dashboard) populated.
   city: string;
   district: string;
@@ -107,15 +107,15 @@ export interface CheckoutFormRules {
 }
 
 /**
- * All of checkout's stateful logic — cart lines, form state/validation,
- * the debounced "Incomplete Orders" sync, and the place-order flow —
+ * All of checkout's stateful logic - cart lines, form state/validation,
+ * the debounced "Incomplete Orders" sync, and the place-order flow -
  * extracted out of the page so both themes' CheckoutView can share the
  * exact same behavior and only differ in JSX/styling. See the original
  * checkout/page.tsx (pre-theme-split) for the reasoning behind each
  * piece; nothing here changes that reasoning, only where it lives.
  *
  * `redirectTo` picks where a successful order sends the shopper:
- * 'orders' (default — Medium/Minimal's existing "Order placed
+ * 'orders' (default - Medium/Minimal's existing "Order placed
  * successfully" banner on the order-tracking page, unchanged) or
  * 'thank-you' (StorePal's own animated confirmation + memo page, see
  * themes/storepal/views/ThankYouView.tsx). Both destinations read the
@@ -123,7 +123,7 @@ export interface CheckoutFormRules {
  *
  * `options.lines` replaces the shopper's cart with a caller-owned line
  * list (a landing page's Checkout Form section, whose products are fixed
- * by the vendor) — same pricing/coupon/payment/COD Guard flow, but the
+ * by the vendor) - same pricing/coupon/payment/COD Guard flow, but the
  * cart store is never read or cleared, and the Incomplete Orders session
  * key is kept separate from the cart checkout's. The caller must memoize
  * the array (it drives the debounced incomplete-order sync).
@@ -168,12 +168,12 @@ export function useCheckout(
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState<string | null>(null);
 
-  // Settings > Courier Integration > Delivery Charge / Settings > VAT —
+  // Settings > Courier Integration > Delivery Charge / Settings > VAT -
   // the vendor's own saved charges, fetched once per subdomain. Falls
   // back to the old frozen DELIVERY_CHARGE/FALLBACK_VAT_CHARGE constants
   // until this resolves (or if the fetch fails), so checkout never
   // blocks on it. Also carries Store > Payment Gateway's own enabled
-  // gateway list (see StorePaymentGateway) — one fetch, both concerns,
+  // gateway list (see StorePaymentGateway) - one fetch, both concerns,
   // same as before this feature only had the 3 charge fields.
   const [vendorCharges, setVendorCharges] = useState<{
     insideDhakaCharge: number;
@@ -288,14 +288,14 @@ export function useCheckout(
   // landing-page checkout never offers it.
   const paymentGateways = (vendorCharges?.paymentGateways ?? FALLBACK_GATEWAYS).filter((g) => g.type !== 'MANUAL_MOBILE' || !!formRules);
 
-  // "Payment Method" on checkout — the id of one of paymentGateways above
+  // "Payment Method" on checkout - the id of one of paymentGateways above
   // ("COD"/"ONLINE_PAYMENT" for the two built-ins, or a
   // VendorPaymentGateway id for a custom gateway like SSLCommerz).
   // Defaults to whichever row is COD, matching every theme's original
   // COD-only default. Medium/Minimal never render a payment-method
   // selector and so never call setPaymentMethod, which is what keeps
   // their checkout behavior byte-for-byte the same as before this was
-  // added — handlePlaceOrder only takes the non-COD branch when a
+  // added - handlePlaceOrder only takes the non-COD branch when a
   // theme's own UI explicitly switches to something else.
   const [paymentMethod, setPaymentMethod] = useState('COD');
   const selectedGateway = paymentGateways.find((g) => g.id === paymentMethod) ?? paymentGateways.find((g) => g.type === 'COD');
@@ -309,7 +309,7 @@ export function useCheckout(
   const manualMobile = selectedGateway?.type === 'MANUAL_MOBILE' ? (selectedGateway.manualMobile ?? null) : null;
   const manualWalletInUse = manualMobile ? (manualMobile.accounts.some((a) => a.wallet === manualWallet) ? manualWallet : (manualMobile.accounts[0]?.wallet ?? '')) : '';
 
-  // "Have Coupon?" (see reference checkout screenshot) — a coupon is
+  // "Have Coupon?" (see reference checkout screenshot) - a coupon is
   // only ever previewed here (validateCoupon never touches usageCount,
   // see StorefrontService.validateCoupon's own comment), then re-
   // resolved and actually redeemed server-side inside placeOrder's own
@@ -322,7 +322,7 @@ export function useCheckout(
   const [couponChecking, setCouponChecking] = useState(false);
   const [couponError, setCouponError] = useState<string | null>(null);
 
-  // Marketing > Gift Cards — checked here only to show its balance, then
+  // Marketing > Gift Cards - checked here only to show its balance, then
   // redeemed server-side by placeOrder (which works out how much of the total
   // it pays). Unlike a coupon it doesn't depend on the cart or phone, so
   // changing those doesn't clear it.
@@ -488,7 +488,7 @@ export function useCheckout(
     return () => clearTimeout(timer);
   }, [hydrated, sessionKey, subdomain, form.fullName, form.phone, form.note, form.address, lines]);
 
-  // Marketing > Discounts — the automatic discount this cart qualifies
+  // Marketing > Discounts - the automatic discount this cart qualifies
   // for, re-previewed whenever the cart changes (short debounce so a
   // quantity stepper doesn't fire one request per click).
   const [automaticDiscounts, setAutomaticDiscounts] = useState<AutomaticDiscounts | null>(null);
@@ -569,18 +569,18 @@ export function useCheckout(
   const ordersFullToday = !!dailyLimit && dailyLimit.remaining <= 0;
   const orderCutoff = vendorCharges?.orderCutoff ?? null;
   const minOrderShortfall = minOrderAmount && lines.length > 0 && subtotal < minOrderAmount ? Math.ceil(minOrderAmount - subtotal) : 0;
-  // VAT — a flat fee applied to every order regardless of payment method
+  // VAT - a flat fee applied to every order regardless of payment method
   // (see Vendor.vatChargeBdt's own schema comment). Zero whenever the
   // cart is empty, same as deliveryCharge above.
   // A resale cart carries no VAT (the supplier's order has none in version 1, RESELLER-plan.md Step 6).
   const vatAmount = lines.length > 0 && !mainIsResale ? resolvedVatCharge : 0;
   // FREE_SHIPPING waives the delivery charge instead of discounting the
-  // subtotal — same split OrdersService.create's own coupon handling
+  // subtotal - same split OrdersService.create's own coupon handling
   // makes server-side, so the number shown here always matches what
   // Place Order will actually charge.
   const couponFreeShipping = appliedCoupon?.discountType === 'FREE_SHIPPING';
   const couponDiscount = couponFreeShipping ? 0 : (appliedCoupon?.discountAmount ?? 0);
-  // Marketing > Discounts — dropped while a coupon with "Reset other
+  // Marketing > Discounts - dropped while a coupon with "Reset other
   // conditional discounts" is applied, and capped so coupon + discount
   // never exceed the subtotal; same rules as OrdersService.create.
   const discountsReset = Boolean(appliedCoupon?.resetOtherDiscounts);
@@ -616,19 +616,19 @@ export function useCheckout(
   // A free-delivery coupon or discount waives the normal charge; the express extra stays unless the store waives it too.
   const freeDelivery = couponFreeShipping || !!autoFreeShipping;
   const effectiveDeliveryCharge = freeDelivery ? (expressSelected && expressInfo && !expressInfo.waivedByFree ? expressCharge : 0) : deliveryCharge + expressCharge;
-  // Store > Payment Gateway's per-gateway Platform Charge — the
+  // Store > Payment Gateway's per-gateway Platform Charge - the
   // CURRENTLY SELECTED gateway's own configured surcharge, independent
   // of vatAmount above. Never shown until a gateway is actually
   // selected; useCheckout always has a selection (defaults to COD), so
   // in practice this just reflects whichever gateway platformChargeBdt
-  // the shopper's current radio choice carries — 0 for COD/Online
+  // the shopper's current radio choice carries - 0 for COD/Online
   // Payment unless the vendor set one. This is the REAL amount shown
-  // pre-payment — same resolution OrdersService.create does
+  // pre-payment - same resolution OrdersService.create does
   // server-side (which is what actually gets charged; this is only a
-  // preview) — the flat part plus platformChargePercent % of the order's
+  // preview) - the flat part plus platformChargePercent % of the order's
   // full amount INCLUDING that flat part (subtotal + delivery + VAT -
   // coupon + flat; e.g. ৳100 + ৳50 + ৳10 flat = ৳160, 2% = ৳3.2, shopper
-  // pays ৳163.2 — see VendorPaymentGateway.platformChargePercent's own
+  // pays ৳163.2 - see VendorPaymentGateway.platformChargePercent's own
   // schema comment), rounded to paisa like the server. Independent of
   // feeHidden below (the server resolves/charges this itself regardless
   // of what the client sends).
@@ -642,7 +642,7 @@ export function useCheckout(
           (platformChargeFlat + (platformChargeBase * Number(selectedGateway.platformChargePercent)) / 100) * 100,
         ) / 100
       : 0;
-  // Plan.codFeeHidden/onlinePaymentFeeHidden — display-only "fold this
+  // Plan.codFeeHidden/onlinePaymentFeeHidden - display-only "fold this
   // fee silently into the total instead of breaking it out" switch (see
   // StorePaymentGateway.feeHidden's own comment). Only ever hides the
   // LINE ITEM and its contribution to the shown total; the shopper is
@@ -654,7 +654,7 @@ export function useCheckout(
   // so a cached gateway list can't bring it back.
   const visiblePlatformChargeAmount =
     selectedGateway?.feeHidden || selectedGateway?.type === 'ONLINE_PAYMENT' ? 0 : platformChargeAmount;
-  // The real total (includes a hidden fee) — never shown to the shopper
+  // The real total (includes a hidden fee) - never shown to the shopper
   // as a number, only used so Place Order and any "you'll be charged X"
   // confirmation stay correct even when a fee is hidden from the
   // itemized breakdown. What's actually rendered is visibleGrandTotal.
@@ -668,7 +668,7 @@ export function useCheckout(
       ? Math.max(0, Math.min(rewards.balance, Math.floor((grandTotalBeforeGiftCard * rewards.maxRedeemPercent) / 100), Math.floor(grandTotalBeforeGiftCard)))
       : 0;
   const grandTotalAfterPoints = grandTotalBeforeGiftCard - rewardPointsAmount;
-  // Marketing > Gift Cards — takes as much of what is left as the card
+  // Marketing > Gift Cards - takes as much of what is left as the card
   // holds, same rule as OrdersService.create. Zero unless a card is applied,
   // so Medium/Minimal (which never show one) are unchanged.
   const giftCardAmount = appliedGiftCard
@@ -678,7 +678,7 @@ export function useCheckout(
   // The server won't put a card that pays the whole order on an online gateway
   // (it can't take a payment of nothing), so checkout warns about it.
   const giftCardCoversOrder = (giftCardAmount > 0 || rewardPointsAmount > 0) && giftCardAmount + rewardPointsAmount >= grandTotalBeforeGiftCard;
-  // What checkout actually displays as "Total" — silently excludes a
+  // What checkout actually displays as "Total" - silently excludes a
   // hidden fee, per Plan.codFeeHidden/onlinePaymentFeeHidden's design:
   // the shopper never sees it broken out, but they ARE still charged it
   // (the order the server creates always uses the real amount above).
@@ -687,7 +687,7 @@ export function useCheckout(
     subtotal + effectiveDeliveryCharge + vatAmount + visiblePlatformChargeAmount - totalDiscount - rewardPointsAmount - giftCardAmount,
   );
 
-  // Store > COD Guard > "Delivery charge in advance" — a preview of what OrdersService.resolveCodAdvance
+  // Store > COD Guard > "Delivery charge in advance" - a preview of what OrdersService.resolveCodAdvance
   // will charge, so StorePal's checkout can say "pay ৳60 now, ৳X on delivery". The server decides: this
   // only mirrors it (COD selected, vendor minimum met, delivery charge above 0, never more than the total).
   // Null on every other payment method and on Medium/Minimal (the server never reports codAdvance there).
@@ -716,7 +716,7 @@ export function useCheckout(
         }
       : null;
 
-  // Same limits enforced server-side by CreateOrderDto — kept here too so
+  // Same limits enforced server-side by CreateOrderDto - kept here too so
   // a shopper is stopped from typing past them in the first place, on
   // every theme (Medium, Minimal, StorePal all share this hook).
   const FIELD_MAX_LENGTH: Record<keyof CheckoutFormState, number> = {
@@ -737,7 +737,7 @@ export function useCheckout(
     setErrors((prev) => ({ ...prev, [field]: undefined }));
   };
 
-  // A coupon already applied is invalidated (silently — the shopper is
+  // A coupon already applied is invalidated (silently - the shopper is
   // re-prompted rather than shown an error mid-checkout) whenever the
   // cart or phone it was checked against changes, since either could
   // change whether it's still valid or what it's worth.
@@ -834,7 +834,7 @@ export function useCheckout(
     return Object.keys(next).length === 0 && senderOk;
   };
 
-  // Store > COD Guard "Before Checkout" (StorePal only — the server never
+  // Store > COD Guard "Before Checkout" (StorePal only - the server never
   // reports codSmsVerification for other themes, so Medium/Minimal never
   // reach this). `codOtp` is set once a code was texted to `phone`;
   // StorePal's CheckoutView then shows the code input, and the next Place
@@ -987,10 +987,10 @@ export function useCheckout(
       clearInstantHandoff(subdomain);
 
       // Any non-COD gateway: the order now exists (PAYMENT_INITIATED,
-      // stock already decremented — see OrdersService.create), but it
+      // stock already decremented - see OrdersService.create), but it
       // isn't "placed" from the shopper's point of view until that
       // gateway confirms payment. Cart is cleared either way (the order
-      // is real either way — re-adding the same items and checking out
+      // is real either way - re-adding the same items and checking out
       // again would double the stock decrement), but the redirect goes
       // to that gateway's hosted checkout instead of the thank-you/
       // orders page; that page is only reached once payment-callback
@@ -1040,7 +1040,7 @@ export function useCheckout(
       router.push(`/store/${subdomain}/${redirectTo === 'thank-you' ? 'thank-you' : 'orders'}`);
     } catch (err) {
       // The server wanted a COD Guard code this page didn't know to ask
-      // for (settings changed since the page loaded) — text one and show
+      // for (settings changed since the page loaded) - text one and show
       // the code input, same as the proactive path above.
       if (err instanceof CheckoutApiError && err.code === 'COD_VERIFICATION_REQUIRED' && !otpForThisPhone) {
         try {
@@ -1077,7 +1077,7 @@ export function useCheckout(
     storeName,
     subtotal,
     deliveryCharge: effectiveDeliveryCharge,
-    // Per-zone map (Inside/Outside Dhaka) — the vendor's real saved
+    // Per-zone map (Inside/Outside Dhaka) - the vendor's real saved
     // charges once loaded, same frozen 70/130 fallback otherwise. Lets
     // a theme show both options' prices before one is actually chosen
     // (see StorePal's own Shipping Option <select>); Medium/Minimal
@@ -1101,19 +1101,19 @@ export function useCheckout(
     preferredSlotId,
     setPreferredSlot: setSlotPick,
     zone,
-    // Applies regardless of payment method now (see comment above) —
+    // Applies regardless of payment method now (see comment above) -
     // StorePal's CheckoutView/ThankYouView show this as "VAT";
     // Medium/Minimal don't render it as its own line (their JSX is
     // unchanged), it's only folded silently into grandTotal below, same
     // as it already was for MANUAL orders.
     vatAmount,
-    // The currently-selected gateway's own Platform Charge — never shown
+    // The currently-selected gateway's own Platform Charge - never shown
     // until a gateway is actually picked (StorePal's CheckoutView is
     // responsible for that "only render once selected" UI; this value
     // itself always reflects whatever paymentMethod currently is, which
     // defaults to COD). Medium/Minimal don't render this as its own line
     // either, same "folded silently into grandTotal" treatment as
-    // vatAmount. This is the REAL amount (see its own comment above) —
+    // vatAmount. This is the REAL amount (see its own comment above) -
     // StorePal's CheckoutView/ThankYouView use visiblePlatformChargeAmount
     // instead for what to actually render, so a Plan-hidden fee never
     // appears there even though it's still charged.
@@ -1121,7 +1121,7 @@ export function useCheckout(
     visiblePlatformChargeAmount,
     // grandTotal is the REAL total (what Place Order actually charges);
     // visibleGrandTotal is what StorePal's CheckoutView renders as
-    // "Total" — identical unless the selected gateway's fee is
+    // "Total" - identical unless the selected gateway's fee is
     // Plan-hidden, in which case visibleGrandTotal silently excludes it.
     // Medium/Minimal only ever render grandTotal (no hide-fee UI exists
     // there), which is correct: neither breaks out platformChargeAmount
@@ -1200,7 +1200,7 @@ export function useCheckout(
     giftCardError,
     applyGiftCard,
     removeGiftCard,
-    // Store > Payment Gateway's enabled gateway list for this vendor —
+    // Store > Payment Gateway's enabled gateway list for this vendor -
     // StorePal's CheckoutView renders one radio per entry; Medium/Minimal
     // ignore this entirely (unchanged JSX), same as paymentMethod/
     // setPaymentMethod below.
@@ -1234,7 +1234,7 @@ export function useCheckout(
     // Store > Store Away: null while the store is open (always on Medium/Minimal). In BROWSE_ONLY the
     // server refuses the order, so the checkout shows why instead of the place-order button.
     storeAway: vendorCharges?.storeAway ?? null,
-    // Store > COD Guard's before-checkout SMS step — only StorePal's
+    // Store > COD Guard's before-checkout SMS step - only StorePal's
     // CheckoutView renders these (see codOtp's own comment above).
     codOtpPhone: codOtp && codOtp.phone === form.phone.trim() ? codOtp.phone : null,
     codOtpCode,
