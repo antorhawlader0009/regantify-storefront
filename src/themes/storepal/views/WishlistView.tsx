@@ -110,78 +110,91 @@ export function WishlistRow({ product, subdomain, storeName, alertsOn, notifying
     openCartDrawer();
   };
 
+  // Percent saved, shown beside a sale price.
+  const savePct = originalPrice && Number(originalPrice) > 0 ? Math.round((1 - Number(displayPrice) / Number(originalPrice)) * 100) : 0;
+
   return (
-    <li className="grid grid-cols-[88px_minmax(0,1fr)_40px] gap-x-4 gap-y-3 border-b border-line py-6 lg:grid-cols-[minmax(0,1fr)_140px_220px_48px] lg:items-center">
-      <div className="col-span-2 flex gap-4 lg:col-span-1">
-        <Link href={href} className="relative block h-[88px] w-[88px] shrink-0 overflow-hidden bg-canvas">
-          {product.photoUrls[0] && <Image src={product.photoUrls[0]} alt={product.name} fill sizes="88px" className="object-cover" />}
-        </Link>
-        <div className="min-w-0">
-          <Link href={href} className="text-[15px] text-ink hover:underline">
+    <li className="flex gap-3.5 px-4 py-4">
+      <Link href={href} className="relative block h-20 w-20 shrink-0 overflow-hidden rounded-lg border border-line bg-canvas">
+        {product.photoUrls[0] && <Image src={product.photoUrls[0]} alt={product.name} fill sizes="80px" className="object-cover" />}
+      </Link>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-start justify-between gap-3">
+          <Link href={href} className="line-clamp-2 text-[14.5px] font-semibold leading-snug text-ink hover:text-accent">
             {product.name}
           </Link>
-          {options.map((o) => (
-            <div key={o.id} className="mt-2 flex flex-wrap items-center gap-1.5">
-              <span className="text-[13px] text-muted">{o.name}:</span>
-              {o.values.map((v) => {
-                const on = selected[o.name] === v;
-                return (
-                  <button
-                    key={v}
-                    type="button"
-                    onClick={() => {
-                      setSelected((s) => ({ ...s, [o.name]: v }));
-                      setWarn(false);
-                    }}
-                    aria-pressed={on}
-                    className={`min-w-[30px] rounded-sm border px-2 py-1 text-[12.5px] ${on ? 'border-ink bg-ink text-white' : 'border-line-strong bg-surface text-ink'}`}
-                  >
-                    {v}
-                  </button>
-                );
-              })}
-            </div>
-          ))}
-          {warn && <p className="mt-1.5 text-[12px] text-accent">{t('Choose an option first')}</p>}
+          {onRemove && (
+            <button
+              type="button"
+              onClick={onRemove}
+              aria-label={t('Remove from wishlist')}
+              title={t('Remove')}
+              className="-mr-1.5 -mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-muted transition-colors hover:bg-red-50 hover:text-red-600"
+            >
+              <X size={17} />
+            </button>
+          )}
         </div>
-      </div>
-      {onRemove ? (
-        <button
-          type="button"
-          onClick={onRemove}
-          aria-label={t('Remove from wishlist')}
-          className="order-last row-start-1 col-start-3 flex h-8 w-8 items-center justify-center justify-self-end rounded-full border border-red-400 text-red-500 lg:order-none lg:row-auto lg:col-start-4"
-        >
-          <X size={16} />
-        </button>
-      ) : (
-        <span className="order-last row-start-1 col-start-3 lg:order-none lg:row-auto lg:col-start-4" />
-      )}
-      <div className="col-start-2 text-[15px] text-muted lg:col-start-auto">
-        {formatPrice(displayPrice)}
-        {originalPrice && <span className="ml-2 text-[12.5px] line-through opacity-70">{formatPrice(originalPrice)}</span>}
-      </div>
-      <div className="col-span-3 flex flex-col gap-2 lg:col-span-1 lg:col-start-auto">
-        <button
-          type="button"
-          onClick={addToCart}
-          className="inline-flex items-center justify-center gap-2 rounded-sm bg-ink px-5 py-3 text-[13.5px] font-semibold text-white"
-        >
-          <ShoppingBag size={15} />
-          {added ? t('Added ✓') : outOfStock ? t('Out of stock') : needsProductPage ? t('View Product') : t('Add to Cart')}
-        </button>
-        {alertsOn && (
+
+        <p className="m-0 mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+          <span className="text-[15px] font-bold tabular-nums text-ink">{formatPrice(displayPrice)}</span>
+          {originalPrice && <span className="text-[12.5px] tabular-nums text-muted line-through">{formatPrice(originalPrice)}</span>}
+          {savePct > 0 && <span className="rounded-md bg-success/10 px-1.5 py-0.5 text-[11px] font-semibold text-success">-{savePct}%</span>}
+          {outOfStock && <span className="text-[12px] font-medium text-red-600">{t('Out of stock')}</span>}
+        </p>
+
+        {options.map((o) => (
+          <div key={o.id} className="mt-2 flex flex-wrap items-center gap-1.5">
+            <span className="mr-0.5 text-[12px] text-muted">{o.name}</span>
+            {o.values.map((v) => {
+              const on = selected[o.name] === v;
+              return (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => {
+                    setSelected((s) => ({ ...s, [o.name]: v }));
+                    setWarn(false);
+                  }}
+                  aria-pressed={on}
+                  className={`h-7 min-w-[30px] rounded-md border px-2 text-[12px] font-medium transition-colors ${
+                    on ? 'border-ink bg-ink text-white' : 'border-line-strong bg-surface text-ink hover:border-ink'
+                  }`}
+                >
+                  {v}
+                </button>
+              );
+            })}
+          </div>
+        ))}
+        {warn && <p className="m-0 mt-1.5 text-[12px] text-accent">{t('Choose an option first')}</p>}
+
+        <div className="mt-3 flex flex-wrap items-center gap-2">
           <button
             type="button"
-            onClick={onToggleNotify}
-            aria-pressed={notifying}
-            className={`rounded-sm border px-2 py-1.5 text-[12px] font-semibold ${notifying ? 'border-ink bg-ink text-white' : 'border-line-strong bg-surface text-ink'}`}
+            onClick={addToCart}
+            className={`inline-flex h-9 items-center justify-center gap-1.5 rounded-lg px-4 text-[13px] font-semibold transition-colors ${
+              added ? 'bg-success text-white' : outOfStock || needsProductPage ? 'border border-line-strong bg-surface text-ink hover:border-ink' : 'bg-accent text-white hover:bg-accent-dark'
+            }`}
           >
-            {notifying
-              ? bn ? 'দাম কমলে জানানো হবে ✓' : 'We will tell you ✓'
-              : bn ? 'দাম কমলে বা স্টক এলে জানান' : 'Tell me if cheaper or back in stock'}
+            <ShoppingBag size={15} aria-hidden />
+            {added ? t('Added ✓') : outOfStock ? t('Out of stock') : needsProductPage ? t('View Product') : t('Add to Cart')}
           </button>
-        )}
+          {alertsOn && (
+            <button
+              type="button"
+              onClick={onToggleNotify}
+              aria-pressed={notifying}
+              className={`h-9 rounded-lg border px-3 text-[12px] font-semibold transition-colors ${
+                notifying ? 'border-ink bg-ink text-white' : 'border-line-strong bg-surface text-ink hover:border-ink'
+              }`}
+            >
+              {notifying
+                ? bn ? 'দাম কমলে জানানো হবে ✓' : 'We will tell you ✓'
+                : bn ? 'দাম কমলে বা স্টক এলে জানান' : 'Tell me if cheaper or back in stock'}
+            </button>
+          )}
+        </div>
       </div>
     </li>
   );
@@ -228,13 +241,18 @@ function ShareWishlist({ subdomain, slugs }: { subdomain: string; slugs: string[
   };
 
   return (
-    <div>
-      <button type="button" onClick={() => (open ? setOpen(false) : void share())} className="inline-flex items-center gap-2 rounded-sm bg-ink px-8 py-4 text-[13px] font-semibold uppercase tracking-wide text-white">
-        <Share2 size={15} />
-        {t('Share my wishlist')}
+    <div className="relative">
+      <button
+        type="button"
+        onClick={() => (open ? setOpen(false) : void share())}
+        aria-expanded={open}
+        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-3 text-[13px] font-semibold text-ink transition-colors hover:border-ink"
+      >
+        <Share2 size={15} aria-hidden />
+        {t('Share')}
       </button>
       {open && (
-        <div className="mt-3 w-full max-w-sm rounded-md border border-line bg-surface p-3">
+        <div className="absolute right-0 top-full z-10 mt-2 w-72 rounded-xl border border-line bg-surface p-3 shadow-[0_12px_32px_-8px_rgba(16,24,40,0.25)]">
           <p className="m-0 text-[12.5px] text-muted">{t('Send your list to friends or family so they know what to gift you.')}</p>
           <input
             value={name}
@@ -300,7 +318,25 @@ export function WishlistView({
     // Inside the My account dialog (2026-10-29, the owner's request), like Orders and Addresses; no page of its own.
     <AccountLayout subdomain={subdomain} storeName={storeName} categories={categories}>
       <div>
-        <h2 className="text-[18px] font-bold text-ink mb-4">{t('Wishlist')}</h2>
+        {/* Title with the count, and Share / Clear as quiet actions in the same row. */}
+        <div className="mb-4 flex flex-wrap items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="m-0 text-[20px] font-bold text-ink">{t('Wishlist')}</h2>
+            {saved.length > 0 && <p className="m-0 mt-0.5 text-[13px] text-muted">{t('{n} saved').replace('{n}', String(saved.length))}</p>}
+          </div>
+          {saved.length > 0 && (
+            <div className="flex items-start gap-1">
+              <ShareWishlist subdomain={subdomain} slugs={saved.map((p) => p.slug)} />
+              <button
+                type="button"
+                onClick={clear}
+                className="inline-flex h-9 items-center rounded-lg px-3 text-[13px] font-semibold text-muted transition-colors hover:bg-red-50 hover:text-red-600"
+              >
+                {t('Clear all')}
+              </button>
+            </div>
+          )}
+        </div>
         {alertError && <p className="mb-3 text-[12.5px] text-accent">{alertError}</p>}
         {saved.length === 0 ? (
           <div className="text-center py-16 bg-surface border border-line rounded-lg">
@@ -315,13 +351,7 @@ export function WishlistView({
           </div>
         ) : (
           <>
-            <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_140px_220px_48px] gap-4 border-b border-line pb-3 text-[12.5px] font-semibold uppercase tracking-wide text-ink">
-              <span>{t('Product')}</span>
-              <span>{t('Price')}</span>
-              <span>{t('Action')}</span>
-              <span />
-            </div>
-            <ul>
+            <ul className="m-0 list-none divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface p-0">
               {saved.map((product) => (
                 <WishlistRow
                   key={product.id}
@@ -335,16 +365,6 @@ export function WishlistView({
                 />
               ))}
             </ul>
-            <div className="mt-6 flex flex-wrap items-start gap-3">
-              <ShareWishlist subdomain={subdomain} slugs={saved.map((p) => p.slug)} />
-              <button
-                type="button"
-                onClick={clear}
-                className="rounded-sm bg-line px-8 py-4 text-[13px] font-semibold uppercase tracking-wide text-ink hover:bg-line-strong"
-              >
-                {t('Clear wishlist')}
-              </button>
-            </div>
           </>
         )}
       </div>

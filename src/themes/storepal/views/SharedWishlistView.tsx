@@ -54,7 +54,7 @@ export function SharedWishlistView({ subdomain, storeName, ownerName, valid, pro
           </div>
         ) : (
           <>
-            <ul>
+            <ul className="m-0 list-none divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface p-0">
               {products.map((product) => (
                 <WishlistRow key={product.id} product={product} subdomain={subdomain} storeName={storeName} alertsOn={false} notifying={false} onToggleNotify={() => undefined} />
               ))}

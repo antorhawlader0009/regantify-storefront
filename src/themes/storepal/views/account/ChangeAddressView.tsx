@@ -174,7 +174,12 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
       <p className="text-[13px] text-muted mb-5">
         Save up to {max} addresses. At checkout, tap one to fill in the address and the delivery charge.
       </p>
-      <OtherStoreAddressesCard subdomain={subdomain} />
+      <OtherStoreAddressesCard
+        subdomain={subdomain}
+        onCopied={() => {
+          if (accessToken) void listMyAddresses(accessToken).then(apply).catch(() => undefined);
+        }}
+      />
 
       {error && <p className="text-[12.5px] text-accent mb-3">{error}</p>}
 

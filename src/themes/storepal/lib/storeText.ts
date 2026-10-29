@@ -283,6 +283,13 @@ const BN: Record<string, string> = {
   'Delivery address': 'ডেলিভারির ঠিকানা',
   'Pick up from the shop': 'দোকান থেকে নেবেন',
   'View order details': 'অর্ডারের বিস্তারিত দেখুন',
+  'My orders': 'আমার অর্ডার',
+  '{n} orders': '{n}টি অর্ডার',
+  '{n} items': '{n}টি পণ্য',
+  '{n} saved': '{n}টি সেভ করা',
+  Remove: 'সরান',
+  'Clear all': 'সব মুছুন',
+  Share: 'শেয়ার',
   // Account dialog: Google sign-in
   'Connect Google': 'গুগল যুক্ত করুন',
   'Google connected': 'গুগল যুক্ত আছে',
@@ -294,6 +301,15 @@ const BN: Record<string, string> = {
   'Connect your Google account. Addresses you saved at other Regantify shops with it can then be used here.':
     'আপনার গুগল অ্যাকাউন্ট যুক্ত করুন। এই অ্যাকাউন্ট দিয়ে অন্য Regantify দোকানে রাখা ঠিকানাগুলো তখন এখানেও ব্যবহার করতে পারবেন।',
   'Choose addresses': 'ঠিকানা বেছে নিন',
+  '{n} addresses found at your other shops': 'আপনার অন্য দোকানে {n}টি ঠিকানা পাওয়া গেছে',
+  '{n} addresses added from your other shops': 'অন্য দোকান থেকে {n}টি ঠিকানা যোগ হয়েছে',
+  'No addresses found at your other shops': 'অন্য দোকানে কোনো ঠিকানা পাওয়া যায়নি',
+  'They are in your list below. You can edit or delete them.': 'নিচের তালিকায় আছে। চাইলে বদলাতে বা মুছতে পারবেন।',
+  'Add them to this shop to use them at checkout.': 'চেকআউটে ব্যবহার করতে এই দোকানে যোগ করুন।',
+  'Your list is full. Delete an address to make room.': 'তালিকা ভরা। জায়গা করতে একটি ঠিকানা মুছুন।',
+  'Addresses you save at other Regantify shops with this Google account will show up here.':
+    'এই গুগল অ্যাকাউন্ট দিয়ে অন্য Regantify দোকানে রাখা ঠিকানা এখানে দেখা যাবে।',
+  'Add them here': 'এখানে যোগ করুন',
   // Footer address and map
   'Find us': 'আমাদের ঠিকানা',
   Map: 'ম্যাপ',

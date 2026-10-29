@@ -2,6 +2,8 @@
 
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { useStorePalDesign } from '../../lib/designSettings';
 import { useRouter } from 'next/navigation';
 import { ChevronRight, Gift, Package, RotateCcw } from 'lucide-react';
 import { OrderDetailsDialog } from '../../components/OrderDetailsDialog';
@@ -34,6 +36,10 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
   const addLine = useCartStore((s) => s.addLine);
   const clearStore = useCartStore((s) => s.clearStore);
   const t = useStoreText();
+  // "24 Oct 2026": Bangla month names on a Bangla store, digits always English (the owner's rule).
+  const bn = useStorePalDesign().storeLanguage === 'bn';
+  const dateText = (iso: string) =>
+    new Date(iso).toLocaleDateString(bn ? 'bn-BD-u-nu-latn' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   const [rewards, setRewards] = useState<CustomerRewards | null>(null);
   const [busyId, setBusyId] = useState<string | null>(null);
   const [again, setAgain] = useState<{ orderId: string; text: string } | null>(null);
@@ -121,97 +127,129 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
 
   return (
     <AccountLayout subdomain={subdomain} storeName={storeName}>
-      <h1 className="text-[22px] font-bold text-ink mb-5">{customer ? `Hi, ${customer.fullName}` : 'Your Orders'}</h1>
-
-      {rewards && (
-        <div className="mb-4 flex items-center gap-3 rounded-lg border border-line bg-surface px-5 py-4">
-          <Gift size={22} className="text-accent" aria-hidden />
-          <div>
-            <p className="text-[15px] font-semibold text-ink">{t('Reward points')}: {rewards.balance}</p>
-            <p className="text-[12.5px] text-muted">{t('Use them at checkout. 1 point = ৳1.')}</p>
+      <div className="@container">
+        <div className="mb-4 flex items-end justify-between gap-3">
+          <div className="min-w-0">
+            <h2 className="m-0 text-[20px] font-bold text-ink">{t('My orders')}</h2>
+            {customer && <p className="m-0 mt-0.5 truncate text-[13px] text-muted">{t('Hi, {name}').replace('{name}', customer.fullName)}</p>}
           </div>
-        </div>
-      )}
-
-      <div className="bg-surface border border-line rounded-lg overflow-hidden">
-        <div className="px-5 py-3 border-b border-line">
-          <p className="text-[15px] font-semibold text-ink">{customer ? 'Recent Orders' : 'Your Orders'}</p>
+          {orders && orders.length > 0 && (
+            <p className="m-0 shrink-0 text-[12.5px] text-muted">{t('{n} orders').replace('{n}', String(orders.length))}</p>
+          )}
         </div>
 
-        {error && <div className="p-5 text-[13px] text-accent">{error}</div>}
+        {rewards && (
+          <div className="mb-4 flex items-center gap-3 rounded-xl border border-line bg-surface px-4 py-3.5">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent" aria-hidden>
+              <Gift size={19} />
+            </span>
+            <div className="min-w-0">
+              <p className="m-0 text-[14.5px] font-semibold text-ink">
+                {t('Reward points')}: <span className="tabular-nums">{rewards.balance}</span>
+              </p>
+              <p className="m-0 text-[12.5px] text-muted">{t('Use them at checkout. 1 point = ৳1.')}</p>
+            </div>
+          </div>
+        )}
 
-        {!error && orders === null && <div className="p-8 text-center text-[13px] text-muted">Loading…</div>}
+        {error && <div className="rounded-xl border border-line bg-surface p-5 text-[13px] text-accent">{error}</div>}
+        {!error && orders === null && <div className="rounded-xl border border-line bg-surface p-8 text-center text-[13px] text-muted">{t('Loading…')}</div>}
 
         {orders && orders.length === 0 && (
-          <div className="p-8 text-center">
-            <p className="text-[13.5px] text-ink font-medium mb-1">{t('No orders yet')}</p>
-            <p className="text-[12.5px] text-muted mb-4">{t('Orders you place with this store will show up here.')}</p>
-            <Link
-              href={`/store/${subdomain}`}
-              className="inline-block px-4 py-2 rounded-md bg-ink hover:bg-ink/90 text-white text-[12.5px] font-bold transition-colors"
-            >
+          <div className="rounded-xl border border-line bg-surface px-6 py-12 text-center">
+            <span className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-canvas text-muted" aria-hidden>
+              <Package size={22} />
+            </span>
+            <p className="m-0 mb-1 text-[14.5px] font-semibold text-ink">{t('No orders yet')}</p>
+            <p className="m-0 mb-4 text-[12.5px] text-muted">{t('Orders you place with this store will show up here.')}</p>
+            <Link href={`/store/${subdomain}`} className="inline-block rounded-lg bg-ink px-5 py-2.5 text-[13px] font-bold text-white hover:opacity-90">
               {t('Start shopping')}
             </Link>
           </div>
         )}
 
         {orders && orders.length > 0 && (
-          <table className="w-full text-[13.5px]">
-            <thead>
-              <tr className="bg-canvas text-left text-ink">
-                <th className="px-5 py-3 font-semibold">Invoice</th>
-                <th className="px-5 py-3 font-semibold">Status</th>
-                <th className="px-5 py-3 font-semibold text-right">Amount</th>
-                <th className="px-5 py-3" />
-              </tr>
-            </thead>
-            <tbody>
-              {orders.map((order) => (
-                <tr key={order.id} className="border-t border-line">
-                  <td className="px-5 py-3">
-                    {/* Opens the order's details (items, money, address) in a dialog. */}
-                    <button
-                      type="button"
-                      onClick={() => setOpenId(order.id)}
-                      title={t('View order details')}
-                      className="group inline-flex items-center gap-1 rounded text-left font-semibold text-ink underline decoration-line-strong decoration-dotted underline-offset-4 transition-colors hover:text-accent hover:decoration-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-                    >
-                      {orderLabel(order)}
-                      <ChevronRight size={14} className="text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" aria-hidden />
-                    </button>
-                  </td>
-                  <td className="px-5 py-3 text-muted">
-                    {customerOrderStatusLabel(order.status)}
-                    {order.courierTracking && <CourierTrackingLine tracking={order.courierTracking} />}
-                  </td>
-                  <td className="px-5 py-3 text-right font-semibold text-ink">{formatPrice(order.total)}</td>
-                  <td className="px-5 py-3 text-right">
-                    <button
-                      type="button"
-                      onClick={() => buyAgain(order.id)}
-                      disabled={busyId !== null}
-                      className="inline-flex items-center gap-1.5 rounded-md border border-line px-3 py-1.5 text-[12.5px] font-semibold text-ink hover:bg-canvas disabled:opacity-60"
-                    >
-                      <RotateCcw size={13} aria-hidden />
-                      {busyId === order.id ? '…' : t('Buy again')}
-                    </button>
-                    {/* The memo of any order, not only on the thank-you page (the account answer carries the full order). */}
-                    {order.status !== 'PAYMENT_INITIATED' && order.status !== 'PAYMENT_FAILED' && (
-                      <MemoDownloadButton
-                        order={order as unknown as TrackedOrder}
-                        storeName={storeName}
-                        logoUrl={logoUrl}
-                        label={t('Memo')}
-                        busyLabel="…"
-                        className="mt-1.5 ml-1.5 !px-3 !py-1.5 !text-[12.5px]"
-                      />
-                    )}
-                    {again?.orderId === order.id && <p className="m-0 mt-1 text-[12px] text-muted">{again.text}</p>}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ul className="m-0 list-none divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface p-0">
+            {orders.map((order) => {
+              const pics = order.items.map((it) => it.productImage).filter((p): p is string => !!p).slice(0, 3);
+              const pieces = order.items.reduce((n, it) => n + it.quantity, 0);
+              const tone =
+                order.status === 'COMPLETED'
+                  ? 'bg-success/10 text-success'
+                  : ['CANCELLED', 'PAYMENT_FAILED', 'RETURN', 'REFUNDED'].includes(order.status)
+                    ? 'bg-red-50 text-red-600'
+                    : 'bg-accent/10 text-accent';
+              const memoable = order.status !== 'PAYMENT_INITIATED' && order.status !== 'PAYMENT_FAILED';
+              return (
+                <li key={order.id} className="group relative px-4 py-3.5 transition-colors hover:bg-canvas/70">
+                  <div className="flex flex-wrap items-center gap-x-4 gap-y-3 @xl:flex-nowrap">
+                    {/* Photos of what is in the order, stacked. */}
+                    <div className="flex shrink-0 -space-x-3" aria-hidden>
+                      {pics.length > 0 ? (
+                        pics.map((src, i) => (
+                          <span key={i} className="relative block h-12 w-12 overflow-hidden rounded-lg border-2 border-surface bg-canvas shadow-[0_1px_3px_rgba(16,24,40,0.12)]">
+                            <Image src={src} alt="" fill sizes="48px" className="object-cover" />
+                          </span>
+                        ))
+                      ) : (
+                        <span className="flex h-12 w-12 items-center justify-center rounded-lg bg-canvas text-muted">
+                          <Package size={20} />
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      {/* The order number opens the details; its click area covers the whole row. */}
+                      <button
+                        type="button"
+                        onClick={() => setOpenId(order.id)}
+                        className="block max-w-full truncate text-left text-[14.5px] font-semibold text-ink after:absolute after:inset-0 after:content-[''] group-hover:text-accent focus-visible:outline-none focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-accent"
+                        title={t('View order details')}
+                      >
+                        {orderLabel(order)}
+                      </button>
+                      <p className="m-0 mt-0.5 text-[12.5px] text-muted">
+                        {dateText(order.createdAt)} · {t('{n} items').replace('{n}', String(pieces))}
+                      </p>
+                      {order.courierTracking && (
+                        <div className="relative z-[1] mt-1 text-[12px]">
+                          <CourierTrackingLine tracking={order.courierTracking} />
+                        </div>
+                      )}
+                    </div>
+
+                    <span className={`shrink-0 rounded-full px-2.5 py-1 text-[12px] font-semibold ${tone}`}>{customerOrderStatusLabel(order.status)}</span>
+                    <span className="w-24 shrink-0 text-right text-[15px] font-bold tabular-nums text-ink">{formatPrice(order.total)}</span>
+
+                    <div className="relative z-[1] flex shrink-0 items-center gap-1.5 max-@xl:w-full max-@xl:justify-end">
+                      <button
+                        type="button"
+                        onClick={() => buyAgain(order.id)}
+                        disabled={busyId !== null}
+                        className="inline-flex h-9 items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-3 text-[12.5px] font-semibold text-ink transition-colors hover:border-accent hover:text-accent disabled:opacity-60"
+                      >
+                        <RotateCcw size={14} aria-hidden />
+                        {busyId === order.id ? '…' : t('Buy again')}
+                      </button>
+                      {/* The memo of any order, not only on the thank-you page (the account answer carries the full order). */}
+                      {memoable && (
+                        <MemoDownloadButton
+                          order={order as unknown as TrackedOrder}
+                          storeName={storeName}
+                          logoUrl={logoUrl}
+                          label={t('Memo')}
+                          busyLabel="…"
+                          className="!h-9 !rounded-lg !px-3 !py-0 !text-[12.5px]"
+                        />
+                      )}
+                      <ChevronRight size={18} className="hidden text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent @xl:block" aria-hidden />
+                    </div>
+                  </div>
+                  {again?.orderId === order.id && <p className="relative z-[1] m-0 mt-2 text-right text-[12px] text-muted">{again.text}</p>}
+                </li>
+              );
+            })}
+          </ul>
         )}
       </div>
 

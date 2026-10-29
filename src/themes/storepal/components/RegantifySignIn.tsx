@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { connectLogin, getMyProfile, getRegantifyConnectConfig, regantifyConnectUrl, startGoogleLink, type RegantifyConnectConfig } from '@/lib/customerAuthApi';
+import { connectLogin, copyOtherStoreAddresses, getRegantifyConnectConfig, otherStoreAddressCount, regantifyConnectUrl, startGoogleLink, type RegantifyConnectConfig } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { useAuthDialog } from '../lib/authDialog';
 import { useStoreText } from '../lib/storeText';
@@ -75,38 +75,39 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
  * a card that opens the central page's address step with Google. Either way the other shops' addresses are only ever listed on the central
  * Regantify page, never on this store's page. Only Google brings them (the owner's rule): the same phone at another store does not.
  */
-export function OtherStoreAddressesCard({ subdomain }: { subdomain: string }) {
+export function OtherStoreAddressesCard({ subdomain, onCopied }: { subdomain: string; onCopied?: () => void }) {
   const t = useStoreText();
   const accessToken = useCustomerAuthStore((s) => s.accessToken);
   const [cfg, setCfg] = useState<RegantifyConnectConfig | null>(null);
-  const [connected, setConnected] = useState<boolean | null>(null);
+  // Google-connected: how many addresses from other shops could come here (a count only, never the addresses on this page).
+  const [other, setOther] = useState<{ google: boolean; count: number; room: number } | null>(null);
   const [busy, setBusy] = useState(false);
+  const [done, setDone] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [reload, setReload] = useState(0);
   useEffect(() => {
     let alive = true;
     getRegantifyConnectConfig().then((c) => alive && setCfg(c));
     if (accessToken) {
-      getMyProfile(accessToken)
-        .then((p) => alive && setConnected(!!p.googleConnected))
-        .catch(() => alive && setConnected(false));
+      otherStoreAddressCount(accessToken)
+        .then((r) => alive && setOther(r))
+        .catch(() => alive && setOther({ google: false, count: 0, room: 0 }));
     }
     return () => {
       alive = false;
     };
-  }, [accessToken]);
-  if (!cfg?.enabled || !cfg.url || connected === null) return null;
+  }, [accessToken, reload]);
+  if (!cfg?.enabled || !cfg.url || other === null) return null;
   // Other stores' addresses come only with Google (the owner's rule): no Google sign-in on the server, no card.
   if (!cfg.google) return null;
+  const connected = other.google;
 
-  const open = async () => {
+  // Not connected yet: connect Google (the central page then offers the addresses to pick).
+  const connect = async () => {
+    if (!accessToken) return;
     setBusy(true);
     setError(null);
     try {
-      if (connected) {
-        window.location.assign(regantifyConnectUrl(cfg.url!, subdomain, window.location.href, 'google'));
-        return;
-      }
-      if (!accessToken) return;
       const { url } = await startGoogleLink(accessToken, window.location.href);
       window.location.assign(url);
     } catch (err) {
@@ -114,32 +115,71 @@ export function OtherStoreAddressesCard({ subdomain }: { subdomain: string }) {
       setBusy(false);
     }
   };
+  // Connected: copy them here in one tap, no second Google sign-in.
+  const bring = async () => {
+    if (!accessToken) return;
+    setBusy(true);
+    setError(null);
+    try {
+      const { copied } = await copyOtherStoreAddresses(accessToken);
+      setDone(copied);
+      onCopied?.();
+      setReload((n) => n + 1);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('Something went wrong. Please try again.'));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const title = !connected
+    ? t('Use addresses from your other shops')
+    : done !== null
+      ? t('{n} addresses added from your other shops').replace('{n}', String(done))
+      : other.count > 0
+        ? t('{n} addresses found at your other shops').replace('{n}', String(other.count))
+        : t('No addresses found at your other shops');
+  const note = !connected
+    ? t('Connect your Google account. Addresses you saved at other Regantify shops with it can then be used here.')
+    : done !== null
+      ? t('They are in your list below. You can edit or delete them.')
+      : other.count > 0
+        ? other.room > 0
+          ? t('Add them to this shop to use them at checkout.')
+          : t('Your list is full. Delete an address to make room.')
+        : t('Addresses you save at other Regantify shops with this Google account will show up here.');
+  const action = !connected ? (
+    <button
+      type="button"
+      onClick={() => void connect()}
+      disabled={busy}
+      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-4 py-2 text-[13px] font-semibold text-ink shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-colors hover:bg-canvas disabled:opacity-60"
+    >
+      <GoogleMark size={15} />
+      {busy ? t('Opening Google…') : t('Connect Google')}
+    </button>
+  ) : done === null && other.count > 0 && other.room > 0 ? (
+    <button
+      type="button"
+      onClick={() => void bring()}
+      disabled={busy}
+      className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+    >
+      {busy ? t('Adding…') : t('Add them here')}
+    </button>
+  ) : null;
 
   return (
     <div className="mb-5 flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 sm:flex-row sm:items-center sm:gap-4">
       <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-white" aria-hidden>
         <GoogleMark size={20} />
       </span>
-      <div className="min-w-0 flex-1">
-        <p className="m-0 text-[14px] font-semibold text-ink">
-          {connected ? t('Addresses from your other shops') : t('Use addresses from your other shops')}
-        </p>
-        <p className="m-0 mt-0.5 text-[12.5px] leading-snug text-muted">
-          {connected
-            ? t('Pick the addresses you saved at other Regantify shops to use here.')
-            : t('Connect your Google account. Addresses you saved at other Regantify shops with it can then be used here.')}
-        </p>
+      <div className="min-w-0 flex-1" aria-live="polite">
+        <p className="m-0 text-[14px] font-semibold text-ink">{title}</p>
+        <p className="m-0 mt-0.5 text-[12.5px] leading-snug text-muted">{note}</p>
         {error && <p className="m-0 mt-1 text-[12px] text-accent">{error}</p>}
       </div>
-      <button
-        type="button"
-        onClick={() => void open()}
-        disabled={busy}
-        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-4 py-2 text-[13px] font-semibold text-ink shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-colors hover:bg-canvas disabled:opacity-60"
-      >
-        {!connected && <GoogleMark size={15} />}
-        {busy ? t('Opening Google…') : connected ? t('Choose addresses') : t('Connect Google')}
-      </button>
+      {action}
     </div>
   );
 }

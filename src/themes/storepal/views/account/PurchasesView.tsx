@@ -7,6 +7,7 @@ import { Check, RotateCcw, ShoppingBag, Star } from 'lucide-react';
 import { encodeCartLink } from '@/lib/cartLink';
 import { fetchSharedCart } from '@/lib/checkoutApi';
 import { useCartStore } from '@/providers/cart-store-provider';
+import { useCheckoutDialog } from '../../lib/checkoutDialog';
 import { deleteOwnReview, fetchCustomerPurchases, updateOwnReview, type CustomerPurchase } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { useStoreText } from '../../lib/storeText';
@@ -37,6 +38,7 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
   const [reload, setReload] = useState(0);
   // "Buy again" per product: busy, added, or why it could not go in the cart.
   const addLine = useCartStore((s) => s.addLine);
+  const openCheckout = useCheckoutDialog((s) => s.openDialog);
   const [again, setAgain] = useState<Record<string, 'busy' | 'added' | 'soldOut' | 'choose'>>({});
 
   // One piece of the same size/colour as last time, at today's price and stock (looked up like a shared cart link).
@@ -68,7 +70,13 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
         productId: line.productId,
         variantId: line.variantId ?? undefined,
       });
-      setAgain((s) => ({ ...s, [key]: 'added' }));
+      // Straight to the checkout (it opens over the account dialog), like the product page's Buy Now; the button is ready again after.
+      setAgain((s) => {
+        const next = { ...s };
+        delete next[key];
+        return next;
+      });
+      openCheckout();
     } catch {
       setAgain((s) => ({ ...s, [key]: 'choose' }));
     }
@@ -143,12 +151,18 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
             const state = again[key];
             return (
               <li key={key} className="flex flex-wrap gap-3 p-4 sm:flex-nowrap">
+                {/* Photo, name and details open the product page (the name's link covers this whole part); the review buttons
+                    inside sit above it and still work on their own. */}
+                <div className={`group/row relative -m-1.5 flex min-w-0 flex-1 gap-3 rounded-lg p-1.5 ${href ? 'transition-colors hover:bg-canvas' : ''}`}>
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-canvas">
                   {it.photo && <Image src={it.photo} alt="" fill sizes="64px" className="object-cover" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   {href ? (
-                    <Link href={href} className="text-[14px] font-semibold text-ink hover:text-accent line-clamp-2">
+                    <Link
+                      href={href}
+                      className="text-[14px] font-semibold text-ink line-clamp-2 group-hover/row:text-accent after:absolute after:inset-0 after:rounded-lg after:content-[''] focus-visible:outline-none focus-visible:after:outline focus-visible:after:outline-2 focus-visible:after:outline-accent"
+                    >
                       {it.name}
                     </Link>
                   ) : (
@@ -160,7 +174,7 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
                     {it.orders > 1 ? ` · ${t('Bought {n} times').replace('{n}', String(it.orders))}` : ''}
                   </p>
 
-                  <div className="mt-2">
+                  <div className="relative z-[1] mt-2">
                     {it.review && editing === it.review.id && accessToken ? (
                       <OwnReviewForm
                         review={it.review}
@@ -234,6 +248,8 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
                   </div>
                 </div>
 
+                </div>
+
                 {/* Buy again and review, side by side on the right (below the details on a phone). */}
                 {href && (
                   <div className="flex w-full shrink-0 flex-col gap-2 sm:w-44">
@@ -263,9 +279,10 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
                         {state === 'busy' ? t('Adding…') : state === 'soldOut' ? t('Out of stock') : t('Buy again')}
                       </button>
                     )}
-                    {!it.review && (
+                    {/* A review only once the product was delivered (the owner's rule, 2026-10-29); it then counts as a verified buyer's. */}
+                    {!it.review && it.received && it.reviewToken && (
                       <Link
-                        href={it.reviewToken ? `${href}?order=${encodeURIComponent(it.reviewToken)}` : `${href}?review=1`}
+                        href={`${href}?order=${encodeURIComponent(it.reviewToken)}`}
                         className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-ink px-3 py-2 text-[13px] font-semibold text-ink transition-colors hover:bg-ink hover:text-white"
                       >
                         <Star size={15} aria-hidden />
@@ -273,7 +290,7 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
                       </Link>
                     )}
                     {!it.review && !it.received && (
-                      <p className="m-0 text-center text-[11.5px] leading-snug text-muted">{t('Verified buyer mark comes after delivery.')}</p>
+                      <p className="m-0 text-center text-[11.5px] leading-snug text-muted">{t('You can review it once it is delivered.')}</p>
                     )}
                   </div>
                 )}

@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { Download, Package, MapPin, Phone, ArrowRight } from 'lucide-react';
+import { StoreDialogFrame } from '../components/StoreDialogFrame';
 import { useTrackOrder } from '@/lib/useTrackOrder';
 import type { TrackedOrder } from '@/lib/checkoutApi';
 import { orderLabel } from '@/lib/orderLabel';
@@ -14,7 +15,6 @@ import { useEffect, useState } from 'react';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { StoreHeader } from '../components/StoreHeader';
-import { StoreFooter } from '../components/StoreFooter';
 import { CodOrderVerification } from '../components/CodOrderVerification';
 import { CancelOrderCard } from '../components/CancelOrderCard';
 import { PrepaidOfferCard } from '@/components/PrepaidOfferCard';
@@ -136,7 +136,9 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
         socialLinks={socialLinks}
       />
 
-      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-8 sm:py-10">
+      {/* Opens as a dialog over the store (2026-10-29, the owner's request). */}
+      <StoreDialogFrame subdomain={subdomain} label={t('Thank you for your order!')}>
+      <main className="px-3 py-8 sm:px-8 sm:py-10">
         {/* Animated success mark */}
         <div className="flex flex-col items-center text-center mb-8">
           <div className="storepal-success-circle w-20 h-20 rounded-full bg-success-bg flex items-center justify-center mb-5">
@@ -371,8 +373,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
           .
         </p>
       </main>
-
-      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
+      </StoreDialogFrame>
     </div>
   );
 }

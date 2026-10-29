@@ -346,6 +346,16 @@ export interface SavedAddressList {
   max: number;
 }
 
+/** How many addresses saved at other stores could be brought here (a count only; Google-connected accounts). */
+export function otherStoreAddressCount(accessToken: string): Promise<{ google: boolean; count: number; room: number }> {
+  return authFetch('/v1/customer-auth/me/other-store-addresses', accessToken);
+}
+
+/** Copies the addresses saved at other stores into this store's list (as many as fit). */
+export function copyOtherStoreAddresses(accessToken: string): Promise<{ copied: number }> {
+  return authFetch('/v1/customer-auth/me/other-store-addresses/copy', accessToken, { method: 'POST', body: {} });
+}
+
 export function listMyAddresses(accessToken: string): Promise<SavedAddressList> {
   return authFetch<SavedAddressList>('/v1/customer-auth/me/addresses', accessToken);
 }
