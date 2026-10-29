@@ -159,6 +159,16 @@ function Timeline({ entries, lang }: { entries: TrackedTimelineEntry[]; lang: Tr
  * page and the order-number lookup: status and progress, the courier block, the timeline, what was
  * ordered, where it is going, and how to reach the store. Mobile first: one column, 40px+ tap targets.
  */
+const REFUND_METHOD: Record<string, { en: string; bn: string }> = {
+  BKASH: { en: 'bKash', bn: 'বিকাশ' },
+  NAGAD: { en: 'Nagad', bn: 'নগদ' },
+  ROCKET: { en: 'Rocket', bn: 'রকেট' },
+  BANK: { en: 'bank transfer', bn: 'ব্যাংক ট্রান্সফার' },
+  CASH: { en: 'cash', bn: 'নগদ টাকা' },
+  GATEWAY: { en: 'the payment gateway', bn: 'পেমেন্ট গেটওয়ে' },
+  OTHER: { en: 'another way', bn: 'অন্য উপায়ে' },
+};
+
 export function TrackOrderBody({
   order,
   lang,
@@ -246,6 +256,26 @@ export function TrackOrderBody({
             {lang === 'bn' ? 'কোড ছাড়া পণ্য দেওয়া হবে না। কাউকে শেয়ার করবেন না।' : 'The shop hands the order over only with this code. Do not share it.'}
           </p>
         </section>
+      )}
+
+      {/* Money paid back by the store (Orders > Refunds to pay): the shopper sees it here, not only by SMS. */}
+      {(order.refundsPaid?.length ?? 0) > 0 && (
+        <div className="mt-4 rounded-lg border border-line bg-success-bg px-4 py-3 text-[13px] text-ink">
+          <p className="m-0 font-semibold">{lang === 'bn' ? 'দোকান আপনার টাকা ফেরত দিয়েছে' : 'The store has paid your money back'}</p>
+          <ul className="m-0 mt-1.5 list-none p-0 space-y-1">
+            {order.refundsPaid!.map((r, i) => {
+              const how = REFUND_METHOD[r.method]?.[lang === 'bn' ? 'bn' : 'en'] ?? r.method;
+              const when = new Date(r.paidAt).toLocaleDateString(lang === 'bn' ? 'bn-BD' : 'en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+              return (
+                <li key={i}>
+                  <span className="font-semibold">{formatPrice(r.amount)}</span>{' '}
+                  {lang === 'bn' ? `${how} দিয়ে, ${when}` : `by ${how}, ${when}`}
+                  {r.reference && <span className="text-muted"> · {lang === 'bn' ? 'রেফারেন্স' : 'Ref'} {r.reference}</span>}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       )}
 
       {/* The parcel was split (TellMe idea 59): what was in stock goes first, the rest follows in its own order. */}

@@ -488,6 +488,8 @@ export interface TrackedOrder {
   preferredDeliveryDate?: string | null;
   /** The parcel was split into this many orders (TellMe idea 59); 0 = never split. */
   splitParts?: number;
+  /** Money the store recorded as paid back to the shopper (Orders > Refunds to pay); empty or missing when none. */
+  refundsPaid?: Array<{ amount: number; method: string; reference: string | null; paidAt: string }>;
   /** Reseller system Step 17: the other orders of the same checkout (parcels from other sellers, or the store's own). */
   groupParts?: Array<{ orderRef: string; trackingToken: string | null; total: number; status: string; items: string[]; shipsSeparately: boolean }>;
   // Public order number (tracking-plan.md Step 2); null on an order the backfill has not reached.

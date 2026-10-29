@@ -8,7 +8,7 @@ import { decodeStoreSegment } from '@/lib/storeAddress';
 // /store/{sub}/checkout form, not the clean /checkout.
 //
 // Blocked: the buying flow and one-person pages (nothing there is worth listing, and the crawler would only waste visits).
-// Cart, wishlist and compare are left crawlable on purpose: they say `noindex` themselves (middleware.ts), and a crawler that
+// Cart and wishlist are left crawlable on purpose: they say `noindex` themselves (middleware.ts), and a crawler that
 // is not allowed in can never read that.
 // A store that switched indexing off (Store > SEO) blocks everything and has no sitemap line.
 // The short ones end in a slash so "/t/" cannot catch some other page that merely starts with the letter.

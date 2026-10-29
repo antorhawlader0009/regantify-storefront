@@ -11,7 +11,7 @@ import { suggestZone } from '@/lib/deliveryZone';
 import { BdAddressPicker } from '@/components/BdAddressPicker';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { preOrderDateText } from '../lib/preOrderDate';
-import { useCheckout } from '@/lib/useCheckout';
+import { useCheckout, withArea } from '@/lib/useCheckout';
 import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { takePendingCoupon } from '../lib/pendingCoupon';
 import { takeInstantPrefill } from '@/lib/instantCheckout';
@@ -82,8 +82,13 @@ const EN = {
   district: 'District',
   districtPlaceholder: 'Select your district and thana',
   thanaPlaceholder: 'Thana / Upazila',
-  place: 'District & Thana / Upazila',
+  place: 'District, Thana & Area',
   searchPlace: 'Search',
+  area: 'Area',
+  noThanaWarning: 'You haven’t chosen a thana or area. You can still order, but the rider may take longer to find you.',
+  noAreaWarning: 'You haven’t chosen an area. You can still order, but adding it helps the rider find you.',
+  areaPlaceholder: 'Area (optional)',
+  typeArea: 'Type your area',
   homeDelivery: 'Home delivery',
   deliveryFound: (zone: string, price: string) => `${zone} delivery: ${price}`,
   thanaNeedsDistrict: 'Choose a district first',
@@ -213,8 +218,13 @@ const BN: Copy = {
   district: 'জেলা',
   districtPlaceholder: 'আপনার জেলা ও থানা বাছুন',
   thanaPlaceholder: 'থানা / উপজেলা',
-  place: 'জেলা ও থানা / উপজেলা',
+  place: 'জেলা, থানা ও এলাকা',
   searchPlace: 'খুঁজুন',
+  area: 'এলাকা',
+  noThanaWarning: 'থানা ও এলাকা বাছাই করা হয়নি। অর্ডার করা যাবে, তবে ডেলিভারিম্যানের আপনাকে খুঁজে পেতে দেরি হতে পারে।',
+  noAreaWarning: 'এলাকা বাছাই করা হয়নি। অর্ডার করা যাবে, তবে এলাকা দিলে ডেলিভারিম্যান সহজে খুঁজে পাবে।',
+  areaPlaceholder: 'এলাকা (ঐচ্ছিক)',
+  typeArea: 'আপনার এলাকা লিখুন',
   homeDelivery: 'বাসায় ডেলিভারি',
   deliveryFound: (zone: string, price: string) => `${zone} ডেলিভারি: ${price}`,
   thanaNeedsDistrict: 'আগে জেলা বাছুন',
@@ -310,6 +320,8 @@ const BN: Copy = {
     'Enter your full name.': 'আপনার পূর্ণ নাম দিন।',
     'Enter a valid 11-digit phone number.': 'সঠিক ১১ সংখ্যার ফোন নম্বর দিন।',
     'Enter your delivery address.': 'আপনার ডেলিভারি ঠিকানা দিন।',
+    'Choose your district.': 'আপনার জেলা বাছাই করুন।',
+    'Choose your thana or area.': 'আপনার থানা বা এলাকা বাছাই করুন।',
   },
 };
 
@@ -349,6 +361,8 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
     visibleGrandTotal,
     extraParts,
     updateField,
+    area,
+    setArea,
     botTrap,
     setBotTrap,
     handlePlaceOrder,
@@ -729,7 +743,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   }`}
                 />
                 {errors.address && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.address)}</p>}
-                {!errors.address && addressLeft && addressProblem(form.address, [form.city, form.district]) && (
+                {!errors.address && addressLeft && addressProblem(withArea(form.address, area), [form.city, form.district]) && (
                   <p role="status" className="mt-1.5 text-[12px] text-muted">
                     {t.addressHint}
                   </p>
@@ -740,8 +754,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               <BdAddressPicker
                 district={form.district}
                 thana={form.city}
+                area={area}
                 onDistrict={(value) => updateField('district', value)}
                 onThana={(value) => updateField('city', value)}
+                onArea={setArea}
                 lang={lang}
                 labels={{
                   district: t.district,
@@ -754,11 +770,21 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   typeThana: t.typeThana,
                   place: t.place,
                   search: t.searchPlace,
+                  area: t.area,
+                  areaPlaceholder: t.areaPlaceholder,
+                  typeArea: t.typeArea,
                 }}
                 labelClassName="block text-[13.5px] font-medium text-ink mb-1.5"
                 controlClassName="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
               />
+              {errors.district && <p className="-mt-2 text-[12px] text-accent">{tr(errors.district)}</p>}
               {errors.city && <p className="-mt-2 text-[12px] text-accent">{tr(errors.city)}</p>}
+              {/* Thana and area are optional, but without them the rider has a harder time: a gentle warning, never a block. */}
+              {!errors.district && !errors.city && form.district.trim() && (!form.city.trim() || !area.trim()) && (
+                <p role="status" className="-mt-2 rounded-md bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
+                  {!form.city.trim() ? t.noThanaWarning : t.noAreaWarning}
+                </p>
+              )}
               {/* What the address works out to (there is no zone dropdown any more). */}
               {form.district.trim() && (
                 <p role="status" className="-mt-2 text-[12.5px] text-muted">

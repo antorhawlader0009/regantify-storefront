@@ -24,11 +24,19 @@ export async function getProductQuestions(subdomain: string, slug: string): Prom
   return data.questions;
 }
 
-/** Sends a question. No account needed; it stays unseen until the store answers it. */
-export async function askProductQuestion(subdomain: string, slug: string, input: { customerName: string; question: string }): Promise<void> {
+/**
+ * Sends a question. No account needed; it stays unseen until the store answers it. A guest may give a phone so the store
+ * can text the answer; a signed-in shopper sends their token instead and the account phone is used.
+ */
+export async function askProductQuestion(
+  subdomain: string,
+  slug: string,
+  input: { customerName: string; question: string; customerPhone?: string },
+  accessToken?: string | null,
+): Promise<void> {
   const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products/${slug}/questions`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...(accessToken ? { Authorization: `Bearer ${accessToken}` } : {}) },
     body: JSON.stringify(input),
   });
   if (!res.ok) {

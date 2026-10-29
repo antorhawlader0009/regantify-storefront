@@ -930,9 +930,10 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const headerHere = useHeaderPresence((s) => s.count > 0);
   // The round bubble and its teaser step out of the way while something full-screen is open (checkout, sign-in, photo
   // viewer, quick add, size guide, menus: lib/floatingCover.tsx) and on the cart page, where they would sit on the
-  // total and the Checkout button. An open chat or a call is never hidden by this.
+  // total and the Checkout button. On a phone the cart drawer is full screen, so the bubble hides while it is open too
+  // (on a computer it only steps aside, see the transform below). An open chat or a call is never hidden by this.
   const layerOpen = useFloatingCovered();
-  const bubbleCovered = layerOpen || checkoutOpen || /\/cart\/?$/.test(pathname ?? '');
+  const bubbleCovered = layerOpen || checkoutOpen || (phone && cartOpen) || /\/cart\/?$/.test(pathname ?? '');
   // The call is offered: this browser can do it, the store has it on, and the chat can answer.
   const callable = canCall && voiceOn && available === true;
   // The shopper opened the assistant (or a call link): the voice files start downloading quietly in the background

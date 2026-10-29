@@ -11,7 +11,6 @@ import { getShopperStore } from './customerAuthApi';
 export type FeatureKey =
   | 'VOICE_SEARCH'
   | 'PHOTO_SEARCH'
-  | 'COMPARE_ADD'
   | 'QUICK_ADD'
   | 'SIZE_GUIDE_OPEN'
   | 'DELIVERY_CHECK'

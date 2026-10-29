@@ -11,7 +11,6 @@ import { isOutOfStock } from '@/lib/productDisplay';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { SoldRecentLine } from './SoldRecentLine';
-import { useCompare } from '../lib/compare';
 import { RatingStars } from '@/components/RatingStars';
 import { lowStockLabel, useLowStock, useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
@@ -108,8 +107,6 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
   const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
   const wishlist = useWishlist(subdomain);
-  const compare = useCompare(subdomain);
-  const [compareFull, setCompareFull] = useState(false);
   const [selected, setSelected] = useState<Record<string, string>>({});
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
@@ -355,24 +352,6 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
 
         {lowStockText && !quoteOnly && <p className="text-[11.5px] font-semibold text-accent-dark">{lowStockText}</p>}
         {!quoteOnly && <SoldRecentLine product={product} />}
-        {/* Compare (TellMe idea 74): tick up to 3 products. Only when the store turned it on (IDEA-13, off by default). */}
-        {!quoteOnly && design.compareEnabled === true && (
-          <label className="flex w-fit cursor-pointer items-center gap-1.5 text-[11.5px] text-muted">
-            <input
-              type="checkbox"
-              checked={compare.has(product.slug)}
-              onChange={() => {
-                const wasPicked = compare.has(product.slug);
-                const ok = compare.toggle(product.slug);
-                if (ok && !wasPicked) trackFeature('COMPARE_ADD');
-                setCompareFull(!ok);
-              }}
-              className="h-3.5 w-3.5"
-            />
-            {design.storeLanguage === 'bn' ? 'তুলনা' : 'Compare'}
-            {compareFull && <span className="text-accent">{design.storeLanguage === 'bn' ? '(সর্বোচ্চ ৩টা)' : '(max 3)'}</span>}
-          </label>
-        )}
 
         {comingSoon ? (
           <p className="text-[13.5px] font-bold text-accent">{t('Coming soon')}</p>

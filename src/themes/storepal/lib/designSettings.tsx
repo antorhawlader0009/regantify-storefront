@@ -3,6 +3,7 @@
 import { createContext, useContext, type ReactNode } from 'react';
 import { bnDigits, storeText } from './storeText';
 import type { BusinessHours } from '@/lib/businessHours';
+import { useShopperLanguage, type ShopperLanguage } from '@/lib/shopperLanguage';
 import type { StorefrontDesignSettings, StorefrontLmsForms, StorefrontMenuItem } from '@/lib/storefrontApi';
 
 // Store > Design settings the vendor never saved. Must render StorePal
@@ -80,26 +81,39 @@ const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
 export function StorePalDesignProvider({
   settings,
   showOutOfStockBadge = true,
+  restockNotify = false,
   lowStock = null,
   businessHours = null,
   lmsForms = null,
   verifiedSeller = null,
+  subdomain,
   children,
 }: {
+  /** For the shopper's own language pick (kept per store in localStorage). */
+  subdomain?: string;
   /** "Verified seller" badge (super-admin-new.md Step 12); null = not verified. */
   verifiedSeller?: VerifiedSeller | null;
   /** Shop and support hours (TellMe idea 73); null = none set, or the store is away. */
   businessHours?: BusinessHours | null;
   settings: StorefrontDesignSettings | null;
   showOutOfStockBadge?: boolean;
+  /** Stock Settings > "Tell me when it is back" (off by default). */
+  restockNotify?: boolean;
   lowStock?: LowStockConfig | null;
   lmsForms?: StorefrontLmsForms | null;
   children: ReactNode;
 }) {
   // Spread over the defaults so an older cached response missing a newer
-  // field still gets a sane value.
+  // field still gets a sane value. The language is the shopper's own pick when
+  // they switched (lib/shopperLanguage.ts), else the store's default, so every
+  // StorePal text, price and date follows the switch with no other change.
+  const merged = { ...DEFAULT_DESIGN, ...settings };
+  const storeDefault: ShopperLanguage = merged.storeLanguage === 'bn' ? 'bn' : 'en';
+  const lang = useShopperLanguage(subdomain, storeDefault);
   return (
-    <DesignContext.Provider value={{ ...DEFAULT_DESIGN, ...settings }}>
+    <LanguageContext.Provider value={lang}>
+    <DesignContext.Provider value={{ ...merged, storeLanguage: lang.language }}>
+      <RestockNotifyContext.Provider value={restockNotify}>
       <OutOfStockBadgeContext.Provider value={showOutOfStockBadge}>
         <LowStockContext.Provider value={lowStock}>
           <BusinessHoursContext.Provider value={businessHours}>
@@ -109,8 +123,21 @@ export function StorePalDesignProvider({
           </BusinessHoursContext.Provider>
         </LowStockContext.Provider>
       </OutOfStockBadgeContext.Provider>
+      </RestockNotifyContext.Provider>
     </DesignContext.Provider>
+    </LanguageContext.Provider>
   );
+}
+
+const LanguageContext = createContext<{ language: ShopperLanguage; storeDefault: ShopperLanguage; setLanguage: (l: ShopperLanguage) => void }>({
+  language: 'en',
+  storeDefault: 'en',
+  setLanguage: () => undefined,
+});
+
+/** The language on screen and the shopper's switch (saved per store in this browser). */
+export function useStoreLanguageSwitch() {
+  return useContext(LanguageContext);
 }
 
 // The store's LMS forms (LMS-plan.md Step 9), for product cards: a
@@ -141,6 +168,12 @@ export function useStorePalDesign() {
 // carried by the same provider so ProductCard needs no new prop at its
 // many call sites.
 const OutOfStockBadgeContext = createContext(true);
+const RestockNotifyContext = createContext(false);
+
+/** Whether sold-out products show the "Tell me when it is back" form (Stock Settings, off by default). */
+export function useRestockNotify() {
+  return useContext(RestockNotifyContext);
+}
 
 export function useShowOutOfStockBadge() {
   return useContext(OutOfStockBadgeContext);

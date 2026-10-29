@@ -4,7 +4,7 @@ import { useEffect, useState, type ComponentProps } from 'react';
 import { StorePalProductPanel as ProductPurchasePanel } from './StorePalProductPanel';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
-import { lowStockLabel, stockMessages, useLowStock, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
+import { lowStockLabel, stockMessages, useLowStock, useRestockNotify, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { trackMetaViewContent } from '@/lib/metaPixelEvents';
 import { trackViewItem } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
@@ -41,6 +41,8 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
   // The store's LMS forms (LMS-plan.md Step 9), from the StorePal layout's store info.
   const lmsForms = useStorePalLmsForms();
   const lowStock = useLowStock();
+  // "Tell me when it is back" is off unless the store turned it on in Stock Settings (2026-10-29).
+  const restockOn = useRestockNotify();
   const { product } = props;
   const [form, setForm] = useState<StoreFormType | null>(null);
 
@@ -56,7 +58,7 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
   const quoteOnly = !!product.quoteOnly && !!lmsForms;
   const notifyMe = !quoteOnly && !!lmsForms?.notifyMe && !props.backorder && isOutOfStock(product);
   // Sold out on a store without the LMS "notify me" form (TellMe idea 136): the plain phone-number waitlist, on every plan.
-  const restockNotify = !quoteOnly && !lmsForms?.notifyMe && !props.backorder && !product.comingSoon && isOutOfStock(product);
+  const restockNotify = restockOn && !quoteOnly && !lmsForms?.notifyMe && !props.backorder && !product.comingSoon && isOutOfStock(product);
   const callMeBack = !!lmsForms?.callMeBack;
   // Coming soon (TellMe idea 104): no price, no Buy; a "Notify me" form instead.
   const comingSoon = !!product.comingSoon;
@@ -111,7 +113,7 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
         titleExtra={<ShareButton name={product.name} price={Number(product.discountPrice ?? product.price)} />}
         leadSlots={leadSlots}
         // A sold-out size/colour gets its own form, unless the LMS notify form, backorders or coming-soon take over.
-        variantRestock={!quoteOnly && !lmsForms?.notifyMe && !props.backorder && !comingSoon}
+        variantRestock={restockOn && !quoteOnly && !lmsForms?.notifyMe && !props.backorder && !comingSoon}
         onAddedToCart={openCartDrawer}
         onBuyNow={openCheckout}
       />

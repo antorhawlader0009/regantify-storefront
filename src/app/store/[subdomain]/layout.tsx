@@ -15,7 +15,7 @@ import { StorePalDesignProvider } from '@/themes/storepal/lib/designSettings';
 import { UsdPriceProvider } from '@/lib/usdPrice';
 import { safeFontName, storeFontStyle, storeFontsHref } from '@/lib/storeFonts';
 import type { BusinessHours } from '@/lib/businessHours';
-import { LazyAiAssistantWidget, LazyCompareBar, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
+import { LazyAiAssistantWidget, LazyPopupCampaigns, LazyRecentBuyersPopup } from '@/themes/storepal/components/LazyWidgets';
 import { InstallAppBanner } from '@/themes/storepal/components/InstallAppBanner';
 import { WishlistSync } from '@/themes/storepal/components/WishlistSync';
 import { MetaPixel } from '@/components/MetaPixel';
@@ -180,6 +180,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let googleTagManager: StorefrontGoogleTagManager | null = null;
   let tiktokPixel: StorefrontTiktokPixel | null = null;
   let showOutOfStockBadge = true;
+  // "Tell me when it is back" on sold-out products: off unless the store turned it on (Stock Settings).
+  let restockNotify = false;
   let lowStock: { limit: number; hideCount: boolean } | null = null;
   let businessHours: BusinessHours | null = null;
   let verifiedSeller: { since: string; dbid: string | null } | null = null;
@@ -206,6 +208,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     googleTagManager = store.googleTagManager ?? null;
     tiktokPixel = store.tiktokPixel ?? null;
     showOutOfStockBadge = store.stockSettings?.showOutOfStockBadge !== false;
+    restockNotify = store.stockSettings?.restockNotifyEnabled === true;
     // The "Only 3 left" message is off for a store that allows backorders.
     if (store.stockSettings?.lowStockMessageEnabled && !store.stockSettings.allowBackorder) {
       lowStock = { limit: store.stockSettings.lowStockMessageLimit ?? 5, hideCount: !!store.stockSettings.hideStockCount };
@@ -304,9 +307,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (
-          <StorePalDesignProvider settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms} verifiedSeller={verifiedSeller}>
+          <StorePalDesignProvider subdomain={subdomain} settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} restockNotify={restockNotify} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms} verifiedSeller={verifiedSeller}>
             <WishlistSync subdomain={subdomain} />
-            <LazyCompareBar subdomain={subdomain} />
             {/* "Someone bought" popup (TellMe idea 123): off unless the store turned it on; real orders only. */}
             <LazyRecentBuyersPopup subdomain={subdomain} />
             {/* Store > Store Away (holiday mode): a strip above every page while the store is away. */}

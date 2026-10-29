@@ -3,11 +3,14 @@
 import { useState } from 'react';
 import { askProductQuestion, type ProductQuestion } from '@/lib/questionsApi';
 import { useStoreText } from '../lib/storeText';
+import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
+import { phoneInput } from '@/lib/phoneInput';
 
 /**
  * The "Questions" tab on a StorePal product page (TellMe idea 35): the questions the store has answered, and a form to
  * ask a new one. A new question is not shown until the store answers it, and the shopper is told so. The list is loaded
- * by the parent tabs (so the tab can show its count); no account or email is asked, only a name.
+ * by the parent tabs (so the tab can show its count); no account or email is asked, only a name. A guest may add a mobile
+ * so the store can text its answer; a signed-in shopper's account phone is used instead (the token is sent).
  */
 export function ProductQuestionsTab({
   subdomain,
@@ -23,7 +26,11 @@ export function ProductQuestionsTab({
 }) {
   const t = useStoreText();
   const [open, setOpen] = useState(false);
+  const customer = useCustomerAuthStore((s) => s.customer);
+  const accessToken = useCustomerAuthStore((s) => s.accessToken);
+  const accountPhone = customer && accessToken ? customer.phone : null;
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [question, setQuestion] = useState('');
   const [sending, setSending] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
@@ -36,9 +43,19 @@ export function ProductQuestionsTab({
       setProblem(t('Please enter your name and your question.'));
       return;
     }
+    // A shopper who is not signed in (or whose account has no phone) must give a mobile, so the store can text the answer.
+    if (!accountPhone && !/^01[3-9][0-9]{8}$/.test(phone.trim())) {
+      setProblem(t('Please enter your mobile number (01XXXXXXXXX).'));
+      return;
+    }
     setSending(true);
     try {
-      await askProductQuestion(subdomain, slug, { customerName: name.trim(), question: question.trim() });
+      await askProductQuestion(
+        subdomain,
+        slug,
+        { customerName: name.trim(), question: question.trim(), ...(!accountPhone && phone.trim() ? { customerPhone: phone.trim() } : {}) },
+        accessToken,
+      );
       setSent(true);
       setOpen(false);
       setQuestion('');
@@ -93,6 +110,21 @@ export function ProductQuestionsTab({
             placeholder={t('Your name')}
             className="w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none transition-colors focus:border-ink focus:bg-surface"
           />
+          {accountPhone ? (
+            <p className="text-[12px] text-muted">{t('The store may text its answer to your account phone.')}</p>
+          ) : (
+            <div>
+              <input
+                value={phone}
+                onChange={(e) => setPhone(phoneInput(e.target.value).slice(0, 14))}
+                inputMode="tel"
+                placeholder={t('Your mobile number')}
+                aria-required="true"
+                className="w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none transition-colors focus:border-ink focus:bg-surface"
+              />
+              <p className="mt-1 text-[11.5px] text-muted">{t('Give your number to get the answer by SMS.')}</p>
+            </div>
+          )}
           {problem && <p className="text-[12px] text-accent">{problem}</p>}
           <div className="flex gap-2">
             <button type="submit" disabled={sending} className="px-4 py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-bold disabled:opacity-60 shadow-sm transition-colors">

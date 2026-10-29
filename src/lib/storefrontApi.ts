@@ -304,8 +304,6 @@ export interface StorefrontDesignSettings {
   productShareEnabled?: boolean;
   /** Average star rating on the product page, cards and Google; missing = shown. */
   showRatings?: boolean;
-  /** "Compare" tick box on cards and the compare bar (IDEA-13); missing = off. */
-  compareEnabled?: boolean;
   /** "N bought in the last X days" window (TellMe idea 63): 0 or missing = off. */
   socialProofDays?: number;
   /** Wishlist price / restock alerts by SMS (TellMe idea 62). */
@@ -347,6 +345,8 @@ export interface StorefrontStockSettings {
   lowStockMessageEnabled?: boolean;
   lowStockMessageLimit?: number;
   hideStockCount?: boolean;
+  /** "Tell me when it is back" form on sold-out products; missing = off. */
+  restockNotifyEnabled?: boolean;
   // Store-wide warranty and return policy for products that set none of their own.
   defaultWarrantyKind?: string | null;
   defaultWarrantyCustom?: string | null;

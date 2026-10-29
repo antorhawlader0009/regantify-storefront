@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { X } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { ProductCard } from './ProductCard';
 import { recordView, useRecentlyViewed } from '../lib/recentlyViewed';
@@ -53,7 +54,12 @@ export function RecentlyViewed({ subdomain, storeName, currentSlug }: { subdomai
     <section aria-label={t('Recently viewed')} className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-[18px] font-bold text-ink">{t('Recently viewed')}</h2>
-        <button type="button" onClick={clear} className="text-[12px] text-muted hover:text-accent transition-colors">
+        <button
+          type="button"
+          onClick={clear}
+          className="inline-flex shrink-0 items-center gap-1 rounded-full border border-line-strong bg-surface px-3 py-1.5 text-[12.5px] font-bold text-ink shadow-sm transition-colors hover:border-accent hover:text-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          <X size={14} strokeWidth={2.5} aria-hidden />
           {t('Clear')}
         </button>
       </div>

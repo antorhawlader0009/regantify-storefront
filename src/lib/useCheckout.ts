@@ -69,6 +69,17 @@ const FALLBACK_GATEWAYS: StorePaymentGateway[] = [
 
 const HANDOFF_KEY = 'regantify-last-order';
 
+/**
+ * The address the order carries: what the shopper typed, then the area they picked ("House 12, Road 3, Mirpur-10"), unless
+ * the text already names it (in any letter case).
+ */
+export function withArea(address: string, area: string): string {
+  const text = address.trim();
+  const a = area.trim();
+  if (!a || text.toLowerCase().includes(a.toLowerCase())) return text;
+  return text ? `${text.replace(/[,s]+$/, '')}, ${a}` : a;
+}
+
 export interface CheckoutFormState {
   fullName: string;
   phone: string;
@@ -150,6 +161,9 @@ export function useCheckout(
     altPhone: '',
     email: '',
   });
+  // The area inside the thana ("Mirpur-10"), picked in the product page's delivery check or here (BdAddressPicker's third
+  // part). The order has no area field, so it is added to the end of the address when the order is placed (`withArea`).
+  const [area, setArea] = useState('');
   const [errors, setErrors] = useState<Partial<Record<keyof CheckoutFormState, string>>>({});
   const [placing, setPlacing] = useState(false);
   const [placeError, setPlaceError] = useState<string | null>(null);
@@ -397,13 +411,24 @@ export function useCheckout(
   useEffect(() => {
     const saved = readSavedPlace(subdomain);
     if (saved) {
-      setForm((prev) => (prev.district === '' ? { ...prev, district: saved.district, city: prev.city || saved.thana } : prev));
+      // Only StorePal's checkout (the one with `formRules`) shows the area box; elsewhere a saved area must not be added unseen.
+      const useArea = !!formRules && !!saved.area;
+      setForm((prev) => {
+        if (prev.district !== '') {
+          // Filled from elsewhere (saved details): the saved area still fits when it is the same district and thana.
+          if (useArea && prev.district === saved.district && prev.city === saved.thana) setArea(saved.area!);
+          return prev;
+        }
+        if (useArea && (!prev.city || prev.city === saved.thana)) setArea(saved.area!);
+        return { ...prev, district: saved.district, city: prev.city || saved.thana };
+      });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [subdomain]);
   useEffect(() => {
-    if (form.district.trim()) writeSavedPlace(subdomain, { district: form.district.trim(), thana: form.city.trim() });
-  }, [subdomain, form.district, form.city]);
+    // A checkout without the area box (no formRules) leaves the saved area as it is (`area` undefined keeps it for the same thana).
+    if (form.district.trim()) writeSavedPlace(subdomain, { district: form.district.trim(), thana: form.city.trim(), area: formRules ? area.trim() : undefined });
+  }, [subdomain, form.district, form.city, area]);
 
   // A logged-in shopper's order must be saved to their account, which the server only does for a valid
   // token. The 15-minute access token may have run out by the time they press Place Order, so take a
@@ -450,7 +475,7 @@ export function useCheckout(
         customerName: form.fullName.trim() || undefined,
         customerPhone: form.phone.trim() || undefined,
         customerNote: form.note.trim() || undefined,
-        shippingAddress: form.address.trim() || undefined,
+        shippingAddress: withArea(form.address, area) || undefined,
         items: lines.map((l) => ({
           productName: l.name,
           productSku: l.productSlug,
@@ -785,7 +810,10 @@ export function useCheckout(
     else if (formRules?.altPhone === 'REQUIRED' && !alt) next.altPhone = 'Enter a second phone number.';
     if (formRules?.email && formRules.email !== 'HIDDEN' && form.email.trim() && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(form.email.trim())) next.email = 'Enter a valid email, or leave it empty.';
     else if (formRules?.email === 'REQUIRED' && !form.email.trim()) next.email = 'Enter your email.';
-    if (formRules?.thana === 'REQUIRED' && zone !== 'PICKUP' && !form.city.trim()) next.city = 'Choose your thana or area.';
+    // StorePal's checkout always needs the district (the owner's rule, 2026-10-29; the server checks it too). Thana and area
+    // stay optional unless the store requires the thana; the dialog only warns when they are missing.
+    if (formRules && zone !== 'PICKUP' && !form.district.trim()) next.district = 'Choose your district.';
+    else if (formRules?.thana === 'REQUIRED' && zone !== 'PICKUP' && !form.city.trim()) next.city = 'Choose your thana or area.';
     // The sender of a gift (IDEA-21): a name is needed, a phone is optional and may be from any country.
     let senderOk = true;
     if (isGift && giftOption) {
@@ -926,7 +954,7 @@ export function useCheckout(
         fromStorePalCheckout: formRules ? true : undefined,
         botTrap: botTrap || undefined,
         fillMs: formRules ? Math.max(0, Math.round(Date.now() - openedAt.current)) : undefined,
-        shippingAddress: zone === 'PICKUP' ? 'Pickup from the shop' : form.address.trim(),
+        shippingAddress: zone === 'PICKUP' ? 'Pickup from the shop' : withArea(form.address, area),
         shippingCity: form.city.trim() || undefined,
         shippingDistrict: form.district.trim() || undefined,
         deliveryZone: zone,
@@ -1036,6 +1064,9 @@ export function useCheckout(
   return {
     hydrated,
     chargesReady: chargesSettled,
+    // The area inside the thana; added to the end of the address on the order.
+    area,
+    setArea,
     lines,
     setQuantity,
     removeLine,

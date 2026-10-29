@@ -31,6 +31,7 @@ import { useAuthDialog } from '../lib/authDialog';
 import type { StorefrontCategoryDetail, StorefrontMenuItem } from '@/lib/storefrontApi';
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../lib/designSettings';
 import { useWishlist } from '../lib/wishlist';
+import { LanguageSwitch } from './LanguageSwitch';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { searchProducts } from '../lib/searchMatch';
 import { CoverFloating } from '@/lib/floatingCover';
@@ -595,6 +596,7 @@ export function StoreHeader({
               <Phone size={21} strokeWidth={1.75} />
             </a>
           )}
+          <LanguageSwitch />
           {design.cardShowWishlist && (
             <Link
               href={`/store/${subdomain}/wishlist`}
