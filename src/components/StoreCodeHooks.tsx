@@ -25,7 +25,10 @@ export function storePageType(pathname: string, subdomain: string, search: URLSe
   let path = pathname;
   const prefix = `/store/${subdomain}`;
   if (path === prefix || path.startsWith(`${prefix}/`)) path = path.slice(prefix.length);
-  const first = path.split('/').filter(Boolean)[0] ?? '';
+  const parts = path.split('/').filter(Boolean);
+  const first = parts[0] ?? '';
+  // The wishlist opens inside the account dialog since 2026-10-29; it is still the "wishlist" page for sellers' code.
+  if (first === 'account' && parts[1] === 'wishlist') return 'wishlist';
   if (!first || first === 'browse') {
     if (search?.get('q')) return 'search';
     if (search?.get('category') || search?.get('brand')) return 'category';

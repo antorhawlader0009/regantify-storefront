@@ -216,6 +216,30 @@ export function StoreHeader({
   useEffect(() => () => {
     if (closeTimer.current) clearTimeout(closeTimer.current);
   }, []);
+  // Phones have no hover, so a finger never "leaves": the list closes on a tap anywhere else and on any scroll (the page or
+  // the category strip). A tap on the open category itself is handled by its button (it toggles).
+  useEffect(() => {
+    if (openCategory === null) return;
+    const close = () => setOpenCategory(null);
+    // A tap also filters the products, and the page changing height can fire a scroll at once: that one doesn't count.
+    const openedAt = Date.now();
+    const onScroll = () => {
+      if (Date.now() - openedAt > 400) close();
+    };
+    const onPointerDown = (e: PointerEvent) => {
+      const target = e.target as Element | null;
+      if (target?.closest('[role="menu"]') || target?.closest(`[data-cat-trigger="${CSS.escape(openCategory)}"]`)) return;
+      close();
+    };
+    document.addEventListener('pointerdown', onPointerDown, true);
+    window.addEventListener('scroll', onScroll, true);
+    return () => {
+      document.removeEventListener('pointerdown', onPointerDown, true);
+      window.removeEventListener('scroll', onScroll, true);
+    };
+  }, [openCategory]);
+  // Whether the last press was a finger: touch opens/closes the list by tapping, a mouse by hovering.
+  const lastPointerTouch = useRef(false);
   // The AI chat widget lives in the store layout (a call survives page changes) and shows only while a header is here.
   useEffect(() => {
     useHeaderPresence.getState().enter();
@@ -256,7 +280,8 @@ export function StoreHeader({
   const hasSiteMenu = design.siteMenu.length > 0;
   const hasMobileMenu = design.mobileMenu.length > 0;
   // Store > Design > Header Editor: logo size (MEDIUM is the old fixed size) and the cart total beside the bag.
-  const logoBox = { SMALL: 'h-7 w-24', MEDIUM: 'h-9 w-32', LARGE: 'h-12 w-44' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'h-9 w-32';
+  // The logo is as wide as the picture itself (up to the old box width), so a square logo leaves no gap before the name.
+  const logoBox = { SMALL: 'h-7 max-w-24', MEDIUM: 'h-9 max-w-32', LARGE: 'h-12 max-w-44' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'h-9 max-w-32';
   const logoText = { SMALL: 'text-xl', MEDIUM: 'text-2xl', LARGE: 'text-3xl' }[design.headerLogoSize ?? 'MEDIUM'] ?? 'text-2xl';
   // Logo picture and store name: both by default. With no logo uploaded, or with both switched off, the name still shows,
   // so the link to the home page is never empty.
@@ -389,7 +414,8 @@ export function StoreHeader({
 
   const goToSearch = (value: string) => {
     setSuggestionsOpen(false);
-    setSearch(value.trim() || null);
+    // Back to the top, where the results start (StoreQueryAdapter scrolls when asked).
+    setSearch(value.trim() || null, { scroll: true });
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
@@ -466,11 +492,19 @@ export function StoreHeader({
             <Menu size={22} />
           </button>
         )}
+        {/* On wider screens the logo side and the icons side get equal room, so the search bar sits in the middle. */}
+        {/* Never narrower than the logo and name (the search bar gives way instead), so they don't run under it. */}
+        <div className="min-w-0 flex items-center sm:flex-1 sm:basis-0 sm:min-w-fit">
         <Link href={`/store/${subdomain}`} data-rg="logo" className="min-w-0 flex items-center gap-2.5 sm:shrink-0">
           {showLogo && (
-            <span className={`relative block shrink-0 ${logoBox}`}>
-              <Image src={logoUrl!} alt={storeName} fill sizes="200px" className="object-contain object-left" />
-            </span>
+            <Image
+              src={logoUrl!}
+              alt={storeName}
+              width={400}
+              height={160}
+              sizes="200px"
+              className={`block shrink-0 w-auto object-contain object-left ${logoBox}`}
+            />
           )}
           {showName && (
             <span className={`font-display font-extrabold ${showLogo ? logoTextWithLogo : logoText} text-ink tracking-tight truncate max-w-[9rem] sm:max-w-none`}>
@@ -478,8 +512,9 @@ export function StoreHeader({
             </span>
           )}
         </Link>
+        </div>
 
-        <div ref={searchBoxRef} data-rg="search" className="hidden sm:block relative flex-1 max-w-2xl">
+        <div ref={searchBoxRef} data-rg="search" className="hidden sm:block relative min-w-0 flex-[4] max-w-2xl">
           <form onSubmit={handleSearchSubmit} className="flex w-full">
             <div className="flex w-full rounded-lg overflow-hidden border border-line-strong">
               <input
@@ -489,7 +524,7 @@ export function StoreHeader({
                 onFocus={() => setSuggestionsOpen(true)}
                 onPaste={handleSearchPaste}
                 placeholder={t('Search Your Product By Product Name, Code…')}
-                className="flex-1 px-4 py-2.5 text-[13.5px] text-ink bg-surface outline-none"
+                className="flex-1 min-w-0 px-4 py-2.5 text-[13.5px] text-ink bg-surface outline-none"
                 autoComplete="off"
               />
               {searchDraft && (
@@ -564,6 +599,7 @@ export function StoreHeader({
           )}
         </div>
 
+        <div className="ml-auto flex items-center justify-end gap-4 shrink-0 sm:flex-1 sm:basis-0">
         {/* "Call Us Now" + number (Store > Design > Header Editor; off by default). */}
         {design.headerPhoneEnabled && design.headerPhone?.trim() && (
           <a
@@ -578,7 +614,7 @@ export function StoreHeader({
           </a>
         )}
 
-        <div className="flex items-center gap-4 ml-auto shrink-0">
+        <div className="flex items-center gap-4 shrink-0">
           {/* Phones: the search behind an icon (it opens in place of this row). */}
           <button
             type="button"
@@ -602,7 +638,7 @@ export function StoreHeader({
           <LanguageSwitch />
           {design.cardShowWishlist && (
             <Link
-              href={`/store/${subdomain}/wishlist`}
+              href={`/store/${subdomain}/account/wishlist`}
               className="relative text-ink hover:text-accent transition-colors"
               aria-label={t('Wishlist')}
             >
@@ -658,6 +694,7 @@ export function StoreHeader({
               </span>
             )}
           </Link>
+        </div>
         </div>
       </div>
 
@@ -787,12 +824,23 @@ export function StoreHeader({
               return (
                 <div
                   key={cat}
+                  data-cat-trigger={cat}
                   className="relative"
-                  onMouseEnter={hasDropdown ? (e) => openDropdown(cat, e.currentTarget) : undefined}
-                  onMouseLeave={hasDropdown ? scheduleClose : undefined}
+                  onPointerEnter={hasDropdown ? (e) => e.pointerType === 'mouse' && openDropdown(cat, e.currentTarget) : undefined}
+                  onPointerLeave={hasDropdown ? (e) => e.pointerType === 'mouse' && scheduleClose() : undefined}
                 >
                   <button
-                    onClick={() => setActiveCategory(cat)}
+                    onPointerDown={(e) => {
+                      lastPointerTouch.current = e.pointerType !== 'mouse';
+                    }}
+                    onClick={(e) => {
+                      setActiveCategory(cat);
+                      // A finger tap opens the list, and a second tap on the same category closes it.
+                      if (hasDropdown && lastPointerTouch.current) {
+                        if (openCategory === cat) setOpenCategory(null);
+                        else openDropdown(cat, e.currentTarget.parentElement as HTMLElement);
+                      }
+                    }}
                     className={`flex items-center gap-1 text-[13px] font-medium whitespace-nowrap transition-colors ${
                       activeCategory === cat ? 'text-accent' : 'text-ink hover:text-accent'
                     }`}
@@ -809,11 +857,21 @@ export function StoreHeader({
                     createPortal(
                       <div
                         role="menu"
-                        onMouseEnter={() => {
-                          if (closeTimer.current) clearTimeout(closeTimer.current);
+                        onPointerEnter={(e) => {
+                          if (e.pointerType === 'mouse' && closeTimer.current) clearTimeout(closeTimer.current);
                         }}
-                        onMouseLeave={scheduleClose}
-                        style={{ left: menuRect.left, top: menuRect.top }}
+                        onPointerLeave={(e) => e.pointerType === 'mouse' && scheduleClose()}
+                        // Kept inside the screen: on a phone a category near the right edge would push the list off the side,
+                        // so it moves left as far as needed (8 px from each edge) and long names wrap.
+                        ref={(el) => {
+                          if (!el) return;
+                          const room = window.innerWidth - 8;
+                          // Measured at the left edge first, where it has the whole width (a fixed box shrinks to the room it has).
+                          el.style.left = '8px';
+                          const left = Math.max(8, Math.min(menuRect.left, room - el.offsetWidth));
+                          el.style.left = `${left}px`;
+                        }}
+                        style={{ left: menuRect.left, top: menuRect.top, maxWidth: 'calc(100vw - 16px)' }}
                         className="fixed z-50 min-w-[200px] rounded-lg border border-line bg-surface py-1.5 shadow-lg"
                       >
                         {children.map((child) => (
@@ -824,7 +882,7 @@ export function StoreHeader({
                               setActiveCategory(child.name);
                               setOpenCategory(null);
                             }}
-                            className={`block w-full whitespace-nowrap px-4 py-2 text-left text-[13px] font-medium transition-colors ${
+                            className={`block w-full sm:whitespace-nowrap px-4 py-2 text-left text-[13px] font-medium transition-colors ${
                               activeCategory === child.name ? 'text-accent' : 'text-ink hover:bg-canvas hover:text-accent'
                             }`}
                           >

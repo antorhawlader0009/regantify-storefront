@@ -11,7 +11,7 @@ import { useFloatingCovered } from '@/lib/floatingCover';
 import { rememberOpen } from '../lib/chatHistory';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
-import { FLOATING_BUTTON, useAssistantBottom } from '../lib/floatingStack';
+import { FLOATING_BUTTON, useFloatingSlot } from '../lib/floatingStack';
 
 /**
  * The chat bubble alone, shown while the full chat widget's file (AiAssistantWidget.tsx, large: voice call, photos,
@@ -31,7 +31,8 @@ export function AiAssistantBubble({ subdomain }: { subdomain: string }) {
   const covered = layerOpen || checkoutOpen || /\/cart\/?$/.test(pathname);
   const cartOpen = useCartDrawer((s) => s.open);
   const { hidden: scrolledAway, reveal } = useFloatingHidden(cartOpen);
-  const assistantBottom = useAssistantBottom();
+  // Always the bottom spot; the chat button moves up above it while this is on screen (lib/floatingStack.ts).
+  const assistantBottom = 'bottom-5';
 
   useEffect(() => {
     let cancelled = false;
@@ -48,6 +49,8 @@ export function AiAssistantBubble({ subdomain }: { subdomain: string }) {
       cancelled = true;
     };
   }, [subdomain]);
+
+  useFloatingSlot(!!available && headerHere && !pressed && !covered);
 
   if (!available || !headerHere || pressed || covered) return null;
   return (

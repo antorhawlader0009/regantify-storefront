@@ -59,7 +59,7 @@ import { ChatOrderCard } from './ChatOrderCard';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
-import { FLOATING_BUTTON, useAssistantBottom } from '../lib/floatingStack';
+import { FLOATING_BUTTON, useFloatingSlot } from '../lib/floatingStack';
 import { useFormatPrice } from '../lib/storeText';
 import { trackFeature } from '@/lib/featureUse';
 import { useVoiceSearch } from '@/lib/voiceSearch';
@@ -227,6 +227,9 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const formatPrice = useFormatPrice(plainPrice);
   // The store's own assistant (AI Usages > "Your AI assistant"): name, picture, first message, ready questions, corner.
   const design = useStorePalDesign();
+  // The same number the header shows as "Call Us Now" (first one when several are typed), only while the store has it on.
+  const supportNumber = design.headerPhoneEnabled ? design.headerPhone?.trim() : '';
+  const supportTel = supportNumber ? `tel:${supportNumber.split(/[,/]/)[0].replace(/[^\d+]/g, '')}` : null;
   const greeting = useMemo(() => greetingMessage(design.aiChatGreeting), [design.aiChatGreeting]);
   const assistantName = design.aiAssistantName?.trim() || DEFAULT_ASSISTANT_NAME;
   const starters = design.aiChatStarters?.length ? design.aiChatStarters : STARTERS;
@@ -419,7 +422,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   const [sending, setSending] = useState(false);
   // null while the status call is in flight; false hides the widget.
   const [available, setAvailable] = useState<boolean | null>(null);
-  // "AI সহকারী, আমার সাথে কথা বলুন": a small bubble beside the round button, shown shortly after the page loads. Its × hides it for
+  // "এআই সহকারীর সাথে কথা বলুন": a small bubble beside the round button, shown shortly after the page loads. Its × hides it for
   // the rest of this visit; opening the chat hides it too.
   const [teaser, setTeaser] = useState(false);
   useEffect(() => {
@@ -925,8 +928,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
 
   // Both the bubble and the open panel step over to the left edge while the slide-in cart is open.
   const cartOpen = useCartDrawer((s) => s.open);
-  // Above the WhatsApp/Messenger button when it is on screen, else in the bottom spot (lib/floatingStack.ts).
-  const assistantBottom = useAssistantBottom(onLeft ? 'left' : 'right');
+  // Always the bottom spot; a WhatsApp/Messenger button on the same side sits above it (lib/floatingStack.ts).
+  const assistantBottom = 'bottom-5';
   // Slides off to the right while the shopper scrolls down, back on scroll up (never while the chat is open).
   const { hidden: scrolledAway, reveal } = useFloatingHidden(open || cartOpen);
   // Mounted once in the store layout: shown only on pages that have the store header (headerPresence.ts).
@@ -941,6 +944,8 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   // reads this, so it is not hidden by it.
   useCoverFloating(open);
   const bubbleCovered = layerOpen || checkoutOpen || (phone && cartOpen) || /\/cart\/?$/.test(pathname ?? '');
+  // The round button is on screen: it holds the bottom spot, so the chat button moves up above it.
+  useFloatingSlot(available === true && headerHere && !open && call.phase === 'idle' && !bubbleCovered, onLeft ? 'left' : 'right');
   // The call is offered: this browser can do it, the store has it on, and the chat can answer.
   const callable = canCall && voiceOn && available === true;
   // The shopper opened the assistant (or a call link): the voice files start downloading quietly in the background
@@ -1064,7 +1069,7 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
               }}
               className="whitespace-nowrap py-2 pl-4 pr-2 text-[13px] font-semibold text-ink"
             >
-              AI সহকারী, আমার সাথে কথা বলুন
+              এআই সহকারীর সাথে কথা বলুন
             </button>
             <button type="button" onClick={closeTeaser} aria-label="Close" className="mr-1.5 flex h-6 w-6 items-center justify-center rounded-full text-muted hover:text-ink">
               <X size={13} />
@@ -1282,6 +1287,16 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                     <Phone size={13} />
                     এআই সহকারীর সাথে কলে কথা বলুন
                   </button>
+                )}
+                {/* The store's support number (Store > Design > Header Editor, "Call Us Now"): a real phone call to a person. */}
+                {supportTel && (
+                  <a
+                    href={supportTel}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line-strong bg-surface px-3.5 py-1.5 text-[12.5px] font-medium text-ink shadow-[0_1px_2px_rgba(16,24,40,0.06)] hover:border-accent hover:text-accent transition-colors"
+                  >
+                    <Phone size={13} />
+                    সাপোর্ট নম্বরে কল করুন
+                  </a>
                 )}
               </div>
             )}

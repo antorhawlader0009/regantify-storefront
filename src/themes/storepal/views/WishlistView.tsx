@@ -1,10 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import type { StorefrontCategoryDetail, StorefrontProduct } from '@/lib/storefrontApi';
-import type { StoreFooterConfig } from '@/lib/socialLinksApi';
-import { StoreHeader } from '../components/StoreHeader';
-import { StoreFooter } from '../components/StoreFooter';
+import type { StorefrontProduct } from '@/lib/storefrontApi';
+import { AccountLayout } from '../components/AccountLayout';
 import { useWishlist } from '../lib/wishlist';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { useEffect, useState } from 'react';
@@ -26,9 +24,6 @@ interface WishlistViewProps {
   storeName: string;
   products: StorefrontProduct[];
   categories: string[];
-  categoryDetails?: StorefrontCategoryDetail[];
-  logoUrl?: string | null;
-  footerConfig?: StoreFooterConfig | null;
 }
 
 /**
@@ -116,8 +111,8 @@ export function WishlistRow({ product, subdomain, storeName, alertsOn, notifying
   };
 
   return (
-    <li className="grid grid-cols-[88px_minmax(0,1fr)_40px] gap-x-4 gap-y-3 border-b border-line py-6 md:grid-cols-[minmax(0,1fr)_140px_220px_48px] md:items-center">
-      <div className="col-span-2 flex gap-4 md:col-span-1">
+    <li className="grid grid-cols-[88px_minmax(0,1fr)_40px] gap-x-4 gap-y-3 border-b border-line py-6 lg:grid-cols-[minmax(0,1fr)_140px_220px_48px] lg:items-center">
+      <div className="col-span-2 flex gap-4 lg:col-span-1">
         <Link href={href} className="relative block h-[88px] w-[88px] shrink-0 overflow-hidden bg-canvas">
           {product.photoUrls[0] && <Image src={product.photoUrls[0]} alt={product.name} fill sizes="88px" className="object-cover" />}
         </Link>
@@ -155,18 +150,18 @@ export function WishlistRow({ product, subdomain, storeName, alertsOn, notifying
           type="button"
           onClick={onRemove}
           aria-label={t('Remove from wishlist')}
-          className="order-last row-start-1 col-start-3 flex h-8 w-8 items-center justify-center justify-self-end rounded-full border border-red-400 text-red-500 md:order-none md:row-auto md:col-start-4"
+          className="order-last row-start-1 col-start-3 flex h-8 w-8 items-center justify-center justify-self-end rounded-full border border-red-400 text-red-500 lg:order-none lg:row-auto lg:col-start-4"
         >
           <X size={16} />
         </button>
       ) : (
-        <span className="order-last row-start-1 col-start-3 md:order-none md:row-auto md:col-start-4" />
+        <span className="order-last row-start-1 col-start-3 lg:order-none lg:row-auto lg:col-start-4" />
       )}
-      <div className="col-start-2 text-[15px] text-muted md:col-start-auto">
+      <div className="col-start-2 text-[15px] text-muted lg:col-start-auto">
         {formatPrice(displayPrice)}
         {originalPrice && <span className="ml-2 text-[12.5px] line-through opacity-70">{formatPrice(originalPrice)}</span>}
       </div>
-      <div className="col-span-3 flex flex-col gap-2 md:col-span-1 md:col-start-auto">
+      <div className="col-span-3 flex flex-col gap-2 lg:col-span-1 lg:col-start-auto">
         <button
           type="button"
           onClick={addToCart}
@@ -271,9 +266,6 @@ export function WishlistView({
   storeName,
   products,
   categories,
-  categoryDetails,
-  logoUrl,
-  footerConfig,
 }: WishlistViewProps) {
   const t = useStoreText();
   const { slugs, toggle, clear } = useWishlist(subdomain);
@@ -305,16 +297,10 @@ export function WishlistView({
     .filter((p): p is StorefrontProduct => !!p);
 
   return (
-    <div className="min-h-screen bg-canvas text-ink flex flex-col">
-      <StoreHeader
-        subdomain={subdomain}
-        storeName={storeName}
-        categories={categories}
-        categoryDetails={categoryDetails}
-        logoUrl={logoUrl}
-      />
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
-        <h1 className="text-[22px] font-bold text-ink mb-5">{t('Wishlist')}</h1>
+    // Inside the My account dialog (2026-10-29, the owner's request), like Orders and Addresses; no page of its own.
+    <AccountLayout subdomain={subdomain} storeName={storeName} categories={categories}>
+      <div>
+        <h2 className="text-[18px] font-bold text-ink mb-4">{t('Wishlist')}</h2>
         {alertError && <p className="mb-3 text-[12.5px] text-accent">{alertError}</p>}
         {saved.length === 0 ? (
           <div className="text-center py-16 bg-surface border border-line rounded-lg">
@@ -329,7 +315,7 @@ export function WishlistView({
           </div>
         ) : (
           <>
-            <div className="hidden md:grid grid-cols-[minmax(0,1fr)_140px_220px_48px] gap-4 border-b border-line pb-3 text-[12.5px] font-semibold uppercase tracking-wide text-ink">
+            <div className="hidden lg:grid grid-cols-[minmax(0,1fr)_140px_220px_48px] gap-4 border-b border-line pb-3 text-[12.5px] font-semibold uppercase tracking-wide text-ink">
               <span>{t('Product')}</span>
               <span>{t('Price')}</span>
               <span>{t('Action')}</span>
@@ -361,8 +347,7 @@ export function WishlistView({
             </div>
           </>
         )}
-      </main>
-      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} footerConfig={footerConfig} />
-    </div>
+      </div>
+    </AccountLayout>
   );
 }

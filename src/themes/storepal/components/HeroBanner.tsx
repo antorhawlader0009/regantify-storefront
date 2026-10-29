@@ -1,8 +1,9 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
 
 interface HeroBannerProps {
@@ -81,13 +82,33 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
     return [...own, ...categories];
   }, [withCover, shuffled, siteCoverUrl, siteCoverOnly, subdomain]);
 
+  // Restarts after every change (`active` in the deps), so a slide the shopper picked by hand gets its full time.
   useEffect(() => {
     if (slides.length <= 1) return;
     const timer = setInterval(() => {
       setActive((i) => (i + 1) % slides.length);
     }, AUTO_SLIDE_MS);
     return () => clearInterval(timer);
-  }, [slides.length]);
+  }, [slides.length, active]);
+
+  const go = (step: number) => setActive((i) => (i + step + slides.length) % slides.length);
+
+  // Phones: swipe left / right to change the slide. A mostly up-and-down move is a page scroll and is left alone.
+  const touchStart = useRef<{ x: number; y: number } | null>(null);
+  const onTouchStart = (e: React.TouchEvent) => {
+    const t = e.touches[0];
+    touchStart.current = { x: t.clientX, y: t.clientY };
+  };
+  const onTouchEnd = (e: React.TouchEvent) => {
+    const start = touchStart.current;
+    touchStart.current = null;
+    if (!start || slides.length <= 1) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - start.x;
+    const dy = t.clientY - start.y;
+    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy)) return;
+    go(dx < 0 ? 1 : -1);
+  };
 
   if (slides.length === 0) return null;
 
@@ -115,7 +136,10 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
           rather than distorting or letterboxing). 21:9 mirrors the
           reference site's wide, short banner proportions. */}
       {/* An even shadow on all four sides (no offset) plus a faint outline, so the banner lifts off the grey page (2026-10-29). */}
-      <div className="relative rounded-lg overflow-hidden bg-surface aspect-[21/9] shadow-[0_0_0_1px_rgba(16,18,22,0.05),0_0_24px_rgba(16,18,22,0.14)]">
+      <div
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
+        className="group relative rounded-lg overflow-hidden bg-surface aspect-[21/9] shadow-[0_0_0_1px_rgba(16,18,22,0.05),0_0_24px_rgba(16,18,22,0.14)]">
         {slide.href ? (
           <Link href={slide.href} className="absolute inset-0 block">
             {picture}
@@ -123,6 +147,23 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
         ) : (
           <div className="absolute inset-0">{picture}</div>
         )}
+
+        {/* Computers: previous / next arrows that show while the mouse is over the banner (phones swipe instead). */}
+        {slides.length > 1 &&
+          ([
+            { step: -1, label: 'Previous slide', side: 'left-3', Icon: ChevronLeft },
+            { step: 1, label: 'Next slide', side: 'right-3', Icon: ChevronRight },
+          ] as const).map(({ step, label, side, Icon }) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => go(step)}
+              aria-label={label}
+              className={`absolute ${side} top-1/2 -translate-y-1/2 hidden sm:flex h-10 w-10 items-center justify-center rounded-full bg-white/85 text-ink shadow-md opacity-0 transition-opacity duration-200 hover:bg-white group-hover:opacity-100 focus-visible:opacity-100`}
+            >
+              <Icon size={22} strokeWidth={2.25} />
+            </button>
+          ))}
 
         {slides.length > 1 && (
           <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex gap-1.5">

@@ -250,6 +250,14 @@ const BN: Record<string, string> = {
   // Size guide (the link beside a product's Size choice, and its popup)
   'Size guide': 'সাইজ গাইড',
   Close: 'বন্ধ করুন',
+  // Account dialog menu
+  Orders: 'অর্ডার',
+  Coupons: 'কুপন',
+  Profile: 'প্রোফাইল',
+  Shopping: 'কেনাকাটা',
+  'Account settings': 'অ্যাকাউন্ট সেটিংস',
+  'Hi, {name}': 'হ্যালো, {name}',
+  'Log in to see your orders, addresses and more.': 'অর্ডার, ঠিকানা ও আরও কিছু দেখতে লগইন করুন।',
 
   // Chat bubble (typed into WhatsApp from a product page)
   "I'd like to know about this product:": 'এই পণ্যটা সম্পর্কে জানতে চাই:',

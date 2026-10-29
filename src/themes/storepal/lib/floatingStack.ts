@@ -3,9 +3,9 @@ import { create } from 'zustand';
 
 /**
  * The round floating buttons in the store's bottom-right corner (the user's rule, 2026-10-27): all the same size
- * (FLOATING_BUTTON), stacked from the bottom with no gap. A button that sits in the bottom spot (the WhatsApp /
- * Messenger chat button) says so with useFloatingSlot while it is on screen; the AI assistant then sits above it, and
- * moves down into the bottom spot when it isn't there.
+ * (FLOATING_BUTTON), stacked from the bottom with no gap. The AI assistant's button always takes the bottom spot (the
+ * user's rule, 2026-10-29) and says so with useFloatingSlot while it is on screen; the WhatsApp / Messenger chat button
+ * on the same side then sits above it, and moves down into the bottom spot when it isn't there.
  */
 export type FloatingSide = 'left' | 'right';
 
@@ -32,9 +32,9 @@ export function useFloatingSlot(taken: boolean, side: FloatingSide = 'right') {
   }, [taken, side]);
 }
 
-/** Where the AI assistant's bubble (and its corner panel) sits: above the chat button when there is one, else at the bottom. */
-export function useAssistantBottom(side: FloatingSide = 'right'): string {
-  const below = useFloatingStackStore((s) => s[side] > 0);
-  // 20 px from the edge, plus a 56 px button and a 12 px gap when the chat button is below it.
-  return below ? 'bottom-[88px]' : 'bottom-5';
+/** Where the WhatsApp / Messenger chat button sits: above the AI assistant's button on the same side, else at the bottom. */
+export function useChatButtonBottom(side: FloatingSide = 'right'): { button: string; note: string } {
+  const above = useFloatingStackStore((s) => s[side] > 0);
+  // 20 px from the edge, plus a 56 px button and a 12 px gap when the AI button is below it.
+  return above ? { button: 'bottom-[88px]', note: 'bottom-[92px]' } : { button: 'bottom-5', note: 'bottom-6' };
 }

@@ -1,49 +1,12 @@
-import type { Metadata } from 'next';
-import { notFound } from 'next/navigation';
-import { getStoreProducts, StoreNotFoundError } from '@/lib/storefrontApi';
-import { resolveTheme } from '@/lib/theme';
-import { WishlistView } from '@/themes/storepal/views/WishlistView';
+import { redirect } from 'next/navigation';
 import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
   params: Promise<{ subdomain: string }>;
 }
 
-export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
-  const { subdomain } = await storeParams(params);
-  try {
-    const { store } = await getStoreProducts(subdomain);
-    return { title: { absolute: `Wishlist — ${store.storeName}` }, robots: { index: false } };
-  } catch {
-    return { title: 'Wishlist' };
-  }
-}
-
-// Store > Design > Product Card's wishlist — StorePal only by design, so
-// every other theme gets a 404 here.
+// The wishlist opens inside the My account dialog now (2026-10-29, the owner's request); old links land there.
 export default async function WishlistPage({ params }: PageProps) {
   const { subdomain } = await storeParams(params);
-
-  let data;
-  try {
-    data = await getStoreProducts(subdomain);
-  } catch (err) {
-    if (err instanceof StoreNotFoundError) notFound();
-    throw err;
-  }
-
-  const { store, products, categories, categoryDetails } = data;
-  if (resolveTheme(store.theme) !== 'STOREPAL') notFound();
-
-  return (
-    <WishlistView
-      subdomain={subdomain}
-      storeName={store.storeName}
-      products={products}
-      categories={categories}
-      categoryDetails={categoryDetails}
-      logoUrl={store.logoUrl}
-      footerConfig={store.footerConfig}
-    />
-  );
+  redirect(`/store/${subdomain}/account/wishlist`);
 }

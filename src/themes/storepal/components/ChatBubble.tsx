@@ -7,7 +7,7 @@ import type { SocialLinks } from '@/lib/socialLinksApi';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useFloatingCovered } from '@/lib/floatingCover';
 import { floatingHideTransform, useFloatingHidden } from '../lib/floatingScroll';
-import { FLOATING_BUTTON, useFloatingSlot } from '../lib/floatingStack';
+import { FLOATING_BUTTON, useChatButtonBottom } from '../lib/floatingStack';
 import { useBusinessHours, useStorePalDesign } from '../lib/designSettings';
 import { bnDigits, useStoreText } from '../lib/storeText';
 
@@ -77,8 +77,8 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
   const messenger = design.chatButtonChannel === 'MESSENGER';
   const link = (messenger ? design.chatButtonMessengerLink : socialLinks?.whatsappUrl)?.trim();
   const shown = design.chatButtonEnabled !== false && pages.includes(kind) && !!link;
-  // On the right it takes the bottom spot; the AI assistant then sits above it (lib/floatingStack.ts).
-  useFloatingSlot(shown, onLeft ? 'left' : 'right');
+  // The AI assistant's button holds the bottom spot; on the same side this one sits above it (lib/floatingStack.ts).
+  const bottom = useChatButtonBottom(onLeft ? 'left' : 'right');
   // Out of the way while something full-screen is open (lib/floatingCover.tsx) and on the cart page.
   const covered = useFloatingCovered() || /\/cart\/?$/.test(pathname);
   if (!shown || !link || covered) return null;
@@ -101,7 +101,7 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
     {closedNote && closedNow && !scrolledAway && (
       <p
         // Beside the button (not above it, where the AI assistant's button sits).
-        className={`fixed bottom-6 ${left ? 'left-[5.25rem]' : 'right-[5.25rem]'} z-30 m-0 max-w-[15rem] rounded-md bg-ink px-3 py-2 text-[12px] leading-snug text-white shadow-lg`}
+        className={`fixed ${bottom.note} ${left ? 'left-[5.25rem]' : 'right-[5.25rem]'} z-30 m-0 max-w-[15rem] rounded-md bg-ink px-3 py-2 text-[12px] leading-snug text-white shadow-lg`}
         role="status"
       >
         {closedNote}
@@ -114,7 +114,7 @@ export function ChatBubble({ socialLinks, productName }: { socialLinks?: SocialL
       aria-label={messenger ? 'Chat on Messenger' : 'Chat on WhatsApp'}
       data-rg="chat-button"
       onClick={onClick}
-      className={`fixed bottom-5 ${left ? 'left-5' : 'right-5'} z-30 ${FLOATING_BUTTON} flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none ${
+      className={`fixed ${bottom.button} ${left ? 'left-5' : 'right-5'} z-30 ${FLOATING_BUTTON} flex items-center justify-center transition-[transform,background-color] duration-300 ease-out motion-reduce:transition-none ${
         messenger ? 'bg-[#0084FF] hover:bg-[#0074e0]' : 'bg-[#25D366] hover:bg-[#20bd5a]'
       }`}
       onFocus={reveal}

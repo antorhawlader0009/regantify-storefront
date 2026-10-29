@@ -7,7 +7,8 @@ import { StoreHeader } from './StoreHeader';
 import { AccountSidebar } from './AccountSidebar';
 import { CoverFloating } from '@/lib/floatingCover';
 import { useStoreText } from '../lib/storeText';
-import { accountReturnPath } from '../lib/accountReturn';
+import { closeAccountDialog } from '../lib/accountReturn';
+import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 
 interface AccountLayoutProps {
   subdomain: string;
@@ -17,7 +18,7 @@ interface AccountLayoutProps {
 }
 
 /**
- * Every logged-in account page (Orders, My purchases, Coupons, My Addresses, Change Password) opens as a dialog over the
+ * Every logged-in account page (Orders, My purchases, Wishlist, Coupons, My Addresses, Change Password) opens as a dialog over the
  * store (2026-10-29, the owner's request): a large centred box on a computer, the whole screen on a phone, with the
  * title and a × at the top. × (or Esc) returns to the store page the shopper came from (lib/accountReturn.ts), else the
  * store's home. Each section is still its own address, so links, the back button and a refresh keep working; the menu
@@ -30,7 +31,11 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
   const t = useStoreText();
   const router = useRouter();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const close = useCallback(() => router.push(accountReturnPath(subdomain)), [router, subdomain]);
+  // "Hi, Rahim" under the title once the shopper is known (signed in, after the stored session is read).
+  const hydrated = useCustomerAuthHydrated();
+  const customerName = useCustomerAuthStore((s) => s.customer?.fullName);
+  const firstName = hydrated ? customerName?.trim().split(/\s+/)[0] : undefined;
+  const close = useCallback(() => closeAccountDialog(router, subdomain), [router, subdomain]);
 
   // Esc closes; the page behind doesn't scroll while the dialog is open.
   useEffect(() => {
@@ -56,19 +61,22 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
       <CoverFloating />
       <div className="fixed inset-0 z-50 flex items-stretch justify-center sm:items-center sm:p-6">
-        <div className="absolute inset-0 bg-black/45" onClick={close} aria-hidden />
+        <div className="absolute inset-0 bg-black/50 backdrop-blur-[2px]" onClick={close} aria-hidden />
         <div
           ref={dialogRef}
           tabIndex={-1}
           role="dialog"
           aria-modal="true"
           aria-labelledby="account-dialog-title"
-          className="relative flex h-full w-full flex-col overflow-hidden bg-canvas shadow-2xl outline-none sm:h-[min(88vh,820px)] sm:max-w-5xl sm:rounded-xl"
+          className="relative flex h-full w-full flex-col overflow-hidden bg-canvas shadow-[0_24px_80px_-12px_rgba(16,24,40,0.45)] outline-none sm:h-[min(88vh,820px)] sm:max-w-5xl sm:rounded-2xl"
         >
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-4 py-3 sm:px-6">
-            <h1 id="account-dialog-title" className="m-0 text-[16px] font-bold text-ink">
-              {t('My account')}
-            </h1>
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-line bg-surface px-4 py-3 sm:px-6 sm:py-4">
+            <div className="min-w-0">
+              <h1 id="account-dialog-title" className="m-0 text-[17px] font-bold text-ink">
+                {t('My account')}
+              </h1>
+              {firstName && <p className="m-0 truncate text-[12.5px] text-muted">{t('Hi, {name}').replace('{name}', firstName)}</p>}
+            </div>
             <button
               type="button"
               onClick={close}
@@ -80,7 +88,7 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
           </div>
           <div className="flex min-h-0 flex-1 flex-col sm:flex-row">
             <AccountSidebar subdomain={subdomain} />
-            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 sm:py-6">{children}</div>
+            <div className="min-h-0 min-w-0 flex-1 overflow-y-auto overscroll-contain px-4 py-5 sm:px-8 sm:py-7">{children}</div>
           </div>
         </div>
       </div>
