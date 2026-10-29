@@ -5,7 +5,7 @@ import { useStorePalDesign } from '../lib/designSettings';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHeaderPresence } from '../lib/headerPresence';
-import { useFloatingCovered } from '@/lib/floatingCover';
+import { useCoverFloating, useFloatingCovered } from '@/lib/floatingCover';
 import Image from 'next/image';
 import { MessageCircle, Send, X, ImagePlus, Mic, Check, History, SquarePen, Trash2, Phone, Minimize2, Maximize2 } from 'lucide-react';
 import {
@@ -616,6 +616,9 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
     const onLoad = () => stickToBottom.current && toBottom(false);
     const grow = new ResizeObserver(() => stickToBottom.current && toBottom(false));
     for (const child of Array.from(box.children)) grow.observe(child);
+    // The chat box itself gets shorter too: the phone keyboard opening, the ticked-cards bar or the order card appearing
+    // below it. Without this the newest messages slid out of view under them (2026-10-29).
+    grow.observe(box);
     box.addEventListener('scroll', onScroll, { passive: true });
     box.addEventListener('load', onLoad, true);
     return () => {
@@ -933,6 +936,10 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
   // total and the Checkout button. On a phone the cart drawer is full screen, so the bubble hides while it is open too
   // (on a computer it only steps aside, see the transform below). An open chat or a call is never hidden by this.
   const layerOpen = useFloatingCovered();
+  // While the chat is open every other floating thing steps aside (WhatsApp/Messenger button, "someone bought", popup
+  // campaigns, the install banner), so the chat has the room (the owner's request, 2026-10-29). Our own panel never
+  // reads this, so it is not hidden by it.
+  useCoverFloating(open);
   const bubbleCovered = layerOpen || checkoutOpen || (phone && cartOpen) || /\/cart\/?$/.test(pathname ?? '');
   // The call is offered: this browser can do it, the store has it on, and the chat can answer.
   const callable = canCall && voiceOn && available === true;

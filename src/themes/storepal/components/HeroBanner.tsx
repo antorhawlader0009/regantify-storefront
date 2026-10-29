@@ -114,7 +114,8 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
           all render at this one ratio via object-cover (crops to fill
           rather than distorting or letterboxing). 21:9 mirrors the
           reference site's wide, short banner proportions. */}
-      <div className="relative rounded-lg overflow-hidden bg-surface aspect-[21/9]">
+      {/* An even shadow on all four sides (no offset) plus a faint outline, so the banner lifts off the grey page (2026-10-29). */}
+      <div className="relative rounded-lg overflow-hidden bg-surface aspect-[21/9] shadow-[0_0_0_1px_rgba(16,18,22,0.05),0_0_24px_rgba(16,18,22,0.14)]">
         {slide.href ? (
           <Link href={slide.href} className="absolute inset-0 block">
             {picture}

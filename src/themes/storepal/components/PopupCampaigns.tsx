@@ -4,6 +4,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import type { StorefrontPopupCampaign } from '@/lib/storefrontApi';
 import { apiOrigin } from '@/lib/visitSession';
+import { useFloatingCovered } from '@/lib/floatingCover';
 import { PopupCard, TOAST_WIDTH } from './PopupCard';
 
 /**
@@ -235,7 +236,9 @@ export function PopupCampaigns({
     else window.open(link, '_blank', 'noopener,noreferrer');
   };
 
-  if (!dialog && !toast) return null;
+  // Waits while something covers the page (the AI chat, checkout, sign-in...: lib/floatingCover.tsx); it shows again after.
+  const covered = useFloatingCovered();
+  if ((!dialog && !toast) || covered) return null;
   const accent = accentColor ?? 'var(--color-accent)';
 
   return (

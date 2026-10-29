@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Share, SquarePlus, X } from 'lucide-react';
 import { useInstallApp } from '@/lib/installApp';
+import { useFloatingCovered } from '@/lib/floatingCover';
 import { useStorePalDesign } from '../lib/designSettings';
 import { useStoreText } from '../lib/storeText';
 import { trackFeature } from '@/lib/featureUse';
@@ -16,7 +17,9 @@ export function InstallAppBanner({ subdomain, storeName }: { subdomain: string; 
   const t = useStoreText();
   const pathname = usePathname() ?? '';
   const { mode, install, dismiss } = useInstallApp(subdomain, !!design.appInstallEnabled, pathname);
-  if (!mode) return null;
+  // Steps aside while something covers the page (the AI chat, checkout, sign-in...: lib/floatingCover.tsx).
+  const covered = useFloatingCovered();
+  if (!mode || covered) return null;
 
   const name = design.appName?.trim() || storeName;
   // The icon is on the address the shopper is using: path form in development, the store's own address in production.

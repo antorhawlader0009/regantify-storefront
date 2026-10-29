@@ -6,6 +6,7 @@ import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { X } from 'lucide-react';
 import { apiOrigin } from '@/lib/visitSession';
+import { useFloatingCovered } from '@/lib/floatingCover';
 import { bnDigits, useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
 
@@ -101,8 +102,10 @@ export function RecentBuyersPopup({ subdomain }: { subdomain: string }) {
     }
   };
 
+  // Steps aside while something covers the page (the AI chat, checkout, sign-in...: lib/floatingCover.tsx).
+  const covered = useFloatingCovered();
   const b = buyers[index];
-  if (!enabled || closed || blocked || !b) return null;
+  if (!enabled || closed || blocked || !b || covered) return null;
   const who = b.district ? (bn ? `${b.district}-এর একজন` : `Someone from ${b.district}`) : bn ? `${t('Bangladesh')}-এর একজন` : `Someone in ${t('Bangladesh')}`;
 
   return (

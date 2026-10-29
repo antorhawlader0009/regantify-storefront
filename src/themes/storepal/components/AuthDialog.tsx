@@ -188,7 +188,15 @@ function SignupForm({ subdomain, onDone }: { subdomain: string; onDone: () => vo
     }
     setLoading(true);
     try {
-      await customerSignup(phone.trim(), fullName.trim(), password, email.trim() || undefined, subdomain);
+      const result = await customerSignup(phone.trim(), fullName.trim(), password, email.trim() || undefined, subdomain);
+      // The store has sign-up codes off (the default): the account is ready and signed in, no code step.
+      if (result.signedIn) {
+        setSession(result.customer, result.accessToken);
+        trackMetaCompleteRegistration();
+        trackSignUp();
+        onDone();
+        return;
+      }
       setStep('otp');
       setCooldown(RESEND_SECONDS);
     } catch (err) {

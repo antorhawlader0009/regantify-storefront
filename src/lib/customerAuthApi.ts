@@ -118,7 +118,11 @@ export function saveMyCart(accessToken: string, lines: CartLine[]): Promise<unkn
   return authFetch('/v1/customer-auth/me/cart', accessToken, { method: 'PUT', body: { lines } });
 }
 
-/** Step 1 of signup — sends an OTP to the given phone. `subdomain` puts that vendor's store name in the SMS text instead of "Regantify". */
+/**
+ * Step 1 of signup. When the store asks for an SMS code (its own setting, off by default since 2026-10-29) it sends the
+ * code and step 2 verifies it; otherwise the account is made and signed in at once (`signedIn: true` with a session).
+ * `subdomain` names the store (and its name goes in the SMS text).
+ */
 export function customerSignup(
   phone: string,
   fullName: string,
@@ -126,7 +130,7 @@ export function customerSignup(
   email?: string,
   subdomain?: string,
 ) {
-  return post<{ message: string; expiresInSeconds: number }>('/v1/customer-auth/signup', {
+  return post<{ message: string; expiresInSeconds: number; signedIn?: undefined } | (AuthResult & { signedIn: true })>('/v1/customer-auth/signup', {
     phone,
     fullName,
     email,
