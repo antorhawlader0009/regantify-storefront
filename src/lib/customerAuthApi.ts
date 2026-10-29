@@ -43,6 +43,9 @@ export interface Customer {
   deliveryZone?: 'DHAKA' | 'OUTSIDE_DHAKA' | null;
   /** False for an account opened with Google until the shopper sets a password (Account > Change Password). */
   hasPassword?: boolean;
+  /** A Google sign-in is attached (account dialog shows "Google connected"); from GET /me only. */
+  googleConnected?: boolean;
+  googleEmail?: string | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -272,6 +275,14 @@ export function getMyProfile(accessToken: string): Promise<Customer> {
   return authFetch<Customer>('/v1/customer-auth/me', accessToken);
 }
 
+/** Account dialog "Connect Google": the central Regantify page's address with a one-time ticket; the browser goes there. */
+export function startGoogleLink(accessToken: string, returnTo: string): Promise<{ url: string }> {
+  return authFetch<{ url: string }>('/v1/customer-auth/me/google/link', accessToken, {
+    method: 'POST',
+    body: { subdomain: storeOrThrow(), returnTo },
+  });
+}
+
 export function updateMyProfile(accessToken: string, input: UpdateProfileInput): Promise<Customer> {
   return authFetch<Customer>('/v1/customer-auth/me', accessToken, { method: 'PATCH', body: input });
 }
@@ -431,6 +442,8 @@ export interface CustomerPurchase {
   slug: string | null;
   /** The sizes/colours bought, e.g. "M / Navy". */
   options: string[];
+  /** The sizes/colours of the latest one bought, by option name ("Buy again" puts back the same one). */
+  lastOptions?: Record<string, string>;
   quantity: number;
   orders: number;
   lastBoughtAt: string;

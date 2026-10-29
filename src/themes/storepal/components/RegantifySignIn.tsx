@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
-import { connectLogin, getRegantifyConnectConfig, regantifyConnectUrl, type RegantifyConnectConfig } from '@/lib/customerAuthApi';
+import { connectLogin, getMyProfile, getRegantifyConnectConfig, regantifyConnectUrl, startGoogleLink, type RegantifyConnectConfig } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { useAuthDialog } from '../lib/authDialog';
 import { useStoreText } from '../lib/storeText';
@@ -69,28 +69,81 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
   );
 }
 
-/** Account > My Addresses: bring addresses saved at other Regantify stores (chosen on the central Regantify page, never shown here). */
-export function BringAddressesLink({ subdomain }: { subdomain: string }) {
+/**
+ * Account > My Addresses (2026-10-29, the owner's request): addresses saved at other Regantify shops. Not connected to Google yet: a card
+ * asking to connect it (the central page then joins the Google account's own account, if it had one, and offers its addresses). Connected:
+ * a card that opens the central page's address step with Google. Either way the other shops' addresses are only ever listed on the central
+ * Regantify page, never on this store's page. Only Google brings them (the owner's rule): the same phone at another store does not.
+ */
+export function OtherStoreAddressesCard({ subdomain }: { subdomain: string }) {
   const t = useStoreText();
+  const accessToken = useCustomerAuthStore((s) => s.accessToken);
   const [cfg, setCfg] = useState<RegantifyConnectConfig | null>(null);
+  const [connected, setConnected] = useState<boolean | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
   useEffect(() => {
     let alive = true;
     getRegantifyConnectConfig().then((c) => alive && setCfg(c));
+    if (accessToken) {
+      getMyProfile(accessToken)
+        .then((p) => alive && setConnected(!!p.googleConnected))
+        .catch(() => alive && setConnected(false));
+    }
     return () => {
       alive = false;
     };
-  }, []);
-  if (!cfg?.enabled || !cfg.url) return null;
+  }, [accessToken]);
+  if (!cfg?.enabled || !cfg.url || connected === null) return null;
+  // Other stores' addresses come only with Google (the owner's rule): no Google sign-in on the server, no card.
+  if (!cfg.google) return null;
+
+  const open = async () => {
+    setBusy(true);
+    setError(null);
+    try {
+      if (connected) {
+        window.location.assign(regantifyConnectUrl(cfg.url!, subdomain, window.location.href, 'google'));
+        return;
+      }
+      if (!accessToken) return;
+      const { url } = await startGoogleLink(accessToken, window.location.href);
+      window.location.assign(url);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : t('Something went wrong. Please try again.'));
+      setBusy(false);
+    }
+  };
+
   return (
-    <button
-      type="button"
-      onClick={() => window.location.assign(regantifyConnectUrl(cfg.url!, subdomain, window.location.href))}
-      className="mb-5 inline-flex items-center gap-2 rounded-lg border border-line-strong bg-white px-3.5 py-2 text-[13px] font-semibold text-ink transition-colors hover:bg-surface"
-    >
-      {t('Bring addresses from my other Regantify stores')}
-    </button>
+    <div className="mb-5 flex flex-col gap-3 rounded-xl border border-line bg-surface p-4 sm:flex-row sm:items-center sm:gap-4">
+      <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-line bg-white" aria-hidden>
+        <GoogleMark size={20} />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="m-0 text-[14px] font-semibold text-ink">
+          {connected ? t('Addresses from your other shops') : t('Use addresses from your other shops')}
+        </p>
+        <p className="m-0 mt-0.5 text-[12.5px] leading-snug text-muted">
+          {connected
+            ? t('Pick the addresses you saved at other Regantify shops to use here.')
+            : t('Connect your Google account. Addresses you saved at other Regantify shops with it can then be used here.')}
+        </p>
+        {error && <p className="m-0 mt-1 text-[12px] text-accent">{error}</p>}
+      </div>
+      <button
+        type="button"
+        onClick={() => void open()}
+        disabled={busy}
+        className="inline-flex shrink-0 items-center justify-center gap-2 rounded-lg border border-line-strong bg-white px-4 py-2 text-[13px] font-semibold text-ink shadow-[0_1px_2px_rgba(16,24,40,0.06)] transition-colors hover:bg-canvas disabled:opacity-60"
+      >
+        {!connected && <GoogleMark size={15} />}
+        {busy ? t('Opening Google…') : connected ? t('Choose addresses') : t('Connect Google')}
+      </button>
+    </div>
   );
 }
+
 
 // One code is swapped once per page load, even if React runs the effect twice.
 const swapped = new Set<string>();

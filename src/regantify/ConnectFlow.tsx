@@ -56,6 +56,8 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
 
   const store = params.get('store') ?? '';
   const returnTo = params.get('return') ?? '';
+  // The account dialog's "Connect Google" ticket (only ever sent on to Google's start, which checks it).
+  const link = params.get('link') ?? undefined;
   const trip = typeof window !== 'undefined' ? readTrip() : null;
   // Only an address the server already checked (kept after the store was confirmed), never one straight from the link.
   const backTo = trip?.returnTo ?? '';
@@ -119,7 +121,7 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
         sessionStorage.setItem(TRIP_KEY, JSON.stringify({ store, storeName: t.store.name, returnTo } satisfies Trip));
         // The store's "Login with Google" button: straight on to Google, no choice screen. If Google can't start, the choice screen shows the error.
         if (params.get('via') === 'google' && cfg.google) {
-          atLeast(GOOGLE_WAIT_MS, connectApi.googleStart(store, returnTo))
+          atLeast(GOOGLE_WAIT_MS, connectApi.googleStart(store, returnTo, link))
             .then(({ url }) => window.location.assign(url))
             .catch((err: Error) => {
               setError(err.message);
@@ -137,7 +139,7 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
     setBusy(true);
     setError(null);
     try {
-      const { url } = await connectApi.googleStart(store, returnTo);
+      const { url } = await connectApi.googleStart(store, returnTo, link);
       window.location.assign(url);
     } catch (err) {
       setError((err as Error).message);

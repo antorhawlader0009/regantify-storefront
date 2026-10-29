@@ -3,7 +3,10 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { ShoppingBag, Star } from 'lucide-react';
+import { Check, RotateCcw, ShoppingBag, Star } from 'lucide-react';
+import { encodeCartLink } from '@/lib/cartLink';
+import { fetchSharedCart } from '@/lib/checkoutApi';
+import { useCartStore } from '@/providers/cart-store-provider';
 import { deleteOwnReview, fetchCustomerPurchases, updateOwnReview, type CustomerPurchase } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { useStoreText } from '../../lib/storeText';
@@ -32,6 +35,44 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
   const [busy, setBusy] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [reload, setReload] = useState(0);
+  // "Buy again" per product: busy, added, or why it could not go in the cart.
+  const addLine = useCartStore((s) => s.addLine);
+  const [again, setAgain] = useState<Record<string, 'busy' | 'added' | 'soldOut' | 'choose'>>({});
+
+  // One piece of the same size/colour as last time, at today's price and stock (looked up like a shared cart link).
+  const buyAgain = async (key: string, it: CustomerPurchase) => {
+    if (!it.slug) return;
+    setAgain((s) => ({ ...s, [key]: 'busy' }));
+    try {
+      const code = encodeCartLink([{ productSlug: it.slug, quantity: 1, selectedOptions: it.lastOptions ?? {} }]);
+      const cart = await fetchSharedCart(subdomain, code);
+      const line = cart.status === 'OK' ? cart.lines[0] : undefined;
+      if (!line) {
+        const soldOut = cart.status === 'OK' && cart.notices.some((n) => n.reason === 'SOLD_OUT');
+        setAgain((s) => ({ ...s, [key]: soldOut ? 'soldOut' : 'choose' }));
+        return;
+      }
+      addLine({
+        subdomain,
+        storeName,
+        productSlug: line.productSlug,
+        name: line.name,
+        image: line.image ?? undefined,
+        unitPrice: line.unitPrice,
+        originalUnitPrice: line.originalUnitPrice ?? undefined,
+        quantity: line.quantity,
+        selectedOptions: line.selectedOptions,
+        isPreOrder: line.isPreOrder,
+        minOrderQuantity: line.minOrderQuantity,
+        quantityStep: line.quantityStep,
+        productId: line.productId,
+        variantId: line.variantId ?? undefined,
+      });
+      setAgain((s) => ({ ...s, [key]: 'added' }));
+    } catch {
+      setAgain((s) => ({ ...s, [key]: 'choose' }));
+    }
+  };
 
   useEffect(() => {
     if (!accessToken) return;
@@ -98,8 +139,10 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
         <ul className="m-0 p-0 list-none divide-y divide-line rounded-lg border border-line bg-surface">
           {items.map((it) => {
             const href = it.slug ? `/store/${subdomain}/p/${it.slug}` : null;
+            const key = it.productId ?? it.name;
+            const state = again[key];
             return (
-              <li key={it.productId ?? it.name} className="flex gap-3 p-4">
+              <li key={key} className="flex flex-wrap gap-3 p-4 sm:flex-nowrap">
                 <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-md bg-canvas">
                   {it.photo && <Image src={it.photo} alt="" fill sizes="64px" className="object-cover" />}
                 </div>
@@ -185,21 +228,55 @@ export function PurchasesView({ subdomain }: { subdomain: string }) {
                         )}
                         {actionError && deleting === it.review.id && <p className="m-0 mt-1 text-[12px] text-accent">{actionError}</p>}
                       </div>
-                    ) : it.reviewToken && href ? (
-                      <Link
-                        href={`${href}?order=${encodeURIComponent(it.reviewToken)}`}
-                        className="inline-flex items-center gap-1.5 rounded-md border border-ink px-3 py-1.5 text-[12.5px] font-semibold text-ink hover:bg-ink hover:text-white transition-colors"
-                      >
-                        <Star size={13} aria-hidden />
-                        {t('Write a review')}
-                      </Link>
                     ) : !it.slug ? (
                       <span className="text-[12px] text-muted">{t('No longer sold here')}</span>
-                    ) : !it.received ? (
-                      <span className="text-[12px] text-muted">{t('You can review it once it is delivered.')}</span>
                     ) : null}
                   </div>
                 </div>
+
+                {/* Buy again and review, side by side on the right (below the details on a phone). */}
+                {href && (
+                  <div className="flex w-full shrink-0 flex-col gap-2 sm:w-44">
+                    {state === 'added' ? (
+                      <Link
+                        href={`/store/${subdomain}/cart`}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-success/40 bg-success/10 px-3 py-2 text-[13px] font-semibold text-success"
+                      >
+                        <Check size={15} aria-hidden />
+                        {t('Added. View cart')}
+                      </Link>
+                    ) : state === 'choose' ? (
+                      <Link
+                        href={href}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-line-strong px-3 py-2 text-[13px] font-semibold text-ink hover:border-accent hover:text-accent"
+                      >
+                        {t('Choose options')}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={state === 'busy' || state === 'soldOut'}
+                        onClick={() => void buyAgain(key, it)}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg bg-accent px-3 py-2 text-[13px] font-semibold text-white transition-colors hover:bg-accent-dark disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        <RotateCcw size={15} aria-hidden />
+                        {state === 'busy' ? t('Adding…') : state === 'soldOut' ? t('Out of stock') : t('Buy again')}
+                      </button>
+                    )}
+                    {!it.review && (
+                      <Link
+                        href={it.reviewToken ? `${href}?order=${encodeURIComponent(it.reviewToken)}` : `${href}?review=1`}
+                        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-ink px-3 py-2 text-[13px] font-semibold text-ink transition-colors hover:bg-ink hover:text-white"
+                      >
+                        <Star size={15} aria-hidden />
+                        {t('Write a review')}
+                      </Link>
+                    )}
+                    {!it.review && !it.received && (
+                      <p className="m-0 text-center text-[11.5px] leading-snug text-muted">{t('Verified buyer mark comes after delivery.')}</p>
+                    )}
+                  </div>
+                )}
               </li>
             );
           })}

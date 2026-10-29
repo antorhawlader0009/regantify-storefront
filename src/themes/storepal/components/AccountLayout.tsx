@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { StoreHeader } from './StoreHeader';
 import { AccountSidebar } from './AccountSidebar';
+import { GoogleConnectBadge } from './GoogleConnectBadge';
 import { CoverFloating } from '@/lib/floatingCover';
 import { useStoreText } from '../lib/storeText';
 import { closeAccountDialog } from '../lib/accountReturn';
@@ -76,6 +77,10 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
                 {t('My account')}
               </h1>
               {firstName && <p className="m-0 truncate text-[12.5px] text-muted">{t('Hi, {name}').replace('{name}', firstName)}</p>}
+            </div>
+            {/* "Connect Google" for a phone account, "Google connected" once attached. */}
+            <div className="ml-auto min-w-0">
+              <GoogleConnectBadge />
             </div>
             <button
               type="button"

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Gift, Package, RotateCcw } from 'lucide-react';
+import { ChevronRight, Gift, Package, RotateCcw } from 'lucide-react';
+import { OrderDetailsDialog } from '../../components/OrderDetailsDialog';
 import { listCustomerOrders, fetchBuyAgain, fetchCustomerRewards, type CustomerOrder, type CustomerRewards } from '@/lib/customerAuthApi';
 import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText, useFormatPrice } from '../../lib/storeText';
@@ -37,6 +38,9 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
   const [busyId, setBusyId] = useState<string | null>(null);
   const [again, setAgain] = useState<{ orderId: string; text: string } | null>(null);
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
+  // The order whose details dialog is open (OrderDetailsDialog), null = none.
+  const [openId, setOpenId] = useState<string | null>(null);
+  const openOrder = openId ? orders?.find((o) => o.id === openId) ?? null : null;
   useEffect(() => {
     void getStoreSocialLinks(subdomain).then((b) => setLogoUrl(b.logoUrl ?? null)).catch(() => undefined);
   }, [subdomain]);
@@ -164,7 +168,18 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
             <tbody>
               {orders.map((order) => (
                 <tr key={order.id} className="border-t border-line">
-                  <td className="px-5 py-3 text-ink font-medium">{orderLabel(order)}</td>
+                  <td className="px-5 py-3">
+                    {/* Opens the order's details (items, money, address) in a dialog. */}
+                    <button
+                      type="button"
+                      onClick={() => setOpenId(order.id)}
+                      title={t('View order details')}
+                      className="group inline-flex items-center gap-1 rounded text-left font-semibold text-ink underline decoration-line-strong decoration-dotted underline-offset-4 transition-colors hover:text-accent hover:decoration-accent focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                    >
+                      {orderLabel(order)}
+                      <ChevronRight size={14} className="text-muted transition-transform group-hover:translate-x-0.5 group-hover:text-accent" aria-hidden />
+                    </button>
+                  </td>
                   <td className="px-5 py-3 text-muted">
                     {customerOrderStatusLabel(order.status)}
                     {order.courierTracking && <CourierTrackingLine tracking={order.courierTracking} />}
@@ -199,6 +214,38 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
           </table>
         )}
       </div>
+
+      {openOrder && (
+        <OrderDetailsDialog
+          subdomain={subdomain}
+          order={openOrder as unknown as TrackedOrder}
+          onClose={() => setOpenId(null)}
+          actions={
+            <>
+              {again?.orderId === openOrder.id && <p className="m-0 mr-1 text-[12px] text-muted">{again.text}</p>}
+              <button
+                type="button"
+                onClick={() => buyAgain(openOrder.id)}
+                disabled={busyId !== null}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-line-strong bg-surface px-3.5 py-2 text-[13px] font-semibold text-ink hover:border-accent hover:text-accent disabled:opacity-60"
+              >
+                <RotateCcw size={14} aria-hidden />
+                {busyId === openOrder.id ? '…' : t('Buy again')}
+              </button>
+              {openOrder.status !== 'PAYMENT_INITIATED' && openOrder.status !== 'PAYMENT_FAILED' && (
+                <MemoDownloadButton
+                  order={openOrder as unknown as TrackedOrder}
+                  storeName={storeName}
+                  logoUrl={logoUrl}
+                  label={t('Memo')}
+                  busyLabel="…"
+                  className="!px-3.5 !py-2 !text-[13px]"
+                />
+              )}
+            </>
+          }
+        />
+      )}
     </AccountLayout>
   );
 }

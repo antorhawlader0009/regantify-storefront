@@ -49,10 +49,16 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
   // A review's photos open full screen (shared PhotoViewer); null = closed.
   const [viewer, setViewer] = useState<{ photos: string[]; index: number } | null>(null);
   const [orderToken, setOrderToken] = useState<string | undefined>(undefined);
+  // ?review=1 (Account > My purchases, before delivery): open the review form too, without the verified-buyer proof.
+  const [reviewAsked, setReviewAsked] = useState(false);
   useEffect(() => {
-    const token = new URLSearchParams(window.location.search).get('order');
+    const query = new URLSearchParams(window.location.search);
+    const token = query.get('order');
     if (token) {
       setOrderToken(token);
+      setActiveTab('reviews');
+    } else if (query.get('review') === '1') {
+      setReviewAsked(true);
       setActiveTab('reviews');
     }
   }, []);
@@ -225,14 +231,14 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
             labels={{ close: t('Close'), previous: t('Previous photo'), next: t('Next photo'), zoomIn: t('Zoom in'), zoomOut: t('Zoom out') }}
           />
 
-          <WriteReviewForm subdomain={subdomain} slug={slug} orderToken={orderToken} />
+          <WriteReviewForm subdomain={subdomain} slug={slug} orderToken={orderToken} autoOpen={reviewAsked} />
         </div>
       )}
     </div>
   );
 }
 
-function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; slug: string; orderToken?: string }) {
+function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain: string; slug: string; orderToken?: string; autoOpen?: boolean }) {
   const [open, setOpen] = useState(false);
   const [rating, setRating] = useState(5);
   const [title, setTitle] = useState('');
@@ -251,8 +257,8 @@ function WriteReviewForm({ subdomain, slug, orderToken }: { subdomain: string; s
   // Arriving from Account > My purchases (or the tracking page's "Review your products") with ?order=...: the form opens
   // by itself, with the account's name filled in.
   useEffect(() => {
-    if (orderToken && accessToken) setOpen(true);
-  }, [orderToken, accessToken]);
+    if ((orderToken || autoOpen) && accessToken) setOpen(true);
+  }, [orderToken, autoOpen, accessToken]);
   useEffect(() => {
     if (customer?.fullName) setName((prev) => prev || customer.fullName || '');
   }, [customer?.fullName]);

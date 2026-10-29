@@ -12,6 +12,7 @@ import { missingDemoPages } from '@/lib/demoPages';
 import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
 import { BusinessHoursTable } from './BusinessHoursTable';
+import { FooterLocation } from './FooterLocation';
 import { APP_STORE_BADGE, GOOGLE_PLAY_BADGE } from '../lib/appBadges';
 
 interface StoreFooterProps {
@@ -312,6 +313,8 @@ export function StoreFooter({
           </FooterSection>
         </div>
 
+        <FooterLocation address={contact?.basedIn} />
+
         <div className="border-t border-line">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-24 sm:pb-4 text-[13px] text-muted flex flex-col items-center gap-1 text-center sm:text-left sm:flex-row sm:justify-between">
             <span>
@@ -450,6 +453,8 @@ export function StoreFooter({
         ))}
       </div>
 
+
+      <FooterLocation address={footerConfig.contactAddress || contact?.basedIn} />
 
       <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
         <BusinessHoursTable />

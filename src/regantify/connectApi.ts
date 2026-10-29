@@ -47,7 +47,9 @@ export async function connectConfig(): Promise<{ enabled: boolean; google: boole
 
 export const connectApi = {
   target: (subdomain: string, returnTo: string) => post<{ store: { name: string; subdomain: string } }>('/target', { subdomain, returnTo }),
-  googleStart: (subdomain: string, returnTo: string) => post<{ url: string }>('/google/start', { subdomain, returnTo }),
+  // `link`: the account dialog's "Connect Google" ticket; Google is then attached to that shopper instead of signing in.
+  googleStart: (subdomain: string, returnTo: string, link?: string) =>
+    post<{ url: string }>('/google/start', link ? { subdomain, returnTo, link } : { subdomain, returnTo }),
   googleCallback: (code: string, state: string) => post<ConnectAnswer>('/google/callback', { code, state }),
   phoneSend: (subdomain: string, returnTo: string, phone: string) => post<{ sent: boolean }>('/phone/send', { subdomain, returnTo, phone }),
   phoneVerify: (subdomain: string, returnTo: string, phone: string, code: string) => post<ConnectAnswer>('/phone/verify', { subdomain, returnTo, phone, code }),
