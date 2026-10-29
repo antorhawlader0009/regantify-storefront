@@ -190,6 +190,7 @@ const BN: Record<string, string> = {
   'Log out?': 'লগআউট করবেন?',
   'Open cart': 'কার্ট খুলুন',
   'Got a question?': 'কিছু জানার আছে?',
+  'Orders, products or delivery: ask us anything directly': 'অর্ডার, পণ্য বা ডেলিভারি, যেকোনো প্রশ্নে সরাসরি কথা বলুন',
   '{n} Items': '{n}টি পণ্য',
   'Code sent to {phone}': '{phone} নম্বরে কোড পাঠানো হয়েছে',
   'You can review this product once it has been delivered to you.': 'পণ্যটি হাতে পাওয়ার পর রিভিউ দিতে পারবেন।',

@@ -216,6 +216,10 @@ export function StoreFooter({
   // The "We accept" row (the checkout's payment methods) was removed on 2026-10-28 at the owner's request.
   const trackLink = { label: t('Track order'), url: `/store/${subdomain}/orders` };
 
+  // Numbers the call bar falls back on (also for a store that never saved a footer).
+  const defaultCallPhone = contact?.phone?.label || (design.headerPhoneEnabled ? design.headerPhone : '') || '';
+  const defaultWhatsapp = contact?.whatsapp?.url || socialLinks.whatsappUrl || '';
+
   // Not yet configured - original hardcoded 3-column footer, unchanged
   // from before Store > Footer existed. See this component's own
   // "BACKWARD COMPATIBILITY" doc comment above.
@@ -229,6 +233,7 @@ export function StoreFooter({
     const about = aboutBlurb?.trim();
     return (
       <footer data-rg="footer" className="bg-canvas border-t border-line mt-8">
+        <FooterCallBar phone={defaultCallPhone} fallbackWhatsapp={defaultWhatsapp} />
         <ReputationStrip />
         <div className="max-w-6xl mx-auto px-3 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div className="col-span-2 lg:col-span-1">
@@ -474,47 +479,17 @@ export function StoreFooter({
       Math.min(Math.max(visibleColumns.length, 1), 6) as 1 | 2 | 3 | 4 | 5 | 6
     ];
 
-  // "Got a question?" bar across the top of the footer (2026-10-29): Call (the bar's own number, else the contact phone) and
-  // WhatsApp (the bar's own number or link, else the store's WhatsApp link from Store > Social). A button shows only with a number.
-  const callNumber = (footerConfig.callBarPhone || footerConfig.contactPhone || '').split(/[,/]/)[0].trim();
-  const waRaw = (footerConfig.callBarWhatsapp || '').trim();
-  const waDigits = waRaw.replace(/[^\d]/g, '');
-  const waHref = /^https?:\/\//i.test(waRaw)
-    ? waRaw
-    : waDigits.length >= 10
-      ? `https://wa.me/${waDigits.startsWith('880') ? waDigits : `88${waDigits.replace(/^88/, '')}`}`
-      : socialLinks.whatsappUrl || '';
-  const CallBar = footerConfig.showCallBar && (callNumber || waHref) && (
-    <div className="border-b border-line">
-      <div className="max-w-6xl mx-auto flex flex-col gap-4 px-3 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
-        <div className="min-w-0">
-          <p className="m-0 text-[18px] font-bold text-ink">{footerConfig.callBarTitle || t('Got a question?')}</p>
-          {footerConfig.callBarText?.trim() && <p className="m-0 mt-1 text-[13px] text-muted">{footerConfig.callBarText}</p>}
-        </div>
-        <div className="flex flex-wrap gap-2.5">
-          {callNumber && (
-            <a
-              href={`tel:${callNumber.replace(/[^\d+]/g, '')}`}
-              className="inline-flex h-11 items-center gap-2 rounded-lg bg-white px-5 text-[14px] font-bold text-[#1a2b3c] transition-opacity hover:opacity-90"
-            >
-              <PhoneCall size={17} aria-hidden />
-              {callNumber}
-            </a>
-          )}
-          {waHref && (
-            <a
-              href={waHref}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex h-11 items-center gap-2 rounded-lg border border-line-strong px-5 text-[14px] font-bold text-ink transition-colors hover:bg-white/10"
-            >
-              <MessageCircle size={17} aria-hidden />
-              WhatsApp
-            </a>
-          )}
-        </div>
-      </div>
-    </div>
+  // "Got a question?" bar across the top of the footer (2026-10-29, on by default): Call (the bar's own number, else the
+  // footer contact phone, the Contact page's phone, the header phone) and WhatsApp (the bar's own number or link, else the
+  // Contact page's WhatsApp, else Store > Social's). A button shows only with a number; the store turns the bar off in Store > Footer.
+  const CallBar = footerConfig.showCallBar !== false && (
+    <FooterCallBar
+      title={footerConfig.callBarTitle}
+      text={footerConfig.callBarText}
+      phone={footerConfig.callBarPhone || footerConfig.contactPhone || defaultCallPhone}
+      whatsapp={footerConfig.callBarWhatsapp}
+      fallbackWhatsapp={defaultWhatsapp}
+    />
   );
 
   return (
@@ -547,5 +522,68 @@ export function StoreFooter({
         </div>
       </div>
     </footer>
+  );
+}
+
+/** The "Got a question?" bar with Call and WhatsApp buttons; renders nothing without a number for either. */
+function FooterCallBar({
+  title,
+  text,
+  phone,
+  whatsapp,
+  fallbackWhatsapp,
+}: {
+  title?: string | null;
+  text?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  fallbackWhatsapp?: string | null;
+}) {
+  const t = useStoreText();
+  const callNumber = (phone || '').split(/[,/]/)[0].trim();
+  const waLink = (raw: string) => {
+    const digits = raw.replace(/[^\d]/g, '');
+    if (/^https?:\/\//i.test(raw)) return raw;
+    if (digits.length < 10) return '';
+    return `https://wa.me/${digits.startsWith('880') ? digits : `88${digits.replace(/^88/, '')}`}`;
+  };
+  // WhatsApp: the bar's own number or link, else the store's WhatsApp, else the call number itself (most shops use one number).
+  const waHref = waLink((whatsapp || '').trim()) || fallbackWhatsapp || waLink(callNumber);
+  if (!callNumber && !waHref) return null;
+  // The saved default title is the English text, so it goes through t() like the built-in one.
+  const heading = !title || title === 'Got a question?' ? t('Got a question?') : title;
+  const line = text?.trim() || t('Orders, products or delivery: ask us anything directly');
+  // Footer colours (globals.css: navy #1a2b3c, white text, #b6c2d1 muted): a slightly deeper navy band, a white Call button.
+  return (
+    <div className="border-b border-line bg-[#142231]">
+      <div className="max-w-6xl mx-auto flex flex-col gap-4 px-3 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="min-w-0">
+          <p className="m-0 text-[18px] font-bold text-white">{heading}</p>
+          <p className="m-0 mt-1 text-[13px] text-muted">{line}</p>
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          {callNumber && (
+            <a
+              href={`tel:${callNumber.replace(/[^\d+]/g, '')}`}
+              className="inline-flex h-11 items-center gap-2 rounded-lg bg-white px-5 text-[14px] font-bold text-[#1a2b3c] transition-opacity hover:opacity-90"
+            >
+              <PhoneCall size={17} aria-hidden />
+              {callNumber}
+            </a>
+          )}
+          {waHref && (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center gap-2 rounded-lg border border-line-strong px-5 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
+            >
+              <MessageCircle size={17} aria-hidden />
+              WhatsApp
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
