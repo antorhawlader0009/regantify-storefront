@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
-import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle } from 'lucide-react';
+import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, Mail, MapPin, Phone, PhoneCall } from 'lucide-react';
 import { ReputationStrip } from './ReputationStrip';
 import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
 import { getGiftCardSale, getStoreHasBlog, getStoreContactInfo, getStoreHasFaq, getStoreHasLocations, getStorePages, type StoreContactInfo, type StorefrontPageSummary } from '../lib/storeNavApi';
@@ -400,15 +400,26 @@ export function StoreFooter({
       {showContact && (
         <>
           <p className="text-[15px] font-semibold text-ink mb-3 uppercase">{footerConfig.contactTitle || 'Contact Info'}</p>
-          <div className="flex flex-col gap-2.5 text-[13px] text-muted">
-            {footerConfig.contactAddress?.trim() && <p className="m-0 whitespace-pre-line">{footerConfig.contactAddress}</p>}
+          {/* Each line with its own icon (2026-10-29): phone first and bold, then the address, then the email. */}
+          <div className="flex flex-col gap-3 text-[13px] text-muted">
             {footerConfig.contactPhone?.trim() && (
-              <a href={`tel:${footerConfig.contactPhone.split(/[,/]/)[0].replace(/[^\d+]/g, '')}`} className="w-fit hover:text-ink">
+              <a
+                href={`tel:${footerConfig.contactPhone.split(/[,/]/)[0].replace(/[^\d+]/g, '')}`}
+                className="flex w-fit items-start gap-2.5 font-semibold text-ink hover:opacity-80"
+              >
+                <Phone size={15} className="mt-0.5 shrink-0 text-muted" aria-hidden />
                 {footerConfig.contactPhone}
               </a>
             )}
+            {footerConfig.contactAddress?.trim() && (
+              <p className="m-0 flex items-start gap-2.5 whitespace-pre-line leading-relaxed">
+                <MapPin size={15} className="mt-0.5 shrink-0" aria-hidden />
+                <span>{footerConfig.contactAddress}</span>
+              </p>
+            )}
             {footerConfig.contactEmail?.trim() && (
-              <a href={`mailto:${footerConfig.contactEmail}`} className="w-fit hover:text-ink">
+              <a href={`mailto:${footerConfig.contactEmail}`} className="flex w-fit items-start gap-2.5 break-all hover:text-ink">
+                <Mail size={15} className="mt-0.5 shrink-0" aria-hidden />
                 {footerConfig.contactEmail}
               </a>
             )}
@@ -427,32 +438,93 @@ export function StoreFooter({
     </div>
   );
 
+  // A third column of links (2026-10-29), e.g. "Help Center"; shown when it has a link.
+  const extraLinks = footerConfig.extraLinks ?? [];
+  const ExtraColumn = extraLinks.length > 0 && (
+    <FooterSection title={footerConfig.extraTitle || 'Help Center'} upper>
+      <div className="flex flex-col gap-2.5 text-[13px]">
+        {extraLinks.map((link, i) => (
+          <Link key={i} href={link.url} className="text-accent hover:text-accent-dark transition-colors w-fit">
+            {link.label}
+          </Link>
+        ))}
+      </div>
+    </FooterSection>
+  );
+
   const columnContent: Record<string, React.ReactNode> = {
     contact: ContactColumn,
     logo: LogoColumn,
     menu: MenuColumn,
     info: InfoColumn,
+    extra: ExtraColumn,
     about: AboutColumn,
     // Address and a small map: always the last column.
     location: <FooterLocation address={footerConfig.contactAddress || contact?.basedIn} upper />,
   };
-  const visibleColumns = ['contact', ...def.columns, 'location'].filter((c) => columnContent[c]);
+  // The third link column sits right after the template's Information column (or after its links, when it has none).
+  const templateColumns = def.columns.includes('info') ? def.columns.flatMap((c) => (c === 'info' ? ['info', 'extra'] : [c])) : [...def.columns, 'extra'];
+  const visibleColumns = ['contact', ...templateColumns, 'location'].filter((c) => columnContent[c]);
   // Fixed Tailwind class per count (1-4) rather than an inline
   // gridTemplateColumns - keeps this a plain utility-class grid like
   // every other layout in this theme, at the cost of only supporting up
   // to 4 columns (every current template registry entry has at most 4).
   const gridColsClass =
-    { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-4', 5: 'sm:grid-cols-3 lg:grid-cols-5' }[
-      Math.min(Math.max(visibleColumns.length, 1), 5) as 1 | 2 | 3 | 4 | 5
+    { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-4', 5: 'sm:grid-cols-3 lg:grid-cols-5', 6: 'sm:grid-cols-3 lg:grid-cols-6' }[
+      Math.min(Math.max(visibleColumns.length, 1), 6) as 1 | 2 | 3 | 4 | 5 | 6
     ];
+
+  // "Got a question?" bar across the top of the footer (2026-10-29): Call (the bar's own number, else the contact phone) and
+  // WhatsApp (the bar's own number or link, else the store's WhatsApp link from Store > Social). A button shows only with a number.
+  const callNumber = (footerConfig.callBarPhone || footerConfig.contactPhone || '').split(/[,/]/)[0].trim();
+  const waRaw = (footerConfig.callBarWhatsapp || '').trim();
+  const waDigits = waRaw.replace(/[^\d]/g, '');
+  const waHref = /^https?:\/\//i.test(waRaw)
+    ? waRaw
+    : waDigits.length >= 10
+      ? `https://wa.me/${waDigits.startsWith('880') ? waDigits : `88${waDigits.replace(/^88/, '')}`}`
+      : socialLinks.whatsappUrl || '';
+  const CallBar = footerConfig.showCallBar && (callNumber || waHref) && (
+    <div className="border-b border-line">
+      <div className="max-w-6xl mx-auto flex flex-col gap-4 px-3 py-6 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+        <div className="min-w-0">
+          <p className="m-0 text-[18px] font-bold text-ink">{footerConfig.callBarTitle || t('Got a question?')}</p>
+          {footerConfig.callBarText?.trim() && <p className="m-0 mt-1 text-[13px] text-muted">{footerConfig.callBarText}</p>}
+        </div>
+        <div className="flex flex-wrap gap-2.5">
+          {callNumber && (
+            <a
+              href={`tel:${callNumber.replace(/[^\d+]/g, '')}`}
+              className="inline-flex h-11 items-center gap-2 rounded-lg bg-white px-5 text-[14px] font-bold text-[#1a2b3c] transition-opacity hover:opacity-90"
+            >
+              <PhoneCall size={17} aria-hidden />
+              {callNumber}
+            </a>
+          )}
+          {waHref && (
+            <a
+              href={waHref}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex h-11 items-center gap-2 rounded-lg border border-line-strong px-5 text-[14px] font-bold text-ink transition-colors hover:bg-white/10"
+            >
+              <MessageCircle size={17} aria-hidden />
+              WhatsApp
+            </a>
+          )}
+        </div>
+      </div>
+    </div>
+  );
 
   return (
     <footer data-rg="footer" className={`${def.background === 'band' ? 'bg-canvas' : 'bg-surface'} border-t border-line mt-8`}>
+      {CallBar}
       <ReputationStrip />
       <div className={`max-w-6xl mx-auto px-3 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 ${gridColsClass}`}>
         {visibleColumns.map((c) => (
-          // Phones: the two link columns sit side by side, everything else takes the full width.
-          <div key={c} className={c === 'menu' || c === 'info' ? '' : 'col-span-2 sm:col-span-1'}>
+          // Phones: the link columns sit two side by side, everything else takes the full width.
+          <div key={c} className={c === 'menu' || c === 'info' || c === 'extra' ? '' : 'col-span-2 sm:col-span-1'}>
             {columnContent[c]}
           </div>
         ))}
