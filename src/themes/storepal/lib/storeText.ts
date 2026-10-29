@@ -188,6 +188,8 @@ const BN: Record<string, string> = {
   'Sort by latest': 'নতুনগুলো আগে',
   'Best selling': 'বেশি বিক্রি',
   'Log out?': 'লগআউট করবেন?',
+  'Code sent to {phone}': '{phone} নম্বরে কোড পাঠানো হয়েছে',
+  'You can review this product once it has been delivered to you.': 'পণ্যটি হাতে পাওয়ার পর রিভিউ দিতে পারবেন।',
   'You can log in again any time with your phone or Google.': 'যেকোনো সময় ফোন বা গুগল দিয়ে আবার লগইন করতে পারবেন।',
   'Log out': 'লগআউট',
   'Your account has no phone number. Give one to get the answer by SMS.': 'আপনার অ্যাকাউন্টে ফোন নম্বর নেই। SMS-এ উত্তর পেতে একটি নম্বর দিন।',

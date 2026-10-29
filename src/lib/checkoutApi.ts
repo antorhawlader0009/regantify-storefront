@@ -563,15 +563,10 @@ export interface TrackedOrder {
   vatIncluded?: boolean;
   // Counter sales on the tracking-link answer only: how it was paid (CASH, CARD, BKASH...).
   paidWith?: string[];
-  // Whether the shopper may cancel this order themselves right now (server: orders/customer-cancel.ts).
-  // Absent on the "My orders" list and on older answers.
-  customerCancel?: { allowed: boolean };
   // The SMS "confirm your order" page (IDEA-24): the two buttons may show (allowed), or the order is already confirmed. Absent on older answers.
   customerConfirm?: { allowed: boolean; confirmed: boolean };
   // "Pay now online and save" on a COD order: the saving and what paying now costs; null/absent when not offered.
   prepaidOffer?: { saving: number; payNow: number } | null;
-  // Whether the shopper may correct their delivery details right now ("Fix my address").
-  customerEdit?: { allowed: boolean };
   // "How was the delivery?" (TellMe idea 89): asked once on a Completed online order; `rating` once given.
   deliveryRating?: { canRate: boolean; rating: number | null };
   // "How did you hear about us?" (TellMe idea 100): asked once while the store has it on; `answered` once given.
@@ -581,9 +576,6 @@ export interface TrackedOrder {
   // After a failed delivery attempt (TellMe idea 106): the next days the shopper may pick, and the day already picked.
   reschedule?: { canPick: boolean; days: string[]; pickedDay: string | null; picks: number };
 }
-
-/** The reasons the "Cancel my order" button offers; the server accepts exactly these. */
-export type CustomerCancelReason = 'CHANGED_MIND' | 'ORDERED_BY_MISTAKE' | 'BOUGHT_ELSEWHERE';
 
 /**
  * The same order by its private tracking-link token, from the browser: the tracking page uses it
@@ -610,17 +602,6 @@ export async function answerConfirmLink(subdomain: string, token: string, answer
     body: JSON.stringify({ answer }),
   });
   if (!res.ok) throw await apiError(res, 'Something went wrong. Please try again.');
-  return res.json() as Promise<TrackedOrder>;
-}
-
-/** The shopper cancels their own order (tracking token as proof). Returns the order as it is now. */
-export async function cancelOrderByLink(subdomain: string, token: string, reason: CustomerCancelReason): Promise<TrackedOrder> {
-  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/cancel`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ reason }),
-  });
-  if (!res.ok) throw await apiError(res, 'Could not cancel the order. Please try again.');
   return res.json() as Promise<TrackedOrder>;
 }
 
@@ -665,21 +646,6 @@ export async function rateDeliveryByLink(subdomain: string, token: string, ratin
     body: JSON.stringify({ rating, comment: comment?.trim() || undefined }),
   });
   if (!res.ok) throw await apiError(res, 'Could not save your rating. Please try again.');
-  return res.json() as Promise<TrackedOrder>;
-}
-
-/** The shopper corrects their street address, thana/area and second phone (tracking token as proof). Returns the order as it is now. */
-export async function editOrderAddressByLink(
-  subdomain: string,
-  token: string,
-  body: { shippingAddress: string; shippingCity?: string; customerPhoneAlt?: string },
-): Promise<TrackedOrder> {
-  const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/track/${encodeURIComponent(token)}/contact`, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(body),
-  });
-  if (!res.ok) throw await apiError(res, 'Could not save the address. Please try again.');
   return res.json() as Promise<TrackedOrder>;
 }
 

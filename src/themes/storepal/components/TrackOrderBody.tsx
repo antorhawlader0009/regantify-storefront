@@ -10,13 +10,11 @@ import { stageText, statusText, timelineDetail, timelineTitle, ui, type TrackLan
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { isFinishedOrder } from '@/lib/useLiveOrder';
-import { CancelOrderCard } from './CancelOrderCard';
 import { PrepaidOfferCard } from '@/components/PrepaidOfferCard';
 import { DeliveryRatingCard } from './DeliveryRatingCard';
 import { ReviewProductsCard } from './ReviewProductsCard';
 import { HeardFromCard } from './HeardFromCard';
 import { RescheduleCard } from './RescheduleCard';
-import { EditAddressCard } from './EditAddressCard';
 import { useFormatPrice } from '../lib/storeText';
 
 const STOPPED_STATUSES = ['CANCELLED', 'RETURN', 'REFUNDED', 'PAYMENT_FAILED', 'STOCK_OUT'];
@@ -184,7 +182,7 @@ export function TrackOrderBody({
   checkedAt?: Date;
   /** Whether the page is still refreshing itself (the order has not finished). */
   live?: boolean;
-  /** With `onOrderChanged`, turns on the "Cancel my order" card (CancelOrderCard). */
+  /** With `onOrderChanged`, turns on the cards that change the order (reschedule, delivery rating, heard-from). */
   subdomain?: string;
   onOrderChanged?: (order: TrackedOrder) => void;
 }) {
@@ -318,10 +316,6 @@ export function TrackOrderBody({
       )}
 
       {subdomain && onOrderChanged && <RescheduleCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
-
-      {subdomain && onOrderChanged && <EditAddressCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
-
-      {subdomain && onOrderChanged && <CancelOrderCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 
       {subdomain && onOrderChanged && <HeardFromCard subdomain={subdomain} order={order} lang={lang} onChanged={onOrderChanged} />}
 

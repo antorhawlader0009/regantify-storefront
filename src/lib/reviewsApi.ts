@@ -73,6 +73,8 @@ export async function submitProductReview(subdomain: string, slug: string, input
 }
 
 export interface ReviewMediaEligibility {
+  /** A delivered (Completed) order of this product, not yet reviewed: only then can this shopper write a review. */
+  canReview?: boolean;
   canAddPhotos: boolean;
   maxPhotos: number;
   /** One video too (stores on the Advance plan only). */

@@ -260,11 +260,15 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
   // The signed-in account's own name and email (Edit Profile / Google): shown locked instead of a box to type in.
   const accountName = customer?.fullName?.trim() || '';
   const accountEmail = customer?.email?.trim() || '';
+  // Whether this shopper may review at all (a delivered order of this product, not yet reviewed), asked as soon as they are
+  // signed in, so the form is only offered to them; null while unknown.
+  const [canReview, setCanReview] = useState<boolean | null>(null);
   // Arriving from Account > My purchases (or the tracking page's "Review your products") with ?order=...: the form opens
   // by itself, with the account's name filled in.
   useEffect(() => {
-    if ((orderToken || autoOpen) && accessToken) setOpen(true);
-  }, [orderToken, autoOpen, accessToken]);
+    // ?review=1 opens it only for a buyer who may review (canReview); a ?order= link proves the order itself.
+    if (accessToken && (orderToken || (autoOpen && canReview))) setOpen(true);
+  }, [orderToken, autoOpen, accessToken, canReview]);
   useEffect(() => {
     if (customer?.fullName) setName((prev) => prev || customer.fullName || '');
   }, [customer?.fullName]);
@@ -275,7 +279,8 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
   const [canAddVideo, setCanAddVideo] = useState(false);
   const [video, setVideo] = useState<{ file: File; preview: string } | null>(null);
   useEffect(() => {
-    if (!open || !accessToken) {
+    if (!accessToken) {
+      setCanReview(null);
       setCanAddPhotos(false);
       setCanAddVideo(false);
       return;
@@ -283,13 +288,14 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
     let live = true;
     void getReviewPhotoEligibility(subdomain, slug, accessToken).then((r) => {
       if (!live) return;
+      setCanReview(!!r.canReview);
       setCanAddPhotos(r.canAddPhotos);
       setCanAddVideo(!!r.canAddVideo);
     });
     return () => {
       live = false;
     };
-  }, [open, accessToken, subdomain, slug]);
+  }, [accessToken, subdomain, slug]);
   useEffect(() => {
     if (open && !name && customer?.fullName) setName(customer.fullName);
     // eslint-disable-next-line react-hooks/exhaustive-deps -- fill the name once when the form opens, never over what was typed
@@ -405,13 +411,22 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
     );
   }
 
+  // Only a buyer whose order of this product was delivered may review it (the server refuses anyone else). A "Review your products"
+  // link (?order=) proves that order by itself.
+  const mayReview = canReview === true || !!orderToken;
+  if (!open && !mayReview) {
+    return canReview === null ? null : (
+      <p className="m-0 text-[12.5px] text-muted">{t('You can review this product once it has been delivered to you.')}</p>
+    );
+  }
+
   if (!open) {
     return (
       <button
         onClick={() => setOpen(true)}
         className="px-4 py-2 rounded-md border border-line text-[12.5px] font-semibold text-ink hover:border-ink transition-colors"
       >
-        Write a review
+        {t('Write a review')}
       </button>
     );
   }

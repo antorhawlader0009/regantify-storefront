@@ -12,12 +12,17 @@ import { GoogleMark } from './RegantifySignIn';
  * with Google next time; "Google connected" once one is attached. Connecting goes through the central Regantify page (Google allows one
  * registered return address), which lists the addresses saved at other stores to bring here and comes back signed in. Hidden while Regantify's Google sign-in is not set up.
  */
+/** The last answer for a sign-in, kept while the page is open (moving between account sections remounts the badge). */
+let lastAnswer: { token: string; state: { connected: boolean; email: string | null }; available: boolean } | null = null;
+
 export function GoogleConnectBadge() {
   const t = useStoreText();
   const hydrated = useCustomerAuthHydrated();
   const accessToken = useCustomerAuthStore((s) => s.accessToken);
-  const [state, setState] = useState<{ connected: boolean; email: string | null } | null>(null);
-  const [available, setAvailable] = useState(false);
+  // Each account section draws the dialog again; the last answer for this sign-in is shown at once (no flicker), then refreshed.
+  const cached = accessToken && lastAnswer?.token === accessToken ? lastAnswer : null;
+  const [state, setState] = useState<{ connected: boolean; email: string | null } | null>(cached?.state ?? null);
+  const [available, setAvailable] = useState(cached?.available ?? false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -26,8 +31,10 @@ export function GoogleConnectBadge() {
     let alive = true;
     Promise.all([getMyProfile(accessToken), getRegantifyConnectConfig()])
       .then(([profile, cfg]) => {
+        const next = { connected: !!profile.googleConnected, email: profile.googleEmail ?? null };
+        lastAnswer = { token: accessToken, state: next, available: cfg.google };
         if (!alive) return;
-        setState({ connected: !!profile.googleConnected, email: profile.googleEmail ?? null });
+        setState(next);
         setAvailable(cfg.google);
       })
       .catch(() => undefined);

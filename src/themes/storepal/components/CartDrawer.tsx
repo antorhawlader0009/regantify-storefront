@@ -7,6 +7,7 @@ import { usePathname } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
 import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
 import { ShareCartButton } from './ShareCartButton';
+import { useCoverFloating } from '@/lib/floatingCover';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
@@ -30,6 +31,9 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
   const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const open = useCartDrawer((s) => s.open);
+  // While the cart is open, every floating bubble (AI assistant, WhatsApp / Messenger, "someone bought", popups, install banner)
+  // steps aside (lib/floatingCover.tsx), on phones and computers alike (2026-10-29, the owner's request).
+  useCoverFloating(open);
   const closeDrawer = useCartDrawer((s) => s.closeDrawer);
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
   const pathname = usePathname();
@@ -92,7 +96,9 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
         aria-modal="true"
         aria-label={t('Shopping cart')}
         data-rg="cart-drawer"
-        className={`absolute right-0 top-0 flex h-full w-full flex-col bg-canvas shadow-2xl transition-transform ease-out motion-reduce:transition-none sm:w-[420px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
+        // Phones: 80% of the width (2026-10-29, the owner's request), so a strip of the page stays visible on the left and a tap
+        // there closes it. Larger screens keep the 420 px panel.
+        className={`absolute right-0 top-0 flex h-full w-[80%] flex-col bg-canvas shadow-2xl transition-transform ease-out motion-reduce:transition-none sm:w-[420px] ${open ? 'translate-x-0' : 'translate-x-full'}`}
         style={{ transitionDuration: `${SLIDE_MS}ms` }}
       >
         <div className="flex shrink-0 items-center justify-between px-5 pb-3 pt-5">
