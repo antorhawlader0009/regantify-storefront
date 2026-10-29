@@ -1,11 +1,15 @@
 'use client';
 
+import { useLayoutEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Heart, KeyRound, LogIn, LogOut, MapPin, Package, ShoppingBag, Ticket, UserRound, type LucideIcon } from 'lucide-react';
 import { useCustomerAuthHydrated, useCustomerAuthStore, useCustomerLogout } from '@/providers/customer-auth-store-provider';
 import { useStoreText } from '../lib/storeText';
 import { useWishlist } from '../lib/wishlist';
+
+/** Where the phone chip row was scrolled to, kept for the tab so the next account page starts there. */
+const CHIP_SCROLL_KEY = 'storepal-account-chips';
 
 interface AccountSidebarProps {
   subdomain: string;
@@ -55,6 +59,32 @@ export function AccountSidebar({ subdomain }: AccountSidebarProps) {
   const { slugs } = useWishlist(subdomain);
   const signedIn = hydrated && !!customer;
 
+  // Phones: the chip row starts where it was on the last account page (each page draws the dialog again), then the open
+  // section's chip slides into the middle, so a chip that was off to the side comes into view.
+  const rowRef = useRef<HTMLElement>(null);
+  useLayoutEffect(() => {
+    const row = rowRef.current;
+    if (!row) return;
+    try {
+      row.scrollLeft = Number(sessionStorage.getItem(CHIP_SCROLL_KEY) ?? 0) || 0;
+    } catch {
+      // Storage blocked: start at the beginning.
+    }
+    const chip = row.querySelector<HTMLElement>('[aria-current="page"]');
+    if (!chip) return;
+    // Measured against the row itself (offsetLeft would count from the nearest positioned parent instead).
+    const target = row.scrollLeft + (chip.getBoundingClientRect().left - row.getBoundingClientRect().left) - (row.clientWidth - chip.offsetWidth) / 2;
+    const frame = requestAnimationFrame(() => row.scrollTo({ left: Math.max(0, target), behavior: 'smooth' }));
+    return () => cancelAnimationFrame(frame);
+  }, [pathname]);
+  const rememberRow = () => {
+    try {
+      if (rowRef.current) sessionStorage.setItem(CHIP_SCROLL_KEY, String(rowRef.current.scrollLeft));
+    } catch {
+      // Storage blocked: nothing to remember.
+    }
+  };
+
   const itemLink = (item: NavItem, phone: boolean) => {
     const href = `/store/${subdomain}/${item.path}`;
     const active = pathname === href || pathname.endsWith(`/${item.path}`);
@@ -100,6 +130,8 @@ export function AccountSidebar({ subdomain }: AccountSidebarProps) {
     <>
       {/* Phones: one row of icon chips that scrolls sideways, so the content is not pushed down. */}
       <nav
+        ref={rowRef}
+        onScroll={rememberRow}
         aria-label={t('My account')}
         className="flex shrink-0 gap-2 overflow-x-auto border-b border-line bg-surface px-4 py-2.5 [scrollbar-width:none] sm:hidden"
       >

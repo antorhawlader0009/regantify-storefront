@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { askProductQuestion, type ProductQuestion } from '@/lib/questionsApi';
 import { useStoreText } from '../lib/storeText';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
@@ -35,6 +35,11 @@ export function ProductQuestionsTab({
   const [sending, setSending] = useState(false);
   const [problem, setProblem] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
+  // A signed-in shopper's name is filled in when the form opens (they can still change it).
+  useEffect(() => {
+    if (open && !name && customer?.fullName) setName(customer.fullName.slice(0, 60));
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- fill once when the form opens
+  }, [open, customer?.fullName]);
 
   async function submit(e: React.FormEvent) {
     e.preventDefault();
@@ -111,7 +116,16 @@ export function ProductQuestionsTab({
             className="w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none transition-colors focus:border-ink focus:bg-surface"
           />
           {accountPhone ? (
-            <p className="text-[12px] text-muted">{t('The store may text its answer to your account phone.')}</p>
+            // Signed in with a phone: it is filled in from the account (and sent with the sign-in, not from this box).
+            <div>
+              <input
+                value={accountPhone}
+                readOnly
+                aria-label={t('Your mobile number')}
+                className="w-full cursor-not-allowed px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-dashed border-line-strong text-muted outline-none"
+              />
+              <p className="mt-1 text-[11.5px] text-muted">{t('The store may text its answer to your account phone.')}</p>
+            </div>
           ) : (
             <div>
               <input
@@ -122,7 +136,10 @@ export function ProductQuestionsTab({
                 aria-required="true"
                 className="w-full px-3.5 py-2.5 rounded-md text-[13px] bg-canvas border border-line outline-none transition-colors focus:border-ink focus:bg-surface"
               />
-              <p className="mt-1 text-[11.5px] text-muted">{t('Give your number to get the answer by SMS.')}</p>
+              {/* Signed in but no phone on the account (common after "Login with Google"): ask for one here. */}
+              <p className="mt-1 text-[11.5px] text-muted">
+                {customer && accessToken ? t('Your account has no phone number. Give one to get the answer by SMS.') : t('Give your number to get the answer by SMS.')}
+              </p>
             </div>
           )}
           {problem && <p className="text-[12px] text-accent">{problem}</p>}

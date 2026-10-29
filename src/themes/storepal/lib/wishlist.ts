@@ -4,6 +4,7 @@ import { useCallback, useSyncExternalStore } from 'react';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { syncServerWishlist } from '@/lib/customerAuthApi';
 import { trackFeature } from '@/lib/featureUse';
+import { WISHLIST_MAX, useLimitNotice } from '@/lib/shopLimits';
 
 // Store > Design > Product Card's "Show Wishlist Button". The wishlist is
 // a list of product slugs kept in the shopper's own browser, per store —
@@ -58,7 +59,8 @@ function subscribe(listener: () => void) {
 
 /** Replaces this browser's list (used when the account's saved list is merged in at login). */
 export function setLocalWishlist(subdomain: string, slugs: string[]) {
-  write(subdomain, slugs);
+  // The merged list at login keeps at most WISHLIST_MAX (the newest saves are at the end, so the first ones stay).
+  write(subdomain, slugs.slice(0, WISHLIST_MAX));
 }
 
 export function readLocalWishlist(subdomain: string): string[] {
@@ -76,6 +78,18 @@ export function useWishlist(subdomain: string) {
   const toggle = useCallback(
     (slug: string) => {
       const current = read(subdomain);
+      // At most WISHLIST_MAX products per store (lib/shopLimits.ts); removing always works.
+      if (!current.includes(slug) && current.length >= WISHLIST_MAX) {
+        const bn = document.documentElement.lang === 'bn';
+        useLimitNotice
+          .getState()
+          .show(
+            bn
+              ? `পছন্দের তালিকায় সর্বোচ্চ ${WISHLIST_MAX}টি পণ্য রাখা যায়। নতুন কিছু রাখতে আগে একটি সরান।`
+              : `Your wishlist can hold up to ${WISHLIST_MAX} products. Remove one to save another.`,
+          );
+        return;
+      }
       const next = current.includes(slug) ? current.filter((s) => s !== slug) : [...current, slug];
       if (!current.includes(slug)) trackFeature('WISHLIST_ADD');
       write(subdomain, next);

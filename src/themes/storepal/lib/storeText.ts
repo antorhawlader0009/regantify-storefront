@@ -186,6 +186,11 @@ const BN: Record<string, string> = {
   'No product matches': 'কোনো পণ্য মেলেনি:',
   // Shop / home
   'Sort by latest': 'নতুনগুলো আগে',
+  'Best selling': 'বেশি বিক্রি',
+  'Your account has no phone number. Give one to get the answer by SMS.': 'আপনার অ্যাকাউন্টে ফোন নম্বর নেই। SMS-এ উত্তর পেতে একটি নম্বর দিন।',
+  'Top rated': 'সেরা রেটিং',
+  'Biggest discount': 'সবচেয়ে বেশি ছাড়',
+  'Name: A to Z': 'নাম: A থেকে Z',
   'Price: low to high': 'দাম: কম থেকে বেশি',
   'Price: high to low': 'দাম: বেশি থেকে কম',
   Filters: 'ফিল্টার',

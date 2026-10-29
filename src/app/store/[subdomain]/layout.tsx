@@ -3,6 +3,7 @@ import { getStoreInfo, siteUrl, StoreNotFoundError, type StorefrontLmsForms } fr
 import { resolveTheme } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
+import { LimitNotice } from '@/components/LimitNotice';
 import { OrdersOffBar } from '@/components/OrdersOffBar';
 import { WebVitalsBeacon } from '@/components/WebVitalsBeacon';
 import { ShopperStoreScope } from '@/components/ShopperStoreScope';
@@ -262,6 +263,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           Renders nothing; see VisitBeacon's own doc comment. Only for a
           store that actually resolved — see storeExists above. */}
       {storeExists && <VisitBeacon subdomain={subdomain} />}
+      {/* "Your cart is full" and the like (lib/shopLimits.ts), every template. */}
+      <LimitNotice />
       {/* Real shoppers' page speed for Super Admin > System status (PERFORMANCE-PLAN.md Step 1). Renders nothing. */}
       {storeExists && <WebVitalsBeacon subdomain={subdomain} />}
       {/* Store > Integrations > Facebook Pixel — StorePal only, like GDPR

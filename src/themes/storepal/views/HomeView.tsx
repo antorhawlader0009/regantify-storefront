@@ -237,14 +237,32 @@ export function HomeView({
   // Sort for the filtered listing (category/brand/search view). "Latest"
   // is newest-first by createdAt; price sorts use the price a shopper
   // actually pays (discounted when set), same as the Price Filter.
-  const [sortBy, setSortBy] = useState<'latest' | 'price-asc' | 'price-desc'>('latest');
+  // More sorts (2026-10-29): best selling (Product.soldRecent, from "Show how many bought"), top rated (approved reviews), biggest
+  // saving, and name. Each is offered only when the products have that data, so no option does nothing.
+  const [sortBy, setSortBy] = useState<'latest' | 'price-asc' | 'price-desc' | 'best-selling' | 'top-rated' | 'discount' | 'name'>('latest');
   const payPrice = (p: StorefrontProduct) => Number(p.discountPrice ?? p.price);
+  const savePct = (p: StorefrontProduct) => {
+    const price = Number(p.price);
+    return p.discountPrice && price > 0 ? (price - Number(p.discountPrice)) / price : 0;
+  };
+  const ratingOf = (p: StorefrontProduct) => p.rating?.average ?? 0;
+  const canBestSelling = filtered.some((p) => (p.soldRecent ?? 0) > 0);
+  const canTopRated = filtered.some((p) => (p.rating?.count ?? 0) > 0);
+  const canDiscount = filtered.some((p) => savePct(p) > 0);
   const sorted = [...filtered].sort((a, b) =>
     sortBy === 'price-asc'
       ? payPrice(a) - payPrice(b)
       : sortBy === 'price-desc'
         ? payPrice(b) - payPrice(a)
-        : pickRank
+        : sortBy === 'best-selling'
+          ? (b.soldRecent ?? 0) - (a.soldRecent ?? 0)
+          : sortBy === 'top-rated'
+            ? ratingOf(b) - ratingOf(a) || (b.rating?.count ?? 0) - (a.rating?.count ?? 0)
+            : sortBy === 'discount'
+              ? savePct(b) - savePct(a)
+              : sortBy === 'name'
+                ? a.name.localeCompare(b.name, undefined, { sensitivity: 'base', numeric: true })
+                : pickRank
           ? (pickRank.get(a.slug) ?? 0) - (pickRank.get(b.slug) ?? 0) // the voice call's picks: in the assistant's order
           : searchHits
             ? (searchRank.get(a) ?? 0) - (searchRank.get(b) ?? 0) // a search: the closest spelling first, then the store's own order
@@ -396,8 +414,12 @@ export function HomeView({
                     className="flex-1 sm:flex-none min-w-0 text-[13px] font-medium text-ink bg-surface border border-line-strong rounded-md px-2.5 py-2 outline-none focus:border-ink cursor-pointer"
                   >
                     <option value="latest">{t('Sort by latest')}</option>
+                    {(canBestSelling || sortBy === 'best-selling') && <option value="best-selling">{t('Best selling')}</option>}
+                    {(canTopRated || sortBy === 'top-rated') && <option value="top-rated">{t('Top rated')}</option>}
                     <option value="price-asc">{t('Price: low to high')}</option>
                     <option value="price-desc">{t('Price: high to low')}</option>
+                    {(canDiscount || sortBy === 'discount') && <option value="discount">{t('Biggest discount')}</option>}
+                    <option value="name">{t('Name: A to Z')}</option>
                   </select>
                   <button
                     onClick={() => setMobileFiltersOpen(true)}

@@ -1,6 +1,7 @@
 import { createStore } from 'zustand/vanilla';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { priceWithBreaks, type PriceBreak } from '@/lib/priceBreaks';
+import { CART_MAX_LINES, useLimitNotice } from '@/lib/shopLimits';
 
 export interface CartLine {
   // productSlug + a stable string of the selected variant options is
@@ -143,6 +144,19 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
           const wanted = Math.max(input.quantity, floor);
           const line = { ...input, quantity: step > 1 ? Math.ceil(wanted / step) * step : wanted };
           const id = lineId(line.productSlug, line.selectedOptions, line.customValues, line.bundlePicks);
+          // At most CART_MAX_LINES different products per store (lib/shopLimits.ts); more of one already in the cart is fine.
+          const current = get().lines;
+          if (!current.some((l) => l.id === id) && current.filter((l) => l.subdomain === line.subdomain).length >= CART_MAX_LINES) {
+            const bn = typeof document !== 'undefined' && document.documentElement.lang === 'bn';
+            useLimitNotice
+              .getState()
+              .show(
+                bn
+                  ? `কার্টে সর্বোচ্চ ${CART_MAX_LINES}টি আলাদা পণ্য রাখা যায়। নতুন কিছু যোগ করতে আগে একটি সরান বা অর্ডার করুন।`
+                  : `Your cart can hold up to ${CART_MAX_LINES} different products. Remove one or check out to add more.`,
+              );
+            return;
+          }
           set((state) => {
             const existing = state.lines.find((l) => l.id === id);
             if (existing) {
@@ -201,7 +215,16 @@ export const createCartStore = (initState: CartState = defaultInitState) => {
 
         resetFor: (ownerId) => set({ lines: [], ownerId }),
         claimFor: (ownerId) => set({ ownerId }),
-        setLines: (lines) => set({ lines: applyBreaks(lines) }),
+        // A cart put back from a link or a saved account cart keeps at most CART_MAX_LINES lines per store.
+        setLines: (lines) => {
+          const perStore = new Map<string, number>();
+          const kept = lines.filter((l) => {
+            const n = (perStore.get(l.subdomain) ?? 0) + 1;
+            perStore.set(l.subdomain, n);
+            return n <= CART_MAX_LINES;
+          });
+          set({ lines: applyBreaks(kept) });
+        },
       }),
       {
         name: 'regantify-cart',
