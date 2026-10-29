@@ -88,7 +88,7 @@ interface HomeViewProps {
 // order (see lib/homeSections.ts). Each section outside the full-width bands
 // gets this wrapper; `empty:hidden` drops it (and its padding) when the
 // section has nothing to show, such as a Flash Sale that isn't running.
-const HOME_WRAP = 'max-w-6xl mx-auto px-4 sm:px-6 pt-6 pb-4 empty:hidden';
+const HOME_WRAP = 'max-w-6xl mx-auto px-3 sm:px-6 pt-5 pb-3 sm:pt-6 sm:pb-4 empty:hidden';
 
 // Below "Top Selling", the reference site shows a row of small
 // image-backed shortcuts into a handful of its own top-level
@@ -346,7 +346,7 @@ export function HomeView({
 
       {couponBannerCode && (
         <div className="bg-success-bg text-success text-[13px] font-medium">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex items-center justify-between gap-3">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 flex items-center justify-between gap-3">
             <span className="flex items-center gap-1.5">
               <Tag size={14} />
               Coupon {couponBannerCode} is ready — it&apos;ll be applied at checkout.
@@ -360,7 +360,7 @@ export function HomeView({
 
 
       {!showPreview && (isFiltered || products.length === 0) && (
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 py-6">
+        <main className="max-w-6xl mx-auto px-3 sm:px-6 py-6">
           {isFiltered && (
             <div className="mb-4">
               {activeCategoryDetail?.coverPhotoUrl && (
@@ -433,26 +433,31 @@ export function HomeView({
                 <div className="fixed inset-0 z-40 lg:hidden">
                   <CoverFloating />
                   <div className="absolute inset-0 bg-ink/40" onClick={() => setMobileFiltersOpen(false)} />
-                  <div className="absolute inset-y-0 left-0 w-[85%] max-w-[320px] bg-canvas overflow-y-auto p-4">
-                    <div className="flex items-center justify-between mb-3">
+                  {/* The title row and "Show results" stay put; only the filters in between scroll. */}
+                  <div className="absolute inset-y-0 left-0 flex w-[85%] max-w-[320px] flex-col bg-canvas">
+                    <div className="flex shrink-0 items-center justify-between px-4 pb-3 pt-4">
                       <span className="text-[15px] font-bold text-ink">{t('Filters')}</span>
                       <button onClick={() => setMobileFiltersOpen(false)} aria-label="Close filters">
                         <X size={18} />
                       </button>
                     </div>
-                    <ProductFilters
-                      products={categoryScopedProducts}
-                      value={effectiveFilters}
-                      onChange={setFilters}
-                      bounds={priceBounds}
-                      categoryOptions={activeCategorySubcategories}
-                    />
-                    <button
-                      onClick={() => setMobileFiltersOpen(false)}
-                      className="w-full mt-4 py-2.5 rounded-md bg-ink text-white text-[13px] font-bold"
-                    >
-                      Show {filtered.length} results
-                    </button>
+                    <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain px-4">
+                      <ProductFilters
+                        products={categoryScopedProducts}
+                        value={effectiveFilters}
+                        onChange={setFilters}
+                        bounds={priceBounds}
+                        categoryOptions={activeCategorySubcategories}
+                      />
+                    </div>
+                    <div className="shrink-0 px-4 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3">
+                      <button
+                        onClick={() => setMobileFiltersOpen(false)}
+                        className="w-full py-2.5 rounded-md bg-ink text-white text-[13px] font-bold"
+                      >
+                        Show {filtered.length} results
+                      </button>
+                    </div>
                   </div>
                 </div>
               )}
@@ -468,7 +473,7 @@ export function HomeView({
                   )}
                 </div>
               ) : (
-                <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                   {sorted.map((product, i) =>
                     pickRank ? (
                       // The voice call's picks are numbered, so the shopper can say "2 নম্বরটা".
@@ -524,7 +529,7 @@ export function HomeView({
                       <section>
                         {/* Same heading as the category rows below, so the home page reads as one list of sections. */}
                         <h2 className="text-[17px] font-bold text-ink mb-4">{t('Top Selling')}</h2>
-                        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                        <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                           {topSelling.map((product) => (
                             <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                           ))}
@@ -564,7 +569,7 @@ export function HomeView({
                 );
               case 'CATEGORY_SECTIONS':
                 return (
-                  <div key={id} className={`${HOME_WRAP} space-y-10`}>
+                  <div key={id} className={`${HOME_WRAP} space-y-8 sm:space-y-10`}>
                     {grouped?.map((section) => (
                       <section key={section.name}>
                         <div className="flex items-center justify-between mb-4">
@@ -578,7 +583,7 @@ export function HomeView({
                             <ChevronRight size={15} aria-hidden />
                           </Link>
                         </div>
-                        <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+                        <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
                           {section.items.slice(0, 8).map((product) => (
                             <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                           ))}
@@ -611,7 +616,7 @@ export function HomeView({
                 return (
                   <Fragment key={id}>
                   {reviews.length > 0 && (
-                    <section className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+                    <section className="max-w-6xl mx-auto px-3 sm:px-6 py-8">
                       <h2 className="text-[16px] font-bold text-ink mb-4 text-center">{t('Our Customer Review')}</h2>
                       <div className="grid gap-3 [grid-template-columns:repeat(auto-fit,minmax(230px,1fr))]">
                         {reviews.map((r) => (

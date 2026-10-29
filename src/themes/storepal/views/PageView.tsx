@@ -14,7 +14,7 @@ export function PageView({ subdomain, storeName, categories, title, content }: P
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
-      <main className="max-w-4xl mx-auto px-4 sm:px-6 py-10">
+      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-10">
         <h1 className="text-[26px] sm:text-[32px] font-bold text-ink leading-tight mb-6">{title}</h1>
         {content ? (
           <div

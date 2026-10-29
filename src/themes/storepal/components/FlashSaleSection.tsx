@@ -34,7 +34,7 @@ export function FlashSaleSection({
         {t('Flash Sale')}
         <Zap size={18} className="text-orange-500" aria-hidden />
       </h2>
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+      <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
         {onSale.map((product) => (
           <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
         ))}

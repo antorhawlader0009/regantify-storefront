@@ -33,7 +33,7 @@ export function BoughtTogether({ subdomain, slug, storeName }: { subdomain: stri
   return (
     <section className="bg-surface border border-line rounded p-4 sm:p-6 mb-5">
       <h3 className="text-[15px] font-bold text-ink mb-4">{t('Often bought together')}</h3>
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+      <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
         {products.map((p) => (
           <ProductCard key={p.id} product={p} subdomain={subdomain} storeName={storeName} />
         ))}

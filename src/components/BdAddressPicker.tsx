@@ -67,6 +67,32 @@ interface Props {
  * The parent keeps the values as English text (what the order stores); this component only decides what to show.
  * Changing the district clears the thana and the area, changing the thana clears the area.
  */
+/**
+ * The districts most online orders go to, first in the district list (2026-10-29, the owner's request); the rest stay A to Z. No public
+ * per-district sales figures exist, so this follows what is known: Dhaka is far ahead (one Daraz report put 45% of its orders in Dhaka city),
+ * then the big cities and the factory belt around Dhaka, then the divisional cities, roughly by urban population. Thanas and areas are not
+ * reordered. Names are the English names in data/bdLocations.json.
+ */
+const TOP_DISTRICTS = [
+  'Dhaka',
+  'Chattogram',
+  'Gazipur',
+  'Narayanganj',
+  'Sylhet',
+  'Cumilla',
+  'Rajshahi',
+  'Khulna',
+  'Mymensingh',
+  'Rangpur',
+  'Bogura',
+  'Barishal',
+];
+const TOP_RANK = new Map(TOP_DISTRICTS.map((name, i) => [name, i]));
+
+function byOrderVolume<T extends { n: string }>(districts: T[]): T[] {
+  return [...districts].sort((a, b) => (TOP_RANK.get(a.n) ?? 99) - (TOP_RANK.get(b.n) ?? 99));
+}
+
 export function BdAddressPicker({
   district,
   thana,
@@ -142,7 +168,7 @@ export function BdAddressPicker({
         .filter((t) => !key || normalizeName(t[0]).includes(key) || normalizeName(t[1]).includes(key))
         .map((t) => ({ key: t[0], label: shownPair(t), sub: lang === 'bn' ? t[0] : t[1], more: withArea && t.length === 3 }));
     if (step === 'district') {
-      return loaded.districts
+      return byOrderVolume(loaded.districts)
         .filter((d) => !key || normalizeName(d.n).includes(key) || normalizeName(d.b).includes(key))
         .map((d) => ({ key: d.n, label: shownDistrict(d), sub: lang === 'bn' ? d.n : d.b, more: true }));
     }

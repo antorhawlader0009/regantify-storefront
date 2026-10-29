@@ -5,6 +5,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Minus, Plus, X, Tag, Gift } from 'lucide-react';
+import { ShareCartButton } from './ShareCartButton';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatReturnDay } from '@/lib/storeAway';
 import { suggestZone } from '@/lib/deliveryZone';
@@ -148,6 +149,8 @@ const EN = {
   codBadge: 'Cash On Delivery All Over Bangladesh',
   genuineBadge: '100% genuine products',
   yourCart: 'Your cart',
+  shareCart: 'Share cart',
+  cartLinkCopied: 'Cart link copied',
   remove: 'Remove',
   cartTotal: 'Cart Total',
   delivery: 'Delivery Charge',
@@ -283,6 +286,8 @@ const BN: Copy = {
   codBadge: 'সারা বাংলাদেশে ক্যাশ অন ডেলিভারি',
   genuineBadge: '100% আসল পণ্য',
   yourCart: 'আপনার কার্ট',
+  shareCart: 'কার্ট শেয়ার করুন',
+  cartLinkCopied: 'কার্টের লিংক কপি হয়েছে',
   remove: 'সরিয়ে দিন',
   cartTotal: 'কার্ট মোট',
   delivery: 'ডেলিভারি চার্জ',
@@ -781,7 +786,7 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               {errors.city && <p className="-mt-2 text-[12px] text-accent">{tr(errors.city)}</p>}
               {/* Thana and area are optional, but without them the rider has a harder time: a gentle warning, never a block. */}
               {!errors.district && !errors.city && form.district.trim() && (!form.city.trim() || !area.trim()) && (
-                <p role="status" className="-mt-2 rounded-md bg-amber-50 px-3 py-2 text-[12px] text-amber-800">
+                <p role="status" className="-mt-2 text-[12px] text-muted">
                   {!form.city.trim() ? t.noThanaWarning : t.noAreaWarning}
                 </p>
               )}
@@ -991,6 +996,10 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               <p className="text-[16px] font-semibold text-muted">{t.yourCart}</p>
               <span className="w-6 h-6 rounded-full bg-muted text-white text-[12px] font-bold flex items-center justify-center">
                 {lines.reduce((sum, l) => sum + l.quantity, 0)}
+              </span>
+              {/* Share this cart as a link (the same button as the cart drawer's head). */}
+              <span className="-my-1.5 ml-auto">
+                <ShareCartButton subdomain={subdomain} label={t.shareCart} copiedLabel={t.cartLinkCopied} />
               </span>
             </div>
 

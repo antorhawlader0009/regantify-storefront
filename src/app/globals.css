@@ -26,10 +26,10 @@
   /* Fraunces carries the store name in the header only — everywhere
      else on this dense layout uses Hanken Grotesk, matching how real
      BD storefronts set nearly everything in one workhorse sans and
-     reserve any serif for the wordmark. Noto Sans Bengali falls in
+     reserve any serif for the wordmark. the Bangla font (Hind Siliguri) falls in
      wherever a character isn't in either Latin face. */
-  --font-display: var(--font-fraunces), 'Noto Sans Bengali', serif;
-  --font-sans: var(--font-hanken), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), var(--font-bangla-store, var(--font-bangla)), serif;
+  --font-sans: var(--font-hanken), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
 
   /* A restrained elevation scale — one level for resting cards, one for
      hover/active. Kept subtle (low blur, low opacity) so density never
@@ -70,8 +70,8 @@
      leans on its display serif far more than Medium does, since a quiet
      editorial feel is the whole point. Archivo is the plain workhorse
      sans for body copy, prices, and forms. */
-  --font-display: var(--font-newsreader), 'Noto Sans Bengali', serif;
-  --font-sans: var(--font-archivo), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-newsreader), var(--font-bangla-store, var(--font-bangla)), serif;
+  --font-sans: var(--font-archivo), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
 
   /* A quieter, more diffuse elevation scale than Medium's — softer blur,
      lower opacity, no hard popover shadow — matching the theme's overall
@@ -106,8 +106,8 @@
      itself — matching the reference site's single-font UI (see
      lib/fonts.ts's own comment on why Poppins rather than a serif
      pairing here). */
-  --font-display: var(--font-poppins), 'Noto Sans Bengali', sans-serif;
-  --font-sans: var(--font-poppins), var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), sans-serif;
+  --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
 
   --shadow-card: 0 1px 2px rgba(26, 43, 60, 0.05), 0 1px 1px rgba(26, 43, 60, 0.04);
   --shadow-card-hover: 0 8px 24px rgba(26, 43, 60, 0.1), 0 2px 6px rgba(26, 43, 60, 0.05);

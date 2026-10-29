@@ -29,7 +29,7 @@ export function HomeHighlights() {
   const oneRow = items.length <= 4;
 
   return (
-    <section className="max-w-6xl mx-auto px-4 sm:px-6 py-6" aria-label={heading || 'Why shop with us'}>
+    <section className="max-w-6xl mx-auto px-3 sm:px-6 py-6" aria-label={heading || 'Why shop with us'}>
       {heading && <h2 className="mb-3 text-[18px] font-bold text-ink">{heading}</h2>}
       <ul
         className={`m-0 grid list-none grid-cols-1 rounded-md border border-line bg-surface p-0 shadow-card divide-y divide-line sm:grid-cols-2 sm:divide-y-0 ${

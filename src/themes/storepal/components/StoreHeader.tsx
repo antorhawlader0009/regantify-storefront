@@ -36,11 +36,10 @@ import { useRememberStorePage } from '../lib/accountReturn';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { searchProducts } from '../lib/searchMatch';
 import { CoverFloating } from '@/lib/floatingCover';
+import { ScrollRow } from './ScrollRow';
 
-// The category / site menu bars scroll sideways; a soft fade at the right edge shows there is more (a name used to be cut
-// mid-word with no hint). The fade sits over the bar's own right padding, so a bar that fits shows no fade on its items.
-// Dropdowns open through a portal, outside the bar, so the mask never clips them.
-const MENU_FADE = '[mask-image:linear-gradient(to_right,#000_calc(100%-40px),transparent)]';
+// The category / site menu bars scroll sideways (ScrollRow): a soft fade on a side that is cut off, and on a computer left / right
+// buttons on hover. Dropdowns open through a portal, outside the bar, so the mask never clips them.
 
 interface StoreHeaderProps {
   subdomain: string;
@@ -125,7 +124,7 @@ function SiteBanner() {
       {marquee ? (
         <MarqueeTrack items={items.map((item) => item.node)} />
       ) : (
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-2.5 flex flex-wrap items-center justify-center gap-x-10 gap-y-1 text-center">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-2.5 flex flex-wrap items-center justify-center gap-x-10 gap-y-1 text-center">
           {items.map((item) => (
             <span key={item.key} className="text-[13px] font-semibold text-ink shrink-0">
               {item.node}
@@ -462,9 +461,11 @@ export function StoreHeader({
   return (
     <>
     <SiteBanner />
-    <header data-rg="header" className="sticky top-0 z-20 bg-surface">
+    {/* The header always has a small soft shadow under it, on phones and computers (the same small shadow as the footer map), whether the
+        category strip is showing or folded away, so the pinned header keeps an edge over the page. */}
+    <header data-rg="header" className="sticky top-0 z-20 bg-surface shadow-[0_2px_6px_-1px_rgba(16,24,40,0.14)] sm:shadow-[0_2px_6px_-1px_rgba(16,24,40,0.07)]">
       {hasTopMenu && (
-        <div className="hidden sm:flex max-w-6xl mx-auto px-4 sm:px-6 pt-2.5 items-center justify-between gap-6">
+        <div className="hidden sm:flex max-w-6xl mx-auto px-3 sm:px-6 pt-2.5 items-center justify-between gap-6">
           {[design.headerLeftMenu, design.headerRightMenu].map((menu, side) => (
             <nav key={side} data-rg="top-menu" className="flex items-center gap-5 flex-wrap">
               {menu.map((item) => (
@@ -481,7 +482,7 @@ export function StoreHeader({
         </div>
       )}
 
-      <div className={`max-w-6xl mx-auto px-4 sm:px-6 py-4 items-center gap-4 ${mobileSearchOpen ? 'hidden sm:flex' : 'flex'}`}>
+      <div className={`max-w-6xl mx-auto px-3 sm:px-6 py-4 items-center gap-4 ${mobileSearchOpen ? 'hidden sm:flex' : 'flex'}`}>
         {hasMobileMenu && (
           <button
             type="button"
@@ -794,7 +795,7 @@ export function StoreHeader({
           larger screens; phones keep the strip. */}
       {hasSiteMenu && (
         <div className="hidden sm:block border-t border-line">
-          <nav data-rg="menu" className={`max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3 ${MENU_FADE}`}>
+          <ScrollRow as="nav" dataRg="menu" className="px-3 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
             {design.siteMenu.map((item) => (
               <MenuLink
                 key={item.id}
@@ -804,7 +805,7 @@ export function StoreHeader({
                 className="text-[13px] font-medium whitespace-nowrap text-ink hover:text-accent transition-colors"
               />
             ))}
-          </nav>
+          </ScrollRow>
         </div>
       )}
 
@@ -817,7 +818,7 @@ export function StoreHeader({
           } ${hasSiteMenu ? 'sm:hidden' : ''}`}
         >
         <div className={`min-h-0 overflow-hidden border-line ${stripHidden ? 'border-t-0 sm:border-t' : 'border-t'}`}>
-          <div className={`max-w-6xl mx-auto px-4 sm:px-6 flex items-center gap-6 overflow-x-auto py-3 ${MENU_FADE}`}>
+          <ScrollRow className="px-3 sm:px-6 flex items-center gap-6 overflow-x-auto py-3">
             {visibleCategories.map((cat) => {
               const children = childrenByCategory.get(cat) ?? [];
               const hasDropdown = children.length > 0;
@@ -895,7 +896,7 @@ export function StoreHeader({
                 </div>
               );
             })}
-          </div>
+          </ScrollRow>
         </div>
         </div>
       )}

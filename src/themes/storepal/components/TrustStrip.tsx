@@ -85,7 +85,7 @@ export function TrustStrip({ where }: { where: 'product' | 'checkout' | 'home' }
   const wide = where === 'home';
   return (
     <ul
-      className={`m-0 list-none p-0 grid gap-3 ${wide ? 'max-w-6xl mx-auto px-4 sm:px-6 py-6 grid-cols-2 md:grid-cols-4' : 'mt-4 grid-cols-2 rounded-lg border border-line bg-surface p-3'}`}
+      className={`m-0 list-none p-0 grid gap-3 ${wide ? 'max-w-6xl mx-auto px-3 sm:px-6 py-6 grid-cols-2 md:grid-cols-4' : 'mt-4 grid-cols-2 rounded-lg border border-line bg-surface p-3'}`}
     >
       {strip.items.map((item, i) => {
         const Icon = ICONS[item.icon] ?? ShieldCheck;

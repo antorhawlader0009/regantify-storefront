@@ -18,7 +18,7 @@ export function BlogListView({ subdomain, storeName, categories, posts }: { subd
         {posts.length === 0 ? (
           <p className="text-center text-[14px] text-muted">{t('No posts yet.')}</p>
         ) : (
-          <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-4">
             {posts.map((post) => (
               <MagazineCard key={post.slug} post={post} subdomain={subdomain} storeName={storeName} />
             ))}

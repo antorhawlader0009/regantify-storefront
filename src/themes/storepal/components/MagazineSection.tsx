@@ -34,7 +34,7 @@ export function MagazineSection({ subdomain, storeName, posts, total }: { subdom
     <section>
       <h2 className="text-center text-[20px] font-bold text-ink">{t('Magazine')}</h2>
       <p className="mb-5 text-center text-[13px] text-muted">{t('Latest from the store')}</p>
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5">
+      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-3 lg:grid-cols-5">
         {posts.slice(0, 5).map((post) => (
           <MagazineCard key={post.slug} post={post} subdomain={subdomain} storeName={storeName} />
         ))}

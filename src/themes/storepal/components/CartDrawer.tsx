@@ -5,17 +5,16 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { useShallow } from 'zustand/react/shallow';
-import { Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
+import { ArrowRight, Minus, Plus, ShoppingBag, Trash2, X } from 'lucide-react';
+import { ShareCartButton } from './ShareCartButton';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
-import { encodeCartLink } from '@/lib/cartLink';
 import { CartOffers } from './CartOffers';
 import { CartAddons } from './CartAddons';
 import { MinOrderNotice } from './MinOrderNotice';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
-import { trackFeature } from '@/lib/featureUse';
 
 const SLIDE_MS = 300;
 
@@ -39,26 +38,6 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
   const setQuantity = useCartStore((s) => s.setQuantity);
   const removeLine = useCartStore((s) => s.removeLine);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
-  const [shared, setShared] = useState(false);
-
-  // "Share cart" (TellMe idea 77): the cart as a link (slugs, options, quantities). Lines with the shopper's own text or a
-  // gift cannot be put in a link, and the server looks everything up again when the link is opened.
-  const shareCart = async () => {
-    const shareable = lines.filter((l) => !l.customValues && !l.bundlePicks);
-    if (shareable.length === 0) return;
-    trackFeature('CART_SHARE');
-    // Path mode (/store/<sub>/...) keeps that prefix; on the store's own domain the link sits at the root.
-    const base = window.location.pathname.startsWith(`/store/${subdomain}`) ? `/store/${subdomain}` : '';
-    const url = `${window.location.origin}${base}/cart-link/${encodeCartLink(shareable)}`;
-    try {
-      if (navigator.share) await navigator.share({ url });
-      else await navigator.clipboard.writeText(url);
-      setShared(true);
-      setTimeout(() => setShared(false), 2500);
-    } catch {
-      // The shopper closed the share sheet or the clipboard is blocked: nothing to do.
-    }
-  };
   // Mount the offers box (it fetches) only once the drawer has been opened, then keep it.
   const [everOpened, setEverOpened] = useState(false);
 
@@ -125,6 +104,9 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
               </span>
             )}
           </h2>
+          <div className="flex items-center gap-1">
+            {/* Share the cart as a link: an icon in the head, so the footer keeps only the checkout. */}
+            <ShareCartButton subdomain={subdomain} label={t('Share cart')} copiedLabel={t('Cart link copied')} />
           <button
             ref={closeButtonRef}
             onClick={closeDrawer}
@@ -133,6 +115,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
           >
             <X size={20} />
           </button>
+          </div>
         </div>
 
         {!hydrated || lines.length === 0 ? (
@@ -227,19 +210,23 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
               {everOpened && <CartAddons subdomain={subdomain} />}
             </div>
 
-            <div className="shrink-0 border-t border-line bg-canvas px-5 pb-5 pt-4 shadow-[0_-10px_18px_-14px_rgba(0,0,0,0.35)]">
-              <MinOrderNotice subdomain={subdomain} className="mb-3" />
-              {saved > 0 && (
-                <p className="mb-1.5 flex items-center justify-between text-[13px] font-medium text-success">
-                  <span>{t('You save')}</span>
-                  <span className="tabular-nums">{formatPrice(saved)}</span>
-                </p>
-              )}
-              <p className="flex items-baseline justify-between">
-                <span className="text-[14px] font-semibold text-ink">{t('Subtotal')}</span>
-                <span className="text-[22px] font-bold tabular-nums text-ink">{formatPrice(subtotal)}</span>
-              </p>
-              <p className="mb-4 mt-1 text-[12px] leading-snug text-muted">{t('Delivery, coupons and gift cards are applied at checkout.')}</p>
+            {/* Compact: the total and one note, then Checkout (with the bottom safe area on phones with a home bar). */}
+            <div className="shrink-0 border-t border-line bg-canvas px-5 pb-[max(1rem,env(safe-area-inset-bottom))] pt-3 shadow-[0_-10px_18px_-14px_rgba(0,0,0,0.35)]">
+              <MinOrderNotice subdomain={subdomain} className="mb-2.5" />
+              <div className="mb-3 flex items-end justify-between gap-3">
+                <div className="min-w-0">
+                  <p className="m-0 text-[13.5px] font-semibold text-ink">{t('Subtotal')}</p>
+                  <p className="m-0 text-[11.5px] leading-snug text-muted">{t('Delivery, coupons and gift cards are applied at checkout.')}</p>
+                </div>
+                <div className="shrink-0 text-right">
+                  <p className="m-0 text-[21px] font-bold leading-none tabular-nums text-ink">{formatPrice(subtotal)}</p>
+                  {saved > 0 && (
+                    <p className="m-0 mt-1 text-[11.5px] font-medium tabular-nums text-success">
+                      {t('You save')} {formatPrice(saved)}
+                    </p>
+                  )}
+                </div>
+              </div>
               <button
                 type="button"
                 onClick={() => {
@@ -247,12 +234,10 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                   openCheckout();
                 }}
                 data-rg="checkout-button"
-                className="flex h-12 w-full items-center justify-center rounded-lg bg-accent text-[14.5px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+                className="group flex h-12 w-full items-center justify-center gap-2 rounded-lg bg-accent text-[14.5px] font-bold text-white shadow-sm transition-colors hover:bg-accent-dark focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
               >
                 {t('Checkout')}
-              </button>
-              <button type="button" onClick={() => void shareCart()} className="mt-2 flex h-10 w-full items-center justify-center rounded-lg border border-line text-[13px] font-medium text-ink hover:bg-surface">
-                {shared ? t('Cart link copied') : t('Share cart')}
+                <ArrowRight size={17} strokeWidth={2.5} className="transition-transform group-hover:translate-x-0.5" aria-hidden />
               </button>
             </div>
           </>

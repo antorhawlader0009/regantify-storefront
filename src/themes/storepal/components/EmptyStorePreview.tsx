@@ -88,7 +88,7 @@ export function PlaceholderProductGrid() {
       <h2 className="mb-4 text-[18px] font-bold text-ink">{t('Products')}</h2>
       <p className="sr-only">{t('Sample products. This store has no products yet.')}</p>
       <div
-        className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
+        className="grid grid-cols-2 gap-2 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4"
         aria-hidden
       >
         {SAMPLE_PRODUCTS.map((s, i) => (

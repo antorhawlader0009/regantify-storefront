@@ -72,7 +72,7 @@ export function PayLinkView({
   return (
     <div className="min-h-screen bg-surface">
       <header className="border-b border-line bg-canvas">
-        <div className="max-w-2xl mx-auto px-4 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-3">
+        <div className="max-w-2xl mx-auto px-3 sm:px-6 min-h-14 py-2 flex items-center justify-between gap-3">
           <Link href={`/store/${subdomain}`} className="flex items-center gap-2 min-w-0">
             {logoUrl ? (
               <Image src={logoUrl} alt={storeName} width={120} height={32} className="h-8 w-auto object-contain" unoptimized />
@@ -84,7 +84,7 @@ export function PayLinkView({
         </div>
       </header>
 
-      <main className="max-w-md mx-auto px-4 sm:px-6 py-8">
+      <main className="max-w-md mx-auto px-3 sm:px-6 py-8">
         {!info && !loadError && (
           <p className="text-center text-[13.5px] text-muted">
             <Clock className="mx-auto mb-3 animate-pulse" size={32} aria-hidden />…

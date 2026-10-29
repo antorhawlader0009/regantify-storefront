@@ -75,7 +75,7 @@ export function PhotoSearchPanel({ subdomain, storeName }: { subdomain: string; 
               </p>
             )}
             {status === 'done' && products.length > 0 && (
-              <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(180px,1fr))]">
+              <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(180px,1fr))]">
                 {products.map((product) => (
                   <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                 ))}
@@ -85,7 +85,7 @@ export function PhotoSearchPanel({ subdomain, storeName }: { subdomain: string; 
             {status === 'done' && related.length > 0 && (
               <div className="mt-6">
                 <h3 className="mb-3 text-[15px] font-bold text-ink">{t('Related products')}</h3>
-                <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(180px,1fr))]">
+                <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(180px,1fr))]">
                   {related.map((product) => (
                     <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                   ))}

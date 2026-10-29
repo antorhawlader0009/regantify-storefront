@@ -37,7 +37,7 @@ export function SharedWishlistView({ subdomain, storeName, ownerName, valid, pro
   return (
     <div className="min-h-screen bg-canvas text-ink flex flex-col">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} categoryDetails={categoryDetails} logoUrl={logoUrl} />
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-8 flex-1 w-full">
+      <main className="max-w-6xl mx-auto px-3 sm:px-6 py-8 flex-1 w-full">
         <h1 className="text-[22px] font-bold text-ink mb-1.5">{title}</h1>
         {valid && products.length > 0 && (
           <p className="mb-5 flex items-start gap-2 text-[13px] text-muted">

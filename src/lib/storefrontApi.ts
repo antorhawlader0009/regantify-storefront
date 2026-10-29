@@ -115,6 +115,8 @@ export interface StorefrontInfo {
   bodyBackgroundColor?: string | null;
   brandHeadingFont?: string | null;
   brandBodyFont?: string | null;
+  /** Store > Branding: the font for Bangla letters; null = the default, Hind Siliguri. */
+  brandBanglaFont?: string | null;
   brandCoverImageUrl?: string | null;
   /** Store > Branding > Website cover photo: the first slide of StorePal's home page hero (not the link-preview picture above). */
   brandSiteCoverUrl?: string | null;

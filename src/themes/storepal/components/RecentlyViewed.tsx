@@ -51,7 +51,7 @@ export function RecentlyViewed({ subdomain, storeName, currentSlug }: { subdomai
   if (shown.length === 0) return null;
 
   return (
-    <section aria-label={t('Recently viewed')} className="max-w-6xl mx-auto px-4 sm:px-6 py-8">
+    <section aria-label={t('Recently viewed')} className="max-w-6xl mx-auto px-3 sm:px-6 py-8">
       <div className="mb-3 flex items-center justify-between gap-3">
         <h2 className="text-[18px] font-bold text-ink">{t('Recently viewed')}</h2>
         <button
@@ -63,7 +63,7 @@ export function RecentlyViewed({ subdomain, storeName, currentSlug }: { subdomai
           {t('Clear')}
         </button>
       </div>
-      <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(180px,1fr))]">
+      <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(180px,1fr))]">
         {shown.map((product) => (
           <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
         ))}

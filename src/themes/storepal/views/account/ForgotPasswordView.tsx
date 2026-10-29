@@ -89,7 +89,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
     <div className="min-h-screen bg-canvas text-ink flex flex-col">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={[]} />
 
-      <main className="max-w-md mx-auto px-4 sm:px-6 py-12 flex-1 w-full">
+      <main className="max-w-md mx-auto px-3 sm:px-6 py-12 flex-1 w-full">
         <div className="bg-surface border border-line rounded-lg p-6 sm:p-7">
           <h1 className="text-[24px] font-bold text-ink mb-5">{t('Change Password')}</h1>
 

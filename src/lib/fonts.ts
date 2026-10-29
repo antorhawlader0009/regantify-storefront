@@ -1,4 +1,4 @@
-import { Fraunces, Hanken_Grotesk, Noto_Sans_Bengali, Archivo, Newsreader, Poppins } from 'next/font/google';
+import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins } from 'next/font/google';
 
 // Five font families, self-hosted at build time (next/font) — no
 // runtime request to Google Fonts from a visitor's browser, no layout
@@ -21,9 +21,9 @@ import { Fraunces, Hanken_Grotesk, Noto_Sans_Bengali, Archivo, Newsreader, Poppi
 // Archivo — a grotesque sans for body/UI text with a plainer, more
 // neutral rhythm than Hanken Grotesk's.
 //
-// Noto Sans Bengali — fallback for Bangla glyphs none of the above
-// cover (product names, descriptions, or UI text in Bangla), shared by
-// both themes.
+// Hind Siliguri — the default for Bangla letters (none of the above has them), shared by every theme. It replaced
+// Noto Sans Bengali on 2026-10-29 (the owner found Noto hard to read); a store can pick another in Store > Branding
+// (lib/storeFonts.ts, --font-bangla-store).
 const fraunces = Fraunces({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
@@ -54,10 +54,10 @@ const archivo = Archivo({
   display: 'swap',
 });
 
-const notoSansBengali = Noto_Sans_Bengali({
+const hindSiliguri = Hind_Siliguri({
   subsets: ['bengali'],
   weight: ['400', '500', '600', '700'],
-  variable: '--font-noto-bengali',
+  variable: '--font-bangla',
   display: 'swap',
 });
 
@@ -78,4 +78,4 @@ const poppins = Poppins({
 // values) and its [data-theme="minimal"]/[data-theme="storepal"] blocks
 // (each theme's own override values), both of which reference these
 // same CSS variables.
-export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${poppins.variable} ${notoSansBengali.variable}`;
+export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${poppins.variable} ${hindSiliguri.variable}`;

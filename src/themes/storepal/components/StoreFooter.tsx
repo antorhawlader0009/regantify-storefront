@@ -230,7 +230,7 @@ export function StoreFooter({
     return (
       <footer data-rg="footer" className="bg-canvas border-t border-line mt-8">
         <ReputationStrip />
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-[1.5fr_1fr_1fr]">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 sm:grid-cols-2 lg:grid-cols-[1.4fr_1fr_1fr_1.2fr]">
           <div className="col-span-2 lg:col-span-1">
             {Logo}
             {about ? (
@@ -311,12 +311,15 @@ export function StoreFooter({
               )}
             </div>
           </FooterSection>
+
+          {/* Address and a small map, a column of its own (full width on phones). */}
+          <div className="col-span-2 lg:col-span-1">
+            <FooterLocation address={contact?.basedIn} />
+          </div>
         </div>
 
-        <FooterLocation address={contact?.basedIn} />
-
         <div className="border-t border-line">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-24 sm:pb-4 text-[13px] text-muted flex flex-col items-center gap-1 text-center sm:text-left sm:flex-row sm:justify-between">
+          <div className="max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-24 sm:pb-4 text-[13px] text-muted flex flex-col items-center gap-1 text-center sm:text-left sm:flex-row sm:justify-between">
             <span>
               © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
             </span>
@@ -430,21 +433,23 @@ export function StoreFooter({
     menu: MenuColumn,
     info: InfoColumn,
     about: AboutColumn,
+    // Address and a small map: always the last column.
+    location: <FooterLocation address={footerConfig.contactAddress || contact?.basedIn} upper />,
   };
-  const visibleColumns = ['contact', ...def.columns].filter((c) => columnContent[c]);
+  const visibleColumns = ['contact', ...def.columns, 'location'].filter((c) => columnContent[c]);
   // Fixed Tailwind class per count (1-4) rather than an inline
   // gridTemplateColumns — keeps this a plain utility-class grid like
   // every other layout in this theme, at the cost of only supporting up
   // to 4 columns (every current template registry entry has at most 4).
   const gridColsClass =
-    { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-4' }[
-      Math.min(Math.max(visibleColumns.length, 1), 4) as 1 | 2 | 3 | 4
+    { 1: 'sm:grid-cols-1', 2: 'sm:grid-cols-2', 3: 'sm:grid-cols-3', 4: 'sm:grid-cols-4', 5: 'sm:grid-cols-3 lg:grid-cols-5' }[
+      Math.min(Math.max(visibleColumns.length, 1), 5) as 1 | 2 | 3 | 4 | 5
     ];
 
   return (
     <footer data-rg="footer" className={`${def.background === 'band' ? 'bg-canvas' : 'bg-surface'} border-t border-line mt-8`}>
       <ReputationStrip />
-      <div className={`max-w-6xl mx-auto px-4 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 ${gridColsClass}`}>
+      <div className={`max-w-6xl mx-auto px-3 sm:px-6 py-10 grid grid-cols-2 gap-x-6 gap-y-8 ${gridColsClass}`}>
         {visibleColumns.map((c) => (
           // Phones: the two link columns sit side by side, everything else takes the full width.
           <div key={c} className={c === 'menu' || c === 'info' ? '' : 'col-span-2 sm:col-span-1'}>
@@ -454,14 +459,12 @@ export function StoreFooter({
       </div>
 
 
-      <FooterLocation address={footerConfig.contactAddress || contact?.basedIn} />
-
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 pb-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6 pb-6">
         <BusinessHoursTable />
       </div>
 
       <div className="border-t border-line">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4 pb-24 sm:pb-4 text-[13px] text-muted flex flex-col items-center gap-1 text-center sm:text-left sm:flex-row sm:justify-between">
+        <div className="max-w-6xl mx-auto px-3 sm:px-6 pt-4 pb-24 sm:pb-4 text-[13px] text-muted flex flex-col items-center gap-1 text-center sm:text-left sm:flex-row sm:justify-between">
           <span>
             © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
           </span>

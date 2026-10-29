@@ -96,7 +96,7 @@ export function TrackLookupView({ subdomain }: { subdomain: string }) {
         socialLinks={socialLinks}
       />
 
-      <main className="max-w-2xl mx-auto px-4 sm:px-6 py-6 sm:py-10">
+      <main className="max-w-2xl mx-auto px-3 sm:px-6 py-6 sm:py-10">
         <div className="flex items-start justify-between gap-3 mb-4">
           <div className="min-w-0">
             <h1 className="text-[20px] sm:text-[24px] font-bold text-ink">{justPlaced && order ? ui(lang, 'thanks') : ui(lang, 'trackYourOrder')}</h1>

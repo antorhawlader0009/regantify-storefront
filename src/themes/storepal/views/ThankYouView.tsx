@@ -136,7 +136,7 @@ export function ThankYouView({ subdomain }: { subdomain: string }) {
         socialLinks={socialLinks}
       />
 
-      <main className="max-w-3xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+      <main className="max-w-3xl mx-auto px-3 sm:px-6 py-8 sm:py-10">
         {/* Animated success mark */}
         <div className="flex flex-col items-center text-center mb-8">
           <div className="storepal-success-circle w-20 h-20 rounded-full bg-success-bg flex items-center justify-center mb-5">

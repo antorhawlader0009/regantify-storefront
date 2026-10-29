@@ -172,6 +172,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   let bodyBackgroundColor: string | null | undefined;
   let headingFont: string | null | undefined;
   let bodyFont: string | null | undefined;
+  let banglaFont: string | null | undefined;
   let gdprPrompt: StorefrontGdprPrompt | null = null;
   let customCode: StorefrontCustomCode | null = null;
   let designSettings: StorefrontDesignSettings | null = null;
@@ -200,6 +201,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     bodyBackgroundColor = store.bodyBackgroundColor;
     headingFont = store.brandHeadingFont;
     bodyFont = store.brandBodyFont;
+    banglaFont = store.brandBanglaFont;
     gdprPrompt = store.gdprPrompt ?? null;
     customCode = store.customCode ?? null;
     designSettings = store.designSettings ?? null;
@@ -233,9 +235,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
     ...(accentColor ? { '--color-accent': accentColor } as React.CSSProperties : {}),
     ...(bodyBackgroundColor ? { '--color-canvas': bodyBackgroundColor } as React.CSSProperties : {}),
     // Store > Branding fonts (lib/storeFonts.ts): the body font on this wrapper, the heading font on headings and the store name.
-    ...storeFontStyle(headingFont, bodyFont),
+    ...storeFontStyle(headingFont, bodyFont, banglaFont),
   };
-  const fontHref = storeFontsHref([headingFont, bodyFont]);
+  const fontHref = storeFontsHref([headingFont, bodyFont, banglaFont]);
 
   return (
     // The query hook every theme's header uses, safe on a kept page (see StoreQueryAdapter and revalidate above).

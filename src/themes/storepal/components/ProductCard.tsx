@@ -317,7 +317,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
         )}
       </div>
 
-      <div className={`flex flex-col gap-1.5 flex-1 ${design.cardDisplayAsCard ? 'p-3' : 'pt-2.5'}`}>
+      <div className={`flex flex-col gap-1.5 flex-1 ${design.cardDisplayAsCard ? 'p-2.5 sm:p-3' : 'pt-2.5'}`}>
         <Link
           href={href}
           data-rg="product-card-title"

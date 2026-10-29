@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 
 /*
- * The store's own fonts (Store > Branding > Fonts: Vendor.brandHeadingFont / brandBodyFont), shared by every template.
+ * The store's own fonts (Store > Branding > Fonts: Vendor.brandHeadingFont / brandBodyFont / brandBanglaFont), shared by every template.
  * Google Fonts' css2 address refuses the whole request when a family is asked for a weight it doesn't have, so a font
  * from the dashboard's list is asked for the weights it really has (kept in step with client lib/storeFonts.ts), and a
  * name typed by hand is asked for its regular weight only. Unknown names simply fall back to the theme font.
@@ -55,18 +55,21 @@ export function storeFontsHref(names: (string | null | undefined)[]): string | n
 }
 
 /**
- * The CSS for the store's wrapper: its own font first, then Noto Sans Bengali (so Bangla text always has letters, whatever
+ * The CSS for the store's wrapper: its own English fonts, then the Bangla font (the store's, else Hind Siliguri), so Bangla always has letters, whatever
  * the chosen font covers), then the system font. Never refers to the variable it sets (that would make it invalid).
  */
-export function storeFontStyle(heading: string | null | undefined, body: string | null | undefined): CSSProperties {
+export function storeFontStyle(heading: string | null | undefined, body: string | null | undefined, bangla?: string | null): CSSProperties {
   const h = safeFontName(heading);
   const b = safeFontName(body);
+  const bn = safeFontName(bangla);
   const style: Record<string, string> = {};
-  if (h) style['--font-display'] = `"${h}", var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif`;
-  if (b) {
-    style['--font-sans'] = `"${b}", var(--font-noto-bengali), ui-sans-serif, system-ui, sans-serif`;
-    // The page inherits the font already worked out on <html>; the wrapper has to set it again to use its own variable.
-    style.fontFamily = 'var(--font-sans)';
-  }
+  // Bangla letters: the store's Bangla font, else the default Hind Siliguri (--font-bangla, self-hosted in lib/fonts.ts).
+  const banglaStack = 'var(--font-bangla-store, var(--font-bangla))';
+  if (bn) style['--font-bangla-store'] = `"${bn}", var(--font-bangla)`;
+  if (h) style['--font-display'] = `"${h}", ${banglaStack}, ui-sans-serif, system-ui, sans-serif`;
+  if (b) style['--font-sans'] = `"${b}", ${banglaStack}, ui-sans-serif, system-ui, sans-serif`;
+  // The page inherits the font already worked out on <html> (where no store font is known); the wrapper sets it again so its own
+  // variables (the body font, or the Bangla font inside the theme's stack) apply.
+  if (b || bn) style.fontFamily = 'var(--font-sans)';
   return style as CSSProperties;
 }

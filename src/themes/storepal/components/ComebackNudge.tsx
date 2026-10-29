@@ -72,7 +72,7 @@ export function ComebackNudge({ subdomain }: { subdomain: string }) {
   const onSale = product.discountPrice && Number(product.discountPrice) < Number(product.price);
 
   return (
-    <div className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
+    <div className="max-w-6xl mx-auto px-3 sm:px-6 pt-4">
       <div className="relative flex items-center gap-3 rounded-lg border border-line bg-surface p-3 pr-10 shadow-card">
         <Link href={`/store/${subdomain}/product/${product.slug}`} className="relative h-14 w-14 shrink-0 overflow-hidden rounded-md bg-canvas">
           {product.photoUrls[0] && <Image src={product.photoUrls[0]} alt={product.name} fill sizes="56px" className="object-cover" />}

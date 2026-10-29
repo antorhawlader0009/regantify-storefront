@@ -73,7 +73,7 @@ export function ProductView({
       />
 
       {/* Breadcrumb: bold, with chevrons and a home icon; a long product name is cut to one line. */}
-      <nav aria-label="Breadcrumb" data-rg="breadcrumb" className="max-w-6xl mx-auto px-4 sm:px-6 pt-4">
+      <nav aria-label="Breadcrumb" data-rg="breadcrumb" className="max-w-6xl mx-auto px-3 sm:px-6 pt-4">
         <ol className="flex min-w-0 items-center gap-1.5 text-[13px] font-semibold">
           <li className="shrink-0">
             <Link href={`/store/${subdomain}`} className="inline-flex items-center gap-1 text-ink/70 hover:text-accent transition-colors">
@@ -105,7 +105,7 @@ export function ProductView({
         </ol>
       </nav>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 py-5">
+      <main className="max-w-6xl mx-auto px-3 sm:px-6 py-5">
         {!product.quoteOnly && product.flashSaleEndsAt && (
           <FlashSaleTimer variant="bar" endsAt={product.flashSaleEndsAt} className="mb-3" />
         )}
@@ -121,7 +121,7 @@ export function ProductView({
         {!product.quoteOnly && <ProductOffers subdomain={subdomain} product={product} />}
       </main>
 
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
+      <div className="max-w-6xl mx-auto px-3 sm:px-6">
         <div className="bg-surface border border-line rounded-xl mb-5">
           <StorePalProductTabs subdomain={subdomain} slug={product.slug} description={product.description} infoTabs={product.infoTabs} />
         </div>
@@ -131,7 +131,7 @@ export function ProductView({
         {visibleRelated.length > 0 && (
           <section className="bg-surface border border-line rounded p-4 sm:p-6 mb-8">
             <h3 className="text-[15px] font-bold text-ink mb-4"><StoreLabel text="Related Products" /></h3>
-            <div className="grid gap-3 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
+            <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
               {visibleRelated.map((p) => (
                 <ProductCard key={p.id} product={p} subdomain={subdomain} storeName={storeName} />
               ))}
