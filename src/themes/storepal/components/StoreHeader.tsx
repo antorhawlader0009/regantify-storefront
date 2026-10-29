@@ -21,6 +21,7 @@ import { VoiceSearchButton, VoiceSearchStatus } from './VoiceSearch';
 import { AskAssistantButton } from './AskAssistantButton';
 import { useAssistantBridge } from '../lib/assistantBridge';
 import { CartDrawer } from './CartDrawer';
+import { SideCartTab } from './SideCartTab';
 import { CheckoutDialog } from './CheckoutDialog';
 import { AuthDialog } from './AuthDialog';
 import { RegantifyLoginCatcher } from './RegantifySignIn';
@@ -934,6 +935,7 @@ export function StoreHeader({
       <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
       <LazyPhotoSearchPanel subdomain={subdomain} storeName={storeName} />
       <CartDrawer subdomain={subdomain} />
+      <SideCartTab subdomain={subdomain} />
       <CheckoutDialog subdomain={subdomain} />
       <AuthDialog subdomain={subdomain} />
       <RegantifyLoginCatcher />

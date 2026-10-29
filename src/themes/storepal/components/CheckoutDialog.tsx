@@ -4,7 +4,7 @@ import { TrustStrip } from './TrustStrip';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
-import { Minus, Plus, X, Tag, Gift } from 'lucide-react';
+import { Minus, Plus, X, Tag, Gift, Trash2, Truck } from 'lucide-react';
 import { ShareCartButton } from './ShareCartButton';
 import { formatExpectedDate } from '@/lib/expectedDate';
 import { formatReturnDay } from '@/lib/storeAway';
@@ -975,7 +975,9 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
 
               {design.checkoutNote !== 'HIDDEN' && (
               <div>
-                <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.note}</label>
+                <label className="block text-[13.5px] font-medium text-ink mb-1.5">
+                  {t.note} <span className="font-normal text-muted">{t.optional}</span>
+                </label>
                 <textarea
                   value={form.note}
                   onChange={(e) => updateField('note', e.target.value)}
@@ -1057,8 +1059,15 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                           +
                         </button>
                       </div>
-                      <button onClick={() => removeLine(line.id)} className="ml-auto text-[12px] font-medium text-accent hover:underline">
-                        {t.remove}
+                      {/* A delete icon instead of the word (2026-10-29, the owner's request); the word stays for screen readers. */}
+                      <button
+                        type="button"
+                        onClick={() => removeLine(line.id)}
+                        aria-label={t.remove}
+                        title={t.remove}
+                        className="ml-auto flex h-8 w-8 items-center justify-center rounded-full text-muted transition-colors hover:bg-red-50 hover:text-red-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-accent"
+                      >
+                        <Trash2 size={16} aria-hidden />
                       </button>
                     </div>
                   </div>
@@ -1091,12 +1100,6 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
                   <span className="font-semibold text-accent">{formatPrice(pt.total)}</span>
                 </div>
               ))}
-              {expectedDeliveryDate && (
-                <div className="flex justify-between">
-                  <span className="text-ink">{t.expectedBy}</span>
-                  <span className="font-semibold text-ink">{formatExpectedDate(expectedDeliveryDate, lang)}</span>
-                </div>
-              )}
               {expressSelected && express && (
                 <div className="flex justify-between">
                   <span className="text-ink">{t.speedLabel}</span>
@@ -1505,11 +1508,19 @@ function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; o
               <p className="mt-4 text-[13px] font-semibold text-accent">{t.minOrderNote(formatPrice(minOrderAmount), formatPrice(minOrderShortfall))}</p>
             )}
 
+            {/* When it should arrive, right above the button that places the order (moved out of the price summary, 2026-10-29). */}
+            {expectedDeliveryDate && (
+              <p className="mt-5 flex items-center justify-center gap-1.5 text-[13px] text-muted">
+                <Truck size={15} aria-hidden />
+                {t.expectedBy}: <span className="font-semibold text-ink">{formatExpectedDate(expectedDeliveryDate, lang)}</span>
+              </p>
+            )}
+
             <button
               ref={placeOrderRef}
               onClick={handlePlaceOrder}
               disabled={placing || codOtpSending || ordersPaused || minOrderShortfall > 0 || !!areaRefusal || ordersFullToday}
-              className={`w-full mt-6 py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm ${
+              className={`w-full ${expectedDeliveryDate ? 'mt-2.5' : 'mt-6'} py-3.5 rounded-md bg-accent hover:bg-accent-dark text-white text-[14px] font-bold disabled:opacity-60 transition-colors shadow-sm ${
                 voiceReady ? 'ring-4 ring-accent/30 animate-pulse motion-reduce:animate-none' : ''
               }`}
             >

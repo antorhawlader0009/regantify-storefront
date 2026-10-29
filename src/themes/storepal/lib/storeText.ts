@@ -188,6 +188,8 @@ const BN: Record<string, string> = {
   'Sort by latest': 'নতুনগুলো আগে',
   'Best selling': 'বেশি বিক্রি',
   'Log out?': 'লগআউট করবেন?',
+  'Open cart': 'কার্ট খুলুন',
+  '{n} Items': '{n}টি পণ্য',
   'Code sent to {phone}': '{phone} নম্বরে কোড পাঠানো হয়েছে',
   'You can review this product once it has been delivered to you.': 'পণ্যটি হাতে পাওয়ার পর রিভিউ দিতে পারবেন।',
   'You can log in again any time with your phone or Google.': 'যেকোনো সময় ফোন বা গুগল দিয়ে আবার লগইন করতে পারবেন।',

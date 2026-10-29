@@ -25,6 +25,7 @@ import { plainText } from '@/lib/plainText';
 import { ComingSoonNotify } from './ComingSoonNotify';
 import { RatingStars } from '@/components/RatingStars';
 import { CoverFloating } from '@/lib/floatingCover';
+import { QuickAddSheet } from '@/components/QuickAddSheet';
 
 interface StorePalProductPanelProps {
   subdomain: string;
@@ -385,6 +386,30 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     buyNow();
   };
 
+  // Add to Cart and Buy Now on a product with sizes or colours open the bottom sheet first (2026-10-29, the owner's request),
+  // the same one product cards use, unless every option is already picked. It shares `selected` with this page, so a size
+  // already picked here shows picked there.
+  const hasChoices = product.variationOptions.length > 0;
+  const [sheet, setSheet] = useState<'add' | 'buy' | null>(null);
+  const openSheetOr = (kind: 'add' | 'buy', act: () => void) => {
+    // Every option already picked on the page: no sheet, straight to the action. Problems the sheet can't show (a box to
+    // fill, the shopper's own text) are shown on the page as before.
+    if (!hasChoices || !needsVariantSelection || pickProblem() || customProblem()) {
+      act();
+      return;
+    }
+    setVariantWarning(false);
+    setSheet(kind);
+  };
+  const fromSheet = (act: () => void) => {
+    if (needsVariantSelection) {
+      setVariantWarning(true);
+      return;
+    }
+    setSheet(null);
+    act();
+  };
+
   const portrait = display?.imageShape === 'PORTRAIT' || product.photoSize === 'PORTRAIT';
   // Thumbnails beside the photo instead of under it (StorePal's Gallery
   // Style). Only when there's more than one photo to pick from.
@@ -728,7 +753,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
         <div data-rg="product-buttons" className="flex gap-2.5">
           <button
             disabled={!canPurchase}
-            onClick={handleAddToCart}
+            onClick={() => openSheetOr('add', handleAddToCart)}
             data-rg="add-to-cart"
             className={`flex-1 h-12 rounded-lg border-[1.5px] border-ink text-ink text-[14px] font-bold transition-colors ${
               canPurchase ? 'hover:bg-ink hover:text-white' : 'opacity-40 cursor-not-allowed'
@@ -738,7 +763,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           </button>
           <button
             disabled={!canPurchase}
-            onClick={handleBuyNow}
+            onClick={() => openSheetOr('buy', handleBuyNow)}
             data-rg="buy-now"
             className={`flex-1 h-12 rounded-lg text-[14px] font-bold transition-colors ${
               canPurchase ? 'bg-accent hover:bg-accent-dark text-white' : 'bg-line text-muted cursor-not-allowed'
@@ -793,6 +818,33 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
       </div>
 
       {/* No sticky Add to Cart / Buy Now bar on phones (removed 2026-10-27, the user's request): it repeated the buttons above. */}
+
+      {hasChoices && (
+        <QuickAddSheet
+          open={sheet !== null}
+          onClose={() => setSheet(null)}
+          name={product.name}
+          image={activePhotoUrl}
+          price={formatPrice(displayPrice)}
+          originalPrice={displayOriginalPrice ? formatPrice(displayOriginalPrice) : null}
+          options={product.variationOptions.map((o) => ({ name: o.name, values: o.values }))}
+          selected={selected}
+          onSelect={(option, value) => {
+            setSelected((prev) => ({ ...prev, [option]: value }));
+            setVariantWarning(false);
+          }}
+          isAvailable={(option, value) => !valueSoldOut(option, value)}
+          photoFor={(option, value) => findVariationPhoto(option, value)?.photoUrls[0] ?? null}
+          warning={variantWarning ? t('Select an option first.') : null}
+          labels={{
+            addToCart: t('Add to Cart'),
+            buyNow: canPurchase ? t('Buy Now') : undefined,
+            close: t('Close'),
+          }}
+          onAdd={() => fromSheet(handleAddToCart)}
+          onBuy={canPurchase ? () => fromSheet(handleBuyNow) : undefined}
+        />
+      )}
 
       {backorder && pendingBackorderAction && (
         <div
