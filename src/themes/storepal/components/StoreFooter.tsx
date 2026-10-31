@@ -435,7 +435,8 @@ export function StoreFooter({
         </>
       )}
       {showApps && (
-        <div className={showContact ? 'mt-5' : ''}>
+        // Hidden inside the Regantify app (rg-hide-in-app, globals.css): a shopper already in an app is not offered a download.
+        <div className={`rg-hide-in-app ${showContact ? 'mt-5' : ''}`}>
           <p className="text-[14px] font-semibold text-ink mb-2">{footerConfig.appsTitle || 'Download Now'}</p>
           <div className="flex flex-wrap gap-2">
             {footerConfig.playStoreUrl?.trim() && <AppBadge href={footerConfig.playStoreUrl} src={GOOGLE_PLAY_BADGE} alt="Get it on Google Play" />}

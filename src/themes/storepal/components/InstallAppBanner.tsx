@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Share, SquarePlus, X } from 'lucide-react';
 import { useInstallApp } from '@/lib/installApp';
+import { getRegantifyApp } from '@/lib/regantifyApp';
 import { useAppAvailable } from '@/lib/appAvailable';
 import { useFloatingCovered } from '@/lib/floatingCover';
 import { useStorePalDesign } from '../lib/designSettings';
@@ -21,7 +22,8 @@ export function InstallAppBanner({ subdomain, storeName }: { subdomain: string; 
   const { mode, install, dismiss } = useInstallApp(subdomain, !!design.appInstallEnabled, pathname, appAvailable);
   // Steps aside while something covers the page (the AI chat, checkout, sign-in...: lib/floatingCover.tsx).
   const covered = useFloatingCovered();
-  if (!mode || covered) return null;
+  // Never inside the Regantify app: it is the app already (the page may be shown in its web view).
+  if (!mode || covered || getRegantifyApp()) return null;
 
   const name = design.appName?.trim() || storeName;
   // The icon is on the address the shopper is using: path form in development, the store's own address in production.
@@ -29,7 +31,7 @@ export function InstallAppBanner({ subdomain, storeName }: { subdomain: string; 
   // Android with the Regantify app available: offer the app (its /app page) instead of the home-screen shortcut.
   if (mode === 'GET_APP') {
     return (
-      <div role="dialog" aria-label={t('Get the Regantify app')} className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-2xl border border-line bg-surface p-4 shadow-2xl">
+      <div role="dialog" aria-label={t('Get the Regantify app')} className="rg-hide-in-app fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-2xl border border-line bg-surface p-4 shadow-2xl">
         <button type="button" onClick={dismiss} aria-label={t('Not now')} className="absolute right-2.5 top-2.5 rounded-full p-1 text-muted hover:text-ink">
           <X size={16} />
         </button>
@@ -49,7 +51,7 @@ export function InstallAppBanner({ subdomain, storeName }: { subdomain: string; 
     );
   }
   return (
-    <div role="dialog" aria-label={t('Add to your home screen')} className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-2xl border border-line bg-surface p-4 shadow-2xl">
+    <div role="dialog" aria-label={t('Add to your home screen')} className="rg-hide-in-app fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-2xl border border-line bg-surface p-4 shadow-2xl">
       <button type="button" onClick={dismiss} aria-label={t('Not now')} className="absolute right-2.5 top-2.5 rounded-full p-1 text-muted hover:text-ink">
         <X size={16} />
       </button>
