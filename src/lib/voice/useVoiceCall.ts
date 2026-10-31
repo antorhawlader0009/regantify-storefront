@@ -784,7 +784,13 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
         onHearing: (t, s) => onHearing(id, t, s),
         onUtterance: (t, s) => onUtterance(id, t, s),
         onBlocked: (why) => {
-          setProblem(why === 'denied' ? 'মাইক্রোফোন চালু করার অনুমতি দিন, তারপর আবার কল করুন।' : 'মাইক্রোফোন পাওয়া যাচ্ছে না।');
+          setProblem(
+            why === 'denied'
+              ? 'মাইক্রোফোন চালু করার অনুমতি দিন, তারপর আবার কল করুন।'
+              : why === 'no-service'
+                ? 'এই ফোনে কথা শোনার সার্ভিস নেই। গুগলের অ্যাপ আপডেট করে আবার চেষ্টা করুন, অথবা লিখে জিজ্ঞেস করুন।'
+                : 'মাইক্রোফোন পাওয়া যাচ্ছে না।',
+          );
           hangUp(true);
         },
       },

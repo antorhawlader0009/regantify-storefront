@@ -132,7 +132,7 @@ export interface SpeechInputEvents {
   /** A finished utterance. */
   onUtterance(text: string, startedAt: number): void;
   /** The microphone was refused or is missing. */
-  onBlocked(reason: 'denied' | 'no-mic'): void;
+  onBlocked(reason: 'denied' | 'no-mic' | 'no-service'): void;
 }
 
 export class SpeechInput {
@@ -231,6 +231,9 @@ export class SpeechInput {
       if (e.error === 'not-allowed' || e.error === 'service-not-allowed') {
         this.running = false;
         this.events.onBlocked('denied');
+      } else if (e.error === 'no-service') {
+        this.running = false;
+        this.events.onBlocked('no-service');
       } else if (e.error === 'audio-capture') {
         this.running = false;
         this.events.onBlocked('no-mic');
