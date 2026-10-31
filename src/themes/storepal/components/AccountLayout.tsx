@@ -7,6 +7,7 @@ import { LogOut, X } from 'lucide-react';
 import { StoreHeader } from './StoreHeader';
 import { AccountSidebar } from './AccountSidebar';
 import { GoogleConnectBadge } from './GoogleConnectBadge';
+import { AccountBackdrop } from './AccountBackdrop';
 import { CoverFloating } from '@/lib/floatingCover';
 import { useStoreText } from '../lib/storeText';
 import { closeAccountDialog } from '../lib/accountReturn';
@@ -24,7 +25,7 @@ interface AccountLayoutProps {
  * store (2026-10-29, the owner's request): a large centred box on a computer, the whole screen on a phone, with the
  * title and a × at the top. × (or Esc) returns to the store page the shopper came from (lib/accountReturn.ts), else the
  * store's home. Each section is still its own address, so links, the back button and a refresh keep working; the menu
- * moves between them inside the dialog. The store header stays behind the dimmed backdrop so it still reads as the store.
+ * moves between them inside the dialog. The store header and the shop's products stay behind the dimmed backdrop so it still reads as the store.
  *
  * `categories` defaults to empty: account pages are client components rendered from a 'use client' route with only
  * `subdomain` in scope, so there is no server-fetched category list here (StoreHeader handles an empty list).
@@ -67,6 +68,8 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
       <CoverFloating />
+      {/* The shop's products stay visible behind the dimmed backdrop; only the floating chat buttons are hidden (CoverFloating). */}
+      <AccountBackdrop subdomain={subdomain} storeName={storeName} />
       <LogoutConfirm
         open={askLogout}
         onCancel={cancelLogout}
