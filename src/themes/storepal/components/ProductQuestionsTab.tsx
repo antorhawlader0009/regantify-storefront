@@ -5,6 +5,8 @@ import { askProductQuestion, type ProductQuestion } from '@/lib/questionsApi';
 import { useStoreText } from '../lib/storeText';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { phoneInput } from '@/lib/phoneInput';
+import { ReportButton } from './ReportButton';
+import { PostingTermsNote } from './PostingTermsNote';
 
 /**
  * The "Questions" tab on a StorePal product page (TellMe idea 35): the questions the store has answered, and a form to
@@ -87,6 +89,7 @@ export function ProductQuestionsTab({
                 <p className="m-0 text-[11.5px] font-bold text-ink">{t('Answer from the store')}</p>
                 <p className="m-0 mt-0.5 text-[13px] text-ink/85 leading-relaxed whitespace-pre-line">{q.answer}</p>
               </div>
+              <ReportButton subdomain={subdomain} kind="QUESTION" targetId={q.id} className="mt-1.5" />
             </div>
           ))}
         </div>
@@ -143,6 +146,7 @@ export function ProductQuestionsTab({
             </div>
           )}
           {problem && <p className="text-[12px] text-accent">{problem}</p>}
+          <PostingTermsNote subdomain={subdomain} />
           <div className="flex gap-2">
             <button type="submit" disabled={sending} className="px-4 py-2 rounded-md bg-accent hover:bg-accent-dark text-white text-[12.5px] font-bold disabled:opacity-60 shadow-sm transition-colors">
               {sending ? t('Sending…') : t('Send question')}

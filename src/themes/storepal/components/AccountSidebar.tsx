@@ -4,7 +4,7 @@ import { useCallback, useLayoutEffect, useRef, useState } from 'react';
 import { LogoutConfirm } from './LogoutConfirm';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Heart, KeyRound, LogIn, LogOut, MapPin, Package, ShoppingBag, Ticket, UserRound, type LucideIcon } from 'lucide-react';
+import { Heart, KeyRound, LogIn, LogOut, MapPin, Package, ShoppingBag, Ticket, UserRound, UserRoundX, type LucideIcon } from 'lucide-react';
 import { useCustomerAuthHydrated, useCustomerAuthStore, useCustomerLogout } from '@/providers/customer-auth-store-provider';
 import { useStoreText } from '../lib/storeText';
 import { useWishlist } from '../lib/wishlist';
@@ -41,6 +41,8 @@ const GROUPS: { title: string; items: NavItem[] }[] = [
       { label: 'Profile', path: 'account/profile', Icon: UserRound },
       { label: 'My Addresses', path: 'account/address', Icon: MapPin },
       { label: 'Change Password', path: 'account/change-password', Icon: KeyRound },
+      // Google Play's account deletion rule: an in-app path (STORE-APP-plan.md Step 4). /account/delete is also the web link for the store listing.
+      { label: 'Delete my account', path: 'account/delete', Icon: UserRoundX },
     ],
   },
 ];

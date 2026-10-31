@@ -19,6 +19,8 @@ import { useAuthDialog } from '../lib/authDialog';
 import { getProductQuestions, type ProductQuestion } from '@/lib/questionsApi';
 import { useStoreText } from '../lib/storeText';
 import { ProductQuestionsTab } from './ProductQuestionsTab';
+import { ReportButton } from './ReportButton';
+import { PostingTermsNote } from './PostingTermsNote';
 
 /**
  * StorePal's own copy of Medium's product tabs (Medium/Minimal are never edited for StorePal), kept in step by hand.
@@ -211,6 +213,7 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
                     {voted.has(r.id) ? t('Thanks') : t('Helpful')}
                     {(r.helpfulCount ?? 0) > 0 ? ` (${r.helpfulCount})` : ''}
                   </button>
+                  <ReportButton subdomain={subdomain} kind="REVIEW" targetId={r.id} className="ml-3" />
                   {r.replyText && (
                     <div className="mt-2.5 rounded-md border-l-2 border-accent bg-canvas px-3 py-2">
                       <p className="m-0 text-[11.5px] font-bold text-ink">{t('Reply from the store')}</p>
@@ -571,6 +574,8 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
       )}
 
       {error && <p className="text-[12px] text-accent">{error}</p>}
+
+      <PostingTermsNote subdomain={subdomain} />
 
       <div className="flex gap-2">
         <button

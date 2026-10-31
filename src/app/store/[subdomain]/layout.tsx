@@ -7,6 +7,7 @@ import { LimitNotice } from '@/components/LimitNotice';
 import { OrdersOffBar } from '@/components/OrdersOffBar';
 import { WebVitalsBeacon } from '@/components/WebVitalsBeacon';
 import { ShopperStoreScope } from '@/components/ShopperStoreScope';
+import { RegantifyLoginCatcher } from '@/components/RegantifyLoginCatcher';
 import { GdprPrompt } from '@/themes/storepal/components/GdprPrompt';
 import { StoreAwayBanner } from '@/themes/storepal/components/StoreAwayBanner';
 import type { StorefrontStoreAway } from '@/lib/storeAway';
@@ -258,6 +259,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
       {fontHref && <link rel="stylesheet" href={fontHref} />}
       {/* Which store a shopper's sign-in is for (security F-46). Renders nothing. */}
       <ShopperStoreScope subdomain={subdomain} />
+      {/* A one-use sign-in code in the address (back from the central Regantify page, or opened by the Regantify app) is swapped for this
+          store's own sign-in, for every template (STORE-APP-plan.md Step 2). Renders nothing unless the code could not be used. */}
+      <RegantifyLoginCatcher />
       {/* Monthly Visit tracking (PLAN.md Step 5) - mounted here, not
           inside any theme's own tree, so every theme is counted equally.
           Renders nothing; see VisitBeacon's own doc comment. Only for a

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useStorePalDesign } from '../lib/designSettings';
 import Link from 'next/link';
+import { ReportButton } from './ReportButton';
 import { usePathname, useRouter } from 'next/navigation';
 import { useHeaderPresence } from '../lib/headerPresence';
 import { useCoverFloating, useFloatingCovered } from '@/lib/floatingCover';
@@ -1207,6 +1208,17 @@ export function AiAssistantWidget({ subdomain, storeName }: { subdomain: string;
                   </div>
                 )}
                 {m.at && <span className="mt-1 px-1 text-[10.5px] text-muted">{chatTime(m.at)}</span>}
+                {/* Google Play's AI-generated content rule: every answer can be reported. The store (and Super Admin's counts) see it
+                    with the exchange, never who sent it. The greeting and the picture rows are not answers. */}
+                {m.role === 'assistant' && !m.greeting && !m.image && m.content.trim().length > 0 && (
+                  <ReportButton
+                    subdomain={subdomain}
+                    kind="AI_ANSWER"
+                    label="এই উত্তরটি রিপোর্ট করুন"
+                    excerpt={`Customer: ${[...messages.slice(0, i)].reverse().find((x) => x.role === 'user' && x.content)?.content ?? ''}\nAssistant: ${m.content}`}
+                    className="mt-0.5 px-1"
+                  />
+                )}
 
                 {m.complaint && (
                   <div className={`mt-2 w-full max-w-[85%] rounded-2xl border border-line bg-surface px-3.5 py-3 text-[12.5px] text-ink ${SOFT_SHADOW}`}>

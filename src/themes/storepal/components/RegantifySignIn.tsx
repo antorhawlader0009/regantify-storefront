@@ -1,11 +1,10 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
-import { connectLogin, copyOtherStoreAddresses, getRegantifyConnectConfig, otherStoreAddressCount, regantifyConnectUrl, startGoogleLink, type RegantifyConnectConfig } from '@/lib/customerAuthApi';
+import { useEffect, useState } from 'react';
+import { getRegantifyApp } from '@/lib/regantifyApp';
+import { copyOtherStoreAddresses, getRegantifyConnectConfig, otherStoreAddressCount, regantifyConnectUrl, startGoogleLink, type RegantifyConnectConfig } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
-import { useAuthDialog } from '../lib/authDialog';
 import { useStoreText } from '../lib/storeText';
-import { trackLogin } from '@/lib/ecommerceEvents';
 
 /** Google's own "G" mark, unchanged (Google's sign-in branding guidelines). */
 export function GoogleMark({ size = 18 }: { size?: number }) {
@@ -34,9 +33,19 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
       alive = false;
     };
   }, []);
-  if (!cfg?.enabled || !cfg.url) return null;
+  // Inside the Regantify app the button opens the app's own sign-in (native Google on the phone's accounts, or a texted code): Google does
+  // not allow its sign-in page inside an app's web view. Known after the first render, so the server and the browser agree.
+  const [inApp, setInApp] = useState(false);
+  useEffect(() => setInApp(!!getRegantifyApp()), []);
+  if (!inApp && (!cfg?.enabled || !cfg.url)) return null;
+  const google = inApp || !!cfg?.google;
   const go = () => {
-    window.location.assign(regantifyConnectUrl(cfg.url!, subdomain, window.location.href, cfg.google ? 'google' : undefined));
+    const app = getRegantifyApp();
+    if (app) {
+      app.signIn();
+      return;
+    }
+    window.location.assign(regantifyConnectUrl(cfg!.url!, subdomain, window.location.href, cfg!.google ? 'google' : undefined));
   };
   return (
     <div className="mb-5">
@@ -46,12 +55,12 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
         className="relative flex h-[52px] w-full items-center justify-center rounded-lg border border-line-strong bg-white px-12 text-ink shadow-[0_1px_2px_rgba(16,24,40,0.05)] transition-colors hover:border-ink/25 hover:bg-surface focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {/* Google's pattern: the mark pinned to the left edge, the words centred on the whole button. */}
-        {cfg.google ? (
+        {google ? (
           <span className="absolute left-4 top-1/2 -translate-y-1/2">
             <GoogleMark size={20} />
           </span>
         ) : null}
-        {cfg.google ? (
+        {google ? (
           <span className="flex flex-col items-center">
             <span className="text-[15px] font-semibold leading-[1.15]">{t('Login with Google')}</span>
             <span className="mt-0.5 text-[11px] font-medium leading-none text-muted">{t('by Regantify')}</span>
@@ -185,57 +194,4 @@ export function OtherStoreAddressesCard({ subdomain, onCopied }: { subdomain: st
 }
 
 
-// One code is swapped once per page load, even if React runs the effect twice.
-const swapped = new Set<string>();
-
-/**
- * Back from the central Regantify sign-in page: the address carries ?rgf_login=<one-time code>. It is swapped for this store's sign-in and
- * taken off the address bar straight away, so a reload or a shared link never carries it.
- */
-export function RegantifyLoginCatcher() {
-  const t = useStoreText();
-  const setSession = useCustomerAuthStore((s) => s.setSession);
-  const openLogin = useAuthDialog((s) => s.openLogin);
-  const done = useRef(false);
-  const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    if (done.current) return;
-    done.current = true;
-    const url = new URL(window.location.href);
-    const code = url.searchParams.get('rgf_login');
-    if (!code) return;
-    url.searchParams.delete('rgf_login');
-    window.history.replaceState(window.history.state, '', url.toString());
-    if (swapped.has(code)) return;
-    swapped.add(code);
-    connectLogin(code)
-      .then((r) => {
-        setSession(r.customer, r.accessToken);
-        trackLogin('regantify');
-      })
-      .catch((err: Error) => setError(err.message || t('Could not sign you in. Please try again.')));
-  }, [setSession]);
-
-  if (!error) return null;
-  return (
-    <div role="alert" className="fixed inset-x-4 bottom-4 z-[90] mx-auto max-w-md rounded-lg bg-ink px-4 py-3 text-[13.5px] text-white shadow-xl sm:inset-x-auto sm:left-1/2 sm:-translate-x-1/2">
-      <p>{error}</p>
-      <div className="mt-2 flex gap-4">
-        <button
-          type="button"
-          onClick={() => {
-            setError(null);
-            openLogin();
-          }}
-          className="font-semibold underline underline-offset-2"
-        >
-          {t('Sign in again')}
-        </button>
-        <button type="button" onClick={() => setError(null)} className="text-white/70">
-          {t('Close')}
-        </button>
-      </div>
-    </div>
-  );
-}
+// The code swap (?rgf_login=...) is done by components/RegantifyLoginCatcher.tsx, mounted once in the store layout for every template.

@@ -24,7 +24,6 @@ import { CartDrawer } from './CartDrawer';
 import { SideCartTab } from './SideCartTab';
 import { CheckoutDialog } from './CheckoutDialog';
 import { AuthDialog } from './AuthDialog';
-import { RegantifyLoginCatcher } from './RegantifySignIn';
 import { MarqueeTrack } from './MarqueeTrack';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useStripHidden } from '../lib/floatingScroll';
@@ -938,7 +937,6 @@ export function StoreHeader({
       <SideCartTab subdomain={subdomain} />
       <CheckoutDialog subdomain={subdomain} />
       <AuthDialog subdomain={subdomain} />
-      <RegantifyLoginCatcher />
     </header>
     </>
   );

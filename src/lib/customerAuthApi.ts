@@ -382,6 +382,16 @@ export function setMyPassword(accessToken: string, code: string, newPassword: st
   return authFetch('/v1/customer-auth/me/password/set', accessToken, { method: 'POST', body: { code, newPassword } });
 }
 
+/** Account > Delete my account, step 1: a code to the account's phone (the server refuses an account with no phone and says what to do). */
+export function sendDeleteAccountCode(accessToken: string): Promise<{ sent: boolean; phone: string }> {
+  return authFetch('/v1/customer-auth/me/delete/send-code', accessToken, { method: 'POST', body: {} });
+}
+
+/** Step 2: the code, and the account goes from every shop. `kept` is what stays (orders, which the shops keep as their records). */
+export function deleteMyAccount(accessToken: string, code: string): Promise<{ deleted: boolean; kept: string }> {
+  return authFetch('/v1/customer-auth/me', accessToken, { method: 'DELETE', body: { code } });
+}
+
 /** Account > Change Password (requires the current password). */
 export function changeMyPassword(accessToken: string, currentPassword: string, newPassword: string) {
   return authFetch<{ message: string }>('/v1/customer-auth/me/password', accessToken, {
