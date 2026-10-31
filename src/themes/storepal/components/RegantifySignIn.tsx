@@ -41,6 +41,12 @@ export function RegantifySignInButton({ subdomain }: { subdomain: string }) {
   const google = inApp || !!cfg?.google;
   const go = () => {
     const app = getRegantifyApp();
+    // A store's own app: Google refuses its sign-in inside a web view, so the central page opens in the phone's browser (Custom Tabs) and comes
+    // back to this store with ?rgf_login=. The app only opens addresses of the central page that return to this very store.
+    if (app && app.flavor === 'store' && app.signInBrowser && cfg?.enabled && cfg.url) {
+      app.signInBrowser(regantifyConnectUrl(cfg.url, subdomain, window.location.href, cfg.google ? 'google' : undefined, true));
+      return;
+    }
     if (app) {
       app.signIn();
       return;

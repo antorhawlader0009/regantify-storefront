@@ -59,9 +59,9 @@ function write(subdomain: string, s: Saved) {
   }
 }
 
-export type InstallMode = 'PROMPT' | 'IOS_STEPS';
+export type InstallMode = 'PROMPT' | 'IOS_STEPS' | 'GET_APP';
 
-export function useInstallApp(subdomain: string, enabled: boolean, pathname: string) {
+export function useInstallApp(subdomain: string, enabled: boolean, pathname: string, appAvailable = false) {
   const [mode, setMode] = useState<InstallMode | null>(null);
 
   const decide = useCallback(() => {
@@ -72,8 +72,12 @@ export function useInstallApp(subdomain: string, enabled: boolean, pathname: str
     const regular = s.days.length >= 2 || !!s.ordered;
     if (standalone || !phone || s.installed || (s.snoozedUntil ?? 0) > Date.now() || !regular || SKIP_PAGES.test(pathname)) return setMode(null);
     const ios = /iPhone|iPad|iPod/.test(navigator.userAgent) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-    setMode(deferred ? 'PROMPT' : ios ? 'IOS_STEPS' : null);
-  }, [enabled, subdomain, pathname]);
+    // Inside the Regantify app there is nothing to install.
+    if (/RegantifyApp\//.test(navigator.userAgent)) return setMode(null);
+    // On Android the Regantify app is offered instead of the home-screen shortcut (STORE-APP-plan.md Step 9), once it can be downloaded.
+    const android = /Android/i.test(navigator.userAgent);
+    setMode(android && appAvailable ? 'GET_APP' : deferred ? 'PROMPT' : ios ? 'IOS_STEPS' : null);
+  }, [enabled, subdomain, pathname, appAvailable]);
 
   // Count today's visit (and an order, on the thank-you page) once per page.
   useEffect(() => {

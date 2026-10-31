@@ -13,6 +13,7 @@ import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign } from '../lib/designSettings';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { FooterLocation } from './FooterLocation';
+import { AboutAppLink, GetAppLink } from '@/components/GetAppLink';
 import { APP_STORE_BADGE, GOOGLE_PLAY_BADGE } from '../lib/appBadges';
 
 interface StoreFooterProps {
@@ -328,6 +329,8 @@ export function StoreFooter({
             <span>
               © {new Date().getFullYear()} Copyright <span className="text-ink font-medium">{storeName}</span>
             </span>
+            <GetAppLink subdomain={subdomain} label={t('Get the Regantify app')} className="text-accent hover:text-accent-dark font-medium" />
+            <AboutAppLink label={t('About this app')} className="text-accent hover:text-accent-dark font-medium" />
             <DeveloperCredit />
           </div>
         </div>
@@ -518,6 +521,8 @@ export function StoreFooter({
           <Link href={`/store/${subdomain}/report`} className="text-muted underline underline-offset-2 hover:text-ink transition-colors">
             {t('Report this store')}
           </Link>
+          <GetAppLink subdomain={subdomain} label={t('Get the Regantify app')} className="text-accent hover:text-accent-dark font-medium" />
+            <AboutAppLink label={t('About this app')} className="text-accent hover:text-accent-dark font-medium" />
           {footerConfig.showCredit !== false && <DeveloperCredit />}
         </div>
       </div>

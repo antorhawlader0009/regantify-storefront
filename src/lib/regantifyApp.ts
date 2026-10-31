@@ -10,6 +10,8 @@ export interface RegantifyAppBridge {
   share(text: string, url: string): void;
   /** Opens the app's own sign-in (Google account of the phone, or a texted code); the app then reloads this shop signed in. Returns nothing. */
   signIn(): void;
+  /** Own app only: opens an address of the central Regantify sign-in in the phone's browser (Custom Tabs). The app checks the address. */
+  signInBrowser?(url: string): void;
 }
 
 export function getRegantifyApp(): RegantifyAppBridge | null {

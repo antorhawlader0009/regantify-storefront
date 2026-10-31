@@ -347,6 +347,11 @@ const BN: Record<string, string> = {
   'Open the shop like an app, one tap from your home screen.': 'অ্যাপের মতো খুলুন, হোম স্ক্রিন থেকে এক চাপে।',
   Install: 'যোগ করুন',
   'Not now': 'এখন না',
+  // The Regantify app (STORE-APP-plan.md Step 9).
+  'Get the Regantify app': 'Regantify অ্যাপ নিন',
+  'Get the app': 'অ্যাপ নিন',
+  'About this app': 'এই অ্যাপ সম্পর্কে',
+  'Orders, notifications and voice help in one app.': 'অর্ডার, নোটিফিকেশন আর ভয়েস সহায়তা, সব এক অ্যাপে।',
   Tap: 'নিচের',
   'Share, then': 'শেয়ার চাপুন, তারপর',
   'Add to Home Screen': 'Add to Home Screen',

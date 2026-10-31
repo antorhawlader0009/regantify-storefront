@@ -258,3 +258,9 @@ body {
   from { transform: translateY(24px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* The Regantify app puts data-regantify-app on <html> before the page runs (app web/Bridge.kt, STORE-APP-plan.md Step 9): "get the app" things
+   are hidden inside the app, with no flash, and a "you already have it" note shows instead. */
+[data-regantify-app] .rg-hide-in-app { display: none !important; }
+.rg-show-in-app { display: none; }
+[data-regantify-app] .rg-show-in-app { display: block; }

@@ -24,6 +24,8 @@ import { MetaPixel } from '@/components/MetaPixel';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { GoogleTagManager } from '@/components/GoogleTagManager';
 import { TiktokPixel } from '@/components/TiktokPixel';
+import { AppAvailableProvider } from '@/lib/appAvailable';
+import { appOffered, getAppDownload } from '@/lib/appDownload';
 import type {
   StorefrontCustomCode,
   StorefrontDesignSettings,
@@ -194,6 +196,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   // Dollar prices for gift senders abroad (lib/usdPrice.tsx): the store's own rate, null = off.
   let usdRate: number | null = null;
   let storeName = '';
+  // Whether the Regantify app can be downloaded (Play page or APK): only then the footers and the install banner offer it (STORE-APP-plan.md Step 9).
+  const appAvailable = appOffered(await getAppDownload());
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
@@ -309,6 +313,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           )}
         </>
       )}
+      <AppAvailableProvider available={appAvailable}>
       <ThemeProvider theme={theme}>
         <UsdPriceProvider rate={usdRate}>
         {/* Red "orders are off" strip on every template while the store takes no new orders (wallet below -৳100 and so on). */}
@@ -334,6 +339,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         )}
         </UsdPriceProvider>
       </ThemeProvider>
+      </AppAvailableProvider>
       {/* Store > GDPR Prompt - StorePal only by design, same as the AI
           chat widget; null unless the vendor turned it on. */}
       {theme === 'STOREPAL' && gdprPrompt && <GdprPrompt subdomain={subdomain} prompt={gdprPrompt} />}

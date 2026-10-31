@@ -14,6 +14,8 @@
  * INTERIM_PAUSE_MS with only words in progress, for browsers that are slow to finalise).
  */
 
+import { appVoice, NativeRecognition } from './nativeVoice';
+
 interface RecognitionResultLike {
   isFinal: boolean;
   0: { transcript: string };
@@ -39,12 +41,16 @@ export type RecognitionCtor = new () => Recognition;
 
 export function recognitionCtor(): RecognitionCtor | null {
   if (typeof window === 'undefined') return null;
+  // Inside the Regantify app the app's own speech recognition does the listening (nativeVoice.ts, STORE-APP-plan.md Step 8).
+  if (appVoice()) return NativeRecognition;
   const w = window as unknown as { SpeechRecognition?: RecognitionCtor; webkitSpeechRecognition?: RecognitionCtor };
   return w.SpeechRecognition ?? w.webkitSpeechRecognition ?? null;
 }
 
 /** The call needs speech recognition, a microphone and WebAudio. */
 export function voiceCallSupported(): boolean {
+  // The app listens and speaks by itself: it needs neither the web view's microphone nor WebAudio.
+  if (typeof window !== 'undefined' && appVoice()) return true;
   return !!recognitionCtor() && typeof navigator !== 'undefined' && !!navigator.mediaDevices?.getUserMedia && typeof AudioContext !== 'undefined';
 }
 

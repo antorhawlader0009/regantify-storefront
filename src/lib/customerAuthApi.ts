@@ -237,10 +237,12 @@ export function getRegantifyConnectConfig(): Promise<RegantifyConnectConfig> {
 }
 
 /** The address of the central Regantify sign-in page for this store, coming back to `returnTo` (this page) afterwards. */
-export function regantifyConnectUrl(base: string, subdomain: string, returnTo: string, via?: 'google'): string {
+export function regantifyConnectUrl(base: string, subdomain: string, returnTo: string, via?: 'google', fromApp = false): string {
   const params = new URLSearchParams({ store: subdomain, return: returnTo });
   // via=google: the central page goes straight on to Google instead of showing its sign-in choices.
   if (via) params.set('via', via);
+  // A store's own app opens this page in Custom Tabs: it ends with an "Open the app" button.
+  if (fromApp) params.set('app', '1');
   return `${base.replace(/\/$/, '')}/login?${params.toString()}`;
 }
 

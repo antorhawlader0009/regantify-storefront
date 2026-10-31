@@ -3,6 +3,7 @@
 import { usePathname } from 'next/navigation';
 import { Share, SquarePlus, X } from 'lucide-react';
 import { useInstallApp } from '@/lib/installApp';
+import { useAppAvailable } from '@/lib/appAvailable';
 import { useFloatingCovered } from '@/lib/floatingCover';
 import { useStorePalDesign } from '../lib/designSettings';
 import { useStoreText } from '../lib/storeText';
@@ -16,7 +17,8 @@ export function InstallAppBanner({ subdomain, storeName }: { subdomain: string; 
   const design = useStorePalDesign();
   const t = useStoreText();
   const pathname = usePathname() ?? '';
-  const { mode, install, dismiss } = useInstallApp(subdomain, !!design.appInstallEnabled, pathname);
+  const appAvailable = useAppAvailable();
+  const { mode, install, dismiss } = useInstallApp(subdomain, !!design.appInstallEnabled, pathname, appAvailable);
   // Steps aside while something covers the page (the AI chat, checkout, sign-in...: lib/floatingCover.tsx).
   const covered = useFloatingCovered();
   if (!mode || covered) return null;
@@ -24,6 +26,28 @@ export function InstallAppBanner({ subdomain, storeName }: { subdomain: string; 
   const name = design.appName?.trim() || storeName;
   // The icon is on the address the shopper is using: path form in development, the store's own address in production.
   const base = pathname.startsWith(`/store/${subdomain}`) ? `/store/${subdomain}` : '';
+  // Android with the Regantify app available: offer the app (its /app page) instead of the home-screen shortcut.
+  if (mode === 'GET_APP') {
+    return (
+      <div role="dialog" aria-label={t('Get the Regantify app')} className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-2xl border border-line bg-surface p-4 shadow-2xl">
+        <button type="button" onClick={dismiss} aria-label={t('Not now')} className="absolute right-2.5 top-2.5 rounded-full p-1 text-muted hover:text-ink">
+          <X size={16} />
+        </button>
+        <div className="pr-6">
+          <p className="text-[14.5px] font-semibold text-ink">{t('Get the Regantify app')}</p>
+          <p className="text-[12.5px] leading-snug text-muted">{t('Orders, notifications and voice help in one app.')}</p>
+        </div>
+        <div className="mt-3 flex justify-end gap-2">
+          <button type="button" onClick={dismiss} className="rounded-lg px-3.5 py-2 text-[13px] font-medium text-muted hover:text-ink">
+            {t('Not now')}
+          </button>
+          <a href={`${base}/app`} onClick={() => trackFeature('INSTALL_APP_CLICK')} className="rounded-lg bg-ink px-4 py-2 text-[13px] font-semibold text-white hover:opacity-90">
+            {t('Get the app')}
+          </a>
+        </div>
+      </div>
+    );
+  }
   return (
     <div role="dialog" aria-label={t('Add to your home screen')} className="fixed inset-x-3 bottom-3 z-50 mx-auto max-w-md rounded-2xl border border-line bg-surface p-4 shadow-2xl">
       <button type="button" onClick={dismiss} aria-label={t('Not now')} className="absolute right-2.5 top-2.5 rounded-full p-1 text-muted hover:text-ink">

@@ -12,6 +12,7 @@ type Step =
   | { kind: 'code'; phone: string }
   | { kind: 'share'; answer: ConnectAnswer }
   | { kind: 'going'; storeName: string }
+  | { kind: 'open'; storeName: string; url: string }
   | { kind: 'error'; message: string };
 
 // Kept for the trip to Google and back: where to send the shopper if they cancel there.
@@ -28,6 +29,8 @@ interface Trip {
   store: string;
   storeName: string;
   returnTo: string;
+  /** Started from a store's own Android app (Custom Tabs): ends with an "Open the app" button, because an App Link opens the app only on a tap. */
+  app?: boolean;
 }
 
 function readTrip(): Trip | null {
@@ -79,7 +82,13 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
     try {
       setStep({ kind: 'going', storeName: answer.store.name });
       const { redirect } = await atLeast(GOING_WAIT_MS, connectApi.finish(answer.connectToken, ids));
+      const fromApp = readTrip()?.app === true;
       sessionStorage.removeItem(TRIP_KEY);
+      if (fromApp) {
+        setStep({ kind: 'open', storeName: answer.store.name, url: redirect });
+        setBusy(false);
+        return;
+      }
       window.location.replace(redirect);
     } catch (err) {
       setStep({ kind: 'share', answer });
@@ -118,7 +127,7 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
       .then(([t, cfg]) => {
         setStoreName(t.store.name);
         setGoogle(cfg.google);
-        sessionStorage.setItem(TRIP_KEY, JSON.stringify({ store, storeName: t.store.name, returnTo } satisfies Trip));
+        sessionStorage.setItem(TRIP_KEY, JSON.stringify({ store, storeName: t.store.name, returnTo, app: params.get('app') === '1' } satisfies Trip));
         // The store's "Login with Google" button: straight on to Google, no choice screen. If Google can't start, the choice screen shows the error.
         if (params.get('via') === 'google' && cfg.google) {
           atLeast(GOOGLE_WAIT_MS, connectApi.googleStart(store, returnTo, link))
@@ -210,6 +219,21 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
             <p className="rgf-lede">{mode === 'callback' ? 'Finishing your Google sign-in…' : 'Opening your Regantify sign-in…'}</p>
           </div>
         ))}
+
+      {step.kind === 'open' && (
+        <>
+          <h1 className="rgf-title">You’re signed in</h1>
+          <p className="rgf-lede">Go back to the {step.storeName} app to carry on.</p>
+          <a className="rgf-btn rgf-btn-primary" href={step.url}>
+            Open the app
+          </a>
+          <p className="rgf-foot">
+            <a className="rgf-link" href={step.url}>
+              No app on this phone? Continue in the browser
+            </a>
+          </p>
+        </>
+      )}
 
       {step.kind === 'error' && (
         <>

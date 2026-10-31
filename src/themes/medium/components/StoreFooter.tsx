@@ -1,5 +1,6 @@
 'use client';
 
+import { AboutAppLink, GetAppLink } from '@/components/GetAppLink';
 import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -94,6 +95,8 @@ export function StoreFooter({ subdomain, storeName, logoUrl: logoUrlProp, social
         <div className="border-t border-white/10">
           <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[11.5px] text-white/35">
             © {new Date().getFullYear()} {storeName}
+            <GetAppLink subdomain={subdomain} className="ml-4 text-white/60 hover:text-white" />
+          <AboutAppLink className="text-white/60 hover:text-white" />
           </div>
         </div>
       </footer>
@@ -205,6 +208,8 @@ export function StoreFooter({ subdomain, storeName, logoUrl: logoUrlProp, social
       <div className="border-t border-white/10">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 py-4 text-[11.5px] text-white/35">
           © {new Date().getFullYear()} {storeName}
+          <GetAppLink subdomain={subdomain} className="ml-4 text-white/60 hover:text-white" />
+          <AboutAppLink className="text-white/60 hover:text-white" />
         </div>
       </div>
     </footer>

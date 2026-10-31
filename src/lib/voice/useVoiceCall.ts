@@ -29,6 +29,7 @@ import { SpeechInput } from './speechInput';
 import { idlePiper, loadPiper, piperSpeed, setPiperModel, stopPiper } from './piperVoice';
 import { chooseVoiceModel } from './voiceModelCache';
 import { deviceIsSlow, markSlow, VoiceOut, type VoiceEngine, type VoiceStream } from './voiceOut';
+import { appVoice, NativeVoiceOut, nativeProbe, nativeWarm, type VoiceOutLike } from './nativeVoice';
 import { pickProduct, wantsBack, wantsCloseCart, wantsHangUp, wantsOpen, wantsPhotoSearch, wantsShowCart } from './voiceIntents';
 import { firstFiller, linesToPrepare, stillFiller, toolFiller } from './fillers';
 import type { ChatAction, ChatLive } from '../chatApi';
@@ -197,9 +198,11 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
   const talkRef = useRef<TalkState>('listening');
   const mutedRef = useRef(false);
   const ctxRef = useRef<AudioContext | null>(null);
-  const voiceRef = useRef<VoiceOut | null>(null);
+  const voiceRef = useRef<VoiceOutLike | null>(null);
   const inputRef = useRef<SpeechInput | null>(null);
   const stopRingRef = useRef<(() => void) | null>(null);
+  // Inside the app: stops listening for "hangup" (the app ended the call: its notification, its call bar, or a minute away from the app).
+  const appHangRef = useRef<(() => void) | null>(null);
   const abortRef = useRef<AbortController | null>(null);
   // Counts turns: an older turn's answer that arrives late (the shopper already cut in and asked again) is never spoken.
   const turnSeqRef = useRef(0);
@@ -277,6 +280,8 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
   const hangUp = useCallback((keepOpen = false) => {
     if (phaseRef.current === 'idle' || phaseRef.current === 'ended') return;
     callIdRef.current++;
+    appHangRef.current?.();
+    appHangRef.current = null;
     stopRingRef.current?.();
     stopRingRef.current = null;
     inputRef.current?.stop();
@@ -699,20 +704,34 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     holdCountRef.current = 0;
     setPhase('calling');
 
+    // Inside the Regantify app the app itself listens and speaks (nativeVoice.ts, STORE-APP-plan.md Step 8): it asks for the microphone
+    // by itself, and the phone's loudspeaker is next to its microphone, so the call holds listening while the assistant speaks.
+    const nv = appVoice();
+    const native = nv ? await nativeProbe(nv) : false;
+    if (callIdRef.current !== id) return;
+    if (native) halfDuplexRef.current = true;
+    if (native && nv) {
+      appHangRef.current = nv.on((e) => {
+        if (e.ev === 'hangup' && callIdRef.current === id) hangUp();
+      });
+    }
+
     // Microphone permission first; the stream itself isn't kept (speech recognition opens its own).
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
-      stream.getTracks().forEach((t) => t.stop());
-    } catch {
-      if (callIdRef.current !== id) return;
-      setProblem('মাইক্রোফোন চালু করার অনুমতি দিন, তারপর আবার কল করুন।');
-      hangUp(true);
-      return;
+    if (!native) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true, autoGainControl: true } });
+        stream.getTracks().forEach((t) => t.stop());
+      } catch {
+        if (callIdRef.current !== id) return;
+        setProblem('মাইক্রোফোন চালু করার অনুমতি দিন, তারপর আবার কল করুন।');
+        hangUp(true);
+        return;
+      }
     }
     if (callIdRef.current !== id) return;
 
     const base = opts.current.base;
-    const tryPiper = !!base && !deviceIsSlow() && !lowEndDevice();
+    const tryPiper = !native && !!base && !deviceIsSlow() && !lowEndDevice();
     // Super Admin's model if this browser has it, else the model it already has (kept until the new one has fully
     // downloaded in the background, voicePrefetch.ts), else the chosen one, downloaded now.
     if (tryPiper) setPiperModel(await chooseVoiceModel(base!, opts.current.model ?? 'model.onnx'));
@@ -734,13 +753,14 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
       /* not supported */
     }
 
-    const piperOk = piper ? Promise.race([piper.then(() => true, () => false), sleep(MAX_RING_MS).then(() => false)]) : Promise.resolve(false);
+    // The app loads its own on-phone voice while the call rings; if that fails the app says the call with its other voices itself.
+    const piperOk = native && nv ? nativeWarm(nv, MAX_RING_MS).then(() => true) : piper ? Promise.race([piper.then(() => true, () => false), sleep(MAX_RING_MS).then(() => false)]) : Promise.resolve(false);
     const [, loaded] = await Promise.all([sleep(MIN_RING_MS), piperOk]);
     if (callIdRef.current !== id) return;
     // The warm-up measured this device (piperWorker.ts): a phone that makes speech slower than it plays would leave
     // gaps and keep the phone busy, so the call starts on Google's voice instead, the voice worker is closed (its memory
     // goes back), and the next calls for 3 days skip it.
-    const speed = piperSpeed();
+    const speed = native ? null : piperSpeed();
     const tooSlow = loaded && speed !== null && speed > MAX_PIPER_RTF;
     if (tooSlow) {
       console.warn(`[voice] this device makes speech at ${speed!.toFixed(2)}x real time: using Google's voice`);
@@ -754,7 +774,7 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
     playConnect(ctx);
     const first: VoiceEngine = ok ? 'piper' : 'google';
     setEngine(first);
-    voiceRef.current = new VoiceOut(ctx, googleEls, base, first, () => setEngine('google'));
+    voiceRef.current = native && nv ? new NativeVoiceOut(nv) : new VoiceOut(ctx, googleEls, base, first, () => setEngine('google'));
     voiceRef.current.speed = opts.current.speed ?? 1;
     setPhase('connected');
     timersRef.current.clock = setInterval(() => setSeconds((s) => s + 1), 1000);
