@@ -716,6 +716,14 @@ export function useVoiceCall<P extends CallProductRef>(options: VoiceCallOptions
       });
     }
 
+    // Inside the app with no speech service on the phone (an emulator, or a phone without Google's speech app): the web view's own microphone
+    // is never allowed (no popup would ever show), so say what is really missing instead of a wrong "allow the microphone".
+    if (nv && !native) {
+      setProblem('এই ফোনে কথা শোনার সার্ভিস নেই। গুগলের অ্যাপ আপডেট করে আবার চেষ্টা করুন, অথবা লিখে জিজ্ঞেস করুন।');
+      hangUp(true);
+      return;
+    }
+
     // Microphone permission first; the stream itself isn't kept (speech recognition opens its own).
     if (!native) {
       try {
