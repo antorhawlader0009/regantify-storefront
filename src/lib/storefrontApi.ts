@@ -13,7 +13,11 @@ import { currentStoreAddress } from '@/lib/storeRequest';
 
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
 
+/** What the storefront routes on: PlayMate arrives as 'PLAYMATE' from the API and is routed as 'STOREPAL' by
+ * resolveTheme (lib/theme.ts), with storeSkin() giving its look. */
 export type StoreTheme = 'MEDIUM' | 'MINIMAL' | 'STOREPAL';
+/** The value the API sends, PlayMate included; pass it through resolveTheme / storeSkin before comparing. */
+export type ApiStoreTheme = StoreTheme | 'PLAYMATE';
 
 // Store > Footer - kept in lockstep by hand with
 // server/src/vendor/footer-templates.ts (the canonical registry) and its
@@ -70,7 +74,7 @@ export interface StorefrontSitemapData {
   subdomain: string;
   customDomain: string | null;
   preferCustomDomain: boolean;
-  theme: StoreTheme;
+  theme: ApiStoreTheme;
   indexable: boolean;
   products: { slug: string; name: string; updatedAt: string; photos: string[] }[];
   pages: { slug: string; updatedAt: string }[];
@@ -83,7 +87,7 @@ export interface StorefrontInfo {
   id: string;
   storeName: string;
   subdomain: string;
-  theme: StoreTheme;
+  theme: ApiStoreTheme;
   /** Shop and support hours (TellMe idea 73), StorePal only; null = none set. */
   businessHours?: Record<string, { open: boolean; from: string; to: string }> | null;
   /** "Verified seller" (super-admin-new.md Step 12): Super Admin approved the store's verification. StorePal only; `dbid` is its public DBID, if given. */

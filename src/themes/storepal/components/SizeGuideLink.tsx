@@ -7,6 +7,7 @@ import type { StorefrontSizeGuide } from '@/lib/storefrontApi';
 import { useStoreText } from '../lib/storeText';
 import { trackFeature } from '@/lib/featureUse';
 import { CoverFloating } from '@/lib/floatingCover';
+import { storePortalRoot } from '../lib/portalRoot';
 
 /**
  * The "Size guide" link beside a product's Size choice (Store > Product > Size Guides), opening the vendor's table
@@ -106,7 +107,7 @@ export function SizeGuideLink({ guide }: { guide: StorefrontSizeGuide }) {
               </div>
             </div>
           </div>,
-          document.body,
+          storePortalRoot(),
         )}
     </>
   );

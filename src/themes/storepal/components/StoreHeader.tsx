@@ -39,6 +39,7 @@ import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { searchProducts } from '../lib/searchMatch';
 import { CoverFloating } from '@/lib/floatingCover';
 import { ScrollRow } from './ScrollRow';
+import { storePortalRoot } from '../lib/portalRoot';
 
 // The category / site menu bars scroll sideways (ScrollRow): a soft fade on a side that is cut off, and on a computer left / right
 // buttons on hover. Dropdowns open through a portal, outside the bar, so the mask never clips them.
@@ -925,7 +926,7 @@ export function StoreHeader({
                           </button>
                         ))}
                       </div>,
-                      document.body,
+                      storePortalRoot(),
                     )}
                 </div>
               );

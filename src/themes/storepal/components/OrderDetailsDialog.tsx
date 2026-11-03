@@ -12,6 +12,7 @@ import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { useStorePalDesign } from '../lib/designSettings';
 import { CourierTrackingLine } from './CourierTrackingCard';
+import { storePortalRoot } from '../lib/portalRoot';
 
 interface OrderDetailsDialogProps {
   subdomain: string;
@@ -312,6 +313,6 @@ export function OrderDetailsDialog({ subdomain, order, onClose, actions }: Order
         </div>
       </div>
     </div>,
-    document.body,
+    storePortalRoot(),
   );
 }

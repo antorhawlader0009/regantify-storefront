@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getSitemapData, getStoreBlog, getStoreContact, getStoreFaq, getStoreLocations, siteUrl } from '@/lib/storefrontApi';
 import { decodeStoreSegment } from '@/lib/storeAddress';
+import { resolveTheme } from '@/lib/theme';
 
 // One store's sitemap. On a store's own address (/sitemap.xml on {sub}.ROOT_DOMAIN or a custom domain) the middleware rewrites
 // here, and every URL below is the clean public form of that page on the same address the store is reached on (siteUrl).
@@ -49,9 +50,9 @@ export async function GET(_request: Request, { params }: { params: Promise<{ sub
   const entries: Entry[] = [
     { loc: await url(''), lastmod: day(newest) },
     ...(faq.items.length > 0 ? [{ loc: await url('/faq'), lastmod: null }] : []),
-    ...(contact?.enabled && 'store' in faq && faq.store.theme === 'STOREPAL' ? [{ loc: await url('/contact'), lastmod: null }] : []),
+    ...(contact?.enabled && 'store' in faq && resolveTheme(faq.store.theme) === 'STOREPAL' ? [{ loc: await url('/contact'), lastmod: null }] : []),
     // Our shops (Store > Content > Shop Locations): only StorePal has the page so far.
-    ...(locations.length > 0 && 'store' in faq && faq.store.theme === 'STOREPAL' ? [{ loc: await url('/locations'), lastmod: null }] : []),
+    ...(locations.length > 0 && 'store' in faq && resolveTheme(faq.store.theme) === 'STOREPAL' ? [{ loc: await url('/locations'), lastmod: null }] : []),
     ...(await Promise.all(blog.posts.map(async (b) => ({ loc: await url(`/blog/${b.slug}`), lastmod: day(b.publishedAt) })))),
     ...(await Promise.all(data.products.map(async (p) => ({ loc: await url(`/p/${p.slug}`), lastmod: day(p.updatedAt), images: p.photos })))),
     ...(await Promise.all(data.pages.map(async (p) => ({ loc: await url(`/page/${p.slug}`), lastmod: day(p.updatedAt) })))),

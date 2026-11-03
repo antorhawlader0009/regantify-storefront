@@ -1,4 +1,4 @@
-import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins } from 'next/font/google';
+import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins, DM_Sans, Pacifico } from 'next/font/google';
 
 // Five font families, self-hosted at build time (next/font) - no
 // runtime request to Google Fonts from a visitor's browser, no layout
@@ -73,9 +73,27 @@ const poppins = Poppins({
   display: 'swap',
 });
 
+// PlayMate skin (StorePal pages with a toy-store look, 2026-11-03): DM Sans for everything, Pacifico for the script
+// wordmark only. A browser downloads them only on a PlayMate store, where globals.css uses them.
+const dmSans = DM_Sans({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-dm-sans',
+  display: 'swap',
+  preload: false,
+});
+
+const pacifico = Pacifico({
+  subsets: ['latin'],
+  weight: '400',
+  variable: '--font-pacifico',
+  display: 'swap',
+  preload: false,
+});
+
 // Combined so a single className on <html> covers every script - see
 // app/globals.css's --font-sans / --font-display (Medium's default
 // values) and its [data-theme="minimal"]/[data-theme="storepal"] blocks
 // (each theme's own override values), both of which reference these
 // same CSS variables.
-export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${poppins.variable} ${hindSiliguri.variable}`;
+export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${hindSiliguri.variable}`;

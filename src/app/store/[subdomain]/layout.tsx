@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { getStoreInfo, siteUrl, StoreNotFoundError, type StorefrontLmsForms } from '@/lib/storefrontApi';
-import { resolveTheme } from '@/lib/theme';
+import { resolveTheme, storeSkin } from '@/lib/theme';
 import { ThemeProvider } from '@/providers/theme-provider';
 import { VisitBeacon } from '@/components/VisitBeacon';
 import { LimitNotice } from '@/components/LimitNotice';
@@ -172,6 +172,8 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   const { subdomain } = await storeParams(params);
 
   let theme = resolveTheme('MEDIUM');
+  // The look of a StorePal-family store (lib/theme.ts): PlayMate draws StorePal's pages in its own colours and fonts.
+  let skin = storeSkin(null);
   let storeExists = false;
   let accentColor: string | null | undefined;
   let bodyBackgroundColor: string | null | undefined;
@@ -202,6 +204,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
   try {
     const store = await getStoreInfo(subdomain);
     theme = resolveTheme(store.theme);
+    skin = storeSkin(store.theme);
     storeExists = true;
     storeName = store.storeName;
     accentColor = store.accentColor;
@@ -253,6 +256,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         globals.css for what EXTENDED widens. */}
     <div
       data-theme={theme.toLowerCase()}
+      data-skin={theme === 'STOREPAL' && skin !== 'storepal' ? skin : undefined}
       data-layout={theme === 'STOREPAL' && designSettings?.layoutType === 'EXTENDED' ? 'extended' : undefined}
       data-brand-heading={safeFontName(headingFont) ? '' : undefined}
       style={brandStyle}

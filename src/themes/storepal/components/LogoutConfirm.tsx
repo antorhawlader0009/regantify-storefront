@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 import { LogOut } from 'lucide-react';
 import { useStoreText } from '../lib/storeText';
+import { storePortalRoot } from '../lib/portalRoot';
 
 /**
  * "Log out?" asked before the account dialog signs the shopper out (2026-10-29, the owner's request), from the phone header and the
@@ -62,6 +63,6 @@ export function LogoutConfirm({ open, onCancel, onConfirm }: { open: boolean; on
         </div>
       </div>
     </div>,
-    document.body,
+    storePortalRoot(),
   );
 }

@@ -2,6 +2,7 @@
 
 import { useEffect, useState, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
+import { storePortalRoot } from '../lib/portalRoot';
 
 /**
  * Draws its children straight into <body>. The store header is `sticky` with its own z-index, which makes it a stacking context: anything
@@ -12,5 +13,5 @@ import { createPortal } from 'react-dom';
 export function BodyPortal({ children }: { children: ReactNode }) {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
-  return mounted ? createPortal(children, document.body) : null;
+  return mounted ? createPortal(children, storePortalRoot()) : null;
 }
