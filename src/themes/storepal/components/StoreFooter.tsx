@@ -10,13 +10,14 @@ import { getGiftCardSale, getStoreHasBlog, getStoreContactInfo, getStoreHasFaq, 
 import { resolveFooterTemplate } from '@/lib/footerTemplates';
 import { missingDemoPages } from '@/lib/demoPages';
 import { useStoreText } from '../lib/storeText';
-import { useStorePalDesign } from '../lib/designSettings';
+import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
+import { PlaymateFooter } from '../../playmate/PlaymateFooter';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { FooterLocation } from './FooterLocation';
 import { AboutAppLink, GetAppLink } from '@/components/GetAppLink';
 import { APP_STORE_BADGE, GOOGLE_PLAY_BADGE } from '../lib/appBadges';
 
-interface StoreFooterProps {
+export interface StoreFooterProps {
   subdomain: string;
   storeName: string;
   // A short "about" blurb shown in the footer's rightmost column on the
@@ -61,7 +62,7 @@ const PLATFORMS: { key: keyof SocialLinks; label: string; Icon: typeof Facebook 
 ];
 
 /** "System Design & Developed By : Reganto IT Solution" in the bottom bar. The vendor can hide it in Store > Footer. */
-function DeveloperCredit() {
+export function DeveloperCredit() {
   return (
     <span>
       System Design &amp; Developed By :{' '}
@@ -113,7 +114,13 @@ function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }
  * template-registry logic drifting and silently changing a live store's
  * appearance).
  */
-export function StoreFooter({
+/** The store footer: StorePal's own, or PlayMate's for a PlayMate store (same content, lib/theme.ts storeSkin). */
+export function StoreFooter(props: StoreFooterProps) {
+  const skin = useStoreSkin();
+  return skin === 'playmate' ? <PlaymateFooter {...props} /> : <StorePalFooter {...props} />;
+}
+
+function StorePalFooter({
   subdomain,
   storeName,
   aboutBlurb,
@@ -532,7 +539,7 @@ export function StoreFooter({
 }
 
 /** The "Got a question?" bar with Call and WhatsApp buttons; renders nothing without a number for either. */
-function FooterCallBar({
+export function FooterCallBar({
   title,
   text,
   phone,

@@ -133,10 +133,12 @@
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
-   PlayMate (2026-11-03): StorePal's pages and features with a bright toy-store look, from templete/playmate. The store
-   layout (and lib/portalRoot.ts for dialogs) adds data-skin="playmate" next to data-theme="storepal"; everything below
-   only restyles StorePal's parts through their data-rg hooks and the colour tokens, so no feature is copied or lost.
-   Store > Branding's own accent colour and fonts still win (they are inline on the same wrapper).
+   PlayMate (2026-11-03): the PlayMate template (templete/playmate) on StorePal's features. The store layout (and
+   lib/portalRoot.ts for dialogs) adds data-skin="playmate" next to data-theme="storepal". PlayMate draws its own
+   header, home sections, product card and footer (themes/playmate/); the colours and fonts below also dress every
+   StorePal part it shares (cart drawer, checkout, account, product page). Store > Branding's own accent colour and
+   fonts still win (they are inline on the same wrapper). The template demo page (/template-demo/playmate) sets the
+   same two attributes.
    --------------------------------------------------------------------------------------------------------------------- */
 [data-theme='storepal'][data-skin='playmate'] {
   --color-ink: #1d1a3a;
@@ -151,9 +153,11 @@
   --color-success: #1a7a4c;
   --color-success-bg: #e8f6ee;
   --color-save: #ef4444;
-  --playmate-yellow: #ffd028;
-  --playmate-blue: #2f80ed;
-  --playmate-card: #f5f5f8;
+  --pm-yellow: #ffd028;
+  --pm-yellow-strong: #f5a623;
+  --pm-blue: #2f80ed;
+  --pm-card: #f5f5f8;
+  --pm-soft: #f4f0fb;
   --font-display: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), sans-serif;
   --font-sans: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: none;
@@ -162,91 +166,90 @@
   font-family: var(--font-sans);
 }
 
-/* Announcement bar: PlayMate's purple strip with small uppercase white text (the store's own Site Banner words). */
-[data-skin='playmate'] [data-rg='announcement-bar'] {
-  background-color: var(--color-accent) !important;
-  color: #ffffff !important;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-size: 11px;
-  font-weight: 600;
+/* The demo's helper classes (its globals.css .wrap / .btn-primary / .btn-outline / marquee), named pm-* here. */
+[data-skin='playmate'] .pm-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
-[data-skin='playmate'] [data-rg='announcement-bar'] a {
-  color: var(--playmate-yellow);
+@media (min-width: 640px) {
+  [data-skin='playmate'] .pm-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
 }
-
-/* Header: white, a soft lavender line under it, uppercase menu labels, the store name in a bold purple wordmark. */
-[data-skin='playmate'] [data-rg='header'] {
-  background-color: rgba(255, 255, 255, 0.96);
-  border-bottom-color: var(--color-line);
+@media (min-width: 1024px) {
+  [data-skin='playmate'] .pm-wrap {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
 }
-[data-skin='playmate'] [data-rg='logo'] span {
-  color: var(--color-accent);
-  font-weight: 800;
-  letter-spacing: -0.02em;
-}
-[data-skin='playmate'] [data-rg='top-menu'] a,
-[data-skin='playmate'] [data-rg='top-menu'] button {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+[data-skin='playmate'] .pm-btn-primary,
+[data-skin='playmate'] .pm-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  padding: 0.75rem 1.75rem;
   font-size: 12px;
   font-weight: 600;
-}
-[data-skin='playmate'] [data-rg='search'] input {
-  background-color: var(--color-accent-light);
-  border-color: transparent;
-  border-radius: 9999px;
-}
-[data-skin='playmate'] [data-rg='cart-button'] span {
-  background-color: var(--color-accent);
-}
-
-/* Hero: the store's cover photos on PlayMate's soft lilac-to-peach wash, with rounded corners. */
-[data-skin='playmate'] [data-rg='hero'] > div {
-  border-radius: 18px;
-  overflow: hidden;
-  background-image: linear-gradient(90deg, #eef0f8, #f4f2f6, #f6ece0);
-}
-
-/* Section titles: small, bold, uppercase. */
-[data-skin='playmate'] [data-rg-section] h2 {
   text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 15px;
-  font-weight: 800;
+  letter-spacing: 0.025em;
+  transition: background-color 0.15s, color 0.15s;
 }
-
-/* Product cards: PlayMate's light grey card, no border, the photo on white, purple uppercase buttons. */
-[data-skin='playmate'] [data-rg='product-card'] {
-  background-color: var(--playmate-card);
-  border-color: transparent !important;
-  border-radius: 8px;
-  padding: 10px;
-  transition: box-shadow 0.3s ease;
+[data-skin='playmate'] .pm-btn-primary {
+  background: var(--color-accent);
+  color: #fff;
 }
-[data-skin='playmate'] [data-rg='product-card']:hover {
-  box-shadow: var(--shadow-card-hover);
+[data-skin='playmate'] .pm-btn-primary:hover {
+  background: var(--color-accent-dark);
 }
-[data-skin='playmate'] [data-rg='product-card'] img {
-  border-radius: 6px;
+[data-skin='playmate'] .pm-btn-outline {
+  border: 1px solid rgba(29, 26, 58, 0.7);
+  background: #fff;
+  color: var(--color-ink);
 }
-[data-skin='playmate'] [data-rg='product-card-title'] {
-  font-weight: 700;
+[data-skin='playmate'] .pm-btn-outline:hover {
+  background: var(--color-ink);
+  color: #fff;
 }
-[data-skin='playmate'] [data-rg='product-card-price'] {
-  font-weight: 800;
+[data-skin='playmate'] .pm-no-scrollbar {
+  scrollbar-width: none;
 }
-[data-skin='playmate'] :is([data-rg='product-card-add-to-cart'], [data-rg='product-card-buy-now'], [data-rg='add-to-cart'], [data-rg='buy-now'], [data-rg='checkout-button']) {
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  border-radius: 6px;
+[data-skin='playmate'] .pm-no-scrollbar::-webkit-scrollbar {
+  display: none;
 }
-
-/* Footer: PlayMate's light lavender footer with dark text (StorePal's is dark navy). */
-[data-theme='storepal'][data-skin='playmate'] footer[data-rg='footer'],
-[data-skin='playmate'] footer[data-rg='footer'] {
+@keyframes pm-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='playmate'] .pm-marquee-track {
+  animation: pm-marquee-right 40s linear infinite;
+}
+[data-skin='playmate'] .pm-marquee:hover .pm-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='playmate'] .pm-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='playmate'] .pm-marquee {
+    overflow-x: auto;
+  }
+}
+/* PlayMate's footer is light lavender (StorePal's is dark navy), so StorePal's navy footer rule is undone here for
+   the StorePal footer parts PlayMate's footer reuses. */
+[data-theme='storepal'][data-skin='playmate'] footer[data-rg='footer'] {
   background-color: var(--color-accent-light);
-  color: #1d1a3a;
+  color: var(--color-ink);
   --color-ink: #1d1a3a;
   --color-muted: #4d4870;
   --color-line: rgba(29, 26, 58, 0.1);
@@ -255,13 +258,6 @@
   --color-canvas: #f4f0fb;
   --color-accent: #6c4fc4;
   --color-accent-dark: #5a3fae;
-}
-[data-skin='playmate'] footer[data-rg='footer'] h3,
-[data-skin='playmate'] footer[data-rg='footer'] h4 {
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 12px;
-  font-weight: 800;
 }
 
 /* Store > Branding's heading font (lib/storeFonts.ts): the store layout marks its wrapper with data-brand-heading when one

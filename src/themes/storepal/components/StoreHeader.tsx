@@ -9,10 +9,11 @@ import { Search, ShoppingBag, User, ChevronDown, X, Menu, Heart, Phone } from 'l
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
-import { getStoreNavData, getStoreSearchIndex, type StoreNavData, type StoreSearchProduct } from '../lib/storeNavApi';
-
-// The store's categories for this visit, per store: a page that has them fills it, a page that hasn't reads it.
-const headerNavCache = new Map<string, StoreNavData>();
+import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi';
+import { useHeaderNav } from '../lib/headerNav';
+import { useSiteBanner } from '../lib/siteBanner';
+import { PlaymateHeader } from '../../playmate/PlaymateHeader';
+import { useStoreSkin } from '../lib/designSettings';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { ChatBubble } from './ChatBubble';
 import { LazyAuthDialog, LazyCheckoutDialog, LazyPhotoSearchPanel } from './LazyWidgets';
@@ -44,7 +45,7 @@ import { storePortalRoot } from '../lib/portalRoot';
 // The category / site menu bars scroll sideways (ScrollRow): a soft fade on a side that is cut off, and on a computer left / right
 // buttons on hover. Dropdowns open through a portal, outside the bar, so the mask never clips them.
 
-interface StoreHeaderProps {
+export interface StoreHeaderProps {
   subdomain: string;
   storeName: string;
   categories: string[];
@@ -80,33 +81,9 @@ interface StoreHeaderProps {
 // level as Store > Footer's aboutBlurb. "Delete" on the dashboard hides
 // the strip entirely.
 function SiteBanner() {
-  const design = useStorePalDesign();
-  // Scheduled banners (TellMe idea 110): the one whose time is on now replaces the usual banner. Decided here in the browser, from the
-  // time of the visit, because the store's page is cached and a start or an end must not wait for the cache. Until the page has loaded, and
-  // for a visit with nothing scheduled, the usual banner shows.
-  const [now, setNow] = useState<number | null>(null);
-  useEffect(() => {
-    if (!design.bannerSchedule || design.bannerSchedule.length === 0) return;
-    setNow(Date.now());
-    const timer = setInterval(() => setNow(Date.now()), 60_000);
-    return () => clearInterval(timer);
-  }, [design.bannerSchedule]);
-  const scheduled =
-    now === null
-      ? null
-      : ([...(design.bannerSchedule ?? [])]
-          .filter((b) => (!b.startAt || Date.parse(b.startAt) <= now) && (!b.endAt || Date.parse(b.endAt) > now))
-          // Two running at once: the one that started last.
-          .sort((a, b) => (b.startAt ? Date.parse(b.startAt) : 0) - (a.startAt ? Date.parse(a.startAt) : 0))[0] ?? null);
-  if (!scheduled && !design.bannerEnabled) return null;
-  const marquee = (scheduled?.style ?? design.bannerStyle) === 'MARQUEE';
-  const html = scheduled ? scheduled.content : design.bannerContent;
-  const background = scheduled?.backgroundColor || design.bannerBackgroundColor;
-  // TipTap saves runs of spaces as plain spaces (its editor shows them via
-  // white-space: pre-wrap), so the banner must preserve whitespace too or
-  // the vendor's spacing collapses to one space. `pre` keeps the marquee
-  // on one line; the static strip can still wrap.
-  if (!html || !html.trim()) return null;
+  const banner = useSiteBanner();
+  if (!banner) return null;
+  const { html, background, marquee } = banner;
   const items: { key: string; node: React.ReactNode }[] = [
     {
       key: 'vendor',
@@ -169,7 +146,13 @@ function MenuLink({
   );
 }
 
-export function StoreHeader({
+/** The store header: StorePal's own, or the PlayMate look for a PlayMate store (same features, lib/theme.ts storeSkin). */
+export function StoreHeader(props: StoreHeaderProps) {
+  const skin = useStoreSkin();
+  return skin === 'playmate' ? <PlaymateHeader {...props} /> : <StorePalHeader {...props} />;
+}
+
+function StorePalHeader({
   subdomain,
   storeName,
   categories: categoriesProp,
@@ -178,29 +161,7 @@ export function StoreHeader({
   chatProductName,
   categoryDetails: categoryDetailsProp = [],
 }: StoreHeaderProps) {
-  // Pages rendered in the browser (account dialog, checkout, thank-you, tracking...) used to give the header no
-  // categories, so its category row came and went between pages and the page behind a dialog jumped. The header now
-  // loads them itself when the page gave none, kept for the visit so the next page has them on its first paint.
-  const [loadedNav, setLoadedNav] = useState<StoreNavData | null>(() => headerNavCache.get(subdomain) ?? null);
-  const pageGaveCategories = categoriesProp.length > 0;
-  useEffect(() => {
-    if (pageGaveCategories) {
-      headerNavCache.set(subdomain, { categories: categoriesProp, categoryDetails: categoryDetailsProp });
-      return;
-    }
-    let cancelled = false;
-    getStoreNavData(subdomain).then((nav) => {
-      if (cancelled) return;
-      headerNavCache.set(subdomain, nav);
-      setLoadedNav(nav);
-    });
-    return () => {
-      cancelled = true;
-    };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [subdomain, pageGaveCategories]);
-  const categories = pageGaveCategories ? categoriesProp : (loadedNav?.categories ?? []);
-  const categoryDetails = pageGaveCategories ? categoryDetailsProp : (loadedNav?.categoryDetails ?? []);
+  const { categories, categoryDetails } = useHeaderNav(subdomain, categoriesProp, categoryDetailsProp);
   const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   // The account dialog's × returns to the last store page (lib/accountReturn.ts).

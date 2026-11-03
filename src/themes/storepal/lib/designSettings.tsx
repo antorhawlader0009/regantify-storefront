@@ -4,6 +4,7 @@ import { createContext, useContext, type ReactNode } from 'react';
 import { bnDigits, storeText } from './storeText';
 import type { BusinessHours } from '@/lib/businessHours';
 import { useShopperLanguage, type ShopperLanguage } from '@/lib/shopperLanguage';
+import type { StoreSkin } from '@/lib/theme';
 import type { StorefrontDesignSettings, StorefrontLmsForms, StorefrontMenuItem } from '@/lib/storefrontApi';
 
 // Store > Design settings the vendor never saved. Must render StorePal
@@ -72,6 +73,12 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
 const StoreNameContext = createContext('');
+const SkinContext = createContext<StoreSkin>('storepal');
+
+/** The look of a StorePal-family store (lib/theme.ts storeSkin): 'playmate' draws PlayMate's own header, cards, home and footer. */
+export function useStoreSkin(): StoreSkin {
+  return useContext(SkinContext);
+}
 
 /** The store's real name as the store layout knows it; '' outside the StorePal provider. */
 export function useLayoutStoreName(): string {
@@ -94,8 +101,11 @@ export function StorePalDesignProvider({
   verifiedSeller = null,
   subdomain,
   storeName = '',
+  skin = 'storepal',
   children,
 }: {
+  /** PlayMate or StorePal look (lib/theme.ts storeSkin). */
+  skin?: StoreSkin;
   /** For the shopper's own language pick (kept per store in localStorage). */
   subdomain?: string;
   /** The store's real name from the layout, for pages rendered only in the browser (lib/useStoreDisplayName.ts). */
@@ -120,6 +130,7 @@ export function StorePalDesignProvider({
   const storeDefault: ShopperLanguage = merged.storeLanguage === 'bn' ? 'bn' : 'en';
   const lang = useShopperLanguage(subdomain, storeDefault);
   return (
+    <SkinContext.Provider value={skin}>
     <StoreNameContext.Provider value={storeName}>
     <LanguageContext.Provider value={lang}>
     <DesignContext.Provider value={{ ...merged, storeLanguage: lang.language }}>
@@ -137,6 +148,7 @@ export function StorePalDesignProvider({
     </DesignContext.Provider>
     </LanguageContext.Provider>
     </StoreNameContext.Provider>
+    </SkinContext.Provider>
   );
 }
 

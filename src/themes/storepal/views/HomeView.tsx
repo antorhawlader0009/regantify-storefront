@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useEffect, useMemo, useState } from 'react';
+import { Fragment, useEffect, useMemo, useState, type ReactNode } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -24,7 +24,16 @@ import { TrustStrip } from '../components/TrustStrip';
 import { StoreSetupGuide } from '../components/StoreSetupGuide';
 import { OpeningSoonBar, PlaceholderHero, PlaceholderProductGrid } from '../components/EmptyStorePreview';
 import { isEmptyStorePreview } from '@/components/store-preview/emptyStore';
-import { useStorePalDesign } from '../lib/designSettings';
+import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
+import { highlightIcon } from '../lib/highlightIcons';
+import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, type PmHeroSlide } from '../../playmate/PlaymateHome';
+
+// PlayMate's perks strip when the store wrote no highlights (no numbers or promises, like StorePal's own defaults).
+const PM_DEFAULT_HIGHLIGHTS = [
+  { id: 'pm-1', icon: 'TRUCK', title: 'Fast delivery', text: 'Quick delivery to your doorstep.' },
+  { id: 'pm-2', icon: 'SHIELD_CHECK', title: 'Genuine products', text: 'Quality-checked items you can trust.' },
+  { id: 'pm-3', icon: 'HAND_COINS', title: 'Cash on delivery', text: 'Pay when your order arrives at your door.' },
+];
 import { resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
@@ -131,6 +140,7 @@ export function HomeView({
   const t = useStoreText();
   const router = useRouter();
   const design = useStorePalDesign();
+  const skin = useStoreSkin();
   // Card numbers on the voice call's picks: Bangla digits on a Bangla store.
   const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
   const homeSections = resolveHomeSections(design.homeSections);
@@ -356,6 +366,103 @@ export function HomeView({
     return { name, image };
   });
 
+  // PlayMate (lib/theme.ts storeSkin): the same sections from the same data, drawn as PlayMate's home
+  // (themes/playmate/PlaymateHome.tsx). Undefined = this section keeps StorePal's part, in PlayMate's colours
+  // (flash sale, FAQ, social feed, magazine).
+  const playmateSection = (id: string): ReactNode | undefined => {
+    const categoryHref = (name: string) => `/store/${subdomain}?category=${encodeURIComponent(name)}`;
+    const card = (product: StorefrontProduct) => <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />;
+    switch (id) {
+      case 'HERO': {
+        const covers = categoryDetails.filter((c) => c.coverPhotoUrl).slice(0, 4);
+        const slides: PmHeroSlide[] = [
+          ...(siteCoverUrl ? [{ key: '__site__', image: siteCoverUrl, title1: storeName, text: t('Shop our latest products'), href: `/store/${subdomain}#products` }] : []),
+          ...(siteCoverUrl && siteCoverOnly
+            ? []
+            : covers.map((c) => ({ key: c.name, image: c.coverPhotoUrl, kicker: storeName, title1: c.name, href: categoryHref(c.name) }))),
+        ];
+        if (slides.length === 0) slides.push({ key: '__name__', title1: storeName, text: t('Shop our latest products'), href: `/store/${subdomain}#products` });
+        return (
+          <PmHero
+            slides={slides}
+            shopLabel={t('Shop now')}
+            exploreLabel={categories.length > 0 ? t('Explore categories') : undefined}
+            exploreHref={`/store/${subdomain}#categories`}
+          />
+        );
+      }
+      case 'HIGHLIGHTS': {
+        const items = (design.homeHighlights.length > 0 ? design.homeHighlights : PM_DEFAULT_HIGHLIGHTS).map((item) => {
+          const Icon = highlightIcon(item.icon);
+          return { key: item.id, icon: <Icon size={28} strokeWidth={1.5} aria-hidden />, title: t(item.title), text: item.text ? t(item.text) : null };
+        });
+        return <PmFeatures items={items} />;
+      }
+      case 'CATEGORY_SHORTCUTS': {
+        const items = categories.map((name) => {
+          const detail = categoryDetails.find((c) => c.name === name);
+          const image =
+            detail?.squarePhotoUrl ||
+            detail?.coverPhotoUrl ||
+            products.find((p) => p.category === name || p.secondaryCategories.includes(name))?.photoUrls[0] ||
+            null;
+          return { name, href: categoryHref(name), image };
+        });
+        return <PmCategories title={t('Shop by Category')} shopLabel={t('Shop now')} items={items} />;
+      }
+      case 'TOP_SELLING': {
+        const best = topSelling.length >= 4 ? products.filter((p) => (p.soldRecent ?? 0) >= 5).slice(0, 12) : [];
+        const row = best.length >= 4 ? best : products.slice(0, 12);
+        return (
+          <div id="products">
+            <PmProductRow title={t('Best Sellers')} viewAllLabel={t('View all')} viewAllHref={`/store/${subdomain}?q=`}>
+              {row.map(card)}
+            </PmProductRow>
+          </div>
+        );
+      }
+      case 'CAMPAIGNS':
+        return (
+          <PmPromoBanners
+            banners={campaigns.slice(0, 2).map((c) => ({
+              key: c.id,
+              kicker: t('Limited time offer'),
+              title: c.name,
+              cta: t('Shop now'),
+              href: `/store/${subdomain}/campaigns/${c.slug}`,
+              image: c.coverPhotoUrl,
+            }))}
+          />
+        );
+      case 'CATEGORY_SECTIONS': {
+        const brands = Array.from(new Set(products.map((p) => p.brand?.trim()).filter((b): b is string => !!b))).slice(0, 16);
+        return (
+          <>
+            {grouped?.map((section) => (
+              <PmProductRow key={section.name} title={section.name} viewAllLabel={t('View all')} viewAllHref={categoryHref(section.name)}>
+                {section.items.slice(0, 12).map(card)}
+              </PmProductRow>
+            ))}
+            <PmBrands
+              title={t('Top Brands')}
+              brands={brands.map((name) => ({ name, href: `/store/${subdomain}?brand=${encodeURIComponent(name)}` }))}
+            />
+          </>
+        );
+      }
+      case 'REVIEWS':
+        return (
+          <PmReviews
+            title={t('Our Customer Review')}
+            verifiedLabel={t('Verified buyer')}
+            reviews={reviews.map((r) => ({ id: r.id, name: r.customerName ?? 'Anonymous', rating: r.rating, title: r.title, content: r.content, verified: r.verified }))}
+          />
+        );
+      default:
+        return undefined;
+    }
+  };
+
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader
@@ -535,6 +642,10 @@ export function HomeView({
             <div key={id} data-rg-section={id.toLowerCase().replace(/_/g, '-')}>
             {(() => {
             if (showPreview && id === previewGridAt) return <Fragment key={id}>{previewBlock}</Fragment>;
+            if (skin === 'playmate' && !(showPreview && id === 'HERO')) {
+              const section = playmateSection(id);
+              if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
+            }
             switch (id) {
               case 'HERO':
                 return showPreview && !hasRealHero ? (

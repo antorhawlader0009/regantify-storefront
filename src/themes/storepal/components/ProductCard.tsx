@@ -12,7 +12,8 @@ import { useCartStore } from '@/providers/cart-store-provider';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { SoldRecentLine } from './SoldRecentLine';
 import { RatingStars } from '@/components/RatingStars';
-import { lowStockLabel, useLowStock, useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
+import { lowStockLabel, useLowStock, useShowOutOfStockBadge, useStorePalDesign, useStorePalLmsForms, useStoreSkin } from '../lib/designSettings';
+import { PlaymateCardView } from '../../playmate/PlaymateCard';
 import { useWishlist } from '../lib/wishlist';
 import { FlashSaleTimer } from './FlashSaleTimer';
 import { useCartDrawer } from '../lib/cartDrawer';
@@ -100,6 +101,7 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
   const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const design = useStorePalDesign();
+  const skin = useStoreSkin();
   // A price-on-request product hides its price only while requests can reach the store (the product page's rule).
   const lmsForms = useStorePalLmsForms();
   const quoteOnly = !!product.quoteOnly && !!lmsForms;
@@ -229,6 +231,121 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
   const video = design.cardShowVideo && product.videoUrl ? videoEmbed(product.videoUrl) : null;
   const inWishlist = wishlist.has(product.slug);
   const portrait = design.productImageShape === 'PORTRAIT';
+  const toggleWish = () => {
+    if (!inWishlist && product.id) {
+      trackMetaAddToWishlist({ ...product, id: product.id });
+      trackAddToWishlist({ ...product, id: product.id });
+    }
+    wishlist.toggle(product.slug);
+  };
+
+  const quickAddSheet = (
+    <QuickAddSheet
+      open={sheetOpen}
+      onClose={() => setSheetOpen(false)}
+      name={product.name}
+      image={product.photoUrls[0]}
+      price={formatPrice(displayPrice)}
+      originalPrice={originalPrice ? formatPrice(originalPrice) : null}
+      options={options}
+      selected={selected}
+      onSelect={(option, value) => {
+        setSelected((prev) => ({ ...prev, [option]: value }));
+        setVariantWarning(false);
+      }}
+      isAvailable={isAvailable}
+      photoFor={photoFor}
+      note={lowStockText}
+      warning={
+        variantWarning
+          ? t('Select an option first.')
+          : matchedVariant && matchedVariant.stock <= 0 && !product.isPreOrder
+            ? t('Out of Stock')
+            : null
+      }
+      labels={{ addToCart: t('Add to Cart'), buyNow: showBuyNow ? t('Buy Now') : undefined, close: t('Close') }}
+      onAdd={() => purchase('add', true)}
+      onBuy={showBuyNow ? () => purchase('buy', true) : undefined}
+    />
+  );
+
+  // PlayMate (lib/theme.ts storeSkin): the same card behaviour drawn as PlayMate's card. It has no option pickers on
+  // the card, so a product with sizes or colours always opens the quick add sheet.
+  if (skin === 'playmate') {
+    const sheetReady = fullData && !outOfStock && hasVariations;
+    const pmPurchase = (kind: 'add' | 'buy') => {
+      if (sheetReady) {
+        setVariantWarning(false);
+        setSheetOpen(true);
+        trackFeature('QUICK_ADD');
+        return;
+      }
+      purchase(kind);
+    };
+    const discount = originalPrice && Number(originalPrice) > Number(displayPrice) ? Math.round((1 - Number(displayPrice) / Number(originalPrice)) * 100) : 0;
+    return (
+      <PlaymateCardView
+        href={href}
+        dataProduct={product.slug}
+        name={product.name}
+        subtitle={'category' in product ? (product as { category?: string | null }).category : null}
+        image={swatchPhoto ?? product.photoUrls[0]}
+        portrait={portrait}
+        price={comingSoon || quoteOnly ? null : `${formatPrice(displayPrice)}${product.unitLabel ? ` / ${product.unitLabel}` : ''}`}
+        oldPrice={originalPrice ? formatPrice(originalPrice) : null}
+        priceText={comingSoon ? t('Coming soon') : quoteOnly ? t('Price on request') : null}
+        badge={
+          product.badgeText
+            ? { text: product.badgeText, color: design.productBadgeColor }
+            : discount > 0 && !quoteOnly
+              ? { text: `-${discount}%`, tone: 'sale' }
+              : null
+        }
+        rating={product.rating}
+        showWish={design.cardShowWishlist}
+        wished={inWishlist}
+        onWish={toggleWish}
+        soldOut={
+          outOfStock && showOutOfStockBadge
+            ? { label: t('Out of Stock'), note: product.restockDate ? `${t('Back')} ${preOrderDateText(product.restockDate, design.storeLanguage)}` : null }
+            : null
+        }
+        onLinkClick={product.id ? () => trackSelectItem({ ...product, id: product.id! }) : undefined}
+        extra={
+          <>
+            {!quoteOnly && product.flashSaleEndsAt && <FlashSaleTimer endsAt={product.flashSaleEndsAt} className="mt-1.5" />}
+            {product.swatches && !quoteOnly && (
+              <div className="mt-1.5">
+                <CardSwatches
+                  swatches={product.swatches}
+                  active={selected[product.swatches.option]}
+                  onPick={(value, photoUrl) => {
+                    setSelected((prev) => ({ ...prev, [product.swatches!.option]: value }));
+                    if (photoUrl) setSwatchPhoto(photoUrl);
+                  }}
+                />
+              </div>
+            )}
+            {lowStockText && !quoteOnly && <p className="mt-1 text-[11px] font-semibold text-red-600">{lowStockText}</p>}
+            {!quoteOnly && <SoldRecentLine product={product} />}
+          </>
+        }
+        action={
+          comingSoon
+            ? { label: t('Notify me'), href }
+            : quoteOnly
+              ? { label: t('Request a price'), href }
+              : showAddToCart
+                ? { label: t('Add to Cart'), onClick: () => pmPurchase('add'), done: added, doneLabel: t('Added') }
+                : showView
+                  ? { label: t('View Product'), href }
+                  : null
+        }
+        secondary={showBuyNow ? { label: t('Buy Now'), onClick: () => pmPurchase('buy') } : null}
+        after={sheetReady ? quickAddSheet : null}
+      />
+    );
+  }
 
   return (
     <div
@@ -480,35 +597,7 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
         </div>
       </div>
 
-      {quickAdd && (
-        <QuickAddSheet
-          open={sheetOpen}
-          onClose={() => setSheetOpen(false)}
-          name={product.name}
-          image={product.photoUrls[0]}
-          price={formatPrice(displayPrice)}
-          originalPrice={originalPrice ? formatPrice(originalPrice) : null}
-          options={options}
-          selected={selected}
-          onSelect={(option, value) => {
-            setSelected((prev) => ({ ...prev, [option]: value }));
-            setVariantWarning(false);
-          }}
-          isAvailable={isAvailable}
-          photoFor={photoFor}
-          note={lowStockText}
-          warning={
-            variantWarning
-              ? t('Select an option first.')
-              : matchedVariant && matchedVariant.stock <= 0 && !product.isPreOrder
-                ? t('Out of Stock')
-                : null
-          }
-          labels={{ addToCart: t('Add to Cart'), buyNow: showBuyNow ? t('Buy Now') : undefined, close: t('Close') }}
-          onAdd={() => purchase('add', true)}
-          onBuy={showBuyNow ? () => purchase('buy', true) : undefined}
-        />
-      )}
+      {quickAdd && quickAddSheet}
     </div>
   );
 });
