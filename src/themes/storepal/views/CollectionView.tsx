@@ -1,3 +1,6 @@
+'use client';
+
+// A browser component: it reads the shopper's language (useStoreText). As a server component the page crashed with a 500.
 import Image from 'next/image';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { StoreHeader } from '../components/StoreHeader';
