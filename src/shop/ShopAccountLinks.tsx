@@ -5,6 +5,7 @@ import { usePathname } from 'next/navigation';
 import { useEffect } from 'react';
 import { ClipboardList, Home, LayoutGrid, ShoppingCart, User } from 'lucide-react';
 import { useShopSession } from './shopClient';
+import { useShopOverlay, type ShopPanel } from './overlay';
 
 function useSession() {
   const s = useShopSession();
@@ -28,19 +29,21 @@ const iconBtn = 'relative flex h-11 w-11 items-center justify-center rounded-[14
 /** The header's right side (2026-11-03 redesign): account (sign in, or my orders) and the one cart for every shop, as white-on-accent squares. */
 export function ShopAccountLinks() {
   const { who, count } = useSession();
+  const open = useShopOverlay((s) => s.open);
+  const account = () => open(who ? 'orders' : 'login');
   return (
     <div className="flex shrink-0 items-center gap-2.5">
-      <Link href={who ? '/shop/orders' : '/shop/login'} className={`${iconBtn} hidden w-auto gap-2 px-3 text-sm font-semibold sm:flex`}>
+      <button type="button" onClick={account} className={`${iconBtn} hidden w-auto gap-2 px-3 text-sm font-semibold sm:flex`}>
         {who ? <ClipboardList size={18} aria-hidden /> : <User size={18} aria-hidden />}
         {who ? 'My orders' : 'Sign in'}
-      </Link>
-      <Link href={who ? '/shop/orders' : '/shop/login'} aria-label={who ? 'My orders' : 'Sign in'} className={`${iconBtn} sm:hidden`}>
+      </button>
+      <button type="button" onClick={account} aria-label={who ? 'My orders' : 'Sign in'} className={`${iconBtn} sm:hidden`}>
         <User size={20} aria-hidden />
-      </Link>
-      <Link href="/shop/cart" aria-label={`Cart${count ? `, ${count} items` : ''}`} className={iconBtn}>
+      </button>
+      <button type="button" onClick={() => open('cart')} aria-label={`Cart${count ? `, ${count} items` : ''}`} className={iconBtn}>
         <ShoppingCart size={20} aria-hidden />
         <Badge count={count} />
-      </Link>
+      </button>
     </div>
   );
 }
@@ -50,25 +53,40 @@ export function ShopBottomNavLinks() {
   const path = usePathname() ?? '';
   const { who, count } = useSession();
   const p = path.replace(/^\/shop/, '') || '/';
-  const tabs = [
-    { href: '/shop', label: 'Home', Icon: Home, on: p === '/' },
-    { href: '/shop#categories', label: 'Categories', Icon: LayoutGrid, on: p.startsWith('/c/') },
-    { href: '/shop/cart', label: 'Cart', Icon: ShoppingCart, on: p.startsWith('/cart') || p.startsWith('/checkout'), count },
-    { href: who ? '/shop/orders' : '/shop/login', label: who ? 'Orders' : 'Account', Icon: User, on: p.startsWith('/orders') || p.startsWith('/login') },
+  const { panel, open } = useShopOverlay();
+  const tabs: Array<{ label: string; Icon: typeof Home; on: boolean; href?: string; panel?: ShopPanel; count?: number }> = [
+    { href: '/shop', label: 'Home', Icon: Home, on: p === '/' && !panel },
+    { href: '/shop#categories', label: 'Categories', Icon: LayoutGrid, on: p.startsWith('/c/') && !panel },
+    { panel: 'cart', label: 'Cart', Icon: ShoppingCart, on: panel === 'cart' || panel === 'checkout', count },
+    { panel: who ? 'orders' : 'login', label: who ? 'Orders' : 'Account', Icon: User, on: panel === 'orders' || panel === 'login' },
   ];
+  const cls = (on: boolean) => `flex w-full flex-col items-center gap-0.5 py-1 text-[11px] font-medium ${on ? 'text-[var(--shop-accent)]' : 'text-slate-400'}`;
   return (
     <ul className="grid grid-cols-4">
-      {tabs.map(({ href, label, Icon, on, count: n }) => (
-        <li key={label}>
-          <Link href={href} className={`flex flex-col items-center gap-0.5 py-1 text-[11px] font-medium ${on ? 'text-[var(--shop-accent)]' : 'text-slate-400'}`}>
+      {tabs.map(({ href, panel: target, label, Icon, on, count: n }) => {
+        const inner = (
+          <>
             <span className="relative">
               <Icon size={22} strokeWidth={on ? 2.4 : 1.8} aria-hidden />
               {n ? <Badge count={n} /> : null}
             </span>
             {label}
-          </Link>
-        </li>
-      ))}
+          </>
+        );
+        return (
+          <li key={label}>
+            {target ? (
+              <button type="button" onClick={() => open(target)} className={cls(on)}>
+                {inner}
+              </button>
+            ) : (
+              <Link href={href!} className={cls(on)}>
+                {inner}
+              </Link>
+            )}
+          </li>
+        );
+      })}
     </ul>
   );
 }

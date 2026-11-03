@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import type { ShopImage } from '@/lib/shopAccount';
 import { shopApi, ShopApiError, taka, useShopSession } from './shopClient';
+import { useShopOverlay } from './overlay';
 
 type Group = 'TO_PAY' | 'TO_SHIP' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
 const GROUP_TEXT: Record<Group, string> = { TO_PAY: 'To pay', TO_SHIP: 'Being prepared', SHIPPED: 'On the way', DELIVERED: 'Delivered', CANCELLED: 'Cancelled' };
@@ -46,13 +47,17 @@ type OrderDetail = {
 
 const day = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { timeZone: 'Asia/Dhaka', day: 'numeric', month: 'short', year: 'numeric' });
 
-function useSignedIn(next: string) {
+function useSignedIn(next: string, inPanel: boolean) {
   const router = useRouter();
   const { ready, who, load } = useShopSession();
+  const open = useShopOverlay((s) => s.open);
   useEffect(() => {
     if (!ready) void load();
-    else if (!who) router.replace(`/shop/login?next=${encodeURIComponent(next)}`);
-  }, [ready, who, load, router, next]);
+    else if (!who) {
+      if (inPanel) open('login', { after: 'orders' });
+      else router.replace(`/shop/login?next=${encodeURIComponent(next)}`);
+    }
+  }, [ready, who, load, router, next, inPanel, open]);
   return ready && !!who;
 }
 
@@ -66,8 +71,9 @@ async function payOnline(orderId: string, onError: (m: string) => void) {
 }
 
 /** Every order of the one Shop account (2026-11-03), from every store, including orders placed on a store's own website while signed in there. */
-export function ShopOrdersList() {
-  const ok = useSignedIn('/shop/orders');
+export function ShopOrdersList({ onOpen }: { onOpen?: (orderId: string) => void }) {
+  const ok = useSignedIn('/shop/orders', !!onOpen);
+  const close = useShopOverlay((s) => s.close);
   const [orders, setOrders] = useState<ListOrder[] | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -89,11 +95,12 @@ export function ShopOrdersList() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h1 className="text-lg font-semibold text-slate-900">My orders</h1>
+        {onOpen ? <span /> : <h1 className="text-lg font-semibold text-slate-900">My orders</h1>}
         <button
           type="button"
           onClick={async () => {
             await signOut();
+            close();
             router.replace('/shop');
           }}
           className="text-sm text-slate-600 underline"
@@ -107,9 +114,9 @@ export function ShopOrdersList() {
         {orders?.map((o) => (
           <li key={o.orderId} className="flex items-center gap-3 px-4 py-3">
             <div className="relative h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-slate-100">
-              {o.firstItem?.image ? <Image src={o.firstItem.image.card} alt="" fill sizes="56px" className="object-cover" /> : null}
+              {o.firstItem?.image ? <Image src={o.firstItem.image.src} alt="" fill sizes="56px" className="object-cover" /> : null}
             </div>
-            <Link href={`/shop/orders/${o.orderId}`} className="min-w-0 flex-1">
+            <Link href={`/shop/orders/${o.orderId}`} onClick={(e) => { if (onOpen) { e.preventDefault(); onOpen(o.orderId); } }} className="min-w-0 flex-1">
               <p className="truncate text-sm font-medium text-slate-900">
                 {o.firstItem?.name ?? 'Order'}
                 {o.itemCount > 1 ? ` and ${o.itemCount - 1} more` : ''}
@@ -139,8 +146,8 @@ export function ShopOrdersList() {
 }
 
 /** One order (2026-11-03): items, totals, and the store's own tracking page for the live delivery steps. */
-export function ShopOrderDetail({ orderId }: { orderId: string }) {
-  const ok = useSignedIn(`/shop/orders/${orderId}`);
+export function ShopOrderDetail({ orderId, onBack }: { orderId: string; onBack?: () => void }) {
+  const ok = useSignedIn(`/shop/orders/${orderId}`, !!onBack);
   const [o, setO] = useState<OrderDetail | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -155,7 +162,7 @@ export function ShopOrderDetail({ orderId }: { orderId: string }) {
   if (!ok || !o) return <p className="py-10 text-center text-sm text-slate-500">Loading…</p>;
   return (
     <div className="space-y-4">
-      <Link href="/shop/orders" className="text-sm text-[var(--shop-accent)] hover:underline">
+      <Link href="/shop/orders" onClick={(e) => { if (onBack) { e.preventDefault(); onBack(); } }} className="text-sm text-[var(--shop-accent)] hover:underline">
         ‹ My orders
       </Link>
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -169,7 +176,7 @@ export function ShopOrderDetail({ orderId }: { orderId: string }) {
         {o.items.map((i, n) => (
           <li key={n} className="flex items-center gap-3 px-4 py-3">
             <div className="relative h-12 w-12 shrink-0 overflow-hidden rounded-lg bg-slate-100">
-              {i.image ? <Image src={i.image.card} alt="" fill sizes="48px" className="object-cover" /> : null}
+              {i.image ? <Image src={i.image.src} alt="" fill sizes="48px" className="object-cover" /> : null}
             </div>
             <div className="min-w-0 flex-1 text-sm">
               <p className="truncate font-medium text-slate-900">

@@ -14,7 +14,7 @@ function safeNext(raw: string | null): string {
  * Phone and a texted code (2026-11-03). A number with no account gets one (the name box is used then); the same account signs in to the
  * Regantify app. The token stays in the Shop's httpOnly cookie; this page only learns the name.
  */
-export function ShopLoginForm() {
+export function ShopLoginForm({ onDone }: { onDone?: () => void }) {
   const router = useRouter();
   const params = useSearchParams();
   const signedIn = useShopSession((s) => s.signedIn);
@@ -52,7 +52,8 @@ export function ShopLoginForm() {
     try {
       const r = await shopApi<{ customer: { name: string | null } }>('auth/verify', { method: 'POST', body: { phone, code, name: name.trim() } });
       await signedIn({ name: r.customer.name });
-      router.replace(safeNext(params.get('next')));
+      if (onDone) onDone();
+      else router.replace(safeNext(params.get('next')));
     } catch (e) {
       setError(e instanceof ShopApiError ? e.message : 'Could not sign you in. Please try again.');
     } finally {
@@ -63,7 +64,7 @@ export function ShopLoginForm() {
   const field = 'mt-1 block w-full rounded-[14px] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm focus:border-[var(--shop-accent)] focus:outline-none';
   return (
     <div className="rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-6">
-      <h1 className="text-lg font-semibold text-slate-900">Sign in</h1>
+      {onDone ? null : <h1 className="text-lg font-semibold text-slate-900">Sign in</h1>}
       <p className="mt-1 text-sm text-slate-600">One sign-in to buy from every store on the Shop. New here? The same steps make your account.</p>
       {step === 'phone' ? (
         <div className="mt-5 space-y-4">

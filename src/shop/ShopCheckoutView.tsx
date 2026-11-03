@@ -7,6 +7,7 @@ import { BdAddressPicker } from '@/components/BdAddressPicker';
 import { phoneInput } from '@/lib/phoneInput';
 import type { ShopAddress, ShopCartLine, ShopCheckoutPreview, ShopPlacedOrder, ShopPreviewLine } from '@/lib/shopAccount';
 import { cleanLines, shopApi, ShopApiError, taka, useShopSession } from './shopClient';
+import { useShopOverlay } from './overlay';
 
 type Form = { name: string; phone: string; district: string; thana: string; area: string; address: string };
 const EMPTY: Form = { name: '', phone: '', district: '', thana: '', area: '', address: '' };
@@ -19,8 +20,9 @@ const label = 'block text-sm text-slate-800';
  * The Shop's checkout (2026-11-03): one address for every store, then one order per store, each made by that store's own checkout rules on
  * the server (prices, stock, delivery charge, coupons, payment methods). The same account and routes as the Regantify app.
  */
-export function ShopCheckoutView() {
+export function ShopCheckoutView({ inPanel = false }: { inPanel?: boolean }) {
   const router = useRouter();
+  const overlay = useShopOverlay();
   const { ready, who, lines, remove } = useShopSession();
   const [buyable, setBuyable] = useState<ShopCartLine[] | null>(null);
   const [addresses, setAddresses] = useState<ShopAddress[]>([]);
@@ -35,8 +37,10 @@ export function ShopCheckoutView() {
   const keyRef = useRef(typeof crypto !== 'undefined' && 'randomUUID' in crypto ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2)}`);
 
   useEffect(() => {
-    if (ready && !who) router.replace('/shop/login?next=/shop/checkout');
-  }, [ready, who, router]);
+    if (!ready || who) return;
+    if (inPanel) overlay.open('login', { after: 'checkout' });
+    else router.replace('/shop/login?next=/shop/checkout');
+  }, [ready, who, router, inPanel, overlay]);
 
   // Only the lines that can be bought now go to checkout (sold out or website-only ones stay in the cart).
   useEffect(() => {
@@ -152,7 +156,7 @@ export function ShopCheckoutView() {
                     Pay {taka(o.payNow.amount)}
                   </button>
                 ) : null}
-                <Link href={`/shop/orders/${o.orderId}`} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:border-[var(--shop-accent)]">
+                <Link href={`/shop/orders/${o.orderId}`} onClick={(e) => { if (inPanel) { e.preventDefault(); overlay.open('orders', { orderId: o.orderId }); } }} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:border-[var(--shop-accent)]">
                   View
                 </Link>
               </div>
@@ -160,7 +164,7 @@ export function ShopCheckoutView() {
           ))}
         </ul>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <Link href="/shop/orders" className="inline-block text-sm font-medium text-[var(--shop-accent)] hover:underline">
+        <Link href="/shop/orders" onClick={(e) => { if (inPanel) { e.preventDefault(); overlay.open('orders'); } }} className="inline-block text-sm font-medium text-[var(--shop-accent)] hover:underline">
           All my orders
         </Link>
       </div>
@@ -170,7 +174,7 @@ export function ShopCheckoutView() {
     return (
       <div className="py-16 text-center">
         <p className="text-slate-700">Nothing in your cart can be bought right now.</p>
-        <Link href="/shop/cart" className="mt-3 inline-block text-sm font-medium text-[var(--shop-accent)] hover:underline">
+        <Link href="/shop/cart" onClick={(e) => { if (inPanel) { e.preventDefault(); overlay.open('cart'); } }} className="mt-3 inline-block text-sm font-medium text-[var(--shop-accent)] hover:underline">
           Back to the cart
         </Link>
       </div>
@@ -179,7 +183,7 @@ export function ShopCheckoutView() {
   return (
     <div className="grid gap-6 lg:grid-cols-5">
       <div className="space-y-4 lg:col-span-3">
-        <h1 className="text-lg font-semibold text-slate-900">Checkout</h1>
+        {inPanel ? null : <h1 className="text-lg font-semibold text-slate-900">Checkout</h1>}
         <section className="space-y-3 rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-4">
           <h2 className="text-sm font-semibold text-slate-900">Deliver to</h2>
           {addresses.map((a) => (

@@ -6,6 +6,7 @@ import { Minus, Plus, ShoppingBag } from 'lucide-react';
 import type { StorefrontProduct } from '@/lib/storefrontApi';
 import { swatchColor } from '@/lib/swatchColor';
 import { taka, useShopSession, ShopApiError } from './shopClient';
+import { useShopOverlay } from './overlay';
 import { ui } from './ui';
 
 const COLOUR_OPTION = /colou?r|রং|রঙ/i;
@@ -20,6 +21,8 @@ const COLOUR_OPTION = /colou?r|রং|রঙ/i;
 export function ShopBuyPanel({ subdomain, product: p, storeUrl }: { subdomain: string; product: StorefrontProduct; storeUrl: string }) {
   const router = useRouter();
   const add = useShopSession((s) => s.add);
+  const who = useShopSession((s) => s.who);
+  const openPanel = useShopOverlay((s) => s.open);
   const options = useMemo(() => [...(p.variationOptions ?? [])].sort((a, b) => a.position - b.position), [p.variationOptions]);
   const [picked, setPicked] = useState<Record<string, string>>({});
   const step = Math.max(1, p.quantityStep ?? 1);
@@ -53,8 +56,9 @@ export function ShopBuyPanel({ subdomain, product: p, storeUrl }: { subdomain: s
     setBusy(true);
     try {
       await add({ subdomain, slug: p.slug, options: options.length ? picked : {}, quantity: qty });
-      if (buyNow) router.push('/shop/cart');
-      else setNote({ ok: true, text: 'Added to your cart.' });
+      // Like StorePal: the cart slides in; "Buy now" goes straight to checkout (signing in first when needed).
+      if (buyNow) openPanel(who ? 'checkout' : 'login', { after: 'checkout' });
+      else openPanel('cart');
     } catch (e) {
       setNote({ ok: false, text: e instanceof ShopApiError ? e.message : 'Could not add it. Please try again.' });
     } finally {

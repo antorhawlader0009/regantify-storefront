@@ -68,7 +68,7 @@ export default async function ShopProductPage({ params }: { params: Params }) {
   }
   if (!r.data) notFound();
   const { product: p, store: s } = r.data;
-  const photos = p.images?.length ? p.images.map((i) => i.large) : p.photoUrls;
+  const photos = p.images?.length ? p.images.map((i) => i.src) : p.photoUrls;
   const about = plain(p.description);
 
   return (

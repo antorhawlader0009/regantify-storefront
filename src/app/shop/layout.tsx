@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next';
 import type { CSSProperties } from 'react';
 import { SHOP_NAME } from '@/lib/shopApi';
 import { ShopBottomNav, ShopFooter } from '@/shop/ShopChrome';
+import { ShopOverlays } from '@/shop/ShopOverlays';
 import { SHOP_ACCENT, SHOP_ACCENT_DARK, SHOP_ACCENT_SOFT } from '@/shop/ui';
 
 // The Regantify Shop (SHOP-plan.md Step 7): the platform's marketplace at shop.ROOT_DOMAIN (middleware.ts), or /shop on a local address.
@@ -28,6 +29,7 @@ export default function ShopLayout({ children }: { children: React.ReactNode }) 
       {children}
       <ShopFooter />
       <ShopBottomNav />
+      <ShopOverlays />
     </div>
   );
 }
