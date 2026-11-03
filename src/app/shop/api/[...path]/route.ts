@@ -1,5 +1,5 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { SHOP_SESSION_COOKIE } from '@/lib/shopAccount';
+import { SHOP_GOOGLE_COOKIE, SHOP_SESSION_COOKIE } from '@/lib/shopAccount';
 
 /*
  * The Regantify Shop's own small proxy (2026-11-03): one sign-in buys from every shop on the Shop website, like the Regantify app.
@@ -18,9 +18,17 @@ function target(path: string[], method: string): string | null {
   if (p === 'auth/send' && method === 'POST') return '/v1/app/phone/send';
   if (p === 'auth/verify' && method === 'POST') return '/v1/app/phone/verify';
   if (p === 'auth/sign-out' && method === 'POST') return '/v1/app/sign-out';
+  if (p === 'auth/google/config' && method === 'GET') return '/v1/app/google/shop/config';
+  if (p === 'auth/google/start' && method === 'POST') return '/v1/app/google/shop/start';
+  if (p === 'auth/google/finish' && method === 'POST') return '/v1/app/google/shop/finish';
   if (p === 'me' && method === 'GET') return '/v1/app/me';
   if (path[0] === 'market' && path.length > 1 && path.every((s) => /^[A-Za-z0-9._~-]{1,200}$/.test(s))) return `/v1/app/${p}`;
   return null;
+}
+
+/** Only paths inside the Shop may be the page to go back to after Google. */
+function safeNext(raw: string | null): string {
+  return raw && raw.startsWith('/shop') && !raw.startsWith('//') && raw.length <= 500 ? raw : '/shop';
 }
 
 /** The shopper's own address, so the API's per-address limits count each shopper, not this server (it trusts private-network proxies). */
@@ -61,6 +69,37 @@ async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[]
     }
   }
 
+  // Google (2026-11-03): the nonce and state live only in an httpOnly cookie on the Shop's address. Start keeps them there; finish
+  // checks the state Google sent back against it (a code from someone else's browser is refused) and sends the server the nonce.
+  let googleNext = '/shop';
+  if (to === '/v1/app/google/shop/start') {
+    let sent: { next?: unknown };
+    try {
+      sent = JSON.parse(body || '{}') as typeof sent;
+    } catch {
+      sent = {};
+    }
+    googleNext = safeNext(typeof sent.next === 'string' ? sent.next : null);
+    body = '{}';
+  }
+  if (to === '/v1/app/google/shop/finish') {
+    let sent: { code?: unknown; state?: unknown };
+    let kept: { n?: string; s?: string; next?: string } = {};
+    try {
+      sent = JSON.parse(body || '{}') as typeof sent;
+      kept = JSON.parse(Buffer.from(req.cookies.get(SHOP_GOOGLE_COOKIE)?.value ?? '', 'base64url').toString('utf8') || '{}') as typeof kept;
+    } catch {
+      sent = {};
+    }
+    if (!kept.n || !kept.s || typeof sent.state !== 'string' || sent.state !== kept.s || typeof sent.code !== 'string') {
+      const res = NextResponse.json({ message: 'That Google sign-in could not be checked. Please try again.' }, { status: 400 });
+      res.cookies.delete(SHOP_GOOGLE_COOKIE);
+      return res;
+    }
+    googleNext = safeNext(kept.next ?? null);
+    body = JSON.stringify({ code: sent.code, nonce: kept.n, device: 'Regantify Shop website' });
+  }
+
   const token = req.cookies.get(SHOP_SESSION_COOKIE)?.value;
   const headers: Record<string, string> = { Accept: 'application/json' };
   if (body !== undefined) headers['Content-Type'] = 'application/json';
@@ -77,10 +116,24 @@ async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[]
   }
   const text = await upstream.text();
 
+  if (to === '/v1/app/google/shop/start' && upstream.ok) {
+    const data = JSON.parse(text) as { url: string; nonce: string; state: string };
+    const res = NextResponse.json({ url: data.url });
+    res.cookies.set(SHOP_GOOGLE_COOKIE, Buffer.from(JSON.stringify({ n: data.nonce, s: data.state, next: googleNext })).toString('base64url'), {
+      httpOnly: true,
+      secure: req.nextUrl.protocol === 'https:',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 10 * 60,
+    });
+    return res;
+  }
+
   // A successful sign-in: keep the token in the cookie and give the page only who signed in.
-  if (to === '/v1/app/phone/verify' && upstream.ok) {
+  if ((to === '/v1/app/phone/verify' || to === '/v1/app/google/shop/finish') && upstream.ok) {
     const data = JSON.parse(text) as { token: string; expiresAt: string; customer: unknown };
-    const res = NextResponse.json({ customer: data.customer });
+    const res = NextResponse.json(to === '/v1/app/google/shop/finish' ? { customer: data.customer, next: googleNext } : { customer: data.customer });
+    if (to === '/v1/app/google/shop/finish') res.cookies.delete(SHOP_GOOGLE_COOKIE);
     res.cookies.set(SHOP_SESSION_COOKIE, data.token, {
       httpOnly: true,
       secure: req.nextUrl.protocol === 'https:',
@@ -94,6 +147,7 @@ async function forward(req: NextRequest, ctx: { params: Promise<{ path: string[]
   const res = new NextResponse(text, { status: upstream.status, headers: { 'Content-Type': upstream.headers.get('content-type') ?? 'application/json', 'Cache-Control': 'no-store' } });
   // Signed out, or the token is no longer good: drop the cookie.
   if (to === '/v1/app/sign-out' || upstream.status === 401) res.cookies.delete(SHOP_SESSION_COOKIE);
+  if (to === '/v1/app/google/shop/finish') res.cookies.delete(SHOP_GOOGLE_COOKIE);
   return res;
 }
 

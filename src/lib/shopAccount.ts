@@ -6,6 +6,9 @@
 
 export const SHOP_SESSION_COOKIE = 'rgf_shop_session';
 
+/** A Google sign-in on its way (10 minutes): the nonce, the state and the page to go back to, set and read only by app/shop/api. */
+export const SHOP_GOOGLE_COOKIE = 'rgf_shop_google';
+
 export type ShopCartLine = { subdomain: string; slug: string; options?: Record<string, string>; quantity: number };
 
 export type ShopImage = { src: string; card: string; large: string };
