@@ -21,6 +21,7 @@ import { VoiceSearchButton, VoiceSearchStatus } from './VoiceSearch';
 import { AskAssistantButton } from './AskAssistantButton';
 import { useAssistantBridge } from '../lib/assistantBridge';
 import { CartDrawer } from './CartDrawer';
+import { BodyPortal } from './BodyPortal';
 import { SideCartTab } from './SideCartTab';
 import { CheckoutDialog } from './CheckoutDialog';
 import { AuthDialog } from './AuthDialog';
@@ -933,10 +934,13 @@ export function StoreHeader({
 
       <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
       <LazyPhotoSearchPanel subdomain={subdomain} storeName={storeName} />
-      <CartDrawer subdomain={subdomain} />
+      {/* In <body>, not inside the sticky header, so they open above the account dialog too (BodyPortal). */}
+      <BodyPortal>
+        <CartDrawer subdomain={subdomain} />
+        <CheckoutDialog subdomain={subdomain} />
+        <AuthDialog subdomain={subdomain} />
+      </BodyPortal>
       <SideCartTab subdomain={subdomain} />
-      <CheckoutDialog subdomain={subdomain} />
-      <AuthDialog subdomain={subdomain} />
     </header>
     </>
   );
