@@ -60,9 +60,9 @@ export function ShopLoginForm() {
     }
   }
 
-  const field = 'mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2.5 text-sm focus:border-emerald-600 focus:outline-none';
+  const field = 'mt-1 block w-full rounded-[14px] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm focus:border-[var(--shop-accent)] focus:outline-none';
   return (
-    <div className="rounded-xl border border-slate-200 bg-white p-6">
+    <div className="rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-6">
       <h1 className="text-lg font-semibold text-slate-900">Sign in</h1>
       <p className="mt-1 text-sm text-slate-600">One sign-in to buy from every store on the Shop. New here? The same steps make your account.</p>
       {step === 'phone' ? (
@@ -75,7 +75,7 @@ export function ShopLoginForm() {
             Your name <span className="text-slate-400">(only for a new account)</span>
             <input autoComplete="name" maxLength={100} value={name} onChange={(e) => setName(e.target.value)} className={field} />
           </label>
-          <button type="button" disabled={busy} onClick={send} className="w-full rounded-lg bg-emerald-700 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60">
+          <button type="button" disabled={busy} onClick={send} className="w-full rounded-full bg-[var(--shop-accent)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--shop-accent-dark)] disabled:opacity-60">
             {busy ? 'Sending…' : 'Send code by SMS'}
           </button>
         </div>
@@ -86,7 +86,7 @@ export function ShopLoginForm() {
             Code
             <input inputMode="numeric" autoComplete="one-time-code" maxLength={6} value={code} onChange={(e) => setCode(e.target.value.replace(/\D/g, ''))} className={field} />
           </label>
-          <button type="button" disabled={busy} onClick={verify} className="w-full rounded-lg bg-emerald-700 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:opacity-60">
+          <button type="button" disabled={busy} onClick={verify} className="w-full rounded-full bg-[var(--shop-accent)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--shop-accent-dark)] disabled:opacity-60">
             {busy ? 'Checking…' : 'Sign in'}
           </button>
           <button type="button" onClick={() => setStep('phone')} className="w-full text-sm text-slate-600 underline">

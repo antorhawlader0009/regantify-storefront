@@ -1,11 +1,14 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
-import { getShopHome, shopUrl, SHOP_NAME, type ShopBanner, type ShopItem } from '@/lib/shopApi';
+import { getShopHome, shopUrl, SHOP_NAME, type ShopItem } from '@/lib/shopApi';
+import { BannerCarousel } from '@/shop/BannerCarousel';
 import { ProductGrid } from '@/shop/ProductCard';
 import { CategoryLinks, noticeFor, ShopHeader, ShopNotice } from '@/shop/ShopChrome';
+import { ui } from '@/shop/ui';
 
-// The Shop home (SHOP-plan.md Step 7): Super Admin's banners (Step 9), featured products, Top products (the best of every store, with places
-// for new stores), new arrivals, Super Admin's collections marked "show on home" (Step 9) and the categories, from GET /v1/shop/home. Kept 60 seconds; the API keeps its answer 5 minutes.
+// The Shop home (SHOP-plan.md Step 7; redesigned 2026-11-03 in the app's marketplace look): Super Admin's banners as "#SpecialForYou",
+// the categories as round buttons, featured products, Top products (the best of every store, with places for new stores) with sort chips,
+// new arrivals and Super Admin's collections marked "show on home", from GET /v1/shop/home. Kept 60 seconds; the API keeps its answer 5 minutes.
 export const revalidate = 60;
 
 export const metadata: Metadata = {
@@ -13,51 +16,44 @@ export const metadata: Metadata = {
   alternates: { canonical: shopUrl('/') },
 };
 
-function Section({ title, items, more }: { title: string; items: ShopItem[]; more?: { href: string; label: string } }) {
-  if (items.length === 0) return null;
+function SectionHead({ title, more }: { title: string; more?: string }) {
   return (
-    <section className="mt-8">
-      <div className="mb-3 flex items-baseline justify-between">
-        <h2 className="text-lg font-semibold">{title}</h2>
-        {more ? (
-          <Link href={more.href} className="text-sm text-emerald-700 hover:underline">
-            {more.label}
-          </Link>
-        ) : null}
-      </div>
-      <ProductGrid items={items} priorityFirst={title === 'Top products' ? 6 : 0} />
-    </section>
+    <div className="mb-3 flex items-baseline justify-between">
+      <h2 className={ui.sectionTitle}>{title}</h2>
+      {more ? (
+        <Link href={more} className={ui.seeAll}>
+          See all
+        </Link>
+      ) : null}
+    </div>
   );
 }
 
-const TONE: Record<string, string> = {
-  GREEN: 'bg-emerald-700 text-white',
-  DARK: 'bg-slate-900 text-white',
-  AMBER: 'bg-amber-100 text-amber-950',
-};
-
-/** A banner link is a Shop path or an https address (the server refuses anything else). Outside links open in a new tab. */
-function Banners({ banners }: { banners: ShopBanner[] }) {
-  if (banners.length === 0) return null;
+function Section({ title, items, more, chips }: { title: string; items: ShopItem[]; more?: string; chips?: boolean }) {
+  if (items.length === 0) return null;
   return (
-    <div className="mt-4 grid gap-3">
-      {banners.map((b) => {
-        const inner = (
-          <>
-            <p className="text-base font-semibold sm:text-lg">{b.title}</p>
-            {b.text ? <p className="mt-0.5 text-sm opacity-90">{b.text}</p> : null}
-          </>
-        );
-        const cls = `block rounded-xl px-5 py-4 ${TONE[b.tone] ?? TONE.GREEN}`;
-        if (!b.linkUrl) return <div key={b.id} className={cls}>{inner}</div>;
-        const outside = /^https:///.test(b.linkUrl);
-        return (
-          <a key={b.id} href={b.linkUrl} className={`${cls} hover:opacity-95`} {...(outside ? { target: '_blank', rel: 'noopener' } : {})}>
-            {inner}
-          </a>
-        );
-      })}
-    </div>
+    <section className="mt-9">
+      <SectionHead title={title} more={more} />
+      {chips ? (
+        // Like the picture's filter chips: each opens the full list in that order.
+        <div className="-mx-4 mb-4 flex gap-2 overflow-x-auto px-4 [scrollbar-width:none]">
+          <span className={ui.chip(true)}>Popular</span>
+          <Link href="/shop/search?sort=newest" className={ui.chip(false)}>
+            Newest
+          </Link>
+          <Link href="/shop/search?sort=price_asc" className={ui.chip(false)}>
+            Lowest price
+          </Link>
+          <Link href="/shop/search?sort=price_desc" className={ui.chip(false)}>
+            Highest price
+          </Link>
+          <Link href="/shop/search?inStock=true" className={ui.chip(false)}>
+            In stock
+          </Link>
+        </div>
+      ) : null}
+      <ProductGrid items={items} priorityFirst={title === 'Top products' ? 6 : 0} />
+    </section>
   );
 }
 
@@ -80,17 +76,22 @@ export default async function ShopHomePage() {
     <>
       <ShopHeader />
       <main className="mx-auto max-w-7xl px-4 py-6">
-        <CategoryLinks categories={categories} />
-        <Banners banners={banners} />
+        {banners.length > 0 ? (
+          <section className="mb-8">
+            <SectionHead title="#SpecialForYou" />
+            <BannerCarousel banners={banners} />
+          </section>
+        ) : null}
+        <CategoryLinks categories={categories} title="Category" />
         {empty ? (
           <ShopNotice title={`${SHOP_NAME} is opening soon`} text="Stores are joining now. Please come back in a little while." />
         ) : (
           <>
             <Section title="Featured" items={featured} />
-            <Section title="Top products" items={top} more={{ href: '/shop/search', label: 'See all' }} />
-            <Section title="New arrivals" items={newArrivals} more={{ href: '/shop/search?sort=newest', label: 'See all' }} />
+            <Section title="Top products" items={top} more="/shop/search" chips />
+            <Section title="New arrivals" items={newArrivals} more="/shop/search?sort=newest" />
             {collections.map((c) => (
-              <Section key={c.slug} title={c.title} items={c.items} more={{ href: `/shop/collections/${c.slug}`, label: 'See all' }} />
+              <Section key={c.slug} title={c.title} items={c.items} more={`/shop/collections/${c.slug}`} />
             ))}
           </>
         )}

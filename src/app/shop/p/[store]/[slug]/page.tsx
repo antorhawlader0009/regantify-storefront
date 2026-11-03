@@ -1,10 +1,13 @@
 import type { Metadata } from 'next';
-import Image from 'next/image';
+import { BadgeCheck, Star, Store as StoreIcon, Truck } from 'lucide-react';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getShopProduct, shopUrl, storeSiteUrl } from '@/lib/shopApi';
 import { noticeFor, ShopHeader, ShopNotice } from '@/shop/ShopChrome';
 import { ShopBuyPanel } from '@/shop/ShopBuyPanel';
+import { AboutText } from '@/shop/AboutText';
+import { ShopGallery } from '@/shop/ShopGallery';
+import { ui } from '@/shop/ui';
 
 type Params = Promise<{ store: string; slug: string }>;
 
@@ -71,54 +74,45 @@ export default async function ShopProductPage({ params }: { params: Params }) {
   return (
     <>
       <ShopHeader />
-      <main className="mx-auto grid max-w-6xl gap-8 px-4 py-6 md:grid-cols-2">
-        <div className="space-y-3">
-          <div className="relative aspect-square overflow-hidden rounded-xl border border-slate-200 bg-white">
-            {photos[0] ? <Image src={photos[0]} alt={p.name} fill priority sizes="(max-width: 768px) 100vw, 50vw" className="object-contain" /> : null}
-          </div>
-          {photos.length > 1 ? (
-            <div className="grid grid-cols-5 gap-2">
-              {photos.slice(1, 6).map((u) => (
-                <div key={u} className="relative aspect-square overflow-hidden rounded-lg border border-slate-200 bg-white">
-                  <Image src={u} alt="" fill sizes="20vw" className="object-cover" />
-                </div>
-              ))}
-            </div>
-          ) : null}
-        </div>
+      <main className="mx-auto grid max-w-6xl gap-6 px-4 pb-28 pt-6 md:grid-cols-2 md:gap-10 md:pb-6">
+        <ShopGallery photos={photos} name={p.name} />
 
-        <div className="space-y-4">
+        <div className={`-mx-4 space-y-5 rounded-t-[28px] px-5 pb-6 pt-6 md:mx-0 md:rounded-[28px] ${ui.card}`}>
           <div>
-            <h1 className="text-xl font-semibold text-slate-900">{p.name}</h1>
-            <p className="mt-1 text-sm text-slate-600">
-              Sold by{' '}
-              <a href={storeSiteUrl(s.subdomain)} className="font-medium text-emerald-700 hover:underline">
-                {s.name}
-              </a>
-              {s.verified ? <span className="ml-2 rounded bg-emerald-50 px-1.5 py-0.5 text-xs text-emerald-800">Verified seller</span> : null}
-            </p>
+            <div className="flex items-center justify-between gap-3 text-sm">
+              <span className="text-slate-500">{p.category || 'Product'}</span>
+              {p.rating && p.rating.count > 0 ? (
+                <span className="flex items-center gap-1 font-semibold text-slate-800">
+                  <Star size={16} className="fill-amber-400 text-amber-400" aria-hidden /> {p.rating.average.toFixed(1)}
+                  <span className="font-normal text-slate-500">({p.rating.count})</span>
+                </span>
+              ) : null}
+            </div>
+            <h1 className="mt-1.5 text-xl font-bold leading-snug text-slate-900 sm:text-2xl">{p.name}</h1>
+            <a href={storeSiteUrl(s.subdomain)} className="mt-2 inline-flex items-center gap-1.5 text-sm text-slate-600 hover:text-[var(--shop-accent)]">
+              <StoreIcon size={15} aria-hidden /> Sold by <span className="font-semibold text-slate-900">{s.name}</span>
+              {s.verified ? <BadgeCheck size={15} className="text-[var(--shop-accent)]" aria-label="Verified seller" /> : null}
+            </a>
           </div>
+
+          {about ? <AboutText text={about} /> : null}
 
           <ShopBuyPanel subdomain={s.subdomain} product={p} storeUrl={storeSiteUrl(s.subdomain, p.slug)} />
 
           {r.data.alsoSoldBy > 0 ? (
-            <Link href={`/shop/search?q=${encodeURIComponent(p.name.slice(0, 80))}`} className="block text-sm font-medium text-emerald-700 hover:underline">
+            <Link href={`/shop/search?q=${encodeURIComponent(p.name.slice(0, 80))}`} className="block text-sm font-medium text-[var(--shop-accent)] hover:underline">
               Compare prices in {r.data.alsoSoldBy + 1} stores
             </Link>
           ) : null}
 
-          {about ? (
-            <section>
-              <h2 className="mb-1 text-sm font-semibold text-slate-900">About this product</h2>
-              <p className="whitespace-pre-line text-sm leading-relaxed text-slate-700">{about}</p>
-            </section>
-          ) : null}
-
-          <p className="text-xs text-slate-500">
-            Delivery, returns and warranty are {s.name}&apos;s own.{' '}
-            <a href={storeSiteUrl(s.subdomain, p.slug)} className="text-emerald-700 hover:underline">
-              See this product on the store&apos;s website
-            </a>
+          <p className="flex items-start gap-2 rounded-2xl bg-slate-50 px-3 py-2.5 text-xs text-slate-600">
+            <Truck size={16} className="mt-0.5 shrink-0 text-[var(--shop-accent)]" aria-hidden />
+            <span>
+              {s.name} sends this parcel; its own delivery, returns and warranty apply.{' '}
+              <a href={storeSiteUrl(s.subdomain, p.slug)} className="font-medium text-[var(--shop-accent)] hover:underline">
+                See it on the store&apos;s website
+              </a>
+            </span>
           </p>
         </div>
       </main>

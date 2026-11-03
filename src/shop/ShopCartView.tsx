@@ -51,7 +51,7 @@ export function ShopCartView() {
     return (
       <div className="py-16 text-center">
         <p className="text-slate-700">Your cart is empty.</p>
-        <Link href="/shop" className="mt-3 inline-block text-sm font-medium text-emerald-700 hover:underline">
+        <Link href="/shop" className="mt-3 inline-block text-sm font-medium text-[var(--shop-accent)] hover:underline">
           Find something you like
         </Link>
       </div>
@@ -63,7 +63,7 @@ export function ShopCartView() {
     <div className="space-y-4">
       <h1 className="text-lg font-semibold text-slate-900">Your cart</h1>
       {preview.stores.map((s) => (
-        <section key={s.store.subdomain} className="rounded-xl border border-slate-200 bg-white">
+        <section key={s.store.subdomain} className="rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)]">
           <header className="flex items-center justify-between border-b border-slate-100 px-4 py-2.5">
             <p className="text-sm font-semibold text-slate-900">{s.store.name}</p>
             <p className="text-sm tabular-nums text-slate-700">{taka(s.subtotal)}</p>
@@ -115,7 +115,7 @@ export function ShopCartView() {
           ) : null}
         </section>
       ))}
-      <div className="flex flex-col items-end gap-2 rounded-xl border border-slate-200 bg-white p-4">
+      <div className="flex flex-col items-end gap-2 rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-4">
         <p className="text-sm text-slate-700">
           Products: <span className="font-semibold tabular-nums text-slate-900">{taka(preview.total)}</span>
         </p>
@@ -124,7 +124,7 @@ export function ShopCartView() {
           <Link
             href={who ? '/shop/checkout' : '/shop/login?next=/shop/checkout'}
             aria-disabled={blocked}
-            className={`rounded-lg px-5 py-2.5 text-sm font-semibold text-white ${blocked ? 'pointer-events-none bg-slate-400' : 'bg-emerald-700 hover:bg-emerald-800'}`}
+            className={`rounded-lg px-5 py-2.5 text-sm font-semibold text-white ${blocked ? 'pointer-events-none bg-slate-400' : 'bg-[var(--shop-accent)] hover:bg-[var(--shop-accent-dark)]'}`}
           >
             {who ? 'Checkout' : 'Sign in to checkout'}
           </Link>

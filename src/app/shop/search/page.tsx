@@ -55,7 +55,7 @@ export default async function ShopSearchPage({ searchParams }: { searchParams: S
         {didYouMean ? (
           <p className="mb-3 text-sm text-slate-700">
             Did you mean{' '}
-            <Link href={`/shop/search${shopSearchQuery({ ...input, q: didYouMean, page: 1 })}`} className="font-semibold text-emerald-700 hover:underline">
+            <Link href={`/shop/search${shopSearchQuery({ ...input, q: didYouMean, page: 1 })}`} className="font-semibold text-[var(--shop-accent)] hover:underline">
               {didYouMean}
             </Link>
             ?
@@ -71,7 +71,7 @@ export default async function ShopSearchPage({ searchParams }: { searchParams: S
             </>
           ) : (
             <div>
-              <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">
+              <p className="rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-6 text-sm text-slate-600">
                 Nothing found{input.q ? <> for “{input.q}”</> : null}. Try fewer or different words, or Bangla / English spelling.
               </p>
               {fallback?.ok && fallback.data.top.length > 0 ? (

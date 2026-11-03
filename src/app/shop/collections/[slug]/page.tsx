@@ -42,7 +42,7 @@ export default async function ShopCollectionPage({ params }: { params: Params })
         <h1 className="mb-1 mt-4 text-xl font-semibold">{c.data.title}</h1>
         {c.data.description ? <p className="mb-4 max-w-2xl text-sm text-slate-600">{c.data.description}</p> : null}
         {c.data.items.length === 0 ? (
-          <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">No products here right now.</p>
+          <p className="rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-6 text-sm text-slate-600">No products here right now.</p>
         ) : (
           <ProductGrid items={c.data.items} priorityFirst={6} />
         )}

@@ -12,7 +12,7 @@ type Form = { name: string; phone: string; district: string; thana: string; area
 const EMPTY: Form = { name: '', phone: '', district: '', thana: '', area: '', address: '' };
 type StoreChoice = { payment?: string; couponCode?: string; note?: string };
 
-const field = 'mt-1 block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none';
+const field = 'mt-1 block w-full rounded-[14px] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm focus:border-[var(--shop-accent)] focus:outline-none';
 const label = 'block text-sm text-slate-800';
 
 /**
@@ -137,7 +137,7 @@ export function ShopCheckoutView() {
       <div className="space-y-4">
         <h1 className="text-lg font-semibold text-slate-900">Order placed</h1>
         <p className="text-sm text-slate-700">Each store got its own order and sends its own parcel.</p>
-        <ul className="divide-y divide-slate-100 rounded-xl border border-slate-200 bg-white">
+        <ul className="divide-y divide-slate-100 rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)]">
           {placed.map((o) => (
             <li key={o.orderId} className="flex flex-wrap items-center justify-between gap-3 px-4 py-3">
               <div>
@@ -148,11 +148,11 @@ export function ShopCheckoutView() {
               </div>
               <div className="flex gap-2">
                 {o.payNow ? (
-                  <button type="button" onClick={() => payOnline(o.orderId)} className="rounded-lg bg-emerald-700 px-3 py-1.5 text-sm font-semibold text-white hover:bg-emerald-800">
+                  <button type="button" onClick={() => payOnline(o.orderId)} className="rounded-full bg-[var(--shop-accent)] px-3 py-1.5 text-sm font-semibold text-white hover:bg-[var(--shop-accent-dark)]">
                     Pay {taka(o.payNow.amount)}
                   </button>
                 ) : null}
-                <Link href={`/shop/orders/${o.orderId}`} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:border-emerald-600">
+                <Link href={`/shop/orders/${o.orderId}`} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm text-slate-700 hover:border-[var(--shop-accent)]">
                   View
                 </Link>
               </div>
@@ -160,7 +160,7 @@ export function ShopCheckoutView() {
           ))}
         </ul>
         {error ? <p className="text-sm text-red-600">{error}</p> : null}
-        <Link href="/shop/orders" className="inline-block text-sm font-medium text-emerald-700 hover:underline">
+        <Link href="/shop/orders" className="inline-block text-sm font-medium text-[var(--shop-accent)] hover:underline">
           All my orders
         </Link>
       </div>
@@ -170,7 +170,7 @@ export function ShopCheckoutView() {
     return (
       <div className="py-16 text-center">
         <p className="text-slate-700">Nothing in your cart can be bought right now.</p>
-        <Link href="/shop/cart" className="mt-3 inline-block text-sm font-medium text-emerald-700 hover:underline">
+        <Link href="/shop/cart" className="mt-3 inline-block text-sm font-medium text-[var(--shop-accent)] hover:underline">
           Back to the cart
         </Link>
       </div>
@@ -180,11 +180,11 @@ export function ShopCheckoutView() {
     <div className="grid gap-6 lg:grid-cols-5">
       <div className="space-y-4 lg:col-span-3">
         <h1 className="text-lg font-semibold text-slate-900">Checkout</h1>
-        <section className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+        <section className="space-y-3 rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-4">
           <h2 className="text-sm font-semibold text-slate-900">Deliver to</h2>
           {addresses.map((a) => (
-            <label key={a.id} className={`flex cursor-pointer gap-3 rounded-lg border px-3 py-2 text-sm ${chosen === a.id ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200'}`}>
-              <input type="radio" name="addr" checked={chosen === a.id} onChange={() => setChosen(a.id)} className="mt-1 accent-emerald-700" />
+            <label key={a.id} className={`flex cursor-pointer gap-3 rounded-lg border px-3 py-2 text-sm ${chosen === a.id ? 'border-[var(--shop-accent)] bg-[var(--shop-soft)]' : 'border-slate-200'}`}>
+              <input type="radio" name="addr" checked={chosen === a.id} onChange={() => setChosen(a.id)} className="mt-1 accent-[var(--shop-accent)]" />
               <span>
                 <span className="font-medium text-slate-900">
                   {a.receiver} · {a.phone}
@@ -193,8 +193,8 @@ export function ShopCheckoutView() {
               </span>
             </label>
           ))}
-          <label className={`flex cursor-pointer gap-3 rounded-lg border px-3 py-2 text-sm ${chosen === 'new' ? 'border-emerald-600 bg-emerald-50' : 'border-slate-200'}`}>
-            <input type="radio" name="addr" checked={chosen === 'new'} onChange={() => setChosen('new')} className="mt-1 accent-emerald-700" />
+          <label className={`flex cursor-pointer gap-3 rounded-lg border px-3 py-2 text-sm ${chosen === 'new' ? 'border-[var(--shop-accent)] bg-[var(--shop-soft)]' : 'border-slate-200'}`}>
+            <input type="radio" name="addr" checked={chosen === 'new'} onChange={() => setChosen('new')} className="mt-1 accent-[var(--shop-accent)]" />
             <span className="font-medium text-slate-900">A new address</span>
           </label>
           {chosen === 'new' ? (
@@ -231,7 +231,7 @@ export function ShopCheckoutView() {
                   typeArea: 'Type the area',
                 }}
                 labelClassName="block text-sm text-slate-800 mb-1"
-                controlClassName="block w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-sm focus:border-emerald-600 focus:outline-none"
+                controlClassName="block w-full rounded-[14px] border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm focus:border-[var(--shop-accent)] focus:outline-none"
                 fieldClassName="sm:col-span-2"
               />
               <label className={`${label} sm:col-span-2`}>
@@ -239,14 +239,14 @@ export function ShopCheckoutView() {
                 <textarea rows={2} maxLength={250} value={form.address} onChange={(e) => setForm({ ...form, address: e.target.value })} className={field} />
               </label>
               <label className="flex items-center gap-2 text-sm text-slate-700 sm:col-span-2">
-                <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} className="accent-emerald-700" /> Save this address for next time
+                <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} className="accent-[var(--shop-accent)]" /> Save this address for next time
               </label>
             </div>
           ) : null}
         </section>
 
         {preview?.stores.map((s) => (
-          <section key={s.store.subdomain} className="space-y-3 rounded-xl border border-slate-200 bg-white p-4">
+          <section key={s.store.subdomain} className="space-y-3 rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-4">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-slate-900">{s.store.name}</h2>
               <span className="text-xs text-slate-500">
@@ -299,7 +299,7 @@ export function ShopCheckoutView() {
         ))}
       </div>
 
-      <aside className="h-fit space-y-3 rounded-xl border border-slate-200 bg-white p-4 lg:col-span-2">
+      <aside className="h-fit space-y-3 rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-4 lg:col-span-2">
         <h2 className="text-sm font-semibold text-slate-900">Summary</h2>
         {preview ? (
           <>
@@ -313,7 +313,7 @@ export function ShopCheckoutView() {
           type="button"
           disabled={!preview?.canPlace || busy}
           onClick={place}
-          className="w-full rounded-lg bg-emerald-700 py-2.5 text-sm font-semibold text-white hover:bg-emerald-800 disabled:bg-slate-400"
+          className="w-full rounded-full bg-[var(--shop-accent)] py-2.5 text-sm font-semibold text-white hover:bg-[var(--shop-accent-dark)] disabled:bg-slate-400"
         >
           {busy ? 'Placing…' : 'Place order'}
         </button>

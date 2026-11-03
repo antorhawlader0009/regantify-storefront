@@ -2,7 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { formatTaka, shopApiOrigin, type ShopSuggestData } from '@/lib/shopApi';
+import { Search } from 'lucide-react';
+import { formatTaka, shopApiOrigin, shopProductPath, type ShopSuggestData } from '@/lib/shopApi';
 
 /**
  * The Shop's search box (SHOP-plan.md Step 7): Enter opens the results page; while typing (2+ letters, 200 ms after the last key) it shows
@@ -52,8 +53,9 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
   const hasSuggestions = !!data && (data.queries.length > 0 || data.products.length > 0);
 
   return (
-    <div ref={box} className="relative w-full">
+    <div ref={box} className="relative w-full text-slate-900">
       <form
+        className="relative"
         role="search"
         onSubmit={(e) => {
           e.preventDefault();
@@ -75,14 +77,15 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
           onKeyDown={(e) => {
             if (e.key === 'Escape') setOpen(false);
           }}
-          placeholder="Search products from every store (panjabi, মধু, smart watch...)"
+          placeholder="Search products from every store"
           autoComplete="off"
           maxLength={200}
-          className="w-full rounded-full border border-slate-300 bg-white px-5 py-2.5 text-sm text-slate-900 outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20"
+          className="h-12 w-full rounded-[14px] border-0 bg-white pl-11 pr-4 text-sm text-slate-900 shadow-sm outline-none placeholder:text-slate-400 focus:ring-2 focus:ring-white/60"
         />
+        <Search size={18} aria-hidden className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" />
       </form>
       {open && hasSuggestions ? (
-        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg">
+        <div className="absolute left-0 right-0 top-full z-30 mt-2 overflow-hidden rounded-2xl bg-white shadow-[0_12px_32px_rgba(16,24,40,0.16)]">
           {data!.queries.length > 0 ? (
             <ul className="border-b border-slate-100 py-1">
               {data!.queries.map((term) => (
@@ -98,9 +101,9 @@ export function SearchBox({ initial = '' }: { initial?: string }) {
             <ul className="py-1">
               {data!.products.map((p) => (
                 <li key={p.productId}>
-                  <a href={p.url} className="flex items-center justify-between gap-3 px-4 py-2 text-sm hover:bg-slate-50">
+                  <a href={p.slug ? shopProductPath(p.store.subdomain, p.slug) : p.url} className="flex items-center justify-between gap-3 px-4 py-2 text-sm hover:bg-slate-50">
                     <span className="truncate text-slate-800">{p.name}</span>
-                    <span className="shrink-0 text-slate-500">{formatTaka(p.price)}</span>
+                    <span className="shrink-0 font-semibold text-[var(--shop-accent)]">{formatTaka(p.price)}</span>
                   </a>
                 </li>
               ))}

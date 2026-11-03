@@ -76,7 +76,7 @@ export default async function ShopCategoryPage({ params, searchParams }: { param
             {found.category.children
               .filter((c) => c.productCount > 0)
               .map((c) => (
-                <a key={c.slug} href={`/shop/c/${c.slug}`} className="rounded-full bg-white px-3 py-1 text-slate-700 ring-1 ring-slate-200 hover:ring-emerald-600">
+                <a key={c.slug} href={`/shop/c/${c.slug}`} className="rounded-full bg-white px-3 py-1 text-slate-700 ring-1 ring-slate-200 hover:ring-[var(--shop-accent)]">
                   {c.nameEn}
                 </a>
               ))}
@@ -87,7 +87,7 @@ export default async function ShopCategoryPage({ params, searchParams }: { param
           {!result.ok ? (
             <ShopNotice {...noticeFor(result.paused)} />
           ) : result.data.items.length === 0 ? (
-            <p className="rounded-xl border border-slate-200 bg-white p-6 text-sm text-slate-600">No products in this category yet.</p>
+            <p className="rounded-2xl bg-white shadow-[0_2px_12px_rgba(16,24,40,0.06)] p-6 text-sm text-slate-600">No products in this category yet.</p>
           ) : (
             <>
               <ProductGrid items={result.data.items} priorityFirst={6} />
