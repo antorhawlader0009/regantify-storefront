@@ -71,6 +71,12 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
 };
 
 const DesignContext = createContext<StorefrontDesignSettings>(DEFAULT_DESIGN);
+const StoreNameContext = createContext('');
+
+/** The store's real name as the store layout knows it; '' outside the StorePal provider. */
+export function useLayoutStoreName(): string {
+  return useContext(StoreNameContext);
+}
 
 /**
  * Mounted once by the store layout for StorePal, from the ISR-cached
@@ -87,10 +93,13 @@ export function StorePalDesignProvider({
   lmsForms = null,
   verifiedSeller = null,
   subdomain,
+  storeName = '',
   children,
 }: {
   /** For the shopper's own language pick (kept per store in localStorage). */
   subdomain?: string;
+  /** The store's real name from the layout, for pages rendered only in the browser (lib/useStoreDisplayName.ts). */
+  storeName?: string;
   /** "Verified seller" badge (super-admin-new.md Step 12); null = not verified. */
   verifiedSeller?: VerifiedSeller | null;
   /** Shop and support hours (TellMe idea 73); null = none set, or the store is away. */
@@ -111,6 +120,7 @@ export function StorePalDesignProvider({
   const storeDefault: ShopperLanguage = merged.storeLanguage === 'bn' ? 'bn' : 'en';
   const lang = useShopperLanguage(subdomain, storeDefault);
   return (
+    <StoreNameContext.Provider value={storeName}>
     <LanguageContext.Provider value={lang}>
     <DesignContext.Provider value={{ ...merged, storeLanguage: lang.language }}>
       <RestockNotifyContext.Provider value={restockNotify}>
@@ -126,6 +136,7 @@ export function StorePalDesignProvider({
       </RestockNotifyContext.Provider>
     </DesignContext.Provider>
     </LanguageContext.Provider>
+    </StoreNameContext.Provider>
   );
 }
 

@@ -300,6 +300,7 @@ const BN: Record<string, string> = {
   'My orders': 'আমার অর্ডার',
   '{n} orders': '{n}টি অর্ডার',
   '{n} items': '{n}টি পণ্য',
+  '{n} item': '{n}টি পণ্য',
   '{n} saved': '{n}টি সেভ করা',
   Remove: 'সরান',
   'Clear all': 'সব মুছুন',

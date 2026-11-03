@@ -1,6 +1,7 @@
 'use client';
 
 import { useCartStore } from '@/providers/cart-store-provider';
+import { useLayoutStoreName } from './designSettings';
 
 /**
  * Account pages are client components with only `subdomain` in scope
@@ -14,7 +15,12 @@ import { useCartStore } from '@/providers/cart-store-provider';
  * than a generic placeholder.
  */
 export function useStoreDisplayName(subdomain: string): string {
+  // The store layout knows the real name (it fetched the store on the server), so pages rendered only in the browser
+  // use that. Before, with an empty cart they guessed from the address ("antor" became "Antor", and a store named
+  // "Gadget Depot" at that address still showed "Antor").
+  const fromLayout = useLayoutStoreName();
   const fromCart = useCartStore((s) => s.lines.find((l) => l.subdomain === subdomain)?.storeName);
+  if (fromLayout) return fromLayout;
   if (fromCart) return fromCart;
   return subdomain.charAt(0).toUpperCase() + subdomain.slice(1);
 }

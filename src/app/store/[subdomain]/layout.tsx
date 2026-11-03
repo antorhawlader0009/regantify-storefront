@@ -325,7 +325,7 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
         {/* Store > Design settings for every StorePal component; see
             themes/storepal/lib/designSettings.tsx. */}
         {theme === 'STOREPAL' ? (
-          <StorePalDesignProvider subdomain={subdomain} settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} restockNotify={restockNotify} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms} verifiedSeller={verifiedSeller}>
+          <StorePalDesignProvider subdomain={subdomain} storeName={storeName} settings={designSettings} showOutOfStockBadge={showOutOfStockBadge} restockNotify={restockNotify} lowStock={lowStock} businessHours={businessHours} lmsForms={lmsForms} verifiedSeller={verifiedSeller}>
             <WishlistSync subdomain={subdomain} />
             {/* "Someone bought" popup (TellMe idea 123): off unless the store turned it on; real orders only. */}
             <LazyRecentBuyersPopup subdomain={subdomain} />

@@ -142,7 +142,10 @@ export function useCheckout(
 
   const externalLines = options?.lines;
   const cartLines = useCartStore(useShallow((s) => s.lines.filter((l) => l.subdomain === subdomain)));
-  const lines = externalLines ?? cartLines;
+  // The cart is emptied as soon as the order is saved, but the checkout stays on screen until the next page opens (or
+  // the payment page, which takes longer); these are the lines it had, so it doesn't flash "0 items, ৳0" meanwhile.
+  const [placedLines, setPlacedLines] = useState<typeof cartLines | null>(null);
+  const lines = externalLines ?? placedLines ?? cartLines;
   const setQuantity = useCartStore((s) => s.setQuantity);
   const removeLine = useCartStore((s) => s.removeLine);
   const clearStore = useCartStore((s) => s.clearStore);
@@ -1039,7 +1042,10 @@ export function useCheckout(
         }
       }
 
-      if (!externalLines) clearStore(subdomain);
+      if (!externalLines) {
+        setPlacedLines(cartLines);
+        clearStore(subdomain);
+      }
       sessionStorage.removeItem(sessionStorageKey);
 
       // A COD order whose delivery charge must be paid first (Store > COD Guard): the server created it

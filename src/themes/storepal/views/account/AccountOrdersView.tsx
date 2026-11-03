@@ -209,7 +209,7 @@ export function AccountOrdersView({ subdomain }: { subdomain: string }) {
                         {orderLabel(order)}
                       </button>
                       <p className="m-0 mt-0.5 text-[12.5px] text-muted">
-                        {dateText(order.createdAt)} · {t('{n} items').replace('{n}', String(pieces))}
+                        {dateText(order.createdAt)} · {t(pieces === 1 ? '{n} item' : '{n} items').replace('{n}', String(pieces))}
                       </p>
                       {order.courierTracking && (
                         <div className="relative z-[1] mt-1 text-[12px]">
