@@ -36,7 +36,7 @@ export function CampaignsStrip({ subdomain, campaigns }: { subdomain: string; ca
             <div className="absolute inset-x-0 bottom-0 flex items-center justify-between gap-2 p-3.5 text-white">
               <span className="text-[15px] font-bold leading-tight">{c.name}</span>
               <span className="flex shrink-0 items-center gap-1 text-[12px] font-semibold">
-                Shop now <ArrowRight size={13} aria-hidden />
+                {t('Shop now')} <ArrowRight size={13} aria-hidden />
               </span>
             </div>
           </Link>

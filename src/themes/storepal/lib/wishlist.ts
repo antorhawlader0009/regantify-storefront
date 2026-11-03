@@ -44,16 +44,17 @@ function write(subdomain: string, slugs: string[]) {
   listeners.forEach((l) => l());
 }
 
+// One 'storage' listener for the whole page (other tabs of the same store), not one per product card.
+function onStorage(e: StorageEvent) {
+  if (e.key === null || e.key.startsWith(KEY_PREFIX)) listeners.forEach((l) => l());
+}
+
 function subscribe(listener: () => void) {
   listeners.add(listener);
-  // Other tabs of the same store.
-  const onStorage = (e: StorageEvent) => {
-    if (e.key?.startsWith(KEY_PREFIX)) listener();
-  };
-  window.addEventListener('storage', onStorage);
+  if (listeners.size === 1) window.addEventListener('storage', onStorage);
   return () => {
     listeners.delete(listener);
-    window.removeEventListener('storage', onStorage);
+    if (listeners.size === 0) window.removeEventListener('storage', onStorage);
   };
 }
 

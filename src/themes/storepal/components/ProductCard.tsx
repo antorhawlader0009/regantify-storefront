@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { memo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -93,7 +93,10 @@ interface ProductCardProps {
  * reference category-listing screenshots rather than the whole card
  * being one click target the way Medium's ProductCard is).
  */
-export function ProductCard({ product, subdomain, storeName }: ProductCardProps) {
+// memo: the product objects and strings a grid passes don't change when the page's own state does (a search letter,
+// the sort, the filter panel), so the cards are not drawn again for it. The cart, wishlist and design hooks inside
+// still update a card when they change.
+export const ProductCard = memo(function ProductCard({ product, subdomain, storeName }: ProductCardProps) {
   const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   const design = useStorePalDesign();
@@ -508,7 +511,7 @@ export function ProductCard({ product, subdomain, storeName }: ProductCardProps)
       )}
     </div>
   );
-}
+});
 
 /** A muted, looping embed for Product.videoUrl: YouTube or a direct video file. Null for anything else. */
 function videoEmbed(url: string): { kind: 'youtube' | 'file'; src: string } | null {

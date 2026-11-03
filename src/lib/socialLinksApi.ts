@@ -5,6 +5,8 @@
 // only runs server-side). Same host-detection pattern as
 // checkoutApi.ts/customerAuthApi.ts; see either file's header comment
 // for why this can't use the server-only API_URL.
+import { fetchJsonForVisit } from '@/lib/visitCache';
+
 function apiOrigin(): string {
   const configured = process.env.NEXT_PUBLIC_API_URL;
   if (configured) return configured.replace(/\/$/, '');
@@ -93,9 +95,9 @@ const EMPTY_LINKS: StoreBranding = {};
  */
 export async function getStoreSocialLinks(subdomain: string): Promise<StoreBranding> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}`);
-    if (!res.ok) return EMPTY_LINKS;
-    const data = await res.json();
+    // Shared with the footer's payment methods (same address), once per visit (lib/visitCache.ts).
+    const data = await fetchJsonForVisit(`${apiOrigin()}/v1/store/${subdomain}`);
+    if (!data) return EMPTY_LINKS;
     return {
       logoUrl: data.logoUrl ?? null,
       facebookUrl: data.facebookUrl ?? null,

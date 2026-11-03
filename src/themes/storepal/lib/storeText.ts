@@ -534,6 +534,7 @@ const BN: Record<string, string> = {
   "Check back later for offers on this store.": "এই দোকানের অফারের জন্য পরে আবার দেখুন।",
   "Use at checkout": "চেকআউটে ব্যবহার করুন",
   "Shop now": "এখনই কিনুন",
+  "{price} each": "প্রতিটি {price}",
   "Enter the code sent to your phone.": "আপনার ফোনে আসা কোডটি দিন।",
   "Send": "পাঠান",
   "We sent a 6-digit code by SMS to {phone}.": "{phone} নম্বরে SMS-এ 6 সংখ্যার কোড পাঠানো হয়েছে।",

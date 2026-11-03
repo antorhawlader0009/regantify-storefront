@@ -1,4 +1,5 @@
 import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
+import { fetchJsonForVisit } from '@/lib/visitCache';
 
 // Same host-detection pattern as checkoutApi.ts/socialLinksApi.ts - see
 // either file's header comment for why this can't use the server-only
@@ -32,9 +33,9 @@ const EMPTY_NAV: StoreNavData = { categories: [], categoryDetails: [] };
  */
 export async function getStoreNavData(subdomain: string): Promise<StoreNavData> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products`);
-    if (!res.ok) return EMPTY_NAV;
-    const data = await res.json();
+    // The lean list answer carries the same categories; the full one only added descriptions nobody reads here.
+    const data = await fetchJsonForVisit(`${apiOrigin()}/v1/store/${subdomain}/products?view=list`);
+    if (!data) return EMPTY_NAV;
     return {
       categories: Array.isArray(data.categories) ? data.categories : [],
       categoryDetails: Array.isArray(data.categoryDetails) ? data.categoryDetails : [],
@@ -47,10 +48,8 @@ export async function getStoreNavData(subdomain: string): Promise<StoreNavData> 
 /** Whether the store has a FAQ question switched on (TellMe idea 122), for the footer's "FAQ" link. */
 export async function getStoreHasFaq(subdomain: string): Promise<boolean> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/faq`);
-    if (!res.ok) return false;
-    const data = await res.json();
-    return Array.isArray(data.items) && data.items.length > 0;
+    const data = await fetchJsonForVisit(`${apiOrigin()}/v1/store/${subdomain}/faq`);
+    return !!data && Array.isArray(data.items) && data.items.length > 0;
   } catch {
     return false;
   }
@@ -59,10 +58,8 @@ export async function getStoreHasFaq(subdomain: string): Promise<boolean> {
 /** Whether the store has added a shop location, for the footer's "Our shops" link. */
 export async function getStoreHasLocations(subdomain: string): Promise<boolean> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/locations`);
-    if (!res.ok) return false;
-    const data = await res.json();
-    return Array.isArray(data.items) && data.items.length > 0;
+    const data = await fetchJsonForVisit(`${apiOrigin()}/v1/store/${subdomain}/locations`);
+    return !!data && Array.isArray(data.items) && data.items.length > 0;
   } catch {
     return false;
   }
@@ -82,10 +79,8 @@ export interface StoreContactInfo {
 
 export async function getStoreContactInfo(subdomain: string): Promise<StoreContactInfo | null> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/contact`);
-    if (!res.ok) return null;
-    const data = (await res.json()) as StoreContactInfo;
-    return data.enabled === true ? data : null;
+    const data = await fetchJsonForVisit<StoreContactInfo>(`${apiOrigin()}/v1/store/${subdomain}/contact`);
+    return data?.enabled === true ? data : null;
   } catch {
     return null;
   }
@@ -94,10 +89,8 @@ export async function getStoreContactInfo(subdomain: string): Promise<StoreConta
 /** Whether the store has a published Magazine post (TellMe idea 106), for the footer's "Magazine" link. */
 export async function getStoreHasBlog(subdomain: string): Promise<boolean> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/blog?limit=1`);
-    if (!res.ok) return false;
-    const data = await res.json();
-    return Array.isArray(data.posts) && data.posts.length > 0;
+    const data = await fetchJsonForVisit(`${apiOrigin()}/v1/store/${subdomain}/blog?limit=1`);
+    return !!data && Array.isArray(data.posts) && data.posts.length > 0;
   } catch {
     return false;
   }
@@ -110,10 +103,9 @@ export async function getStoreHasBlog(subdomain: string): Promise<boolean> {
  */
 export async function getStorePaymentMethods(subdomain: string): Promise<string[]> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${encodeURIComponent(subdomain)}`);
-    if (!res.ok) return [];
-    const data = await res.json();
-    if (!Array.isArray(data.paymentGateways)) return [];
+    // Same address as the header's getStoreSocialLinks, so the two share one request.
+    const data = await fetchJsonForVisit(`${apiOrigin()}/v1/store/${subdomain}`);
+    if (!data || !Array.isArray(data.paymentGateways)) return [];
     const DEFAULT_LABEL: Record<string, string> = {
       COD: 'Cash on Delivery',
       ONLINE_PAYMENT: 'Online Payment',
@@ -155,9 +147,27 @@ const EMPTY_SEARCH_INDEX: StoreSearchProduct[] = [];
  * back to an empty list rather than throwing - no suggestions dropdown
  * is a fine degraded state, Enter-to-search still works either way.
  */
-export async function getStoreSearchIndex(subdomain: string): Promise<StoreSearchProduct[]> {
+// One download per store per 5 minutes for the whole visit: page changes remount the header, and before this every
+// page fetched the store's whole product list again.
+const SEARCH_INDEX_TTL_MS = 5 * 60 * 1000;
+const searchIndexCache = new Map<string, { at: number; promise: Promise<StoreSearchProduct[]> }>();
+
+export function getStoreSearchIndex(subdomain: string): Promise<StoreSearchProduct[]> {
+  const hit = searchIndexCache.get(subdomain);
+  if (hit && Date.now() - hit.at < SEARCH_INDEX_TTL_MS) return hit.promise;
+  const promise = fetchStoreSearchIndex(subdomain).then((list) => {
+    // A failed download is not kept, so the next search tries again.
+    if (list === EMPTY_SEARCH_INDEX) searchIndexCache.delete(subdomain);
+    return list;
+  });
+  searchIndexCache.set(subdomain, { at: Date.now(), promise });
+  return promise;
+}
+
+async function fetchStoreSearchIndex(subdomain: string): Promise<StoreSearchProduct[]> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products`);
+    // The lean list answer (no descriptions, info tabs...): the search needs only names, photos, prices and search words.
+    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/products?view=list`);
     if (!res.ok) return EMPTY_SEARCH_INDEX;
     const data = await res.json();
     if (!Array.isArray(data.products)) return EMPTY_SEARCH_INDEX;
@@ -188,9 +198,7 @@ export interface StorefrontPageSummary {
  */
 export async function getStorePages(subdomain: string): Promise<StorefrontPageSummary[]> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store/${subdomain}/pages`);
-    if (!res.ok) return [];
-    const data = await res.json();
+    const data = await fetchJsonForVisit(`${apiOrigin()}/v1/store/${subdomain}/pages`);
     return Array.isArray(data) ? data : [];
   } catch {
     return [];
@@ -206,8 +214,7 @@ export interface GiftCardSaleConfig {
 }
 export async function getGiftCardSale(subdomain: string): Promise<GiftCardSaleConfig | null> {
   try {
-    const res = await fetch(`${apiOrigin()}/v1/store-gift-cards/store/${encodeURIComponent(subdomain)}`);
-    return res.ok ? ((await res.json()) as GiftCardSaleConfig) : null;
+    return await fetchJsonForVisit<GiftCardSaleConfig>(`${apiOrigin()}/v1/store-gift-cards/store/${encodeURIComponent(subdomain)}`);
   } catch {
     return null;
   }

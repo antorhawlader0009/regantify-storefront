@@ -9,10 +9,13 @@ import { Search, ShoppingBag, User, ChevronDown, X, Menu, Heart, Phone } from 'l
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
 import { useCustomerAuthStore, useCustomerAuthHydrated } from '@/providers/customer-auth-store-provider';
 import { getStoreSocialLinks, type SocialLinks } from '@/lib/socialLinksApi';
-import { getStoreSearchIndex, type StoreSearchProduct } from '../lib/storeNavApi';
+import { getStoreNavData, getStoreSearchIndex, type StoreNavData, type StoreSearchProduct } from '../lib/storeNavApi';
+
+// The store's categories for this visit, per store: a page that has them fills it, a page that hasn't reads it.
+const headerNavCache = new Map<string, StoreNavData>();
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { ChatBubble } from './ChatBubble';
-import { LazyPhotoSearchPanel } from './LazyWidgets';
+import { LazyAuthDialog, LazyCheckoutDialog, LazyPhotoSearchPanel } from './LazyWidgets';
 import { useHeaderPresence } from '../lib/headerPresence';
 import { PhotoSearchButton } from './PhotoSearchPanel';
 import { imageFromClipboard, usePhotoSearch } from '@/lib/photoSearch';
@@ -23,8 +26,6 @@ import { useAssistantBridge } from '../lib/assistantBridge';
 import { CartDrawer } from './CartDrawer';
 import { BodyPortal } from './BodyPortal';
 import { SideCartTab } from './SideCartTab';
-import { CheckoutDialog } from './CheckoutDialog';
-import { AuthDialog } from './AuthDialog';
 import { MarqueeTrack } from './MarqueeTrack';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useStripHidden } from '../lib/floatingScroll';
@@ -170,12 +171,35 @@ function MenuLink({
 export function StoreHeader({
   subdomain,
   storeName,
-  categories,
+  categories: categoriesProp,
   logoUrl: logoUrlProp,
   socialLinks: socialLinksProp,
   chatProductName,
-  categoryDetails = [],
+  categoryDetails: categoryDetailsProp = [],
 }: StoreHeaderProps) {
+  // Pages rendered in the browser (account dialog, checkout, thank-you, tracking...) used to give the header no
+  // categories, so its category row came and went between pages and the page behind a dialog jumped. The header now
+  // loads them itself when the page gave none, kept for the visit so the next page has them on its first paint.
+  const [loadedNav, setLoadedNav] = useState<StoreNavData | null>(() => headerNavCache.get(subdomain) ?? null);
+  const pageGaveCategories = categoriesProp.length > 0;
+  useEffect(() => {
+    if (pageGaveCategories) {
+      headerNavCache.set(subdomain, { categories: categoriesProp, categoryDetails: categoryDetailsProp });
+      return;
+    }
+    let cancelled = false;
+    getStoreNavData(subdomain).then((nav) => {
+      if (cancelled) return;
+      headerNavCache.set(subdomain, nav);
+      setLoadedNav(nav);
+    });
+    return () => {
+      cancelled = true;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [subdomain, pageGaveCategories]);
+  const categories = pageGaveCategories ? categoriesProp : (loadedNav?.categories ?? []);
+  const categoryDetails = pageGaveCategories ? categoryDetailsProp : (loadedNav?.categoryDetails ?? []);
   const formatPrice = useFormatPrice(plainPrice);
   const t = useStoreText();
   // The account dialog's × returns to the last store page (lib/accountReturn.ts).
@@ -323,10 +347,19 @@ export function StoreHeader({
     if (photoHintAt && window.matchMedia('(max-width: 639px)').matches) setMobileSearchOpen(true);
   }, [photoHintAt]);
 
+  // The product list for the suggestions is fetched only once the shopper uses the search (focus or typing), not on
+  // every page load; lib/storeNavApi.ts keeps it for the rest of the visit.
+  const wantSearchIndex = suggestionsOpen || mobileSearchOpen;
   useEffect(() => {
-    if (searchIndex !== null) return;
-    getStoreSearchIndex(subdomain).then(setSearchIndex);
-  }, [subdomain, searchIndex]);
+    if (searchIndex !== null || !wantSearchIndex) return;
+    let cancelled = false;
+    getStoreSearchIndex(subdomain).then((list) => {
+      if (!cancelled) setSearchIndex(list);
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [subdomain, searchIndex, wantSearchIndex]);
 
   useEffect(() => {
     const onPointerDown = (e: PointerEvent) => {
@@ -937,8 +970,8 @@ export function StoreHeader({
       {/* In <body>, not inside the sticky header, so they open above the account dialog too (BodyPortal). */}
       <BodyPortal>
         <CartDrawer subdomain={subdomain} />
-        <CheckoutDialog subdomain={subdomain} />
-        <AuthDialog subdomain={subdomain} />
+        <LazyCheckoutDialog subdomain={subdomain} />
+        <LazyAuthDialog subdomain={subdomain} />
       </BodyPortal>
       <SideCartTab subdomain={subdomain} />
     </header>

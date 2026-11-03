@@ -171,7 +171,7 @@ export function CartDrawer({ subdomain }: { subdomain: string }) {
                             <p className="mt-1 text-[12px] text-muted">{line.customDisplay.map((v) => `${v.label}: ${v.value}`).join(' · ')}</p>
                           )}
                           {line.isPreOrder && <p className="mt-1 text-[12px] text-muted">{t('Pre-order')}</p>}
-                          {line.quantity > 1 && <p className="mt-1 text-[12px] text-muted">{formatPrice(line.unitPrice)} each</p>}
+                          {line.quantity > 1 && <p className="mt-1 text-[12px] text-muted">{t('{price} each').replace('{price}', formatPrice(line.unitPrice))}</p>}
                         </div>
                         <button
                           onClick={() => removeLine(line.id)}

@@ -193,13 +193,19 @@ export function HomeView({
   const pickRank = useMemo(() => (picks?.length ? new Map(picks.map((s, i) => [s, i] as const)) : null), [picks]);
   // A main category also holds its sub categories' products: a product's category is the one picked for it, often a sub
   // category, so "Home & Kitchen" must match products in "Kitchen Appliances" too.
-  const activeCategoryNames = activeCategory
-    ? new Set([activeCategory, ...(categoryDetails.find((c) => c.name === activeCategory)?.children ?? []).map((c) => c.name)])
-    : null;
+  const activeCategoryNames = useMemo(
+    () =>
+      activeCategory
+        ? new Set([activeCategory, ...(categoryDetails.find((c) => c.name === activeCategory)?.children ?? []).map((c) => c.name)])
+        : null,
+    [activeCategory, categoryDetails],
+  );
   const inActiveCategory = (p: (typeof products)[number]) =>
     !activeCategoryNames || (p.category ? activeCategoryNames.has(p.category) : false) || p.secondaryCategories.some((c) => activeCategoryNames.has(c));
 
-  const filtered = products.filter((p) => {
+  // Worked out again only when the products, the search or a filter changes, not on every render (a menu or the
+  // filter panel opening re-renders this view).
+  const filtered = useMemo(() => products.filter((p) => {
     const matchesSearch = (searchHits ? searchRank.has(p) : true) && (pickRank ? pickRank.has(p.slug) : true);
     // Matches on secondaryCategories too - a promo bucket like "50% OFF"
     // (see the header nav) is typically tagged onto products from many
@@ -232,7 +238,8 @@ export function HomeView({
       matchesBrand &&
       matchesVariantOptions
     );
-  });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }), [products, searchHits, searchRank, pickRank, activeCategoryNames, activeBrand, filters, priceBounds]);
 
   // Sort for the filtered listing (category/brand/search view). "Latest"
   // is newest-first by createdAt; price sorts use the price a shopper
@@ -249,7 +256,7 @@ export function HomeView({
   const canBestSelling = filtered.some((p) => (p.soldRecent ?? 0) > 0);
   const canTopRated = filtered.some((p) => (p.rating?.count ?? 0) > 0);
   const canDiscount = filtered.some((p) => savePct(p) > 0);
-  const sorted = [...filtered].sort((a, b) =>
+  const sorted = useMemo(() => [...filtered].sort((a, b) =>
     sortBy === 'price-asc'
       ? payPrice(a) - payPrice(b)
       : sortBy === 'price-desc'
@@ -267,7 +274,8 @@ export function HomeView({
           : searchHits
             ? (searchRank.get(a) ?? 0) - (searchRank.get(b) ?? 0) // a search: the closest spelling first, then the store's own order
             : 0, // "Latest" keeps the store's own order: the vendor's pinned products first, then newest first
-  );
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  ), [filtered, sortBy, pickRank, searchHits, searchRank]);
 
   // Meta pixel Search / GA4 search, once per query, with the top results
   // as the pixel's content_ids.
@@ -309,12 +317,14 @@ export function HomeView({
       <StoreSetupGuide storeName={storeName} setup={setup} />
     </>
   );
-  const grouped = !isFiltered ? groupByCategory(products) : null;
+  const grouped = useMemo(() => (!isFiltered ? groupByCategory(products) : null), [isFiltered, products]);
 
   // The store's own order (pinned products first, then newest first).
   // "Top Selling" (TellMe idea 63): when the store counts sales, the 4 with the most buyers (from 5 up); else the first 4.
-  const bySales = [...products].filter((p) => (p.soldRecent ?? 0) >= 5).sort((a, b) => (b.soldRecent ?? 0) - (a.soldRecent ?? 0));
-  const topSelling = bySales.length >= 1 ? bySales.slice(0, 4) : products.slice(0, 4);
+  const topSelling = useMemo(() => {
+    const bySales = products.filter((p) => (p.soldRecent ?? 0) >= 5).sort((a, b) => (b.soldRecent ?? 0) - (a.soldRecent ?? 0));
+    return bySales.length >= 1 ? bySales.slice(0, 4) : products.slice(0, 4);
+  }, [products]);
 
   const activeCategoryDetail = activeCategory ? categoryDetails.find((c) => c.name === activeCategory) : undefined;
 
