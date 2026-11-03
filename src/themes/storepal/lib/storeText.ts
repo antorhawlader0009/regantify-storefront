@@ -10,6 +10,32 @@ import { formatPrice } from './formatPrice';
  * keeps its own bn/en switch (CheckoutDialog.tsx).
  */
 const BN: Record<string, string> = {
+  // PlayMate cart, cart drawer and wishlist pages
+  'Add All to Cart': 'সবগুলো কার্টে যোগ করুন',
+  'Add {amount} more to place your order': 'অর্ডার করতে আরও {amount} যোগ করুন',
+  Apply: 'প্রয়োগ করুন',
+  'At checkout': 'চেকআউটে',
+  'Choose an option on these first:': 'এগুলোর আগে অপশন বেছে নিন:',
+  'Out of stock, not added:': 'স্টকে নেই, যোগ হয়নি:',
+  'Clear Wishlist': 'পছন্দের তালিকা খালি করুন',
+  'Clear cart': 'কার্ট খালি করুন',
+  Coupon: 'কুপন',
+  'Delivery charge is added at checkout from your address.': 'ডেলিভারি চার্জ চেকআউটে আপনার ঠিকানা দেখে যোগ হবে।',
+  Delivery: 'ডেলিভারি',
+  'Free gift': 'ফ্রি উপহার',
+  Free: 'ফ্রি',
+  'Go to cart': 'কার্টে যান',
+  Home: 'হোম',
+  'My Wishlist': 'আমার পছন্দের তালিকা',
+  'Order Summary': 'অর্ডারের সারাংশ',
+  'Promo code': 'প্রোমো কোড',
+  'This coupon code is not valid.': 'এই কুপন কোডটি সঠিক নয়।',
+  'View Full Cart & Checkout': 'পুরো কার্ট দেখুন ও চেকআউট করুন',
+  'You May Also Like': 'আপনার আরও পছন্দ হতে পারে',
+  'Your Cart': 'আপনার কার্ট',
+  'Your code will be checked at checkout.': 'আপনার কোডটি চেকআউটে যাচাই করা হবে।',
+  'Your order can be placed': 'এখন অর্ডার করা যাবে',
+  each: 'প্রতিটি',
   // Product card
   'Add to Cart': 'কার্টে যোগ করুন',
   'Share cart': 'কার্ট শেয়ার করুন',

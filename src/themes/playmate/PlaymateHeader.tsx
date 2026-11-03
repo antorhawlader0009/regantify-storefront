@@ -23,10 +23,8 @@ import { PhotoSearchButton } from '../storepal/components/PhotoSearchPanel';
 import { VoiceSearchButton, VoiceSearchStatus } from '../storepal/components/VoiceSearch';
 import { AskAssistantButton } from '../storepal/components/AskAssistantButton';
 import { useAssistantBridge } from '../storepal/lib/assistantBridge';
-import { CartDrawer } from '../storepal/components/CartDrawer';
+import { PlaymateCartDrawer } from './PlaymateCartDrawer';
 import { BodyPortal } from '../storepal/components/BodyPortal';
-import { SideCartTab } from '../storepal/components/SideCartTab';
-import { useCartDrawer } from '../storepal/lib/cartDrawer';
 import { useAuthDialog } from '../storepal/lib/authDialog';
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../storepal/lib/designSettings';
 import { useWishlist } from '../storepal/lib/wishlist';
@@ -152,7 +150,6 @@ export function PlaymateHeader({
 
   const hydrated = useCartHydrated();
   const cartCount = useCartStore((s) => s.lines.filter((l) => l.subdomain === subdomain).reduce((sum, l) => sum + l.quantity, 0));
-  const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   const openLogin = useAuthDialog((s) => s.openLogin);
   const authHydrated = useCustomerAuthHydrated();
   const customer = useCustomerAuthStore((s) => s.customer);
@@ -364,7 +361,7 @@ export function PlaymateHeader({
               )}
             </Link>
             {design.cardShowWishlist && (
-              <Link href={`/store/${subdomain}/account/wishlist`} className={iconBtn} aria-label={t('Wishlist')}>
+              <Link href={`/store/${subdomain}/wishlist`} className={iconBtn} aria-label={t('Wishlist')}>
                 <HeartIcon className={`h-[22px] w-[22px] ${wishlist.slugs.length > 0 ? 'fill-red-500 text-red-500' : ''}`} />
                 {wishlist.slugs.length > 0 && (
                   <span className="absolute -right-0.5 -top-0.5 grid h-4 min-w-4 place-items-center rounded-full bg-red-500 px-1 text-[9px] font-bold text-white">
@@ -375,10 +372,6 @@ export function PlaymateHeader({
             )}
             <Link
               href={`/store/${subdomain}/cart`}
-              onClick={(e) => {
-                e.preventDefault();
-                openCartDrawer();
-              }}
               className={iconBtn}
               aria-label={t('Cart')}
               data-rg="cart-button"
@@ -449,7 +442,7 @@ export function PlaymateHeader({
               </button>
               {design.cardShowWishlist && (
                 <Link
-                  href={`/store/${subdomain}/account/wishlist`}
+                  href={`/store/${subdomain}/wishlist`}
                   onClick={closeAll}
                   className="flex w-full items-center justify-between border-b border-line py-3.5 text-sm font-semibold uppercase tracking-wide"
                 >
@@ -457,17 +450,14 @@ export function PlaymateHeader({
                   <HeartIcon className="h-4 w-4" />
                 </Link>
               )}
-              <button
-                type="button"
-                onClick={() => {
-                  setMobileOpen(false);
-                  openCartDrawer();
-                }}
+              <Link
+                href={`/store/${subdomain}/cart`}
+                onClick={() => setMobileOpen(false)}
                 className="flex w-full items-center justify-between border-b border-line py-3.5 text-sm font-semibold uppercase tracking-wide"
               >
                 {t('Cart')} ({hydrated ? cartCount : 0})
                 <CartIcon className="h-4 w-4" />
-              </button>
+              </Link>
               {phone && (
                 <a href={telHref} className="flex w-full items-center justify-between border-b border-line py-3.5 text-sm font-semibold tracking-wide">
                   {phone}
@@ -569,11 +559,10 @@ export function PlaymateHeader({
       <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
       <LazyPhotoSearchPanel subdomain={subdomain} storeName={storeName} />
       <BodyPortal>
-        <CartDrawer subdomain={subdomain} />
+        <PlaymateCartDrawer subdomain={subdomain} />
         <LazyCheckoutDialog subdomain={subdomain} />
         <LazyAuthDialog subdomain={subdomain} />
       </BodyPortal>
-      <SideCartTab subdomain={subdomain} />
     </>
   );
 }

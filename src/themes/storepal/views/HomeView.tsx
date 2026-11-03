@@ -477,7 +477,7 @@ export function HomeView({
       {showPreview && <OpeningSoonBar />}
 
       {/* "You were looking at this": a returning shopper's last product, once per visit (everything stays in their browser). */}
-      {!isFiltered && !showPreview && <ComebackNudge subdomain={subdomain} />}
+      {!isFiltered && !showPreview && skin !== 'playmate' && <ComebackNudge subdomain={subdomain} />}
 
       {couponBannerCode && (
         <div className="bg-success-bg text-success text-[13px] font-medium">
