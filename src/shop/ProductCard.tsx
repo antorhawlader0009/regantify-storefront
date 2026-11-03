@@ -1,9 +1,9 @@
 import Image from 'next/image';
-import { formatTaka, type ShopItem } from '@/lib/shopApi';
+import { formatTaka, shopProductPath, type ShopItem } from '@/lib/shopApi';
 
 /**
- * One product in the Regantify Shop (SHOP-plan.md Step 7). The whole card links to the product on its store's own page (the address
- * already carries utm_source=shop, so the store's Analytics counts the visit and any order as "Regantify Shop"). Buying happens there.
+ * One product in the Regantify Shop (SHOP-plan.md Step 7). Since 2026-11-03 the card opens the Shop's own product page (/shop/p/<store>/<slug>),
+ * where a shopper signed in once buys from any store; that page also links to the store's own page.
  */
 export function ProductCard({ item, priority = false }: { item: ShopItem; priority?: boolean }) {
   if (item.alsoSoldBy <= 0) return <CardLink item={item} priority={priority} />;
@@ -21,7 +21,7 @@ export function ProductCard({ item, priority = false }: { item: ShopItem; priori
 function CardLink({ item, priority }: { item: ShopItem; priority: boolean }) {
   const onSale = item.listPrice > item.price;
   return (
-    <a href={item.url} className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-emerald-600 hover:shadow-md">
+    <a href={item.slug ? shopProductPath(item.store.subdomain, item.slug) : item.url} className="group flex flex-col overflow-hidden rounded-xl border border-slate-200 bg-white transition hover:border-emerald-600 hover:shadow-md">
       <div className="relative aspect-square bg-slate-100">
         {item.photoUrl ? (
           <Image
@@ -55,43 +55,12 @@ function CardLink({ item, priority }: { item: ShopItem; priority: boolean }) {
   );
 }
 
-/**
- * A Reseller tab card (SHOP-plan.md Step 8): the product card, then the supplier's public badge and "Sell this in your store", a link into the
- * dashboard's reseller catalog opened on this offer (the seller signs in there; the Shop never asks). What a reseller earns is shown only there.
- */
-function ResellerCard({ item, priority }: { item: ShopItem; priority: boolean }) {
-  const resale = item.resale;
-  return (
-    <div className="flex flex-col gap-2">
-      <ProductCard item={item} priority={priority} />
-      {resale ? (
-        <div className="flex flex-col gap-1.5 px-1">
-          {resale.supplierBadge ? (
-            <span className={`w-fit rounded-full px-2 py-0.5 text-xs font-medium ${resale.supplierBadge === 'RELIABLE' ? 'bg-emerald-50 text-emerald-800' : 'bg-sky-50 text-sky-800'}`}>
-              {resale.supplierBadge === 'RELIABLE' ? 'Reliable supplier' : 'New supplier'}
-            </span>
-          ) : null}
-          {resale.resellUrl ? (
-            <a href={resale.resellUrl} className="rounded-lg border border-emerald-700 px-3 py-1.5 text-center text-xs font-medium text-emerald-800 hover:bg-emerald-50">
-              Sell this in your store
-            </a>
-          ) : null}
-        </div>
-      ) : null}
-    </div>
-  );
-}
-
-export function ProductGrid({ items, priorityFirst = 0, reseller = false }: { items: ShopItem[]; priorityFirst?: number; reseller?: boolean }) {
+export function ProductGrid({ items, priorityFirst = 0 }: { items: ShopItem[]; priorityFirst?: number }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-6">
-      {items.map((item, i) =>
-        reseller ? (
-          <ResellerCard key={item.productId} item={item} priority={i < priorityFirst} />
-        ) : (
-          <ProductCard key={item.productId} item={item} priority={i < priorityFirst} />
-        ),
-      )}
+      {items.map((item, i) => (
+        <ProductCard key={item.productId} item={item} priority={i < priorityFirst} />
+      ))}
     </div>
   );
 }

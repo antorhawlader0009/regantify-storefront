@@ -23,9 +23,14 @@ export type ShopItem = {
   store: { name: string; subdomain: string };
   /** The product on its store's own page, with utm_source=shop. */
   url: string;
-  /** Only in the Reseller tab: the offer, the supplier's public badge and the link into the dashboard (never what a reseller earns). */
-  resale?: { offerId: string; supplierBadge: 'NEW' | 'RELIABLE' | null; resellUrl: string | null };
+  /** The product's address name in its store; the Shop's own product page is /shop/p/<store>/<slug>. */
+  slug?: string;
 };
+
+/** The Shop's own product page (2026-11-03): bought there with the one Shop sign-in. */
+export function shopProductPath(subdomain: string, slug: string): string {
+  return `/shop/p/${encodeURIComponent(subdomain)}/${encodeURIComponent(slug)}`;
+}
 
 export type ShopCategory = { slug: string; nameEn: string; nameBn: string | null; productCount: number; children: ShopCategory[] };
 
@@ -90,7 +95,7 @@ export function getShopCategories(): Promise<ShopAnswer<ShopCategory[]>> {
   return shopFetch<ShopCategory[]>('/categories', 300);
 }
 
-export type ShopSearchInput = { q?: string; page?: number; sort?: string; minPrice?: number; maxPrice?: number; inStock?: boolean; category?: string; scope?: 'all' | 'reseller'; from?: string };
+export type ShopSearchInput = { q?: string; page?: number; sort?: string; minPrice?: number; maxPrice?: number; inStock?: boolean; category?: string; from?: string };
 
 /** Only the parameters the API accepts, so an unknown one in the page address can never make the API refuse the request. */
 export function shopSearchQuery(input: ShopSearchInput): string {
@@ -102,7 +107,6 @@ export function shopSearchQuery(input: ShopSearchInput): string {
   if (input.maxPrice !== undefined) qs.set('maxPrice', String(input.maxPrice));
   if (input.inStock) qs.set('inStock', 'true');
   if (input.category) qs.set('category', input.category);
-  if (input.scope === 'reseller') qs.set('scope', 'reseller');
   if (input.from) qs.set('from', input.from);
   const s = qs.toString();
   return s ? `?${s}` : '';
@@ -145,4 +149,30 @@ export function numberParam(v: string | string[] | undefined): number | undefine
   if (s === undefined || s.trim() === '') return undefined;
   const n = Number(s);
   return Number.isFinite(n) && n >= 0 ? n : undefined;
+}
+
+/** The product as the Shop's own product page shows it (the app's product answer: the store's public product, its store card). */
+export type ShopProductPage = {
+  product: import('./storefrontApi').StorefrontProduct & { images?: Array<{ src: string; card: string; large: string }> };
+  store: { name: string; subdomain: string; logo: { src: string; card: string; large: string } | null; verified: boolean; listed: boolean; sinceYear: number };
+  alsoSoldBy: number;
+};
+
+/** One product for /shop/p/<store>/<slug> (2026-11-03); null when it is not on the Shop (404). Kept 60 s. */
+export async function getShopProduct(subdomain: string, slug: string): Promise<ShopAnswer<ShopProductPage | null>> {
+  try {
+    const res = await fetch(`${API_URL}/v1/app/market/products/${encodeURIComponent(subdomain)}/${encodeURIComponent(slug)}`, { next: { revalidate: 60, tags: ['shop'] } });
+    if (res.status === 404) return { ok: true, data: null };
+    if (res.status === 503) return { ok: false, paused: true };
+    if (!res.ok) return { ok: false, paused: false };
+    return { ok: true, data: (await res.json()) as ShopProductPage };
+  } catch {
+    return { ok: false, paused: false };
+  }
+}
+
+/** A store's own website (its product page when `slug` is given), marked as coming from the Shop. */
+export function storeSiteUrl(subdomain: string, slug?: string): string {
+  const base = ROOT_DOMAIN ? `https://${subdomain}.${ROOT_DOMAIN}` : `/store/${encodeURIComponent(subdomain)}`;
+  return `${base}${slug ? `/p/${encodeURIComponent(slug)}` : ''}?utm_source=shop&utm_medium=product`;
 }

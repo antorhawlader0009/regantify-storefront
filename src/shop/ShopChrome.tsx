@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { SHOP_NAME, type ShopCategory } from '@/lib/shopApi';
 import { SearchBox } from './SearchBox';
+import { ShopAccountLinks } from './ShopAccountLinks';
 
 /** The Shop's header (SHOP-plan.md Step 7): its name, the search box. Its own design; no store theme is used. */
 export function ShopHeader({ query }: { query?: string }) {
@@ -11,9 +12,7 @@ export function ShopHeader({ query }: { query?: string }) {
           {SHOP_NAME}
         </Link>
         <SearchBox initial={query} />
-        <Link href="/shop/reseller" className="shrink-0 text-sm font-medium text-slate-700 hover:text-emerald-700">
-          Products to resell
-        </Link>
+        <ShopAccountLinks />
       </div>
     </header>
   );
@@ -24,8 +23,8 @@ export function ShopFooter() {
     <footer className="mt-12 border-t border-slate-200 bg-white">
       <div className="mx-auto max-w-7xl px-4 py-6 text-xs text-slate-500">
         <p>
-          {SHOP_NAME} shows products from many independent stores. You buy on each store&apos;s own page: its prices, delivery, payment and
-          returns apply.
+          {SHOP_NAME} shows products from many independent stores. Sign in once and buy from any of them: each store gets its own order, and its
+          own prices, delivery, payment and returns apply.
         </p>
       </div>
     </footer>
