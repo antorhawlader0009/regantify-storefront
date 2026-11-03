@@ -23,6 +23,7 @@ import { WishlistSync } from '@/themes/storepal/components/WishlistSync';
 import { MetaPixel } from '@/components/MetaPixel';
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import { GoogleTagManager } from '@/components/GoogleTagManager';
+import { StoreDataLayer } from '@/components/StoreDataLayer';
 import { TiktokPixel } from '@/components/TiktokPixel';
 import { AppAvailableProvider } from '@/lib/appAvailable';
 import { appOffered, getAppDownload } from '@/lib/appDownload';
@@ -279,6 +280,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           Prompt below (landing pages included, since they render inside
           this layout). Waits for GDPR consent when the prompt is on. See
           lib/metaPixel.ts. */}
+      {/* The store's dataLayer on every template (2026-11-03): ecommerce events and order_place even without
+          Store > Integrations > Google Tag Manager. See components/StoreDataLayer.tsx. */}
+      {storeExists && <StoreDataLayer subdomain={subdomain} storeName={storeName || null} consentRequired={!!gdprPrompt} />}
       {storeExists && theme === 'STOREPAL' && (
         <MetaPixel subdomain={subdomain} metaPixel={metaPixel} consentRequired={!!gdprPrompt} />
       )}

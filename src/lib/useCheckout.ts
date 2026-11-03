@@ -18,7 +18,7 @@ import {
 } from '@/lib/customerAuthApi';
 import { trackMetaAddPaymentInfo } from '@/lib/metaPixelEvents';
 import { metaAdContext } from '@/lib/metaPixel';
-import { trackAddPaymentInfo, trackAddShippingInfo } from '@/lib/ecommerceEvents';
+import { trackAddPaymentInfo, trackAddShippingInfo, trackOrderPlaced } from '@/lib/ecommerceEvents';
 import { gaAdContext } from '@/lib/googleAnalytics';
 import { tiktokAdContext } from '@/lib/tiktokPixel';
 import { captureTrafficSource } from '@/lib/trafficSource';
@@ -985,6 +985,33 @@ export function useCheckout(
         })),
       }, authToken);
       clearInstantHandoff(subdomain);
+
+      // The store's dataLayer (every template, 2026-11-03): order_place with the whole order and ecommerce.customer, the moment
+      // the order exists. Templates without a thank-you page also get their purchase event here, for orders that need no online
+      // payment first (a paid order's purchase comes after the payment, where a thank-you page exists). Never blocks the order.
+      const paysOnlineFirst = (isCod && !!result.advanceDue) || (!!selectedGateway && selectedGateway.type !== 'COD' && selectedGateway.type !== 'MANUAL_MOBILE');
+      void trackOrderPlaced({
+        orderId: result.orderId,
+        invoiceNumber: result.invoiceNumber,
+        publicCode: result.publicCode,
+        total: Number(result.total),
+        shipping: effectiveDeliveryCharge,
+        tax: vatAmount,
+        discount: totalDiscount,
+        coupon: appliedCoupon?.code,
+        paymentType: selectedGateway?.type ?? paymentMethod,
+        lines,
+        customer: {
+          name: form.fullName,
+          phone: form.phone,
+          email: formRules?.email && formRules.email !== 'HIDDEN' ? form.email : null,
+          address: zone === 'PICKUP' ? 'Pickup from the shop' : withArea(form.address, area),
+          city: form.city,
+          district: form.district,
+          zone,
+        },
+        alsoPurchase: redirectTo === 'orders' && !paysOnlineFirst,
+      }).catch(() => undefined);
 
       // Any non-COD gateway: the order now exists (PAYMENT_INITIATED,
       // stock already decremented - see OrdersService.create), but it

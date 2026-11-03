@@ -310,9 +310,117 @@ export async function trackPurchase(order: TrackedOrder) {
   const gtmKey = purchaseSentKey('gtm', order.id);
   if (alreadySent(gtmKey)) return;
   const userData = gtmCustomerDataEnabled() ? await hashedUserData(order) : null;
-  if (pushGtmEvent('purchase', params, { ecommerce: true, extra: userData ? { user_data: userData } : undefined })) {
+  const customer = customerOf({
+    name: order.customerName,
+    phone: order.customerPhone,
+    email: order.customerEmail,
+    address: order.shippingAddress,
+    city: order.shippingCity,
+    district: order.shippingDistrict,
+    zone: order.deliveryZone,
+  });
+  if (pushGtmEvent('purchase', { ...params, customer }, { ecommerce: true, extra: userData ? { user_data: userData } : undefined })) {
     markSent(gtmKey);
   }
+}
+
+// -- order_place (2026-11-03, the owner's rule) --
+
+export type OrderCustomerInput = {
+  name?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  address?: string | null;
+  city?: string | null;
+  district?: string | null;
+  zone?: string | null;
+};
+
+/**
+ * The shopper as `ecommerce.customer` on order_place and purchase: what the shopper typed at checkout (the order page shows
+ * the same), in plain text, for the store's own tags (a server-side GTM that hashes it for Meta / Google, a courier fraud
+ * check...). Phone also in E.164 (+8801...). Only on the store's own pages; the store decides which tags may read it.
+ */
+function customerOf(c: OrderCustomerInput) {
+  const name = (c.name ?? '').trim();
+  const [first, ...rest] = name.split(/s+/);
+  const phone = (c.phone ?? '').replace(/[s-]/g, '');
+  const e164 = normalizeBdPhone(phone);
+  return {
+    name: name || null,
+    first_name: first || null,
+    last_name: rest.join(' ') || null,
+    phone: phone || null,
+    phone_e164: e164 ? `+${e164}` : null,
+    email: c.email?.trim().toLowerCase() || null,
+    address: c.address?.trim() || null,
+    city: c.city?.trim() || null,
+    district: c.district?.trim() || null,
+    delivery_zone: c.zone || null,
+    country: 'BD',
+  };
+}
+
+/**
+ * The moment an order is created at checkout (every template and the landing page checkout), before any online payment:
+ * `order_place` on the dataLayer and to the store's Custom Code, with the whole order and `ecommerce.customer`. Once per order
+ * from this browser. On templates without a thank-you page (Medium, Minimal) the purchase event is sent here too
+ * (`alsoPurchase`), because no later page sends it.
+ */
+export async function trackOrderPlaced(input: {
+  orderId: string;
+  invoiceNumber: number;
+  publicCode?: string | null;
+  total: number;
+  shipping: number;
+  tax: number;
+  discount: number;
+  coupon?: string | null;
+  paymentType: string;
+  lines: CartLine[];
+  customer: OrderCustomerInput;
+  alsoPurchase?: boolean;
+}) {
+  const ecommerce = {
+    transaction_id: String(input.invoiceNumber),
+    order_id: input.orderId,
+    ...(input.publicCode && { order_code: input.publicCode }),
+    currency: CURRENCY,
+    value: round(input.total),
+    shipping: round(input.shipping),
+    tax: round(input.tax),
+    ...(input.discount > 0 && { discount: round(input.discount) }),
+    ...(input.coupon && { coupon: input.coupon }),
+    payment_type: input.paymentType,
+    items: input.lines.map((line, index) => lineItem(line, index)),
+    customer: customerOf(input.customer),
+  };
+  const key = `storepal:order-place:${input.orderId}`;
+  if (!alreadySent(key)) {
+    sendCustomCodeEvent('order_place', ecommerce);
+    const userData = gtmCustomerDataEnabled()
+      ? await hashedUserData({
+          customerName: input.customer.name ?? '',
+          customerPhone: input.customer.phone ?? undefined,
+          customerEmail: input.customer.email ?? null,
+          shippingCity: input.customer.city ?? null,
+          shippingDistrict: input.customer.district ?? null,
+        })
+      : null;
+    if (pushGtmEvent('order_place', ecommerce, { ecommerce: true, extra: userData ? { user_data: userData } : undefined })) markSent(key);
+  }
+  if (!input.alsoPurchase) return;
+  const { order_id: _orderId, order_code: _code, payment_type: _pay, ...purchase } = ecommerce;
+  const customKey = purchaseSentKey('custom', input.orderId);
+  if (!alreadySent(customKey)) {
+    sendCustomCodeEvent('purchase', purchase);
+    markSent(customKey);
+  }
+  const gaKey = purchaseSentKey('ga', input.orderId);
+  const { customer: _customer, ...gaPurchase } = purchase;
+  if (browserSendsGaPurchase() && !alreadySent(gaKey) && trackGaEvent('purchase', gaPurchase)) markSent(gaKey);
+  const gtmKey = purchaseSentKey('gtm', input.orderId);
+  if (!alreadySent(gtmKey) && pushGtmEvent('purchase', purchase, { ecommerce: true })) markSent(gtmKey);
 }
 
 /** Shopper account created. */
@@ -348,7 +456,9 @@ async function sha256Hex(value: string): Promise<string | null> {
  * Google asks before hashing: trimmed and lowercased, phone in E.164
  * (+8801XXXXXXXXX). Only hashes ever go on the dataLayer.
  */
-async function hashedUserData(order: TrackedOrder): Promise<Record<string, unknown> | null> {
+async function hashedUserData(
+  order: Pick<TrackedOrder, 'customerName' | 'customerPhone' | 'customerEmail' | 'shippingCity' | 'shippingDistrict'>,
+): Promise<Record<string, unknown> | null> {
   const email = order.customerEmail?.trim().toLowerCase();
   const phone = normalizeBdPhone(order.customerPhone);
   const [first, ...rest] = (order.customerName ?? '').trim().toLowerCase().split(/\s+/);
