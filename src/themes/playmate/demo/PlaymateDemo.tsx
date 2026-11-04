@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { BadgeCheck, Gem, Headset, RefreshCw, ShieldCheck, Truck } from 'lucide-react';
 import { CoverFloating } from '@/lib/floatingCover';
+import { PmTopBarView } from '../PlaymateTopBar';
 import { PlaymateCardView } from '../PlaymateCard';
 import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, type PmHeroSlide } from '../PlaymateHome';
 import { CartIcon, ChevronDown, HeartIcon, MenuIcon, SearchIcon, UserIcon } from '../icons';
@@ -65,26 +66,22 @@ export function PlaymateDemo() {
     <div data-theme="storepal" data-skin="playmate" className="min-h-screen bg-white text-ink">
       {/* Keeps the store's own floating buttons and popups out of the preview. */}
       <CoverFloating />
-      <div className="bg-ink px-4 py-2.5 text-center text-[12.5px] font-medium text-white">
-        Template preview: <b>PlayMate</b>. These are sample products and pictures; your store shows your own products, photos and words.
+      {/* What this page is, kept out of the design itself: a small label in the corner. */}
+      <div className="fixed bottom-4 left-1/2 z-50 -translate-x-1/2 rounded-full bg-ink/90 px-4 py-2 text-center text-[12px] font-medium text-white shadow-lg">
+        Template preview: <b>PlayMate</b>. Sample products and pictures; your store shows your own.
       </div>
 
-      <div className="bg-accent text-white">
-        <div className="pm-wrap hidden h-10 items-center justify-between gap-6 text-[11px] font-medium uppercase tracking-wide lg:flex">
-          <span className="inline-flex items-center gap-2">
-            <Truck size={16} /> Free delivery on orders over ৳5,000
-          </span>
-          <span>
+      <PmTopBarView
+        closeKey="playmate-demo-topbar-closed"
+        closeLabel="Close announcement bar"
+        messages={[
+          <>Free delivery on orders over ৳5,000</>,
+          <>
             10% off your first order <span className="mx-1 opacity-60">|</span> Use code: <b className="text-[var(--pm-yellow)]">TOY10</b>
-          </span>
-          <span className="inline-flex items-center gap-2">
-            <RefreshCw size={16} /> Easy returns within 7 days
-          </span>
-        </div>
-        <div className="flex min-h-9 items-center justify-center px-4 py-2 text-center text-[11px] font-medium uppercase tracking-wide lg:hidden">
-          10% off your first order: use code TOY10
-        </div>
-      </div>
+          </>,
+          <>Easy returns within 7 days</>,
+        ]}
+      />
 
       <header className="sticky top-0 z-40 border-b border-line bg-white/95 backdrop-blur">
         <div className="pm-wrap flex h-[66px] items-center justify-between gap-4">
@@ -99,11 +96,9 @@ export function PlaymateDemo() {
             </span>
           </div>
           <nav className="hidden items-center gap-8 lg:flex" aria-label="Main">
-            {['Shop by Category', 'Age'].map((label) => (
-              <span key={label} className="inline-flex items-center gap-1 text-[12px] font-semibold uppercase tracking-wide">
-                {label} <ChevronDown className="h-3.5 w-3.5" />
-              </span>
-            ))}
+            <span className="inline-flex items-center gap-1 text-[12px] font-semibold uppercase tracking-wide">
+              Shop by Category <ChevronDown className="h-3.5 w-3.5" />
+            </span>
             {['Brands', 'Best Sellers', 'New Arrivals'].map((label) => (
               <span key={label} className="text-[12px] font-semibold uppercase tracking-wide">
                 {label}

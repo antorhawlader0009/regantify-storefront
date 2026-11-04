@@ -34,6 +34,7 @@ import { useStoreText, useFormatPrice } from '../storepal/lib/storeText';
 import { searchProducts } from '../storepal/lib/searchMatch';
 import type { StorefrontMenuItem } from '@/lib/storefrontApi';
 import { CartIcon, ChevronDown, CloseIcon, HeartIcon, MenuIcon, SearchIcon, UserIcon } from './icons';
+import { bannerMessages, PmTopBarView } from './PlaymateTopBar';
 
 /** The store's name as PlayMate's wordmark: bold, in the store colour, or the store's own logo when it has one. */
 export function PlaymateLogo({ logoUrl, storeName, small = false }: { logoUrl?: string | null; storeName: string; small?: boolean }) {
@@ -56,38 +57,11 @@ export function PlaymateLogo({ logoUrl, storeName, small = false }: { logoUrl?: 
 function PlaymateTopBar({ subdomain }: { subdomain: string }) {
   const banner = useSiteBanner();
   const t = useStoreText();
-  const key = `playmate-topbar-closed:${subdomain}`;
-  const [closed, setClosed] = useState(false);
-  useEffect(() => {
-    try {
-      if (sessionStorage.getItem(key) === '1') setClosed(true);
-    } catch {
-      /* private mode: the bar just stays */
-    }
-  }, [key]);
-  if (!banner || closed) return null;
-  return (
-    <div data-rg="announcement-bar" className="relative bg-accent text-white" style={banner.background ? { backgroundColor: banner.background } : undefined}>
-      <div className="pm-wrap flex min-h-10 items-center justify-center py-2 pr-10 text-center text-[11px] font-medium uppercase tracking-wide sm:text-[12px]">
-        <span className="whitespace-pre-wrap [&_a]:text-[var(--pm-yellow)] [&_p]:m-0 [&_p]:inline [&_p+p]:ml-10" dangerouslySetInnerHTML={{ __html: banner.html }} />
-      </div>
-      <button
-        type="button"
-        onClick={() => {
-          setClosed(true);
-          try {
-            sessionStorage.setItem(key, '1');
-          } catch {
-            /* ignore */
-          }
-        }}
-        aria-label={t('Close')}
-        className="absolute right-2 top-1/2 grid h-7 w-7 -translate-y-1/2 place-items-center rounded-full text-white/90 transition hover:bg-white/15 hover:text-white sm:right-4"
-      >
-        <CloseIcon className="h-4 w-4" />
-      </button>
-    </div>
-  );
+  if (!banner) return null;
+  const messages = bannerMessages(banner.html).map((html, i) => (
+    <span key={i} className="whitespace-pre-wrap [&_a]:text-[var(--pm-yellow)] [&_b]:text-[var(--pm-yellow)] [&_strong]:text-[var(--pm-yellow)]" dangerouslySetInnerHTML={{ __html: html }} />
+  ));
+  return <PmTopBarView messages={messages} closeKey={`playmate-topbar-closed:${subdomain}`} closeLabel={t('Close')} background={banner.background} />;
 }
 
 function MenuLink({ item, subdomain, loggedIn, className, onClick }: { item: StorefrontMenuItem; subdomain: string; loggedIn: boolean; className: string; onClick?: () => void }) {
