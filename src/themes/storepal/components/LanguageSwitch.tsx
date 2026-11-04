@@ -25,3 +25,26 @@ export function LanguageSwitch({ className = '' }: { className?: string }) {
     </div>
   );
 }
+
+/** PlayMate's switch, in its header's style: plain uppercase text like the menu links, the chosen language in the accent colour. */
+export function PlaymateLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[12px] font-semibold uppercase tracking-wide ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`border-b-2 pb-0.5 transition-colors ${language === l ? 'border-accent text-accent' : 'border-transparent text-ink hover:text-accent'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}

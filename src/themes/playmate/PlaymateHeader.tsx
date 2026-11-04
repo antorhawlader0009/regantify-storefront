@@ -28,7 +28,7 @@ import { BodyPortal } from '../storepal/components/BodyPortal';
 import { useAuthDialog } from '../storepal/lib/authDialog';
 import { isExternalHref, menuItemHref, useStorePalDesign } from '../storepal/lib/designSettings';
 import { useWishlist } from '../storepal/lib/wishlist';
-import { LanguageSwitch } from '../storepal/components/LanguageSwitch';
+import { PlaymateLanguageSwitch } from '../storepal/components/LanguageSwitch';
 import { useRememberStorePage } from '../storepal/lib/accountReturn';
 import { useStoreText, useFormatPrice } from '../storepal/lib/storeText';
 import { searchProducts } from '../storepal/lib/searchMatch';
@@ -328,7 +328,7 @@ export function PlaymateHeader({
               </a>
             )}
             <span className="hidden sm:block">
-              <LanguageSwitch />
+              <PlaymateLanguageSwitch className="px-1" />
             </span>
             <Link
               href={loggedIn ? `/store/${subdomain}/account/orders` : `/store/${subdomain}/account/login`}
@@ -459,7 +459,7 @@ export function PlaymateHeader({
                 </a>
               )}
               <div className="pt-4">
-                <LanguageSwitch />
+                <PlaymateLanguageSwitch className="px-1" />
               </div>
             </aside>
           </div>
