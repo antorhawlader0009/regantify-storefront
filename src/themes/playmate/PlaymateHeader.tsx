@@ -373,6 +373,9 @@ export function PlaymateHeader({
           </div>
         </div>
 
+      </header>
+      {/* The phone menu and search panel sit outside the header: its blur (backdrop-filter) would make their fixed position
+          measure against the 66px header instead of the screen, so they opened invisibly. */}
         {mobileOpen && (
           <div className="fixed inset-0 z-50 lg:hidden">
             <CoverFloating />
@@ -548,7 +551,6 @@ export function PlaymateHeader({
             </div>
           </div>
         )}
-      </header>
 
       <ChatBubble socialLinks={socialLinks} productName={chatProductName} />
       <LazyPhotoSearchPanel subdomain={subdomain} storeName={storeName} />
