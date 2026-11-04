@@ -42,7 +42,22 @@ const DEFAULT_ORDER: HomeSectionId[] = [
  * dropped, unknown or repeated ids ignored), then any section they haven't
  * placed yet (one added to StorePal after they saved), which is shown.
  */
-export function resolveHomeSections(saved: HomeSectionSetting[] | null | undefined): HomeSectionId[] {
+// PlayMate's own order, as the template's home page: hero, perks, categories, best sellers, promo banners, then the rest.
+export const PLAYMATE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+export function resolveHomeSections(saved: HomeSectionSetting[] | null | undefined, defaultOrder: HomeSectionId[] = DEFAULT_ORDER): HomeSectionId[] {
   const seen = new Set<HomeSectionId>();
   const result: HomeSectionId[] = [];
   for (const s of saved ?? []) {
@@ -51,7 +66,7 @@ export function resolveHomeSections(saved: HomeSectionSetting[] | null | undefin
     seen.add(id);
     if (s.enabled) result.push(id);
   }
-  for (const id of DEFAULT_ORDER) {
+  for (const id of defaultOrder) {
     if (!seen.has(id)) result.push(id);
   }
   return result;

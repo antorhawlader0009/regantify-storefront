@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
+import { useQueryState } from 'nuqs';
 import type { StorefrontCategoryDetail, StorefrontProduct } from '@/lib/storefrontApi';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { CoverFloating } from '@/lib/floatingCover';
@@ -57,7 +58,10 @@ export function PlaymateProductsView({ subdomain, storeName, products, categorie
   const q = search?.trim() ?? '';
   const base = `/store/${subdomain}`;
 
-  const [show, setShow] = useState<Show>('');
+  // `?show=best|new|sale|stock` (the header's Best Sellers / New Arrivals / Sale links); kept in the address.
+  const [showParam, setShowParam] = useQueryState('show', { defaultValue: '' });
+  const show: Show = (['best', 'new', 'sale', 'stock'] as const).includes(showParam as Exclude<Show, ''>) ? (showParam as Show) : '';
+  const setShow = (value: Show) => void setShowParam(value || null);
   const [sort, setSort] = useState<Sort>('featured');
   const [minPrice, setMinPrice] = useState('');
   const [maxPrice, setMaxPrice] = useState('');

@@ -37,7 +37,7 @@ const PM_DEFAULT_HIGHLIGHTS = [
   { id: 'pm-2', icon: 'SHIELD_CHECK', title: 'Genuine products', text: 'Quality-checked items you can trust.' },
   { id: 'pm-3', icon: 'HAND_COINS', title: 'Cash on delivery', text: 'Pay when your order arrives at your door.' },
 ];
-import { resolveHomeSections } from '../lib/homeSections';
+import { PLAYMATE_ORDER, resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, ChevronRight } from 'lucide-react';
@@ -146,7 +146,8 @@ export function HomeView({
   const skin = useStoreSkin();
   // Card numbers on the voice call's picks: Bangla digits on a Bangla store.
   const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
-  const homeSections = resolveHomeSections(design.homeSections);
+  // A store that never arranged its home page gets its template's own order (PlayMate's differs from StorePal's).
+  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : undefined);
 
   // "Create custom link for this coupon" - resolve the shared link to a
   // real coupon code once, stash it for checkout to pick up (see

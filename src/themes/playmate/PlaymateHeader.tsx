@@ -229,6 +229,16 @@ export function PlaymateHeader({
   const detailOf = (name: string) => categoryDetails.find((c) => c.name === name);
   const categoryPhoto = (name: string) => detailOf(name)?.squarePhotoUrl || detailOf(name)?.coverPhotoUrl || null;
   const menuItems = [...design.headerLeftMenu, ...design.siteMenu, ...design.headerRightMenu];
+  // No menu of its own: the template's links, each opening the product list with that choice made.
+  const defaultLinks =
+    menuItems.length === 0
+      ? [
+          { label: t('All products'), href: `/store/${subdomain}/products`, sale: false },
+          { label: t('Best Sellers'), href: `/store/${subdomain}/products?show=best`, sale: false },
+          { label: t('New Arrivals'), href: `/store/${subdomain}/products?show=new`, sale: false },
+          { label: t('Sale'), href: `/store/${subdomain}/products?show=sale`, sale: true },
+        ]
+      : [];
   const phone = design.headerPhoneEnabled ? design.headerPhone?.trim() : '';
   const telHref = phone ? `tel:${phone.split(/[,/]/)[0].replace(/[^\d+]/g, '')}` : '';
   const triggerCls = 'inline-flex items-center gap-1 text-[12px] font-semibold uppercase tracking-wide text-ink transition hover:text-accent';
@@ -300,6 +310,11 @@ export function PlaymateHeader({
                 loggedIn={loggedIn}
                 className="text-[12px] font-semibold uppercase tracking-wide text-ink transition hover:text-accent"
               />
+            ))}
+            {defaultLinks.map((l) => (
+              <Link key={l.href} href={l.href} className={`text-[12px] font-semibold uppercase tracking-wide transition hover:text-accent ${l.sale ? 'text-red-600' : 'text-ink'}`}>
+                {l.label}
+              </Link>
             ))}
           </nav>
 
@@ -401,6 +416,11 @@ export function PlaymateHeader({
                   onClick={closeAll}
                   className="border-b border-line py-3.5 text-sm font-semibold uppercase tracking-wide text-ink"
                 />
+              ))}
+              {design.mobileMenu.length === 0 && defaultLinks.map((l) => (
+                <Link key={`m-${l.href}`} href={l.href} onClick={closeAll} className={`block border-b border-line py-3.5 text-sm font-semibold uppercase tracking-wide ${l.sale ? 'text-red-600' : 'text-ink'}`}>
+                  {l.label}
+                </Link>
               ))}
               <button
                 type="button"
