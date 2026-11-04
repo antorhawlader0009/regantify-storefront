@@ -10,6 +10,9 @@ import { formatPrice } from './formatPrice';
  * keeps its own bn/en switch (CheckoutDialog.tsx).
  */
 const BN: Record<string, string> = {
+  // PlayMate account panel
+  Register: 'রেজিস্টার',
+  'Welcome back': 'আবার স্বাগতম',
   // PlayMate product page
   Anonymous: 'নাম প্রকাশে অনিচ্ছুক',
   'Based on {n} reviews': '{n}টি রিভিউ থেকে',

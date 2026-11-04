@@ -9,6 +9,9 @@ import { AccountSidebar } from './AccountSidebar';
 import { GoogleConnectBadge } from './GoogleConnectBadge';
 import { AccountBackdrop } from './AccountBackdrop';
 import { CoverFloating } from '@/lib/floatingCover';
+import { useStoreSkin } from '../lib/designSettings';
+import { StoreFooter } from './StoreFooter';
+import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
 import { useStoreText } from '../lib/storeText';
 import { closeAccountDialog } from '../lib/accountReturn';
 import { useCustomerAuthHydrated, useCustomerAuthStore, useCustomerLogout } from '@/providers/customer-auth-store-provider';
@@ -45,8 +48,12 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
   const cancelLogout = useCallback(() => setAskLogout(false), []);
   const close = useCallback(() => closeAccountDialog(router, subdomain), [router, subdomain]);
 
+  // PlayMate shows the account as an ordinary page in the template's layout, not a dialog.
+  const pm = useStoreSkin() === 'playmate';
+
   // Esc closes; the page behind doesn't scroll while the dialog is open.
   useEffect(() => {
+    if (pm) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
@@ -57,12 +64,50 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
     };
-  }, [close]);
+  }, [close, pm]);
 
   // Focus starts on the dialog itself, so keyboard and screen-reader users land inside it (without a focus ring on ×).
   useEffect(() => {
     dialogRef.current?.focus({ preventScroll: true });
   }, []);
+
+  if (pm) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white text-ink">
+        <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+        <LogoutConfirm
+          open={askLogout}
+          onCancel={cancelLogout}
+          onConfirm={() => {
+            setAskLogout(false);
+            logout();
+          }}
+        />
+        <main className="pm-wrap w-full flex-1 py-6 sm:py-8">
+          <PlaymateBreadcrumb subdomain={subdomain} homeLabel={t('Home')} items={[{ label: t('My account') }]} />
+          <div className="mt-3 flex flex-wrap items-end justify-between gap-3">
+            <div className="min-w-0">
+              <h1 className="text-2xl font-extrabold tracking-tight sm:text-3xl">{t('My account')}</h1>
+              {firstName && <p className="mt-1 text-sm text-muted">{t('Hi, {name}').replace('{name}', firstName)}</p>}
+            </div>
+            <div className="flex items-center gap-2">
+              <GoogleConnectBadge />
+              {signedIn && (
+                <button type="button" onClick={() => setAskLogout(true)} className="pm-btn-outline sm:hidden">
+                  {t('Log Out')}
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="mt-6 flex flex-col gap-6 overflow-hidden rounded-xl bg-[var(--pm-card)] sm:flex-row sm:gap-0">
+            <AccountSidebar subdomain={subdomain} />
+            <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:m-2 sm:rounded-lg sm:px-8 sm:py-7">{children}</div>
+          </div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-canvas text-ink">

@@ -19,6 +19,7 @@ import { RegantifySignInButton } from './RegantifySignIn';
 import { useStoreText } from '../lib/storeText';
 import { phoneInput, emailOrPhoneInput } from '@/lib/phoneInput';
 import { CoverFloating } from '@/lib/floatingCover';
+import { useStoreSkin } from '../lib/designSettings';
 
 const RESEND_SECONDS = 30;
 
@@ -520,6 +521,9 @@ const COPY: Record<AuthDialogMode, { title: string; subtitle: string }> = {
 function AuthDialogPanel({ subdomain }: { subdomain: string }) {
   const t = useStoreText();
   const mode = useAuthDialog((s) => s.mode);
+  const setMode = useAuthDialog((s) => s.setMode);
+  // PlayMate: the template's account panel (templete/playmate AccountModal.tsx): a narrow white card with Log in / Register tabs.
+  const pm = useStoreSkin() === 'playmate';
   const close = useAuthDialog((s) => s.close);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -578,7 +582,9 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative max-h-[calc(100vh-2rem)] w-full max-w-[420px] overflow-y-auto rounded-2xl bg-canvas p-6 shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none sm:p-8 ${shown ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-95 opacity-0'}`}
+        className={`relative max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-2xl shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none ${
+          pm ? 'pm-auth max-w-sm bg-white p-5 sm:p-6' : 'max-w-[420px] bg-canvas p-6 sm:p-8'
+        } ${shown ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-95 opacity-0'}`}
       >
         <button
           onClick={close}
@@ -587,10 +593,26 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
         >
           <X size={18} />
         </button>
-        <h2 id={titleId} className="pr-8 text-[22px] font-bold leading-tight text-ink">
-          {t(copy.title)}
+        <h2 id={titleId} className={pm ? 'pr-8 text-lg font-bold text-ink' : 'pr-8 text-[22px] font-bold leading-tight text-ink'}>
+          {pm && mode === 'login' ? t('Welcome back') : t(copy.title)}
         </h2>
-        {copy.subtitle ? <p className="mb-5 mt-1 text-[13.5px] text-muted">{t(copy.subtitle)}</p> : <div className="mb-5" />}
+        {copy.subtitle ? <p className={pm ? 'mt-0.5 text-sm text-muted' : 'mb-5 mt-1 text-[13.5px] text-muted'}>{t(copy.subtitle)}</p> : pm ? null : <div className="mb-5" />}
+        {pm && mode !== 'forgot' && (
+          <div className="mb-4 mt-4 grid grid-cols-2 rounded-lg bg-accent-light p-1 text-sm font-semibold">
+            {(['login', 'signup'] as const).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setMode(m)}
+                aria-pressed={mode === m}
+                className={`rounded-md py-2 transition ${mode === m ? 'bg-white text-accent shadow-sm' : 'text-muted'}`}
+              >
+                {m === 'login' ? t('Log in') : t('Register')}
+              </button>
+            ))}
+          </div>
+        )}
+        {pm && mode === 'forgot' && <div className="mb-4" />}
         {mode !== 'forgot' && <RegantifySignInButton subdomain={subdomain} />}
         {mode === 'login' && <LoginForm onDone={close} />}
         {mode === 'signup' && <SignupForm subdomain={subdomain} onDone={close} />}
