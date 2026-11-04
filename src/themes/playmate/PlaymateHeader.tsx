@@ -33,7 +33,7 @@ import { useRememberStorePage } from '../storepal/lib/accountReturn';
 import { useStoreText, useFormatPrice } from '../storepal/lib/storeText';
 import { searchProducts } from '../storepal/lib/searchMatch';
 import type { StorefrontMenuItem } from '@/lib/storefrontApi';
-import { CartIcon, ChevronDown, CloseIcon, HeartIcon, MenuIcon, SearchIcon, UserIcon } from './icons';
+import { ArrowRight, CartIcon, ChevronDown, ChevronRight, CloseIcon, HeartIcon, MenuIcon, SearchIcon, UserIcon } from './icons';
 import { bannerMessages, PmTopBarView } from './PlaymateTopBar';
 
 /** The store's name as PlayMate's wordmark: bold, in the store colour, or the store's own logo when it has one. */
@@ -131,6 +131,7 @@ export function PlaymateHeader({
   const wishlist = useWishlist(subdomain);
 
   const [drop, setDrop] = useState(false);
+  const [hoverCat, setHoverCat] = useState<string | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileCats, setMobileCats] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -278,28 +279,65 @@ export function PlaymateHeader({
                   {t('Shop by Category')}
                   <ChevronDown className={`h-3.5 w-3.5 transition ${drop ? 'rotate-180' : ''}`} />
                 </button>
-                {drop && (
-                  <div role="menu" className="absolute left-0 top-full z-50 mt-3 max-h-[70vh] w-64 overflow-y-auto rounded-lg border border-line bg-white p-2 shadow-xl">
-                    {categories.map((name) => (
-                      <div key={name}>
-                        <Link href={categoryHref(name)} onClick={() => setDrop(false)} className="flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium text-ink hover:bg-accent-light">
-                          <CategoryBubble name={name} size="h-8 w-8" />
-                          {name}
-                        </Link>
-                        {(detailOf(name)?.children ?? []).map((child) => (
-                          <Link
-                            key={child.name}
-                            href={categoryHref(child.name)}
-                            onClick={() => setDrop(false)}
-                            className="block rounded-md py-1.5 pl-14 pr-3 text-[13px] text-muted hover:bg-accent-light hover:text-accent"
-                          >
-                            {child.name}
-                          </Link>
+                {drop && (() => {
+                  // Mega menu: main categories on the left (hover or focus picks one), the picked one's picture, sub
+                  // categories and "View all" on the right.
+                  const active = categories.includes(hoverCat ?? '') ? (hoverCat as string) : categories[0];
+                  const children = detailOf(active)?.children ?? [];
+                  const cover = detailOf(active)?.coverPhotoUrl || detailOf(active)?.squarePhotoUrl || null;
+                  return (
+                    <div role="menu" className="absolute left-0 top-full z-50 mt-3 flex w-[min(760px,calc(100vw-48px))] overflow-hidden rounded-xl border border-line bg-white shadow-2xl">
+                      <ul className="pm-no-scrollbar max-h-[70vh] w-60 shrink-0 overflow-y-auto border-r border-line bg-[var(--pm-card)] py-2">
+                        {categories.map((name) => (
+                          <li key={name}>
+                            <Link
+                              href={categoryHref(name)}
+                              onClick={() => setDrop(false)}
+                              onMouseEnter={() => setHoverCat(name)}
+                              onFocus={() => setHoverCat(name)}
+                              className={`flex items-center justify-between gap-2 px-4 py-2.5 text-[13px] font-semibold transition ${
+                                name === active ? 'bg-white text-accent' : 'text-ink hover:text-accent'
+                              }`}
+                            >
+                              <span className="truncate">{name}</span>
+                              <ChevronRight className={`h-4 w-4 shrink-0 transition ${name === active ? 'translate-x-0.5 opacity-100' : 'opacity-0'}`} />
+                            </Link>
+                          </li>
                         ))}
+                      </ul>
+                      <div className="flex min-w-0 flex-1 flex-col p-5">
+                        <Link href={categoryHref(active)} onClick={() => setDrop(false)} className="group relative block h-36 overflow-hidden rounded-lg bg-accent-light">
+                          {cover ? (
+                            <Image src={cover} alt={active} fill sizes="480px" className="object-cover transition duration-500 group-hover:scale-105" />
+                          ) : null}
+                          <span className={`absolute inset-0 ${cover ? 'bg-gradient-to-r from-black/55 to-transparent' : ''}`} />
+                          <span className={`absolute bottom-4 left-4 right-4 text-lg font-extrabold leading-tight ${cover ? 'text-white' : 'text-ink'}`}>{active}</span>
+                        </Link>
+                        {children.length > 0 ? (
+                          <ul className="mt-4 grid grid-cols-2 gap-x-6 gap-y-1">
+                            {children.map((child) => (
+                              <li key={child.name}>
+                                <Link
+                                  href={categoryHref(child.name)}
+                                  onClick={() => setDrop(false)}
+                                  className="block truncate rounded py-1.5 text-[13px] text-ink/80 transition hover:translate-x-0.5 hover:text-accent"
+                                >
+                                  {child.name}
+                                </Link>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="mt-4 text-[13px] text-muted">{t('Everything in {name}, in one place.').replace('{name}', active)}</p>
+                        )}
+                        <Link href={categoryHref(active)} onClick={() => setDrop(false)} className="pm-btn-primary mt-5 self-start gap-2">
+                          {t('View all')}
+                          <ArrowRight className="h-4 w-4" />
+                        </Link>
                       </div>
-                    ))}
-                  </div>
-                )}
+                    </div>
+                  );
+                })()}
               </div>
             )}
             {menuItems.slice(0, 5).map((item, i) => (
