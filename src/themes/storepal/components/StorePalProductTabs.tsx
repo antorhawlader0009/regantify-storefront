@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type RefObject } from 'react';
 import { Stars } from '../../medium/components/Stars';
 import {
   getProductReviews,
@@ -28,7 +28,20 @@ import { PostingTermsNote } from './PostingTermsNote';
  * reply). Rendered inside the parent page's own bordered card - no outer section/border/max-width here, this is just
  * the tab content.
  */
-export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: { subdomain: string; slug: string; description?: string | null; infoTabs?: { title: string; text: string }[] | null }) {
+export function StorePalProductTabs({
+  subdomain,
+  slug,
+  description,
+  infoTabs,
+  look,
+}: {
+  subdomain: string;
+  slug: string;
+  description?: string | null;
+  infoTabs?: { title: string; text: string }[] | null;
+  /** PlayMate draws the same content as the template's stacked sections (details, customer reviews, questions). */
+  look?: 'playmate';
+}) {
   const t = useStoreText();
   // Extra information tabs (TellMe idea 119) sit after the description: "info:0", "info:1", "info:2".
   const [activeTab, setActiveTab] = useState<string>('description');
@@ -105,6 +118,31 @@ export function StorePalProductTabs({ subdomain, slug, description, infoTabs }: 
       .then(setReviews)
       .catch((err) => setReviewsError(err instanceof Error ? err.message : 'Could not load reviews.'));
   }, [subdomain, slug, sort]);
+
+  if (look === 'playmate') {
+    return (
+      <PlaymateProductSections
+        subdomain={subdomain}
+        slug={slug}
+        description={description}
+        extraTabs={extraTabs}
+        reviews={reviews}
+        reviewsError={reviewsError}
+        sort={sort}
+        onSort={setSort}
+        voted={voted}
+        onVote={(id) => void vote(id)}
+        onPhotos={(photos, index) => setViewer({ photos, index })}
+        viewer={viewer}
+        onViewer={setViewer}
+        questions={questions}
+        questionsError={questionsError}
+        orderToken={orderToken}
+        reviewAsked={reviewAsked}
+        reviewsRef={tabsRef}
+      />
+    );
+  }
 
   return (
     <div ref={tabsRef} data-rg="product-tabs" className="p-4 sm:p-6 scroll-mt-24">
@@ -594,5 +632,244 @@ function WriteReviewForm({ subdomain, slug, orderToken, autoOpen }: { subdomain:
         </button>
       </div>
     </form>
+  );
+}
+
+/**
+ * PlayMate's product page sections (the template's ProductDetail, below the buy box): the product's own details and
+ * extra information, "Customer reviews" with a summary box (the real average and how many gave each star) beside the
+ * list, the write-a-review box, and the answered questions. Same data and rules as StorePal's tabs.
+ */
+function PlaymateProductSections({
+  subdomain,
+  slug,
+  description,
+  extraTabs,
+  reviews,
+  reviewsError,
+  sort,
+  onSort,
+  voted,
+  onVote,
+  onPhotos,
+  viewer,
+  onViewer,
+  questions,
+  questionsError,
+  orderToken,
+  reviewAsked,
+  reviewsRef,
+}: {
+  subdomain: string;
+  slug: string;
+  description?: string | null;
+  extraTabs: { title: string; text: string }[];
+  reviews: ProductReview[] | null;
+  reviewsError: string | null;
+  sort: 'newest' | 'helpful';
+  onSort: (s: 'newest' | 'helpful') => void;
+  voted: Set<string>;
+  onVote: (id: string) => void;
+  onPhotos: (photos: string[], index: number) => void;
+  viewer: { photos: string[]; index: number } | null;
+  onViewer: (v: { photos: string[]; index: number } | null) => void;
+  questions: ProductQuestion[] | null;
+  questionsError: string | null;
+  orderToken?: string;
+  reviewAsked: boolean;
+  reviewsRef: RefObject<HTMLDivElement | null>;
+}) {
+  const t = useStoreText();
+  const heading = 'border-b-2 border-accent pb-3 text-[15px] font-bold';
+  const list = reviews ?? [];
+  const total = list.length;
+  const avg = total ? list.reduce((a, r) => a + r.rating, 0) / total : 0;
+  const counts = [5, 4, 3, 2, 1].map((n) => list.filter((r) => r.rating === n).length);
+  const [detailTab, setDetailTab] = useState(0);
+  const details = [
+    ...(description ? [{ title: t('Description'), html: description }] : []),
+    ...extraTabs.map((x) => ({ title: x.title, html: x.text })),
+  ];
+  const dateLocale = typeof document !== 'undefined' && document.documentElement.lang === 'bn' ? 'bn-BD-u-nu-latn' : 'en-US';
+
+  return (
+    <div data-rg="product-tabs">
+      {details.length > 0 && (
+        <section className="mt-12" aria-label={t('Product details')}>
+          <div className="flex gap-6 overflow-x-auto whitespace-nowrap border-b-2 border-accent">
+            {details.map((d, i) => (
+              <button
+                key={d.title + i}
+                type="button"
+                onClick={() => setDetailTab(i)}
+                className={`pb-3 text-[15px] font-bold transition ${detailTab === i ? 'text-ink' : 'text-muted hover:text-ink'}`}
+              >
+                {d.title}
+              </button>
+            ))}
+          </div>
+          <div
+            className="mt-5 max-w-3xl text-[13.5px] leading-relaxed text-ink/85 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
+            // The store's own editor text, cleaned when saved.
+            dangerouslySetInnerHTML={{ __html: details[Math.min(detailTab, details.length - 1)]?.html ?? '' }}
+          />
+        </section>
+      )}
+
+      <section ref={reviewsRef} className="mt-12 scroll-mt-24" aria-labelledby="pm-rev-title">
+        <h2 id="pm-rev-title" className={heading}>
+          {t('Customer reviews')} ({total})
+        </h2>
+        {reviewsError && <p className="mt-4 text-[13px] text-red-600">{reviewsError}</p>}
+
+        <div className="mt-6 grid gap-8 md:grid-cols-[320px_1fr]">
+          <div className="rounded-lg bg-[var(--pm-card)] p-5">
+            <div className="flex items-center gap-4">
+              <span className="text-5xl font-extrabold">{total ? avg.toFixed(1) : '0.0'}</span>
+              <div>
+                <Stars count={Math.round(avg)} />
+                <p className="mt-1 text-[11px] text-muted">{t('Based on {n} reviews').replace('{n}', String(total))}</p>
+              </div>
+            </div>
+            <ul className="mt-5 space-y-2">
+              {counts.map((c, i) => (
+                <li key={i} className="flex items-center gap-3 text-[12px]">
+                  <span className="w-12 shrink-0">
+                    {5 - i} {t('star')}
+                  </span>
+                  <span className="h-2 flex-1 overflow-hidden rounded-full bg-line">
+                    <span className="block h-full rounded-full bg-accent" style={{ width: `${total ? (c / total) * 100 : 0}%` }} />
+                  </span>
+                  <span className="w-8 shrink-0 text-right text-muted">{c}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            {reviews === null && !reviewsError && <p className="text-[13px] text-muted">{t('Loading reviews...')}</p>}
+            {reviews && total === 0 && <p className="text-[13px] text-muted">{t('No reviews yet. Be the first to write one.')}</p>}
+            {total > 1 && (
+              <div className="mb-3 flex items-center gap-2 text-[12px] text-muted">
+                <label htmlFor="pm-review-sort">{t('Sort by')}</label>
+                <select
+                  id="pm-review-sort"
+                  value={sort}
+                  onChange={(e) => onSort(e.target.value as 'newest' | 'helpful')}
+                  className="rounded-md border border-line-strong bg-white px-2 py-1 text-ink"
+                >
+                  <option value="newest">{t('Newest')}</option>
+                  <option value="helpful">{t('Most helpful')}</option>
+                </select>
+              </div>
+            )}
+            {total > 0 && (
+              <ul
+                className="pm-no-scrollbar max-h-[420px] space-y-5 overflow-y-auto overscroll-contain pr-1"
+                tabIndex={total > 3 ? 0 : undefined}
+                aria-label={t('Customer reviews')}
+              >
+                {list.map((r) => {
+                  const name = r.customerName ?? t('Anonymous');
+                  return (
+                    <li key={r.id} className="flex gap-3">
+                      <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-accent-light text-xs font-bold text-accent">
+                        {name.charAt(0).toUpperCase()}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="flex flex-wrap items-center gap-x-2 text-[13px]">
+                          <b>{name}</b>
+                          <Stars count={r.rating} />
+                          <span className="text-[11px] text-muted">
+                            {new Date(r.createdAt).toLocaleDateString(dateLocale, { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </span>
+                          {r.verified && <span className="text-[10px] font-semibold uppercase tracking-wide text-green-600">{t('Verified buyer')}</span>}
+                          {r.featured && <span className="text-[10px] font-semibold uppercase tracking-wide text-accent">{t('Featured')}</span>}
+                        </p>
+                        {r.title && <p className="mt-1 text-[13px] font-semibold">{r.title}</p>}
+                        {r.content && <p className="mt-1 text-[13px] text-ink/85">{r.content}</p>}
+                        {r.photos.length > 0 && (
+                          <div className="mt-2 flex gap-2">
+                            {r.photos.map((url, i) => (
+                              <button
+                                key={i}
+                                type="button"
+                                onClick={() => onPhotos(r.photos.map((u) => variantUrl(u, 1280) ?? u), i)}
+                                aria-label={t('Photos from this review')}
+                                className="overflow-hidden rounded-md bg-[var(--pm-card)]"
+                              >
+                                {/* eslint-disable-next-line @next/next/no-img-element -- the small saved copy */}
+                                <img src={variantUrl(url, 160) ?? url} alt="" loading="lazy" className="h-16 w-16 object-cover" />
+                              </button>
+                            ))}
+                          </div>
+                        )}
+                        {r.videoUrl && (
+                          <video
+                            src={r.videoUrl}
+                            controls
+                            playsInline
+                            preload="metadata"
+                            aria-label={t('Video from this review')}
+                            className="mt-2 max-h-[360px] w-full max-w-[280px] rounded-md bg-black"
+                          />
+                        )}
+                        {r.replyText && (
+                          <div className="mt-2 rounded-md border-l-2 border-accent bg-[var(--pm-card)] px-3 py-2">
+                            <p className="text-[11.5px] font-bold">{t('Reply from the store')}</p>
+                            <p className="mt-0.5 whitespace-pre-line text-[13px] text-ink/85">{r.replyText}</p>
+                          </div>
+                        )}
+                        <div className="mt-1.5 flex items-center gap-3">
+                          <button
+                            type="button"
+                            className="rounded text-[11px] text-muted hover:text-accent disabled:opacity-70"
+                            aria-pressed={voted.has(r.id)}
+                            disabled={voted.has(r.id)}
+                            onClick={() => onVote(r.id)}
+                          >
+                            {voted.has(r.id) ? t('Thanks') : t('Was this review helpful?')} {(r.helpfulCount ?? 0) > 0 ? `(${r.helpfulCount})` : ''}
+                          </button>
+                          <ReportButton subdomain={subdomain} kind="REVIEW" targetId={r.id} />
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+            {total > 3 && <p className="mt-3 text-[11px] text-muted">{t('Scroll to see all {n} reviews').replace('{n}', String(total))}</p>}
+          </div>
+        </div>
+
+        <div className="mt-10 overflow-hidden rounded-lg border border-line">
+          <div className="bg-accent-light px-5 py-3">
+            <h3 className="text-sm font-bold">{t('Write a review')}</h3>
+            <p className="text-[12px] text-ink/70">{t('Share what you think about this product.')}</p>
+          </div>
+          <div className="p-5">
+            <WriteReviewForm subdomain={subdomain} slug={slug} orderToken={orderToken} autoOpen={reviewAsked} />
+          </div>
+        </div>
+
+        <PhotoViewer
+          photos={viewer?.photos ?? []}
+          index={viewer ? viewer.index : null}
+          onIndexChange={(k) => onViewer(viewer ? { ...viewer, index: k } : viewer)}
+          onClose={() => onViewer(null)}
+          title={t('Photos from this review')}
+          labels={{ close: t('Close'), previous: t('Previous photo'), next: t('Next photo'), zoomIn: t('Zoom in'), zoomOut: t('Zoom out') }}
+        />
+      </section>
+
+      <section className="mt-12" aria-labelledby="pm-q-title">
+        <h2 id="pm-q-title" className={heading}>
+          {t('Questions')} {questions && questions.length > 0 ? `(${questions.length})` : ''}
+        </h2>
+        <div className="mt-5 max-w-3xl">
+          <ProductQuestionsTab subdomain={subdomain} slug={slug} questions={questions} error={questionsError} />
+        </div>
+      </section>
+    </div>
   );
 }

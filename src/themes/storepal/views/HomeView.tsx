@@ -27,6 +27,7 @@ import { isEmptyStorePreview } from '@/components/store-preview/emptyStore';
 import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
 import { highlightIcon } from '../lib/highlightIcons';
 import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, type PmHeroSlide } from '../../playmate/PlaymateHome';
+import { PlaymateProductsView } from '../../playmate/PlaymateProductsView';
 
 // PlayMate's perks strip when the store wrote no highlights (no numbers or promises, like StorePal's own defaults).
 const PM_DEFAULT_HIGHLIGHTS = [
@@ -415,7 +416,7 @@ export function HomeView({
         const row = best.length >= 4 ? best : products.slice(0, 12);
         return (
           <div id="products">
-            <PmProductRow title={t('Best Sellers')} viewAllLabel={t('View all')} viewAllHref={`/store/${subdomain}?q=`}>
+            <PmProductRow title={t('Best Sellers')} viewAllLabel={t('View all')} viewAllHref={`/store/${subdomain}/products`}>
               {row.map(card)}
             </PmProductRow>
           </div>
@@ -462,6 +463,36 @@ export function HomeView({
         return undefined;
     }
   };
+
+  // PlayMate's category / brand / search / picks list is the template's own product list page.
+  if (skin === 'playmate' && isFiltered) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white text-ink">
+        <StoreHeader
+          subdomain={subdomain}
+          storeName={storeName}
+          categories={categories}
+          logoUrl={logoUrl}
+          socialLinks={socialLinks}
+          categoryDetails={categoryDetails}
+        />
+        <main className="flex-1">
+          <PlaymateProductsView
+            subdomain={subdomain}
+            storeName={storeName}
+            products={products}
+            categories={categories}
+            categoryDetails={categoryDetails}
+            activeCategory={activeCategory}
+            activeBrand={activeBrand}
+            search={search}
+            picks={picks}
+          />
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-canvas text-ink">

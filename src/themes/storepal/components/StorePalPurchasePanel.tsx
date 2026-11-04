@@ -4,7 +4,7 @@ import { useEffect, useState, type ComponentProps } from 'react';
 import { StorePalProductPanel as ProductPurchasePanel } from './StorePalProductPanel';
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
-import { lowStockLabel, stockMessages, useLowStock, useRestockNotify, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
+import { lowStockLabel, stockMessages, useLowStock, useRestockNotify, useStoreSkin, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
 import { trackMetaViewContent } from '@/lib/metaPixelEvents';
 import { trackViewItem } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
@@ -36,6 +36,8 @@ type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 
  */
 export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
   const design = useStorePalDesign();
+  // PlayMate shows delivery, trust and warranty lines in the template's side box (PlaymateProductView), not here.
+  const pm = useStoreSkin() === 'playmate';
   const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
   // The store's LMS forms (LMS-plan.md Step 9), from the StorePal layout's store info.
@@ -80,11 +82,11 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
           ) : undefined,
           after: (
             <>
-              {!quoteOnly && !comingSoon && <ProductTrustRow subdomain={props.subdomain} preOrder={!!product.isPreOrder} />}
-              {!quoteOnly && <DeliveryCheck subdomain={props.subdomain} />}
+              {!pm && !quoteOnly && !comingSoon && <ProductTrustRow subdomain={props.subdomain} preOrder={!!product.isPreOrder} />}
+              {!pm && !quoteOnly && <DeliveryCheck subdomain={props.subdomain} />}
               <SoldRecentLine product={product} />
               {bundleInfo}
-              {policyLines}
+              {!pm && policyLines}
 
               {callMeBack ? <CallMeBackLink onOpen={() => setForm('call-back')} /> : null}
             </>
@@ -110,7 +112,7 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
       <ProductPurchasePanel
         {...props}
         display={display}
-        titleExtra={<ShareButton name={product.name} price={Number(product.discountPrice ?? product.price)} />}
+        titleExtra={pm ? undefined : <ShareButton name={product.name} price={Number(product.discountPrice ?? product.price)} />}
         leadSlots={leadSlots}
         // A sold-out size/colour gets its own form, unless the LMS notify form, backorders or coming-soon take over.
         variantRestock={restockOn && !quoteOnly && !lmsForms?.notifyMe && !props.backorder && !comingSoon}

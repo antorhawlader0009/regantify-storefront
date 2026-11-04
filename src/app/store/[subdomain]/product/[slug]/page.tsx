@@ -7,7 +7,8 @@ import {
   ProductNotFoundError,
   siteUrl,
 } from '@/lib/storefrontApi';
-import { resolveTheme } from '@/lib/theme';
+import { resolveTheme, storeSkin } from '@/lib/theme';
+import { PlaymateProductView } from '@/themes/playmate/PlaymateProductView';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { safeJsonLd } from '@/lib/safeJsonLd';
 import { resolvePolicy } from '@/themes/storepal/lib/policy';
@@ -197,6 +198,15 @@ export default async function ProductPage({ params }: PageProps) {
       />
       {resolveTheme(store.theme) === 'MINIMAL' ? (
         <MinimalProductView {...viewProps} />
+      ) : storeSkin(store.theme) === 'playmate' ? (
+        <PlaymateProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
       ) : resolveTheme(store.theme) === 'STOREPAL' ? (
         <StorepalProductView
           {...viewProps}

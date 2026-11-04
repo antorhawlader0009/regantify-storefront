@@ -15,7 +15,9 @@ import { useCartStore } from '@/providers/cart-store-provider';
 import { useStoreText, useFormatPrice } from '../lib/storeText';
 import { useUsdPrice } from '@/lib/usdPrice';
 import { BundlePicker, pickedCount, type BundlePickState } from './BundlePicker';
-import { useStorePalDesign } from '../lib/designSettings';
+import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
+import { useWishlist } from '../lib/wishlist';
+import { HeartIcon } from '../../playmate/icons';
 import { preOrderDateText } from '../lib/preOrderDate';
 import { priceWithBreaks } from '@/lib/priceBreaks';
 import { SizeGuideLink } from './SizeGuideLink';
@@ -108,6 +110,10 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const t = useStoreText();
   const design = useStorePalDesign();
   const router = useRouter();
+  // PlayMate draws this panel as the template's product page (templete/playmate ProductDetail.tsx): its gallery, price,
+  // quantity and buttons; the title, brand and stars sit above the page's grid there (PlaymateProductView).
+  const pm = useStoreSkin() === 'playmate';
+  const wishlist = useWishlist(subdomain);
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
 
@@ -413,7 +419,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const portrait = display?.imageShape === 'PORTRAIT' || product.photoSize === 'PORTRAIT';
   // Thumbnails beside the photo instead of under it (StorePal's Gallery
   // Style). Only when there's more than one photo to pick from.
-  const sideGallery = !!display && display.galleryStyle !== 'BOTTOM' && allPhotos.length > 1;
+  const sideGallery = !pm && !!display && display.galleryStyle !== 'BOTTOM' && allPhotos.length > 1;
   const inStockText = (stock: number | undefined) =>
     display ? display.inStock(stock) : stock === undefined ? t('In stock') : `${stock} ${t('units in stock')}`;
 
@@ -426,7 +432,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           src={activePhotoUrl}
           onOpen={() => setViewerIndex(activePhoto)}
           label={t('Open photo')}
-          className={`bg-canvas rounded-xl overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : 'aspect-square'}`}
+          className={`${pm ? 'rounded-lg bg-[var(--pm-card)]' : 'bg-canvas rounded-xl'} overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : 'aspect-square'}`}
         >
           {activePhotoUrl ? (
             <Image
@@ -444,7 +450,9 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             </div>
           )}
           {displayOriginalPrice && (
-            <span className="absolute top-3 left-3 z-[3] pointer-events-none bg-accent text-white text-[12px] font-bold px-2.5 py-1 rounded shadow-sm">
+            <span
+              className={`absolute top-3 left-3 z-[3] pointer-events-none text-white font-bold px-2.5 py-1 ${pm ? 'rounded-full bg-red-500 text-[11px]' : 'bg-accent text-[12px] rounded shadow-sm'}`}
+            >
               -{percentOff}%
             </span>
           )}
@@ -461,16 +469,20 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           labels={{ close: t('Close'), previous: t('Previous photo'), next: t('Next photo'), zoomIn: t('Zoom in'), zoomOut: t('Zoom out') }}
         />
         {allPhotos.length > 1 && (
-          <div className={sideGallery ? 'flex flex-col gap-2 shrink-0 max-h-[520px] overflow-y-auto p-0.5' : 'flex gap-2 flex-wrap'}>
+          <div className={pm ? 'grid grid-cols-4 gap-3 sm:grid-cols-5' : sideGallery ? 'flex flex-col gap-2 shrink-0 max-h-[520px] overflow-y-auto p-0.5' : 'flex gap-2 flex-wrap'}>
             {allPhotos.map((url, i) => (
               <button
                 key={url + i}
                 onClick={() => setActivePhoto(i)}
                 aria-label={`${t('Open photo')} ${i + 1}`}
                 aria-current={i === activePhoto ? 'true' : undefined}
-                className={`relative w-16 h-16 shrink-0 overflow-hidden p-0 cursor-pointer bg-canvas rounded-lg transition-all ${
-                  i === activePhoto ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : 'ring-1 ring-line hover:ring-line-strong opacity-70 hover:opacity-100'
-                }`}
+                className={
+                  pm
+                    ? `relative block aspect-square w-full overflow-hidden rounded-md bg-[var(--pm-card)] ring-2 transition ${i === activePhoto ? 'ring-accent' : 'ring-transparent hover:ring-accent/40'}`
+                    : `relative w-16 h-16 shrink-0 overflow-hidden p-0 cursor-pointer bg-canvas rounded-lg transition-all ${
+                        i === activePhoto ? 'ring-2 ring-accent ring-offset-2 ring-offset-surface' : 'ring-1 ring-line hover:ring-line-strong opacity-70 hover:opacity-100'
+                      }`
+                }
               >
                 <Image src={url} alt="" fill sizes="64px" className="object-cover" />
               </button>
@@ -514,6 +526,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             {product.badgeText}
           </span>
         )}
+        {!pm && (
+          <>
         {product.brand && <p className="m-0 text-[13px] font-medium text-muted">{product.brand}</p>}
         <div className="flex items-start justify-between gap-3">
           <h1 data-rg="product-title" className="mt-0.5 mb-2 text-[22px] sm:text-[28px] font-bold leading-[1.15] text-ink tracking-[-0.015em] [text-wrap:balance]">{product.name}</h1>
@@ -549,15 +563,25 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             ))}
           </div>
         )}
+          </>
+        )}
 
         {leadSlots?.price ?? (
           <>
         {/* Open price block between two hairlines: the big number is the
             anchor, in the store accent only when it is a sale price, so the
             panel no longer reads like a tinted warning box. */}
-        <div data-rg="product-price" className="border-y border-line py-4 mb-5">
+        <div data-rg="product-price" className={pm ? 'mb-4' : 'border-y border-line py-4 mb-5'}>
           <div className="flex gap-x-3 gap-y-2 items-baseline flex-wrap">
-            <span className={`text-[30px] sm:text-[34px] leading-none font-extrabold tracking-tight tabular-nums ${displayOriginalPrice || breakApplied ? 'text-accent' : 'text-ink'}`}>{formatPrice(breakApplied ? brokenPrice : displayPrice)}</span>
+            <span
+              className={
+                pm
+                  ? 'text-3xl font-extrabold tabular-nums text-ink'
+                  : `text-[30px] sm:text-[34px] leading-none font-extrabold tracking-tight tabular-nums ${displayOriginalPrice || breakApplied ? 'text-accent' : 'text-ink'}`
+              }
+            >
+              {formatPrice(breakApplied ? brokenPrice : displayPrice)}
+            </span>
             {product.unitLabel && <span className="text-muted text-[14px]">/ {product.unitLabel}</span>}
             {usd(breakApplied ? brokenPrice : displayPrice) && (
               <span className="text-muted text-[13px]">{usd(breakApplied ? brokenPrice : displayPrice)}</span>
@@ -606,15 +630,28 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
               {backorder.shortMessage}
             </p>
           ) : (
-            <p className={`flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 ${outOfStock || display?.isLowStock?.(availableStock) ? 'text-accent-dark' : 'text-success'}`}>
-              <span className={`w-1.5 h-1.5 rounded-full ${outOfStock || display?.isLowStock?.(availableStock) ? 'bg-accent' : 'bg-success'}`} />
-              {availableStock !== undefined && availableStock <= 0
+            <p
+              className={
+                pm
+                  ? `mt-1 text-[11px] font-bold uppercase tracking-wide ${outOfStock || display?.isLowStock?.(availableStock) ? 'text-red-600' : 'text-green-600'}`
+                  : `flex items-center gap-1.5 text-[12.5px] font-semibold mt-3 ${outOfStock || display?.isLowStock?.(availableStock) ? 'text-accent-dark' : 'text-success'}`
+              }
+            >
+              {!pm && <span className={`w-1.5 h-1.5 rounded-full ${outOfStock || display?.isLowStock?.(availableStock) ? 'bg-accent' : 'bg-success'}`} />}
+              {outOfStock || (availableStock !== undefined && availableStock <= 0)
                 ? `${display?.outOfStock ?? t('Out of stock')}${product.restockDate ? ` · ${t('Back')} ${preOrderDateText(product.restockDate, display?.language)}` : ''}`
                 : inStockText(availableStock)}
             </p>
           )}
         </div>
           </>
+        )}
+
+        {/* PlayMate: the short description sits under the price, as in the template. */}
+        {pm && plainText(product.summary) && (
+          <p data-rg="product-summary" className="mb-5 max-w-xl whitespace-pre-line text-sm leading-relaxed text-ink/80">
+            {plainText(product.summary)}
+          </p>
         )}
 
         {sizeGuide && product.variationOptions.length === 0 && (
@@ -656,17 +693,28 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                     aria-pressed={isSelected}
                     aria-label={soldOutValue ? `${val}, ${t('Out of stock')}` : undefined}
                     title={soldOutValue ? t('Out of stock') : undefined}
-                    className={`flex min-h-10 min-w-11 items-center justify-center gap-1.5 py-1.5 rounded-lg text-[13px] transition-colors border ${
-                      swatchPhoto ? 'pl-1.5 pr-3.5' : 'px-3.5'
-                    } ${
-                      soldOutValue ? 'bg-canvas text-muted line-through decoration-1' : 'bg-surface text-ink'
-                    } ${
-                      isSelected
-                        ? 'border-ink ring-1 ring-ink font-semibold'
-                        : soldOutValue
-                          ? 'border-dashed border-line font-medium hover:border-line-strong'
-                          : 'border-line font-medium hover:border-line-strong'
-                    }`}
+                    className={
+                      pm
+                        ? // The template's chip buttons (rounded, accent when chosen).
+                          `flex min-h-9 items-center justify-center gap-1.5 rounded-full border text-[12px] font-medium transition ${swatchPhoto ? 'pl-1 pr-3.5' : 'px-3.5'} ${
+                            isSelected
+                              ? 'border-accent bg-accent text-white'
+                              : soldOutValue
+                                ? 'border-dashed border-line-strong text-muted line-through'
+                                : 'border-line-strong text-ink hover:border-accent hover:text-accent'
+                          }`
+                        : `flex min-h-10 min-w-11 items-center justify-center gap-1.5 py-1.5 rounded-lg text-[13px] transition-colors border ${
+                            swatchPhoto ? 'pl-1.5 pr-3.5' : 'px-3.5'
+                          } ${
+                            soldOutValue ? 'bg-canvas text-muted line-through decoration-1' : 'bg-surface text-ink'
+                          } ${
+                            isSelected
+                              ? 'border-ink ring-1 ring-ink font-semibold'
+                              : soldOutValue
+                                ? 'border-dashed border-line font-medium hover:border-line-strong'
+                                : 'border-line font-medium hover:border-line-strong'
+                          }`
+                    }
                   >
                     {swatchPhoto && (
                       <span className={`relative w-6 h-6 rounded overflow-hidden shrink-0 bg-canvas ring-1 ring-black/10 ${soldOutValue ? 'opacity-50 grayscale' : ''}`}>
@@ -726,7 +774,54 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           </div>
         )}
 
-        {leadSlots?.purchase ?? (
+        {leadSlots?.purchase ?? (pm ? (
+          <>
+            {/* The template's row: quantity box, Add to Cart, Buy Now; then the wishlist button. */}
+            <div data-rg="product-buttons" className="mt-5 flex flex-wrap items-center gap-3">
+              <div className="inline-flex items-center rounded-md border border-line-strong">
+                <button type="button" className="p-3 disabled:opacity-40" aria-label={t('Decrease quantity')} onClick={() => setQuantity((q) => Math.max(minQty, q - packStep))}>
+                  <Minus size={14} />
+                </button>
+                <span className="w-9 text-center text-sm font-semibold tabular-nums" aria-live="polite">
+                  {quantity}
+                </span>
+                <button
+                  type="button"
+                  className="p-3 disabled:opacity-40"
+                  aria-label={t('Increase quantity')}
+                  disabled={quantityCap !== undefined && quantity + packStep > quantityCap}
+                  onClick={() => setQuantity((q) => (quantityCap !== undefined ? Math.max(q, Math.floor(Math.min(quantityCap, q + packStep) / packStep) * packStep) : q + packStep))}
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+              <button
+                type="button"
+                disabled={!canPurchase}
+                onClick={() => openSheetOr('add', handleAddToCart)}
+                data-rg="add-to-cart"
+                className="pm-btn-primary flex-1 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
+              >
+                {t('Add to Cart')}
+              </button>
+              <button
+                type="button"
+                disabled={!canPurchase}
+                onClick={() => openSheetOr('buy', handleBuyNow)}
+                data-rg="buy-now"
+                className="pm-btn-outline flex-1 disabled:cursor-not-allowed disabled:opacity-40 sm:flex-none"
+              >
+                {t('Buy Now')}
+              </button>
+            </div>
+            {quantityCap !== undefined && quantity >= quantityCap && quantityCap > 0 && <p className="mt-1.5 text-[12px] text-muted">{t('Max available quantity selected.')}</p>}
+            {minQty > 1 && (
+              <p className="mt-1.5 text-[12px] text-muted">
+                {t('Minimum order:')} {minQty}
+              </p>
+            )}
+          </>
+        ) : (
           <>
         <div className="mb-5">
           <p className="m-0 mb-2 text-[13px] text-muted">{t('Quantity')}</p>
@@ -799,12 +894,29 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           </div>
         )}
           </>
+        ))}
+
+        {pm && !leadSlots?.purchase && variantRestock && selectedVariantOutOfStock && !outOfStock && matchedVariant && (
+          <div className="mt-4">
+            <ComingSoonNotify key={JSON.stringify(matchedVariant.optionValues)} subdomain={subdomain} slug={product.slug} restock options={matchedVariant.optionValues} />
+          </div>
+        )}
+        {pm && (
+          <button
+            type="button"
+            onClick={() => wishlist.toggle(product.slug)}
+            aria-pressed={wishlist.has(product.slug)}
+            className="mt-3 inline-flex items-center gap-2 rounded-md border border-line-strong px-4 py-2.5 text-[12px] font-semibold transition hover:border-accent hover:text-accent"
+          >
+            <HeartIcon className={`h-4 w-4 ${wishlist.has(product.slug) ? 'fill-red-500 text-red-500' : ''}`} />
+            {wishlist.has(product.slug) ? t('In your wishlist') : t('Add to wishlist')}
+          </button>
         )}
         {/* The row under the buttons ("Fast delivery", "Cash on delivery", the store's own items) is ProductTrustRow, first in leadSlots.after. */}
         {leadSlots?.after}
 
         {/* The summary can hold editor HTML; shown as plain text (it used to print the tags as words). */}
-        {plainText(product.summary) && (
+        {!pm && plainText(product.summary) && (
           <p data-rg="product-summary" className="text-[13.5px] text-muted leading-relaxed mt-5 whitespace-pre-line">
             {plainText(product.summary)}
           </p>

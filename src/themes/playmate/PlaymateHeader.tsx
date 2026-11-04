@@ -236,7 +236,7 @@ export function PlaymateHeader({
   const goToSearch = (value: string) => {
     const text = value.trim();
     closeAll();
-    router.push(text ? `/store/${subdomain}?q=${encodeURIComponent(text)}` : `/store/${subdomain}`);
+    router.push(text ? `/store/${subdomain}?q=${encodeURIComponent(text)}` : `/store/${subdomain}/products`);
   };
   const submitSearch = (e: FormEvent) => {
     e.preventDefault();

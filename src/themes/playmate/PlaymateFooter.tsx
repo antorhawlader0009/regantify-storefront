@@ -117,7 +117,7 @@ export function PlaymateFooter({ subdomain, storeName, aboutBlurb, logoUrl: logo
 
   const shopLinks: FooterLink[] = [
     ...categories.slice(0, 6).map((name) => ({ label: name, url: `${base}?category=${encodeURIComponent(name)}` })),
-    { label: t('All products'), url: `${base}#products` },
+    { label: t('All products'), url: `${base}/products` },
   ];
   const serviceLinks: FooterLink[] = [
     { label: t('Track order'), url: `${base}/orders` },
