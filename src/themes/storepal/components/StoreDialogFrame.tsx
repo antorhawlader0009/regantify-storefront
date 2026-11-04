@@ -5,19 +5,27 @@ import { useRouter } from 'next/navigation';
 import { X } from 'lucide-react';
 import { CoverFloating } from '@/lib/floatingCover';
 import { useStoreText } from '../lib/storeText';
+import { useStoreSkin } from '../lib/designSettings';
+import { useStoreDisplayName } from '../lib/useStoreDisplayName';
+import { StoreFooter } from './StoreFooter';
+import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
 
 /**
  * A store page shown as a dialog over the store (2026-10-29, the owner's request): the thank-you page and Track your order. The
  * page renders the store header itself; this draws the dimmed backdrop, a centred box (the whole screen on a phone) whose content
  * scrolls inside, and the ×. × / Esc / a click outside go to the store's home. The page behind doesn't scroll while it is open.
+ * PlayMate has no dialogs: there the same content is an ordinary page in the template's layout (breadcrumb, content, footer).
  */
 export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', children }: { subdomain: string; label: string; maxWidth?: string; children: ReactNode }) {
   const t = useStoreText();
   const router = useRouter();
+  const pm = useStoreSkin() === 'playmate';
+  const storeName = useStoreDisplayName(subdomain);
   const boxRef = useRef<HTMLDivElement>(null);
   const close = useCallback(() => router.push(`/store/${subdomain}`), [router, subdomain]);
 
   useEffect(() => {
+    if (pm) return;
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') close();
     };
@@ -29,7 +37,19 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = overflow;
     };
-  }, [close]);
+  }, [close, pm]);
+
+  if (pm) {
+    return (
+      <>
+        <main className="pm-wrap w-full py-6 sm:py-8">
+          <PlaymateBreadcrumb subdomain={subdomain} homeLabel={t('Home')} items={[{ label }]} />
+          <div className={`mx-auto mt-4 w-full max-w-3xl overflow-hidden rounded-xl bg-[var(--pm-card)] ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
 
   return (
     <>
