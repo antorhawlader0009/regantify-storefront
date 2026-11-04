@@ -34,6 +34,7 @@ interface Props {
   storeName: string;
   categories: string[];
   products: StorefrontProduct[];
+  logoUrl?: string | null;
 }
 
 /**
@@ -42,7 +43,7 @@ interface Props {
  * checkout), the automatic discount the cart already gets, "delivery at checkout" (the charge depends on the address),
  * and "You May Also Like" (the vendor's "Show with this" picks first, then best sellers).
  */
-export function PlaymateCartPage({ subdomain, storeName, categories, products }: Props) {
+export function PlaymateCartPage({ subdomain, storeName, categories, products, logoUrl }: Props) {
   const t = useStoreText();
   const formatPrice = useFormatPrice(plainPrice);
   const hydrated = useCartHydrated();
@@ -188,7 +189,7 @@ export function PlaymateCartPage({ subdomain, storeName, categories, products }:
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
-      <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+      <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} logoUrl={logoUrl} />
       <main className="pm-wrap w-full flex-1 py-6 sm:py-8">
         <PlaymateBreadcrumb subdomain={subdomain} homeLabel={t('Home')} items={[{ label: t('Cart') }]} />
         <h1 className="mt-3 text-2xl font-extrabold tracking-tight sm:text-3xl">
@@ -409,7 +410,7 @@ export function PlaymateCartPage({ subdomain, storeName, categories, products }:
         )}
         <CartViewTracker subdomain={subdomain} />
       </main>
-      <StoreFooter subdomain={subdomain} storeName={storeName} />
+      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} />
     </div>
   );
 }

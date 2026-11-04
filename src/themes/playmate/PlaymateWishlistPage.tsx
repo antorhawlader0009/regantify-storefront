@@ -23,6 +23,7 @@ interface Props {
   storeName: string;
   categories: string[];
   products: StorefrontProduct[];
+  logoUrl?: string | null;
 }
 
 /** Can this product go into the cart from a card, with no choice to make on its page? */
@@ -43,7 +44,7 @@ function addable(p: StorefrontProduct): boolean {
  * the ones that need no choice; the rest are named), Clear Wishlist, Share my list, and the store's price-drop alerts
  * when it sends them.
  */
-export function PlaymateWishlistPage({ subdomain, storeName, categories, products }: Props) {
+export function PlaymateWishlistPage({ subdomain, storeName, categories, products, logoUrl }: Props) {
   const t = useStoreText();
   const router = useRouter();
   const design = useStorePalDesign();
@@ -138,7 +139,7 @@ export function PlaymateWishlistPage({ subdomain, storeName, categories, product
 
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
-      <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+      <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} logoUrl={logoUrl} />
       <main className="pm-wrap w-full flex-1 py-6 sm:py-8">
         <PlaymateBreadcrumb subdomain={subdomain} homeLabel={t('Home')} items={[{ label: t('Wishlist') }]} />
 
@@ -242,7 +243,7 @@ export function PlaymateWishlistPage({ subdomain, storeName, categories, product
           </ul>
         )}
       </main>
-      <StoreFooter subdomain={subdomain} storeName={storeName} />
+      <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} />
     </div>
   );
 }

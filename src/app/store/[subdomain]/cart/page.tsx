@@ -36,7 +36,7 @@ export default async function CartPage({ params }: PageProps) {
   const { store, categories, products } = data;
   const viewProps = { subdomain, storeName: store.storeName, categories };
   // PlayMate has its own cart page (the template's CartView), with suggestions from the store's products.
-  if (storeSkin(store.theme) === 'playmate') return <PlaymateCartPage {...viewProps} products={products} />;
+  if (storeSkin(store.theme) === 'playmate') return <PlaymateCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
 
   return resolveTheme(store.theme) === 'MINIMAL' ? (
     <MinimalCartView {...viewProps} />

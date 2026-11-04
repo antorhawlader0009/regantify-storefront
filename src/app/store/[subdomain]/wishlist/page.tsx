@@ -32,5 +32,5 @@ export default async function WishlistPage({ params }: PageProps) {
   }
   const { store, products, categories } = data;
   if (storeSkin(store.theme) !== 'playmate') redirect(`/store/${subdomain}/account/wishlist`);
-  return <PlaymateWishlistPage subdomain={subdomain} storeName={store.storeName} categories={categories} products={products} />;
+  return <PlaymateWishlistPage subdomain={subdomain} storeName={store.storeName} categories={categories} products={products} logoUrl={store.logoUrl} />;
 }

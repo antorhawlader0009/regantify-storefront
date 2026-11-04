@@ -38,11 +38,11 @@ export default async function ProductsPage({ params }: PageProps) {
   if (storeSkin(store.theme) !== 'playmate') notFound();
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
-      <StoreHeader subdomain={subdomain} storeName={store.storeName} categories={categories} categoryDetails={categoryDetails} />
+      <StoreHeader subdomain={subdomain} storeName={store.storeName} categories={categories} categoryDetails={categoryDetails} logoUrl={store.logoUrl} />
       <main className="flex-1">
         <PlaymateProductsView subdomain={subdomain} storeName={store.storeName} products={products} categories={categories} categoryDetails={categoryDetails} />
       </main>
-      <StoreFooter subdomain={subdomain} storeName={store.storeName} />
+      <StoreFooter subdomain={subdomain} storeName={store.storeName} logoUrl={store.logoUrl} />
     </div>
   );
 }
