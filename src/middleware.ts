@@ -14,7 +14,7 @@ const ROOT_DOMAIN = process.env.ROOT_DOMAIN?.toLowerCase().trim();
 
 // Same API this app's server-side data layer talks to (see
 // src/lib/storefrontApi.ts) - used here to resolve a vendor's Store >
-// Domain custom domain (e.g. gadgetdepobd.com, A-recorded at this
+// Domain custom domain (e.g. regantify.com, A-recorded at this
 // platform's IP) to their subdomain, so the request can be rewritten
 // to /store/:subdomain the same way a {subdomain}.ROOT_DOMAIN host is.
 const API_URL = process.env.API_URL ?? 'http://localhost:4000';
