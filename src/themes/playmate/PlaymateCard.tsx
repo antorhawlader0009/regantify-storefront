@@ -80,7 +80,8 @@ export function PlaymateCardView({
   onLinkClick,
 }: PlaymateCardViewProps) {
   const buttonCls =
-    'flex w-full items-center justify-center gap-2 rounded-[4px] py-2 text-[11px] font-semibold uppercase tracking-wide transition lg:[@media(hover:hover)]:translate-y-1 lg:[@media(hover:hover)]:opacity-0 lg:[@media(hover:hover)]:group-focus-within:translate-y-0 lg:[@media(hover:hover)]:group-focus-within:opacity-100 lg:[@media(hover:hover)]:group-hover:translate-y-0 lg:[@media(hover:hover)]:group-hover:opacity-100';
+    // Always shown (the owner's rule, 2026-11-04): the template hid them until hover; shoppers missed them.
+    'flex w-full items-center justify-center gap-2 rounded-[4px] py-2 text-[11px] font-semibold uppercase tracking-wide transition';
   const primaryCls = `${buttonCls} bg-accent text-white hover:bg-accent-dark`;
   return (
     <article
