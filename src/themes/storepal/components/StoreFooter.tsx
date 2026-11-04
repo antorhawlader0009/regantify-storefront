@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, type CSSProperties } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Facebook, Instagram, Twitter, Youtube, Linkedin, MessageCircle, Mail, MapPin, Phone, PhoneCall } from 'lucide-react';
 import { ReputationStrip } from './ReputationStrip';
-import { getStoreSocialLinks, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
+import { getStoreSocialLinks, type CallBarStyle, type SocialLinks, type StoreFooterConfig } from '@/lib/socialLinksApi';
 import { getGiftCardSale, getStoreHasBlog, getStoreContactInfo, getStoreHasFaq, getStoreHasLocations, getStorePages, type StoreContactInfo, type StorefrontPageSummary } from '../lib/storeNavApi';
 import { resolveFooterTemplate } from '@/lib/footerTemplates';
 import { missingDemoPages } from '@/lib/demoPages';
@@ -499,6 +499,7 @@ function StorePalFooter({
       text={footerConfig.callBarText}
       phone={footerConfig.callBarPhone || footerConfig.contactPhone || defaultCallPhone}
       whatsapp={footerConfig.callBarWhatsapp}
+      design={footerConfig.callBarStyle}
       fallbackWhatsapp={defaultWhatsapp}
     />
   );
@@ -546,6 +547,7 @@ export function FooterCallBar({
   whatsapp,
   fallbackWhatsapp,
   look,
+  design,
 }: {
   title?: string | null;
   text?: string | null;
@@ -554,6 +556,8 @@ export function FooterCallBar({
   fallbackWhatsapp?: string | null;
   /** PlayMate draws it as the template's light band. */
   look?: 'playmate';
+  /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
+  design?: CallBarStyle | null;
 }) {
   const t = useStoreText();
   const callNumber = (phone || '').split(/[,/]/)[0].trim();
@@ -565,31 +569,64 @@ export function FooterCallBar({
   };
   // WhatsApp: the bar's own number or link, else the store's WhatsApp, else the call number itself (most shops use one number).
   const waHref = waLink((whatsapp || '').trim()) || fallbackWhatsapp || waLink(callNumber);
-  if (!callNumber && !waHref) return null;
+  const showCall = !!callNumber && design?.showCall !== false;
+  const showWa = !!waHref && design?.showWhatsapp !== false;
+  if (!showCall && !showWa) return null;
   // The saved default title is the English text, so it goes through t() like the built-in one.
   const heading = !title || title === 'Got a question?' ? t('Got a question?') : title;
   const line = text?.trim() || t('Orders, products or delivery: ask us anything directly');
+  const phoneHref = `tel:${callNumber.replace(/[^\d+]/g, '')}`;
+  const callLabel = design?.callLabel || callNumber;
+  const waLabel = design?.whatsappLabel || 'WhatsApp';
+  const pm = look === 'playmate';
+  const center = design?.layout === 'CENTER';
+  const radius = design?.buttonShape === 'PILL' ? '9999px' : design?.buttonShape === 'ROUNDED' ? '8px' : design?.buttonShape === 'SQUARE' ? '2px' : undefined;
+
+  // Colours the store picked, laid over the template's own (inline, so any colour works).
+  const barStyle: CSSProperties = { ...(design?.background ? { backgroundColor: design.background } : {}), ...(design?.textColor ? { color: design.textColor } : {}) };
+  const textStyle: CSSProperties = design?.textColor ? { color: design.textColor } : {};
+  const lineStyle: CSSProperties = design?.textColor ? { color: design.textColor, opacity: 0.75 } : {};
+  const callStyle: CSSProperties = {
+    ...(design?.buttonColor ? { backgroundColor: design.buttonColor, borderColor: design.buttonColor } : {}),
+    ...(design?.buttonTextColor ? { color: design.buttonTextColor } : {}),
+    ...(radius ? { borderRadius: radius } : {}),
+  };
+  const waStyle: CSSProperties = {
+    ...(design?.buttonColor ? { borderColor: design.buttonColor } : {}),
+    ...(design?.textColor ? { color: design.textColor } : {}),
+    ...(radius ? { borderRadius: radius } : {}),
+  };
+
+  const wrap = center
+    ? 'flex flex-col items-center gap-4 text-center'
+    : pm
+      ? 'flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between md:gap-8'
+      : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between';
+
   // PlayMate: drawn like the template's light "Stay Updated" band (templete/playmate Newsletter.tsx).
-  if (look === 'playmate') {
-    const phoneHref = callNumber ? `tel:${callNumber.replace(/[^\d+]/g, '')}` : null;
+  if (pm) {
     return (
-      <section className="border-b border-ink/10 bg-accent-light" aria-label={heading}>
-        <div className="pm-wrap flex flex-col items-start gap-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8">
+      <section className="border-b border-ink/10 bg-accent-light" style={barStyle} aria-label={heading}>
+        <div className={`pm-wrap py-6 ${wrap}`}>
           <div className="min-w-0">
-            <p className="text-[12px] font-bold uppercase tracking-wide text-ink">{heading}</p>
-            <p className="text-[12px] text-ink/70">{line}</p>
+            <p className="text-[12px] font-bold uppercase tracking-wide text-ink" style={textStyle}>
+              {heading}
+            </p>
+            <p className="text-[12px] text-ink/70" style={lineStyle}>
+              {line}
+            </p>
           </div>
-          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
-            {phoneHref && (
-              <a href={phoneHref} className="pm-btn-primary flex-1 gap-2 sm:flex-none">
+          <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+            {showCall && (
+              <a href={phoneHref} className="pm-btn-primary flex-1 gap-2 sm:flex-none" style={callStyle}>
                 <PhoneCall size={15} aria-hidden />
-                {callNumber}
+                {callLabel}
               </a>
             )}
-            {waHref && (
-              <a href={waHref} target="_blank" rel="noopener noreferrer" className="pm-btn-outline flex-1 gap-2 sm:flex-none">
+            {showWa && (
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className="pm-btn-outline flex-1 gap-2 sm:flex-none" style={waStyle}>
                 <MessageCircle size={15} aria-hidden />
-                WhatsApp
+                {waLabel}
               </a>
             )}
           </div>
@@ -599,31 +636,37 @@ export function FooterCallBar({
   }
   // Footer colours (globals.css: navy #1a2b3c, white text, #b6c2d1 muted): a slightly deeper navy band, a white Call button.
   return (
-    <div className="border-b border-line bg-[#142231]">
-      <div className="max-w-6xl mx-auto flex flex-col gap-4 px-3 py-5 sm:flex-row sm:items-center sm:justify-between sm:px-6">
+    <div className="border-b border-line bg-[#142231]" style={barStyle}>
+      <div className={`max-w-6xl mx-auto px-3 py-5 sm:px-6 ${wrap}`}>
         <div className="min-w-0">
-          <p className="m-0 text-[18px] font-bold text-white">{heading}</p>
-          <p className="m-0 mt-1 text-[13px] text-muted">{line}</p>
+          <p className="m-0 text-[18px] font-bold text-white" style={textStyle}>
+            {heading}
+          </p>
+          <p className="m-0 mt-1 text-[13px] text-muted" style={lineStyle}>
+            {line}
+          </p>
         </div>
-        <div className="flex flex-wrap gap-2.5">
-          {callNumber && (
+        <div className={`flex flex-wrap gap-2.5 ${center ? 'justify-center' : ''}`}>
+          {showCall && (
             <a
-              href={`tel:${callNumber.replace(/[^\d+]/g, '')}`}
-              className="inline-flex h-11 items-center gap-2 rounded-lg bg-white px-5 text-[14px] font-bold text-[#1a2b3c] transition-opacity hover:opacity-90"
+              href={phoneHref}
+              className="inline-flex h-11 items-center gap-2 rounded-lg border border-white bg-white px-5 text-[14px] font-bold text-[#1a2b3c] transition-opacity hover:opacity-90"
+              style={callStyle}
             >
               <PhoneCall size={17} aria-hidden />
-              {callNumber}
+              {callLabel}
             </a>
           )}
-          {waHref && (
+          {showWa && (
             <a
               href={waHref}
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex h-11 items-center gap-2 rounded-lg border border-line-strong px-5 text-[14px] font-bold text-white transition-colors hover:bg-white/10"
+              style={waStyle}
             >
               <MessageCircle size={17} aria-hidden />
-              WhatsApp
+              {waLabel}
             </a>
           )}
         </div>

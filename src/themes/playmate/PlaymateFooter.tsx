@@ -150,6 +150,7 @@ export function PlaymateFooter({ subdomain, storeName, aboutBlurb, logoUrl: logo
           text={config?.callBarText}
           phone={config?.callBarPhone || config?.contactPhone || defaultCallPhone}
           whatsapp={config?.callBarWhatsapp}
+          design={config?.callBarStyle}
           fallbackWhatsapp={defaultWhatsapp}
           look="playmate"
         />

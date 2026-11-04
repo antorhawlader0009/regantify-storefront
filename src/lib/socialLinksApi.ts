@@ -67,6 +67,22 @@ export interface StoreFooterConfig {
   callBarText?: string | null;
   callBarPhone?: string | null;
   callBarWhatsapp?: string | null;
+  /** The bar's design (server vendor/call-bar-style.ts); null = the template's own look. */
+  callBarStyle?: CallBarStyle | null;
+}
+
+/** Store > Footer > "Got a question?" bar > Design. Every key optional; a missing one keeps the template's look. */
+export interface CallBarStyle {
+  background?: string;
+  textColor?: string;
+  buttonColor?: string;
+  buttonTextColor?: string;
+  layout?: 'SPLIT' | 'CENTER';
+  buttonShape?: 'SQUARE' | 'ROUNDED' | 'PILL';
+  showCall?: boolean;
+  showWhatsapp?: boolean;
+  callLabel?: string;
+  whatsappLabel?: string;
 }
 
 // Store > Logo - bundled into the same fetch/shape as social links
