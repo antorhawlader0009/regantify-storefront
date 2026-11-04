@@ -219,6 +219,12 @@
 [data-skin='playmate'] .pm-no-scrollbar {
   scrollbar-width: none;
 }
+/* PlayMate's checkout page: StorePal's form cards become the template's grey summary boxes (inputs stay white). */
+[data-skin='playmate'] .pm-checkout div.bg-surface.border-line.rounded-lg {
+  background: var(--pm-card);
+  border-color: transparent;
+  border-radius: 0.75rem;
+}
 [data-skin='playmate'] .pm-no-scrollbar::-webkit-scrollbar {
   display: none;
 }

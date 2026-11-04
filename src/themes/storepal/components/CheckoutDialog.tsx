@@ -17,7 +17,7 @@ import { useCustomerAuthHydrated, useCustomerAuthStore } from '@/providers/custo
 import { takePendingCoupon } from '../lib/pendingCoupon';
 import { takeInstantPrefill } from '@/lib/instantCheckout';
 import { useVoiceCheckoutFill } from '@/lib/voiceCheckout';
-import { useStorePalDesign } from '../lib/designSettings';
+import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
 import { loadSavedAltPhone, loadSavedCheckoutForm, saveAltPhone, saveCheckoutForm } from '../lib/checkoutFormStorage';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
@@ -48,7 +48,7 @@ const DEFAULT_GATEWAY_LABELS: Record<string, string> = {
   PORTWALLET: 'PortWallet',
 };
 
-type Lang = 'bn' | 'en';
+export type Lang = 'bn' | 'en';
 
 const EN = {
   placeOrder: 'Place Order',
@@ -332,7 +332,7 @@ const BN: Copy = {
 
 const COPY: Record<Lang, Copy> = { en: EN, bn: BN };
 
-function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; onClose: () => void; lang: Lang }) {
+export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: string; onClose: () => void; lang: Lang }) {
   const formatPrice = useFormatPrice(plainPrice);
   // Dollar guide: for every visitor abroad, and for anyone once "This is a gift" is ticked (the hook decides; null = not shown).
   const usdFor = useUsdPrice(true);
@@ -1575,6 +1575,14 @@ export function CheckoutDialog({ subdomain }: { subdomain: string }) {
   // Bangla every time it opens; the shopper's switch only lasts until it closes.
   const [lang, setLang] = useState<Lang>('bn');
   const onCheckoutRoute = pathname?.endsWith('/checkout') ?? false;
+  // PlayMate has no checkout dialog: the same form is a page (/checkout, PlaymateCheckoutPage), so every "Buy Now",
+  // cart "Checkout", chat or voice call that opens the dialog goes to that page instead.
+  const pm = useStoreSkin() === 'playmate';
+  useEffect(() => {
+    if (!pm || !open) return;
+    closeDialog();
+    if (!onCheckoutRoute) router.push(`/store/${subdomain}/checkout`);
+  }, [pm, open, onCheckoutRoute, closeDialog, router, subdomain]);
 
   const close = useCallback(() => {
     closeDialog();
@@ -1614,7 +1622,7 @@ export function CheckoutDialog({ subdomain }: { subdomain: string }) {
     };
   }, [open, close]);
 
-  if (!open) return null;
+  if (!open || pm) return null;
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center p-3 sm:p-6">

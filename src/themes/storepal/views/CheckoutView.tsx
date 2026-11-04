@@ -7,6 +7,8 @@ import { getStoreNavData, type StoreNavData } from '../lib/storeNavApi';
 import { getStoreSocialLinks } from '@/lib/socialLinksApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
+import { useStoreSkin } from '../lib/designSettings';
+import { PlaymateCheckoutPage } from '../../playmate/PlaymateCheckoutPage';
 
 /**
  * StorePal's checkout is a dialog (components/CheckoutDialog.tsx, mounted by
@@ -18,7 +20,7 @@ import { StoreFooter } from '../components/StoreFooter';
  * logo/social links for the header and footer are fetched here, the same
  * prop-or-fetch pattern those components support for account/* pages.
  */
-export function CheckoutView({ subdomain }: { subdomain: string }) {
+function StorePalCheckoutView({ subdomain }: { subdomain: string }) {
   const openDialog = useCheckoutDialog((s) => s.openDialog);
   const storeName = useStoreDisplayName(subdomain);
   const [nav, setNav] = useState<StoreNavData>({ categories: [], categoryDetails: [] });
@@ -50,4 +52,10 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
       <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} />
     </div>
   );
+}
+
+/** PlayMate's checkout is a page of its own (PlaymateCheckoutPage); StorePal's opens the checkout dialog here. */
+export function CheckoutView({ subdomain }: { subdomain: string }) {
+  const skin = useStoreSkin();
+  return skin === 'playmate' ? <PlaymateCheckoutPage subdomain={subdomain} /> : <StorePalCheckoutView subdomain={subdomain} />;
 }
