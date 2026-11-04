@@ -151,6 +151,7 @@ export function PlaymateFooter({ subdomain, storeName, aboutBlurb, logoUrl: logo
           phone={config?.callBarPhone || config?.contactPhone || defaultCallPhone}
           whatsapp={config?.callBarWhatsapp}
           fallbackWhatsapp={defaultWhatsapp}
+          look="playmate"
         />
       )}
       <ReputationStrip />

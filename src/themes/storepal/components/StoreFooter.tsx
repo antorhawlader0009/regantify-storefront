@@ -545,12 +545,15 @@ export function FooterCallBar({
   phone,
   whatsapp,
   fallbackWhatsapp,
+  look,
 }: {
   title?: string | null;
   text?: string | null;
   phone?: string | null;
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
+  /** PlayMate draws it as the template's light band. */
+  look?: 'playmate';
 }) {
   const t = useStoreText();
   const callNumber = (phone || '').split(/[,/]/)[0].trim();
@@ -566,6 +569,34 @@ export function FooterCallBar({
   // The saved default title is the English text, so it goes through t() like the built-in one.
   const heading = !title || title === 'Got a question?' ? t('Got a question?') : title;
   const line = text?.trim() || t('Orders, products or delivery: ask us anything directly');
+  // PlayMate: drawn like the template's light "Stay Updated" band (templete/playmate Newsletter.tsx).
+  if (look === 'playmate') {
+    const phoneHref = callNumber ? `tel:${callNumber.replace(/[^\d+]/g, '')}` : null;
+    return (
+      <section className="border-b border-ink/10 bg-accent-light" aria-label={heading}>
+        <div className="pm-wrap flex flex-col items-start gap-4 py-6 md:flex-row md:items-center md:justify-between md:gap-8">
+          <div className="min-w-0">
+            <p className="text-[12px] font-bold uppercase tracking-wide text-ink">{heading}</p>
+            <p className="text-[12px] text-ink/70">{line}</p>
+          </div>
+          <div className="flex w-full flex-wrap gap-2 sm:w-auto">
+            {phoneHref && (
+              <a href={phoneHref} className="pm-btn-primary flex-1 gap-2 sm:flex-none">
+                <PhoneCall size={15} aria-hidden />
+                {callNumber}
+              </a>
+            )}
+            {waHref && (
+              <a href={waHref} target="_blank" rel="noopener noreferrer" className="pm-btn-outline flex-1 gap-2 sm:flex-none">
+                <MessageCircle size={15} aria-hidden />
+                WhatsApp
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
   // Footer colours (globals.css: navy #1a2b3c, white text, #b6c2d1 muted): a slightly deeper navy band, a white Call button.
   return (
     <div className="border-b border-line bg-[#142231]">
