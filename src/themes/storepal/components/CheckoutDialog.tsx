@@ -18,6 +18,7 @@ import { takePendingCoupon } from '../lib/pendingCoupon';
 import { takeInstantPrefill } from '@/lib/instantCheckout';
 import { useVoiceCheckoutFill } from '@/lib/voiceCheckout';
 import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
+import { isPageSkin } from '@/lib/theme';
 import { loadSavedAltPhone, loadSavedCheckoutForm, saveAltPhone, saveCheckoutForm } from '../lib/checkoutFormStorage';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { trackMetaInitiateCheckout } from '@/lib/metaPixelEvents';
@@ -719,7 +720,9 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
               <div aria-hidden="true" style={{ position: 'absolute', left: '-10000px', top: 'auto', width: 1, height: 1, overflow: 'hidden' }}>
                 <label>
                   Leave this empty
-                  <input type="text" name="company_fax" tabIndex={-1} autoComplete="off" value={botTrap} onChange={(e) => setBotTrap(e.target.value)} />
+                  {/* The name must not look like any real field: browsers' autofill fills "fax"/"company"/"phone"-like names even with
+                      autoComplete off, and a filled trap refused real shoppers (2026-11-04). */}
+                  <input type="text" name="rgf_hp_x7" id="rgf_hp_x7" tabIndex={-1} autoComplete="off" data-lpignore="true" data-1p-ignore="true" data-form-type="other" value={botTrap} onChange={(e) => setBotTrap(e.target.value)} />
                 </label>
               </div>
 
@@ -1577,7 +1580,7 @@ export function CheckoutDialog({ subdomain }: { subdomain: string }) {
   const onCheckoutRoute = pathname?.endsWith('/checkout') ?? false;
   // PlayMate has no checkout dialog: the same form is a page (/checkout, PlaymateCheckoutPage), so every "Buy Now",
   // cart "Checkout", chat or voice call that opens the dialog goes to that page instead.
-  const pm = useStoreSkin() === 'playmate';
+  const pm = isPageSkin(useStoreSkin());
   useEffect(() => {
     if (!pm || !open) return;
     closeDialog();
