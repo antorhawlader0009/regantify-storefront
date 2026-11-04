@@ -31,12 +31,6 @@ import { highlightIcon } from '../lib/highlightIcons';
 import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, SectionTitle, type PmHeroSlide } from '../../playmate/PlaymateHome';
 import { PlaymateProductsView } from '../../playmate/PlaymateProductsView';
 
-// PlayMate's perks strip when the store wrote no highlights (no numbers or promises, like StorePal's own defaults).
-const PM_DEFAULT_HIGHLIGHTS = [
-  { id: 'pm-1', icon: 'TRUCK', title: 'Fast delivery', text: 'Quick delivery to your doorstep.' },
-  { id: 'pm-2', icon: 'SHIELD_CHECK', title: 'Genuine products', text: 'Quality-checked items you can trust.' },
-  { id: 'pm-3', icon: 'HAND_COINS', title: 'Cash on delivery', text: 'Pay when your order arrives at your door.' },
-];
 import { PLAYMATE_ORDER, resolveHomeSections } from '../lib/homeSections';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
@@ -380,12 +374,12 @@ export function HomeView({
       case 'HERO': {
         const covers = categoryDetails.filter((c) => c.coverPhotoUrl).slice(0, 4);
         const slides: PmHeroSlide[] = [
-          ...(siteCoverUrl ? [{ key: '__site__', image: siteCoverUrl, title1: storeName, text: t('Shop our latest products'), href: `/store/${subdomain}#products` }] : []),
+          ...(siteCoverUrl ? [{ key: '__site__', image: siteCoverUrl, title1: storeName, href: `/store/${subdomain}#products` }] : []),
           ...(siteCoverUrl && siteCoverOnly
             ? []
             : covers.map((c) => ({ key: c.name, image: c.coverPhotoUrl, kicker: storeName, title1: c.name, href: categoryHref(c.name) }))),
         ];
-        if (slides.length === 0) slides.push({ key: '__name__', title1: storeName, text: t('Shop our latest products'), href: `/store/${subdomain}#products` });
+        if (slides.length === 0) slides.push({ key: '__name__', title1: storeName, href: `/store/${subdomain}#products` });
         return (
           <PmHero
             slides={slides}
@@ -396,7 +390,9 @@ export function HomeView({
         );
       }
       case 'HIGHLIGHTS': {
-        const items = (design.homeHighlights.length > 0 ? design.homeHighlights : PM_DEFAULT_HIGHLIGHTS).map((item) => {
+        // Only the store's own highlights (Store > Design): nothing is promised that the store didn't write.
+        if (design.homeHighlights.length === 0) return null;
+        const items = design.homeHighlights.map((item) => {
           const Icon = highlightIcon(item.icon);
           return { key: item.id, icon: <Icon size={28} strokeWidth={1.5} aria-hidden />, title: t(item.title), text: item.text ? t(item.text) : null };
         });
@@ -430,7 +426,6 @@ export function HomeView({
           <PmPromoBanners
             banners={campaigns.slice(0, 2).map((c) => ({
               key: c.id,
-              kicker: t('Limited time offer'),
               title: c.name,
               cta: t('Shop now'),
               href: `/store/${subdomain}/campaigns/${c.slug}`,

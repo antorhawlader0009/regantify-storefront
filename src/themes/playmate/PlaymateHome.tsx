@@ -286,7 +286,7 @@ export function PmProductRow({ title, viewAllLabel, viewAllHref, children, id, e
 
 export interface PmPromo {
   key: string;
-  kicker: string;
+  kicker?: string;
   title: string;
   text?: string;
   cta: string;
@@ -310,7 +310,7 @@ export function PmPromoBanners({ banners, plainImage }: { banners: PmPromo[]; pl
             >
               {b.image && <Picture src={b.image} alt="" plain={plainImage} sizes="50vw" className={`absolute inset-y-0 right-0 h-full w-[52%] ${fade}`} />}
               <div className="relative z-10 max-w-[58%]">
-                <p className={`text-[11px] font-semibold uppercase tracking-wide ${purple ? 'text-[var(--pm-yellow)]' : 'text-accent'}`}>{b.kicker}</p>
+                {b.kicker && <p className={`text-[11px] font-semibold uppercase tracking-wide ${purple ? 'text-[var(--pm-yellow)]' : 'text-accent'}`}>{b.kicker}</p>}
                 <h3 className={`mt-2 text-[22px] font-extrabold uppercase leading-tight sm:text-[28px] ${purple ? 'text-white' : 'text-ink'}`}>{b.title}</h3>
                 {b.text && <p className={`mt-2 text-[12px] font-semibold uppercase tracking-wide ${purple ? 'text-white' : 'text-ink'}`}>{b.text}</p>}
                 <Link

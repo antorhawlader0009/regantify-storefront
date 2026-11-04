@@ -30,6 +30,8 @@ const BN: Record<string, string> = {
   star: 'স্টার',
   '{n} reviews': '{n}টি রিভিউ',
   // PlayMate product list
+  'Show less': 'কম দেখান',
+  'Show all ({n})': 'সব দেখান ({n})',
   'All categories': 'সব ক্যাটাগরি',
   All: 'সব',
   'Close filters': 'ফিল্টার বন্ধ করুন',

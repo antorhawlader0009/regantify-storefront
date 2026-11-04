@@ -67,6 +67,7 @@ export function PlaymateProductsView({ subdomain, storeName, products, categorie
   const [maxPrice, setMaxPrice] = useState('');
   const [visible, setVisible] = useState(PAGE);
   const [panel, setPanel] = useState(false);
+  const [allBrands, setAllBrands] = useState(false);
 
   const filterKey = `${activeCategory}|${activeBrand}|${q}|${picks?.join(',')}|${show}|${minPrice}|${maxPrice}|${sort}`;
   useEffect(() => setVisible(PAGE), [filterKey]);
@@ -178,7 +179,7 @@ export function PlaymateProductsView({ subdomain, storeName, products, categorie
   // Brands of the products in view (and the one chosen), the store's top-level categories (and the chosen one's sub ones).
   const brands = Array.from(
     new Set([...(activeBrand ? [activeBrand] : []), ...beforeBrand.map((p) => p.brand?.trim()).filter((b): b is string => !!b)]),
-  ).slice(0, 30);
+  );
   const subCategories = activeCategory ? (categoryDetails.find((c) => c.name === activeCategory)?.children ?? []).map((c) => c.name) : [];
   const activeDetail = activeCategory ? categoryDetails.find((c) => c.name === activeCategory) : undefined;
 
@@ -254,12 +255,17 @@ export function PlaymateProductsView({ subdomain, storeName, products, categorie
         <div>
           <h3 className="mb-2 text-[12px] font-bold uppercase tracking-wide">{t('Brand')}</h3>
           <div className="flex flex-wrap gap-2">
-            {brands.map((b) => (
+            {(allBrands ? brands : brands.slice(0, 12)).map((b) => (
               <button key={b} type="button" aria-pressed={activeBrand === b} onClick={() => go({ brand: activeBrand === b ? null : b })} className={pill(activeBrand === b)}>
                 {b}
               </button>
             ))}
           </div>
+          {brands.length > 12 && (
+            <button type="button" onClick={() => setAllBrands((v) => !v)} className="mt-2 text-[12px] font-semibold text-accent hover:underline">
+              {allBrands ? t('Show less') : t('Show all ({n})').replace('{n}', num(brands.length))}
+            </button>
+          )}
         </div>
       )}
 

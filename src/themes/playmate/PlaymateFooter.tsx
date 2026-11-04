@@ -37,11 +37,6 @@ const PLATFORMS: { key: keyof SocialLinks; label: string; Icon: typeof Facebook 
   { key: 'whatsappUrl', label: 'WhatsApp', Icon: MessageCircle },
 ];
 
-const DEFAULT_PERKS = [
-  { id: 'p1', icon: 'TRUCK', title: 'Fast delivery', text: 'Quick delivery to your doorstep.' },
-  { id: 'p2', icon: 'SHIELD_CHECK', title: 'Genuine products', text: 'Quality-checked items you can trust.' },
-  { id: 'p3', icon: 'HAND_COINS', title: 'Cash on delivery', text: 'Pay when your order arrives at your door.' },
-];
 
 type FooterLink = { label: string; url: string };
 
@@ -134,7 +129,7 @@ export function PlaymateFooter({ subdomain, storeName, aboutBlurb, logoUrl: logo
   ];
   const menuLinks: FooterLink[] = config ? [...config.menuLinks, ...(config.extraLinks ?? [])] : [];
 
-  const perks = (design.homeHighlights.length > 0 ? design.homeHighlights : DEFAULT_PERKS).slice(0, 4);
+  const perks = design.homeHighlights.slice(0, 4);
   const about = (config?.aboutBlurb ?? aboutBlurb)?.trim();
   const contactLines = config?.showContact
     ? [
@@ -210,6 +205,7 @@ export function PlaymateFooter({ subdomain, storeName, aboutBlurb, logoUrl: logo
         <LinkList title={t('Shop')} links={shopLinks} />
         <LinkList title={t('Customer Service')} links={serviceLinks} />
         <LinkList title={config?.menuTitle || t('Company')} links={[...companyLinks, ...menuLinks]} />
+        {perks.length > 0 && (
         <ul className="col-span-2 grid gap-4 sm:grid-cols-2 md:col-span-3 md:grid-cols-4 lg:col-span-1 lg:block lg:space-y-4 lg:border-l lg:border-ink/10 lg:pl-8">
           {perks.map((perk) => {
             const Icon = highlightIcon(perk.icon);
@@ -224,6 +220,7 @@ export function PlaymateFooter({ subdomain, storeName, aboutBlurb, logoUrl: logo
             );
           })}
         </ul>
+        )}
       </div>
 
       <div className="pm-wrap grid gap-6 pb-8 md:grid-cols-2">
