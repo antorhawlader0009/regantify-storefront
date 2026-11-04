@@ -1,5 +1,6 @@
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
+import { SkinPage } from '../../playmate/SkinPage';
 
 interface PageViewProps {
   subdomain: string;
@@ -14,8 +15,7 @@ export function PageView({ subdomain, storeName, categories, title, content }: P
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
-      <main className="max-w-4xl mx-auto px-3 sm:px-6 py-10">
-        <h1 className="text-[26px] sm:text-[32px] font-bold text-ink leading-tight mb-6">{title}</h1>
+      <SkinPage subdomain={subdomain} title={title} className="max-w-4xl mx-auto px-3 sm:px-6 py-10" titleClassName="text-[26px] sm:text-[32px] font-bold text-ink leading-tight mb-6">
         {content ? (
           <div
             // Headings, links and list spacing for the store's own pages and the demo pages (headings used to look like body text).
@@ -26,7 +26,7 @@ export function PageView({ subdomain, storeName, categories, title, content }: P
         ) : (
           <p className="text-[14px] text-muted">This page has no content yet.</p>
         )}
-      </main>
+      </SkinPage>
       <StoreFooter subdomain={subdomain} storeName={storeName} aboutBlurb={title === 'About Us' ? content : undefined} />
     </div>
   );

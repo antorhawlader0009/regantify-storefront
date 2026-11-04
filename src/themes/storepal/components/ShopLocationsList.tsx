@@ -3,6 +3,7 @@
 import { Clock, MapPin, Navigation, Phone } from 'lucide-react';
 import type { StoreShopLocation } from '@/lib/storefrontApi';
 import { useStoreText } from '../lib/storeText';
+import { useStoreSkin } from '../lib/designSettings';
 
 /**
  * The store's shops as cards (server shop-locations/). The whole card opens the shop on Google Maps; "Directions" starts the route there
@@ -54,10 +55,11 @@ export function ShopLocationsList({ items }: { items: StoreShopLocation[] }) {
 /** The page heading, in the store's language. */
 export function ShopLocationsHeading() {
   const t = useStoreText();
+  const pm = useStoreSkin() === 'playmate';
   return (
     <>
-      <h1 className="mb-1 text-center text-[28px] font-bold">{t('Our shops')}</h1>
-      <p className="mb-8 text-center text-[13px] text-muted">{t('Visit us at our shops')}</p>
+      <h1 className={pm ? 'mb-1 text-2xl font-extrabold tracking-tight sm:text-3xl' : 'mb-1 text-center text-[28px] font-bold'}>{t('Our shops')}</h1>
+      <p className={pm ? 'mb-8 text-sm text-muted' : 'mb-8 text-center text-[13px] text-muted'}>{t('Visit us at our shops')}</p>
     </>
   );
 }

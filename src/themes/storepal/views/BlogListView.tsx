@@ -1,6 +1,7 @@
 'use client';
 
 // A browser component: it reads the shopper's language (useStoreText). As a server component the page crashed with a 500.
+import { SkinPage } from '../../playmate/SkinPage';
 import type { StorefrontBlogCard } from '@/lib/storefrontApi';
 import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
@@ -15,8 +16,7 @@ export function BlogListView({ subdomain, storeName, categories, posts }: { subd
     <div className="min-h-screen bg-canvas text-ink">
       <TrackFeature feature="MAGAZINE_VIEW" />
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <h1 className="text-center text-[28px] font-bold uppercase">{t('Magazine')}</h1>
+      <SkinPage subdomain={subdomain} title={t('Magazine')} className="mx-auto max-w-6xl px-4 py-10 sm:px-6" titleClassName="text-center text-[28px] font-bold uppercase">
         <p className="mb-8 text-center text-[13px] text-muted">{t('Latest from {store}').replace('{store}', storeName)}</p>
         {posts.length === 0 ? (
           <p className="text-center text-[14px] text-muted">{t('No posts yet.')}</p>
@@ -27,7 +27,7 @@ export function BlogListView({ subdomain, storeName, categories, posts }: { subd
             ))}
           </div>
         )}
-      </main>
+      </SkinPage>
       <StoreFooter subdomain={subdomain} storeName={storeName} />
     </div>
   );

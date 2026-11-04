@@ -199,7 +199,7 @@ export function PmFeatures({ items }: { items: { key: string; icon: ReactNode; t
   );
 }
 
-function SectionTitle({ title, center }: { title: string; center?: boolean }) {
+export function SectionTitle({ title, center }: { title: string; center?: boolean }) {
   return (
     <div className={center ? 'text-center' : ''}>
       <h2 className="text-[15px] font-bold uppercase tracking-wide text-ink">{title}</h2>
@@ -242,7 +242,7 @@ export function PmCategories({ title, items, shopLabel, plainImage }: { title: s
 }
 
 /** A row of product cards that scrolls sideways with arrows (the demo's Best Sellers). */
-export function PmProductRow({ title, viewAllLabel, viewAllHref, children, id }: { title: string; viewAllLabel?: string; viewAllHref?: string; children: ReactNode[]; id?: string }) {
+export function PmProductRow({ title, viewAllLabel, viewAllHref, children, id, extra }: { title: string; viewAllLabel?: string; viewAllHref?: string; children: ReactNode[]; id?: string; extra?: ReactNode }) {
   const ref = useRef<HTMLUListElement>(null);
   if (children.length === 0) return null;
   const scroll = (dir: 1 | -1) => ref.current?.scrollBy({ left: dir * ref.current.clientWidth * 0.8, behavior: 'smooth' });
@@ -251,7 +251,10 @@ export function PmProductRow({ title, viewAllLabel, viewAllHref, children, id }:
     <section id={id} className="scroll-mt-20 pb-10">
       <div className="pm-wrap">
         <div className="mb-5 flex items-center justify-between gap-3">
-          <SectionTitle title={title} />
+          <div className="flex min-w-0 flex-wrap items-center gap-3">
+            <SectionTitle title={title} />
+            {extra}
+          </div>
           {viewAllLabel && viewAllHref && (
             <Link href={viewAllHref} className="inline-flex shrink-0 items-center gap-2 text-[12px] font-semibold uppercase tracking-wide text-ink hover:text-accent">
               {viewAllLabel} <ArrowRight className="h-4 w-4" />

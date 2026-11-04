@@ -1,5 +1,6 @@
 'use client';
 
+import { SkinPage } from '../../playmate/SkinPage';
 import { useState } from 'react';
 import { MapPin, MessageCircle, Phone } from 'lucide-react';
 import { StoreHeader } from '../components/StoreHeader';
@@ -48,8 +49,7 @@ export function ContactView({ subdomain, storeName, categories, page }: { subdom
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
-      <main className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
-        <h1 className="mb-1 text-center text-[28px] font-bold">{t('Contact us')}</h1>
+      <SkinPage subdomain={subdomain} title={t('Contact us')} className="mx-auto max-w-6xl px-4 py-10 sm:px-6" titleClassName="mb-1 text-center text-[28px] font-bold">
         <p className="mb-8 text-center text-[13px] text-muted">{page.intro || t('Have a question? Write to us and we will get back to you.')}</p>
         <div className={`grid gap-6 ${cards.length > 0 ? 'lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)] lg:gap-12' : 'mx-auto max-w-2xl'}`}>
           <div className="rounded-xl border border-line bg-white p-5 sm:p-6">
@@ -128,7 +128,7 @@ export function ContactView({ subdomain, storeName, categories, page }: { subdom
             </div>
           )}
         </div>
-      </main>
+      </SkinPage>
       <StoreFooter subdomain={subdomain} storeName={storeName} />
     </div>
   );

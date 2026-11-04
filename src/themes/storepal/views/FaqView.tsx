@@ -6,6 +6,7 @@ import { StoreFooter } from '../components/StoreFooter';
 import { FaqList } from '../components/FaqList';
 import { useStoreText } from '../lib/storeText';
 import { TrackFeature } from '@/components/TrackFeature';
+import { SkinPage } from '../../playmate/SkinPage';
 
 /** /faq: the store's questions and answers (TellMe idea 122). */
 export function FaqView({ subdomain, storeName, categories, items }: { subdomain: string; storeName: string; categories: string[]; items: Array<{ id: string; question: string; answer: string }> }) {
@@ -14,11 +15,10 @@ export function FaqView({ subdomain, storeName, categories, items }: { subdomain
     <div className="min-h-screen bg-canvas text-ink">
       <TrackFeature feature="FAQ_VIEW" />
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
-      <main className="mx-auto max-w-3xl px-4 py-10 sm:px-6">
-        <h1 className="mb-1 text-center text-[28px] font-bold">{t('FAQ')}</h1>
+      <SkinPage subdomain={subdomain} title={t('FAQ')} className="mx-auto max-w-3xl px-4 py-10 sm:px-6" titleClassName="mb-1 text-center text-[28px] font-bold">
         <p className="mb-8 text-center text-[13px] text-muted">{t('Questions our customers ask most')}</p>
         {items.length === 0 ? <p className="text-center text-[14px] text-muted">{t('No questions yet.')}</p> : <FaqList items={items} />}
-      </main>
+      </SkinPage>
       <StoreFooter subdomain={subdomain} storeName={storeName} />
     </div>
   );

@@ -219,6 +219,11 @@
 [data-skin='playmate'] .pm-no-scrollbar {
   scrollbar-width: none;
 }
+/* PlayMate's simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='playmate'] .pm-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
 /* PlayMate's account panel: the template's inputs (rounded, accent ring) and its uppercase main button. */
 .pm-auth input:not([type='checkbox']):not([type='radio']) {
   border-radius: 0.5rem;

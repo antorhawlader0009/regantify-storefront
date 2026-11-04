@@ -5,7 +5,9 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import type { StorefrontProduct, StorefrontReview, StorefrontCampaignSummary, StorefrontCategoryDetail, StorefrontBlogCard, StorefrontSetupGuide } from '@/lib/storefrontApi';
-import { MagazineSection } from '../components/MagazineSection';
+import { MagazineCard, MagazineSection } from '../components/MagazineSection';
+import { FaqList } from '../components/FaqList';
+import { FlashSaleTimer } from '../components/FlashSaleTimer';
 import { FaqSection } from '../components/FaqSection';
 import type { SocialLinks, StoreFooterConfig } from '@/lib/socialLinksApi';
 import { resolveCouponLink } from '@/lib/checkoutApi';
@@ -26,7 +28,7 @@ import { OpeningSoonBar, PlaceholderHero, PlaceholderProductGrid } from '../comp
 import { isEmptyStorePreview } from '@/components/store-preview/emptyStore';
 import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
 import { highlightIcon } from '../lib/highlightIcons';
-import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, type PmHeroSlide } from '../../playmate/PlaymateHome';
+import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, SectionTitle, type PmHeroSlide } from '../../playmate/PlaymateHome';
 import { PlaymateProductsView } from '../../playmate/PlaymateProductsView';
 
 // PlayMate's perks strip when the store wrote no highlights (no numbers or promises, like StorePal's own defaults).
@@ -458,6 +460,54 @@ export function HomeView({
             verifiedLabel={t('Verified buyer')}
             reviews={reviews.map((r) => ({ id: r.id, name: r.customerName ?? 'Anonymous', rating: r.rating, title: r.title, content: r.content, verified: r.verified }))}
           />
+        );
+      case 'FLASH_SALE': {
+        const now = Date.now();
+        const onSale = products
+          .filter((p) => p.flashSaleEndsAt && new Date(p.flashSaleEndsAt).getTime() > now)
+          .sort((a, b) => new Date(a.flashSaleEndsAt!).getTime() - new Date(b.flashSaleEndsAt!).getTime())
+          .slice(0, 12);
+        if (onSale.length === 0) return null;
+        return (
+          <PmProductRow title={t('Flash Sale')} extra={<FlashSaleTimer endsAt={onSale[0].flashSaleEndsAt!} />}>
+            {onSale.map(card)}
+          </PmProductRow>
+        );
+      }
+      case 'FAQ':
+        if (faqItems.length === 0) return null;
+        return (
+          <section className="pb-10">
+            <div className="pm-wrap">
+              <div className="mb-5 flex items-center justify-between gap-3">
+                <SectionTitle title={t('FAQ')} />
+                <Link href={`/store/${subdomain}/faq`} className="text-[12px] font-semibold uppercase tracking-wide text-ink hover:text-accent">
+                  {t('View all')}
+                </Link>
+              </div>
+              <div className="rounded-xl bg-[var(--pm-card)] p-4 sm:p-6">
+                <FaqList items={faqItems.slice(0, 5)} />
+              </div>
+            </div>
+          </section>
+        );
+      case 'MAGAZINE':
+        if (blogPosts.length === 0) return null;
+        return (
+          <PmProductRow title={t('Magazine')} viewAllLabel={blogTotal > blogPosts.length ? t('View all') : undefined} viewAllHref={`/store/${subdomain}/blog`}>
+            {blogPosts.map((post) => (
+              <MagazineCard key={post.slug} post={post} subdomain={subdomain} storeName={storeName} />
+            ))}
+          </PmProductRow>
+        );
+      case 'SOCIAL_FEED':
+        if (!socialFeed || socialFeed.posts.length === 0) return null;
+        return (
+          <section className="pb-10">
+            <div className="pm-wrap">
+              <SocialFeedSection feed={socialFeed} />
+            </div>
+          </section>
         );
       default:
         return undefined;

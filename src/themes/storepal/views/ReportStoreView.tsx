@@ -1,5 +1,6 @@
 'use client';
 
+import { SkinPage } from '../../playmate/SkinPage';
 import { useState } from 'react';
 import Link from 'next/link';
 import { StoreHeader } from '../components/StoreHeader';
@@ -47,8 +48,7 @@ export function ReportStoreView({ subdomain, storeName, categories }: { subdomai
   return (
     <div className="min-h-screen bg-canvas text-ink">
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
-      <main className="mx-auto max-w-xl px-4 py-10 sm:px-6">
-        <h1 className="mb-1 text-center text-[28px] font-bold">{t('Report this store')}</h1>
+      <SkinPage subdomain={subdomain} title={t('Report this store')} className="mx-auto max-w-xl px-4 py-10 sm:px-6" titleClassName="mb-1 text-center text-[28px] font-bold">
         <p className="mb-8 text-center text-[13px] text-muted">{t('Tell the Regantify team about a problem with {store}. The store is not told who reported it.').replace('{store}', storeName)}</p>
         {done ? (
           <div className="rounded-xl border border-line bg-white p-6 text-center">
@@ -85,7 +85,7 @@ export function ReportStoreView({ subdomain, storeName, categories }: { subdomai
             </button>
           </form>
         )}
-      </main>
+      </SkinPage>
       <StoreFooter subdomain={subdomain} storeName={storeName} />
     </div>
   );

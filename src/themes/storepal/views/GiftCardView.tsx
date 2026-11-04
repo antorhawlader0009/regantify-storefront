@@ -1,5 +1,6 @@
 'use client';
 
+import { SkinPage } from '../../playmate/SkinPage';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { CheckCircle2, Clock, Gift, XCircle } from 'lucide-react';
@@ -24,6 +25,7 @@ const field = 'w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border b
 export function GiftCardView({ subdomain }: { subdomain: string }) {
   const invoice = useSearchParams().get('invoice');
   const storeName = useStoreDisplayName(subdomain);
+  const t = useStoreText();
   const [nav, setNav] = useState<StoreNavData>({ categories: [], categoryDetails: [] });
   const [logoUrl, setLogoUrl] = useState<string | null>(null);
   const [socialLinks, setSocialLinks] = useState<Awaited<ReturnType<typeof getStoreSocialLinks>>>({});
@@ -39,7 +41,9 @@ export function GiftCardView({ subdomain }: { subdomain: string }) {
     <div className="min-h-screen bg-canvas text-ink">
       <TrackFeature feature="GIFT_CARD_PAGE" />
       <StoreHeader subdomain={subdomain} storeName={storeName} categories={nav.categories} categoryDetails={nav.categoryDetails} logoUrl={logoUrl} socialLinks={socialLinks} />
-      <main className="mx-auto max-w-lg px-4 py-10 sm:px-6">{invoice ? <Result invoice={invoice} subdomain={subdomain} /> : <Form subdomain={subdomain} />}</main>
+      <SkinPage subdomain={subdomain} title={t('Gift card')} hideTitle className="mx-auto max-w-lg px-4 py-10 sm:px-6">
+        <div className="mx-auto max-w-lg">{invoice ? <Result invoice={invoice} subdomain={subdomain} /> : <Form subdomain={subdomain} />}</div>
+      </SkinPage>
       <StoreFooter subdomain={subdomain} storeName={storeName} />
     </div>
   );
