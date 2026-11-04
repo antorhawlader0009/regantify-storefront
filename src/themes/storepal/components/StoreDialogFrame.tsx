@@ -9,6 +9,8 @@ import { useStoreSkin } from '../lib/designSettings';
 import { useStoreDisplayName } from '../lib/useStoreDisplayName';
 import { StoreFooter } from './StoreFooter';
 import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
+import { SolevoPageHeader } from '../../solevo/SolevoBreadcrumb';
+import { isPageSkin } from '@/lib/theme';
 
 /**
  * A store page shown as a dialog over the store (2026-10-29, the owner's request): the thank-you page and Track your order. The
@@ -19,7 +21,8 @@ import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
 export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', children }: { subdomain: string; label: string; maxWidth?: string; children: ReactNode }) {
   const t = useStoreText();
   const router = useRouter();
-  const pm = useStoreSkin() === 'playmate';
+  const skin = useStoreSkin();
+  const pm = isPageSkin(skin);
   const storeName = useStoreDisplayName(subdomain);
   const boxRef = useRef<HTMLDivElement>(null);
   const close = useCallback(() => router.push(`/store/${subdomain}`), [router, subdomain]);
@@ -39,6 +42,17 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
     };
   }, [close, pm]);
 
+  if (skin === 'solevo') {
+    return (
+      <>
+        <SolevoPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="sv-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-lg border border-black/10 bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
   if (pm) {
     return (
       <>

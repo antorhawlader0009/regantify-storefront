@@ -9,6 +9,7 @@ import { StoreHeader } from '../components/StoreHeader';
 import { StoreFooter } from '../components/StoreFooter';
 import { useStoreSkin } from '../lib/designSettings';
 import { PlaymateCheckoutPage } from '../../playmate/PlaymateCheckoutPage';
+import { SolevoCheckoutPage } from '../../solevo/SolevoCheckoutPage';
 
 /**
  * StorePal's checkout is a dialog (components/CheckoutDialog.tsx, mounted by
@@ -57,5 +58,6 @@ function StorePalCheckoutView({ subdomain }: { subdomain: string }) {
 /** PlayMate's checkout is a page of its own (PlaymateCheckoutPage); StorePal's opens the checkout dialog here. */
 export function CheckoutView({ subdomain }: { subdomain: string }) {
   const skin = useStoreSkin();
+  if (skin === 'solevo') return <SolevoCheckoutPage subdomain={subdomain} />;
   return skin === 'playmate' ? <PlaymateCheckoutPage subdomain={subdomain} /> : <StorePalCheckoutView subdomain={subdomain} />;
 }

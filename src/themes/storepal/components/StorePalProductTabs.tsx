@@ -39,8 +39,8 @@ export function StorePalProductTabs({
   slug: string;
   description?: string | null;
   infoTabs?: { title: string; text: string }[] | null;
-  /** PlayMate draws the same content as the template's stacked sections (details, customer reviews, questions). */
-  look?: 'playmate';
+  /** PlayMate and Solevo draw the same content as the template's stacked sections (details, customer reviews, questions). */
+  look?: 'playmate' | 'solevo';
 }) {
   const t = useStoreText();
   // Extra information tabs (TellMe idea 119) sit after the description: "info:0", "info:1", "info:2".
@@ -119,7 +119,7 @@ export function StorePalProductTabs({
       .catch((err) => setReviewsError(err instanceof Error ? err.message : 'Could not load reviews.'));
   }, [subdomain, slug, sort]);
 
-  if (look === 'playmate') {
+  if (look === 'playmate' || look === 'solevo') {
     return (
       <PlaymateProductSections
         subdomain={subdomain}

@@ -12,6 +12,8 @@ import { CoverFloating } from '@/lib/floatingCover';
 import { useStoreSkin } from '../lib/designSettings';
 import { StoreFooter } from './StoreFooter';
 import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
+import { SolevoPageHeader } from '../../solevo/SolevoBreadcrumb';
+import { isPageSkin } from '@/lib/theme';
 import { useStoreText } from '../lib/storeText';
 import { closeAccountDialog } from '../lib/accountReturn';
 import { useCustomerAuthHydrated, useCustomerAuthStore, useCustomerLogout } from '@/providers/customer-auth-store-provider';
@@ -49,7 +51,8 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
   const close = useCallback(() => closeAccountDialog(router, subdomain), [router, subdomain]);
 
   // PlayMate shows the account as an ordinary page in the template's layout, not a dialog.
-  const pm = useStoreSkin() === 'playmate';
+  const skin = useStoreSkin();
+  const pm = isPageSkin(skin);
 
   // Esc closes; the page behind doesn't scroll while the dialog is open.
   useEffect(() => {
@@ -70,6 +73,45 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
   useEffect(() => {
     dialogRef.current?.focus({ preventScroll: true });
   }, []);
+
+  if (skin === 'solevo') {
+    return (
+      <div className="flex min-h-screen flex-col bg-white text-ink">
+        <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+        <LogoutConfirm
+          open={askLogout}
+          onCancel={cancelLogout}
+          onConfirm={() => {
+            setAskLogout(false);
+            logout();
+          }}
+        />
+        <SolevoPageHeader
+          subdomain={subdomain}
+          homeLabel={t('Home')}
+          crumbs={[{ label: t('My account') }]}
+          title={t('My account')}
+          subtitle={firstName ? t('Hi, {name}').replace('{name}', firstName) : null}
+        >
+          <div className="flex items-center gap-2">
+            <GoogleConnectBadge />
+            {signedIn && (
+              <button type="button" onClick={() => setAskLogout(true)} className="sv-btn-outline sm:hidden">
+                {t('Log Out')}
+              </button>
+            )}
+          </div>
+        </SolevoPageHeader>
+        <main className="sv-wrap w-full flex-1 py-8 sm:py-10">
+          <div className="flex flex-col gap-6 overflow-hidden rounded-lg border border-black/10 bg-[var(--sv-panel)] shadow-card sm:flex-row sm:gap-0">
+            <AccountSidebar subdomain={subdomain} />
+            <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:m-2 sm:rounded-md sm:px-8 sm:py-7">{children}</div>
+          </div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </div>
+    );
+  }
 
   if (pm) {
     return (

@@ -26,6 +26,29 @@ export function LanguageSwitch({ className = '' }: { className?: string }) {
   );
 }
 
+/** Solevo's switch, in its header's style: small uppercase text like its menu links, the chosen language in copper. */
+export function SolevoLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-medium uppercase tracking-wider ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'text-[var(--sv-gold)]' : 'text-ink/80 hover:text-[var(--sv-gold)]'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** PlayMate's switch, in its header's style: plain uppercase text like the menu links, the chosen language in the accent colour. */
 export function PlaymateLanguageSwitch({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useStoreLanguageSwitch();

@@ -5,6 +5,7 @@ import { StorePalProductPanel as ProductPurchasePanel } from './StorePalProductP
 import { useCartDrawer } from '../lib/cartDrawer';
 import { useCheckoutDialog } from '../lib/checkoutDialog';
 import { lowStockLabel, stockMessages, useLowStock, useRestockNotify, useStoreSkin, useStorePalDesign, useStorePalLmsForms } from '../lib/designSettings';
+import { isPageSkin } from '@/lib/theme';
 import { trackMetaViewContent } from '@/lib/metaPixelEvents';
 import { trackViewItem } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
@@ -37,7 +38,7 @@ type PanelProps = Omit<ComponentProps<typeof ProductPurchasePanel>, 'display' | 
 export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
   const design = useStorePalDesign();
   // PlayMate shows delivery, trust and warranty lines in the template's side box (PlaymateProductView), not here.
-  const pm = useStoreSkin() === 'playmate';
+  const pm = isPageSkin(useStoreSkin());
   const openCartDrawer = useCartDrawer((s) => s.openDrawer);
   const openCheckout = useCheckoutDialog((s) => s.openDialog);
   // The store's LMS forms (LMS-plan.md Step 9), from the StorePal layout's store info.

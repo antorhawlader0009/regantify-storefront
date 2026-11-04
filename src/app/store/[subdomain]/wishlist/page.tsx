@@ -1,8 +1,9 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { getStoreProducts, StoreNotFoundError } from '@/lib/storefrontApi';
-import { storeSkin } from '@/lib/theme';
+import { isPageSkin, storeSkin } from '@/lib/theme';
 import { PlaymateWishlistPage } from '@/themes/playmate/PlaymateWishlistPage';
+import { SolevoWishlistPage } from '@/themes/solevo/SolevoWishlistPage';
 import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
@@ -31,6 +32,8 @@ export default async function WishlistPage({ params }: PageProps) {
     throw err;
   }
   const { store, products, categories } = data;
-  if (storeSkin(store.theme) !== 'playmate') redirect(`/store/${subdomain}/account/wishlist`);
-  return <PlaymateWishlistPage subdomain={subdomain} storeName={store.storeName} categories={categories} products={products} logoUrl={store.logoUrl} />;
+  const skin = storeSkin(store.theme);
+  if (!isPageSkin(skin)) redirect(`/store/${subdomain}/account/wishlist`);
+  const WishlistPage = skin === 'solevo' ? SolevoWishlistPage : PlaymateWishlistPage;
+  return <WishlistPage subdomain={subdomain} storeName={store.storeName} categories={categories} products={products} logoUrl={store.logoUrl} />;
 }

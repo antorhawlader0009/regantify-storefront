@@ -1,7 +1,7 @@
 import type { Metadata } from 'next';
 import { notFound, redirect } from 'next/navigation';
 import { getStoreProducts, StoreNotFoundError } from '@/lib/storefrontApi';
-import { resolveTheme, storeSkin } from '@/lib/theme';
+import { isPageSkin, resolveTheme, storeSkin } from '@/lib/theme';
 import { WishlistView } from '@/themes/storepal/views/WishlistView';
 import { storeParams } from '@/lib/storeRequest';
 
@@ -34,8 +34,8 @@ export default async function AccountWishlistPage({ params }: PageProps) {
 
   const { store, products, categories } = data;
   if (resolveTheme(store.theme) !== 'STOREPAL') notFound();
-  // PlayMate's wishlist is a page of its own.
-  if (storeSkin(store.theme) === 'playmate') redirect(`/store/${subdomain}/wishlist`);
+  // The template skins' wishlist is a page of its own.
+  if (isPageSkin(storeSkin(store.theme))) redirect(`/store/${subdomain}/wishlist`);
 
   return <WishlistView subdomain={subdomain} storeName={store.storeName} products={products} categories={categories} />;
 }

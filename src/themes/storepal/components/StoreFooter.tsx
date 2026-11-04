@@ -12,6 +12,7 @@ import { missingDemoPages } from '@/lib/demoPages';
 import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
 import { PlaymateFooter } from '../../playmate/PlaymateFooter';
+import { SolevoFooter } from '../../solevo/SolevoFooter';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { FooterLocation } from './FooterLocation';
 import { AboutAppLink, GetAppLink } from '@/components/GetAppLink';
@@ -117,6 +118,7 @@ function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }
 /** The store footer: StorePal's own, or PlayMate's for a PlayMate store (same content, lib/theme.ts storeSkin). */
 export function StoreFooter(props: StoreFooterProps) {
   const skin = useStoreSkin();
+  if (skin === 'solevo') return <SolevoFooter {...props} />;
   return skin === 'playmate' ? <PlaymateFooter {...props} /> : <StorePalFooter {...props} />;
 }
 
@@ -554,8 +556,8 @@ export function FooterCallBar({
   phone?: string | null;
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
-  /** PlayMate draws it as the template's light band. */
-  look?: 'playmate';
+  /** PlayMate draws it as the template's light band, Solevo as its dark newsletter band. */
+  look?: 'playmate' | 'solevo';
   /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
   design?: CallBarStyle | null;
 }) {
@@ -603,6 +605,51 @@ export function FooterCallBar({
       ? 'flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between md:gap-8'
       : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between';
 
+  // Solevo: drawn like the template's newsletter band inside its dark footer (templete/solevo Newsletter.tsx): a mail icon, the
+  // heading in small bold capitals with a grey line, and a copper button on the right (WhatsApp as an outline one).
+  if (look === 'solevo') {
+    return (
+      <section className="border-b border-white/10" style={barStyle} aria-label={heading}>
+        <div className={`sv-wrap py-8 ${center ? 'flex flex-col items-center gap-5 text-center' : 'flex flex-col items-start gap-5 md:flex-row md:items-center md:justify-between'}`}>
+          <div className="flex items-center gap-4">
+            <MessageCircle size={32} className="shrink-0" aria-hidden />
+            <div className="min-w-0">
+              <p className="text-xs font-bold uppercase tracking-wider text-white" style={textStyle}>
+                {heading}
+              </p>
+              <p className="mt-1 text-[11px] text-white/70" style={lineStyle}>
+                {line}
+              </p>
+            </div>
+          </div>
+          <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+            {showCall && (
+              <a
+                href={phoneHref}
+                className="inline-flex flex-1 items-center justify-center gap-2 bg-[var(--sv-gold)] px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-white transition hover:bg-[var(--sv-gold-dark)] sm:flex-none"
+                style={callStyle}
+              >
+                <PhoneCall size={15} aria-hidden />
+                {callLabel}
+              </a>
+            )}
+            {showWa && (
+              <a
+                href={waHref}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex flex-1 items-center justify-center gap-2 border border-white/60 px-5 py-3 text-[11px] font-bold uppercase tracking-wider text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                style={waStyle}
+              >
+                <MessageCircle size={15} aria-hidden />
+                {waLabel}
+              </a>
+            )}
+          </div>
+        </div>
+      </section>
+    );
+  }
   // PlayMate: drawn like the template's light "Stay Updated" band (templete/playmate Newsletter.tsx).
   if (pm) {
     return (

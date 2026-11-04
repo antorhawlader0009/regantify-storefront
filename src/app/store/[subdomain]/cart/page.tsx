@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { getStoreProducts, StoreNotFoundError } from '@/lib/storefrontApi';
 import { resolveTheme, storeSkin } from '@/lib/theme';
 import { PlaymateCartPage } from '@/themes/playmate/PlaymateCartPage';
+import { SolevoCartPage } from '@/themes/solevo/SolevoCartPage';
 import { CartView as MediumCartView } from '@/themes/medium/views/CartView';
 import { CartView as MinimalCartView } from '@/themes/minimal/views/CartView';
 import { CartView as StorepalCartView } from '@/themes/storepal/views/CartView';
@@ -36,6 +37,7 @@ export default async function CartPage({ params }: PageProps) {
   const { store, categories, products } = data;
   const viewProps = { subdomain, storeName: store.storeName, categories };
   // PlayMate has its own cart page (the template's CartView), with suggestions from the store's products.
+  if (storeSkin(store.theme) === 'solevo') return <SolevoCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'playmate') return <PlaymateCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
 
   return resolveTheme(store.theme) === 'MINIMAL' ? (

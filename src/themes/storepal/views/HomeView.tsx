@@ -31,7 +31,9 @@ import { highlightIcon } from '../lib/highlightIcons';
 import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, SectionTitle, type PmHeroSlide } from '../../playmate/PlaymateHome';
 import { PlaymateProductsView } from '../../playmate/PlaymateProductsView';
 
-import { PLAYMATE_ORDER, resolveHomeSections } from '../lib/homeSections';
+import { PLAYMATE_ORDER, SOLEVO_ORDER, resolveHomeSections } from '../lib/homeSections';
+import { SvBrands, SvCategories, SvFeatures, SvHero, SvProductGrid, SvPromoBanners, SvReviews, SvSectionTitle, type SvHeroSlide } from '../../solevo/SolevoHome';
+import { SolevoProductsView } from '../../solevo/SolevoProductsView';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, ChevronRight } from 'lucide-react';
@@ -141,7 +143,7 @@ export function HomeView({
   // Card numbers on the voice call's picks: Bangla digits on a Bangla store.
   const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
   // A store that never arranged its home page gets its template's own order (PlayMate's differs from StorePal's).
-  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : undefined);
+  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : skin === 'solevo' ? SOLEVO_ORDER : undefined);
 
   // "Create custom link for this coupon" - resolve the shared link to a
   // real coupon code once, stash it for checkout to pick up (see
@@ -510,6 +512,184 @@ export function HomeView({
     }
   };
 
+  // Solevo (lib/theme.ts storeSkin): the same sections from the same data, drawn as Solevo's home
+  // (themes/solevo/SolevoHome.tsx). Undefined = this section keeps StorePal's part, in Solevo's colours.
+  const solevoSection = (id: string): ReactNode | undefined => {
+    const categoryHref = (name: string) => `/store/${subdomain}?category=${encodeURIComponent(name)}`;
+    const card = (product: StorefrontProduct) => <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />;
+    switch (id) {
+      case 'HERO': {
+        const covers = categoryDetails.filter((c) => c.coverPhotoUrl).slice(0, 4);
+        const slides: SvHeroSlide[] = [
+          ...(siteCoverUrl ? [{ key: '__site__', image: siteCoverUrl, title: [storeName], href: `/store/${subdomain}#products` }] : []),
+          ...(siteCoverUrl && siteCoverOnly
+            ? []
+            : covers.map((c) => ({ key: c.name, image: c.coverPhotoUrl, eyebrow: storeName, title: [c.name], href: categoryHref(c.name) }))),
+        ];
+        if (slides.length === 0) slides.push({ key: '__name__', title: [storeName], href: `/store/${subdomain}#products` });
+        return (
+          <SvHero
+            slides={slides}
+            shopLabel={t('Shop now')}
+            exploreLabel={categories.length > 0 ? t('Explore categories') : undefined}
+            exploreHref={`/store/${subdomain}#categories`}
+          />
+        );
+      }
+      case 'HIGHLIGHTS': {
+        // Only the store's own highlights (Store > Design): nothing is promised that the store didn't write.
+        if (design.homeHighlights.length === 0) return null;
+        const items = design.homeHighlights.map((item) => {
+          const Icon = highlightIcon(item.icon);
+          return { key: item.id, icon: <Icon size={30} strokeWidth={1.5} aria-hidden />, title: t(item.title), text: item.text ? t(item.text) : null };
+        });
+        return <SvFeatures title={t('Why Shop With Us?')} items={items} />;
+      }
+      case 'CATEGORY_SHORTCUTS': {
+        const items = categories.map((name) => {
+          const detail = categoryDetails.find((c) => c.name === name);
+          const image =
+            detail?.squarePhotoUrl ||
+            detail?.coverPhotoUrl ||
+            products.find((p) => p.category === name || p.secondaryCategories.includes(name))?.photoUrls[0] ||
+            null;
+          return { name, href: categoryHref(name), image };
+        });
+        return <SvCategories items={items} exploreLabel={t('Explore Now')} />;
+      }
+      case 'TOP_SELLING': {
+        const best = topSelling.length >= 4 ? products.filter((p) => (p.soldRecent ?? 0) >= 5).slice(0, 10) : [];
+        const row = best.length >= 4 ? best : products.slice(0, 10);
+        return (
+          <div id="products">
+            <SvProductGrid title={t('Featured Products')} viewAllLabel={t('View All Products')} viewAllHref={`/store/${subdomain}/products`}>
+              {row.map(card)}
+            </SvProductGrid>
+          </div>
+        );
+      }
+      case 'CAMPAIGNS':
+        return (
+          <SvPromoBanners
+            banners={campaigns.slice(0, 3).map((c) => ({
+              key: c.id,
+              title: c.name,
+              cta: t('Shop now'),
+              href: `/store/${subdomain}/campaigns/${c.slug}`,
+              image: c.coverPhotoUrl,
+            }))}
+          />
+        );
+      case 'CATEGORY_SECTIONS': {
+        const brandNames = Array.from(new Set(products.map((p) => p.brand?.trim()).filter((b): b is string => !!b))).slice(0, 16);
+        return (
+          <>
+            {grouped?.map((section) => (
+              <SvProductGrid key={section.name} title={section.name} viewAllLabel={t('View all')} viewAllHref={categoryHref(section.name)}>
+                {section.items.slice(0, 10).map(card)}
+              </SvProductGrid>
+            ))}
+            <SvBrands
+              title={t('Trending Brands')}
+              allLabel={t('Shop All Brands')}
+              allHref={`/store/${subdomain}/products`}
+              brands={brandNames.map((name) => ({
+                name,
+                href: `/store/${subdomain}?brand=${encodeURIComponent(name)}`,
+                count: products.filter((p) => p.brand?.trim() === name).length,
+              }))}
+              stylesLabel={(n) => `${formatNumber(n)} ${n === 1 ? t('style') : t('styles')}`}
+            />
+          </>
+        );
+      }
+      case 'REVIEWS':
+        return (
+          <SvReviews
+            title={t('Our Customer Review')}
+            verifiedLabel={t('Verified buyer')}
+            reviews={reviews.map((r) => ({ id: r.id, name: r.customerName ?? 'Anonymous', rating: r.rating, title: r.title, content: r.content, verified: r.verified }))}
+          />
+        );
+      case 'FLASH_SALE': {
+        const now = Date.now();
+        const onSale = products
+          .filter((p) => p.flashSaleEndsAt && new Date(p.flashSaleEndsAt).getTime() > now)
+          .sort((a, b) => new Date(a.flashSaleEndsAt!).getTime() - new Date(b.flashSaleEndsAt!).getTime())
+          .slice(0, 10);
+        if (onSale.length === 0) return null;
+        return (
+          <SvProductGrid title={t('Flash Sale')} extra={<FlashSaleTimer endsAt={onSale[0].flashSaleEndsAt!} />}>
+            {onSale.map(card)}
+          </SvProductGrid>
+        );
+      }
+      case 'FAQ':
+        if (faqItems.length === 0) return null;
+        return (
+          <section className="sv-wrap pt-10">
+            <div className="mb-5 flex items-center justify-between gap-3">
+              <SvSectionTitle title={t('FAQ')} />
+              <Link href={`/store/${subdomain}/faq`} className="text-[11px] font-semibold uppercase tracking-wider hover:text-[var(--sv-gold)]">
+                {t('View all')}
+              </Link>
+            </div>
+            <div className="rounded-lg bg-[var(--sv-panel)] p-4 sm:p-6">
+              <FaqList items={faqItems.slice(0, 5)} />
+            </div>
+          </section>
+        );
+      case 'MAGAZINE':
+        if (blogPosts.length === 0) return null;
+        return (
+          <SvProductGrid title={t('Magazine')} viewAllLabel={blogTotal > blogPosts.length ? t('View all') : undefined} viewAllHref={`/store/${subdomain}/blog`}>
+            {blogPosts.map((post) => (
+              <MagazineCard key={post.slug} post={post} subdomain={subdomain} storeName={storeName} />
+            ))}
+          </SvProductGrid>
+        );
+      case 'SOCIAL_FEED':
+        if (!socialFeed || socialFeed.posts.length === 0) return null;
+        return (
+          <section className="sv-wrap pt-10">
+            <SocialFeedSection feed={socialFeed} />
+          </section>
+        );
+      default:
+        return undefined;
+    }
+  };
+
+  // Solevo's category / brand / search / picks list is the template's own product list page.
+  if (skin === 'solevo' && isFiltered) {
+    return (
+      <div className="flex min-h-screen flex-col bg-white text-ink">
+        <StoreHeader
+          subdomain={subdomain}
+          storeName={storeName}
+          categories={categories}
+          logoUrl={logoUrl}
+          socialLinks={socialLinks}
+          categoryDetails={categoryDetails}
+        />
+        <main className="flex-1">
+          <SolevoProductsView
+            subdomain={subdomain}
+            storeName={storeName}
+            products={products}
+            categories={categories}
+            categoryDetails={categoryDetails}
+            activeCategory={activeCategory}
+            activeBrand={activeBrand}
+            search={search}
+            picks={picks}
+          />
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} logoUrl={logoUrl} socialLinks={socialLinks} footerConfig={footerConfig} />
+      </div>
+    );
+  }
+
   // PlayMate's category / brand / search / picks list is the template's own product list page.
   if (skin === 'playmate' && isFiltered) {
     return (
@@ -554,7 +734,7 @@ export function HomeView({
       {showPreview && <OpeningSoonBar />}
 
       {/* "You were looking at this": a returning shopper's last product, once per visit (everything stays in their browser). */}
-      {!isFiltered && !showPreview && skin !== 'playmate' && <ComebackNudge subdomain={subdomain} />}
+      {!isFiltered && !showPreview && skin === 'storepal' && <ComebackNudge subdomain={subdomain} />}
 
       {couponBannerCode && (
         <div className="bg-success-bg text-success text-[13px] font-medium">
@@ -721,6 +901,10 @@ export function HomeView({
             if (showPreview && id === previewGridAt) return <Fragment key={id}>{previewBlock}</Fragment>;
             if (skin === 'playmate' && !(showPreview && id === 'HERO')) {
               const section = playmateSection(id);
+              if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
+            }
+            if (skin === 'solevo' && !(showPreview && id === 'HERO')) {
+              const section = solevoSection(id);
               if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
             }
             switch (id) {

@@ -57,6 +57,22 @@ export const PLAYMATE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Solevo's own order, as the template's home page: hero, the category card over its edge, featured products, offer
+// banners, the brand strip ("Why shop with us" last), then the rest.
+export const SOLEVO_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 export function resolveHomeSections(saved: HomeSectionSetting[] | null | undefined, defaultOrder: HomeSectionId[] = DEFAULT_ORDER): HomeSectionId[] {
   const seen = new Set<HomeSectionId>();
   const result: HomeSectionId[] = [];

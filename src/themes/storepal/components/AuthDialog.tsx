@@ -20,6 +20,7 @@ import { useStoreText } from '../lib/storeText';
 import { phoneInput, emailOrPhoneInput } from '@/lib/phoneInput';
 import { CoverFloating } from '@/lib/floatingCover';
 import { useStoreSkin } from '../lib/designSettings';
+import { isPageSkin } from '@/lib/theme';
 
 const RESEND_SECONDS = 30;
 
@@ -523,7 +524,10 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
   const mode = useAuthDialog((s) => s.mode);
   const setMode = useAuthDialog((s) => s.setMode);
   // PlayMate: the template's account panel (templete/playmate AccountModal.tsx): a narrow white card with Log in / Register tabs.
-  const pm = useStoreSkin() === 'playmate';
+  // Solevo: the template's AuthForm (square white card, serif title, black Sign In / Sign Up tabs).
+  const skin = useStoreSkin();
+  const pm = isPageSkin(skin);
+  const sv = skin === 'solevo';
   const close = useAuthDialog((s) => s.close);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
@@ -582,8 +586,8 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
-        className={`relative max-h-[calc(100vh-2rem)] w-full overflow-y-auto rounded-2xl shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none ${
-          pm ? 'pm-auth max-w-sm bg-white p-5 sm:p-6' : 'max-w-[420px] bg-canvas p-6 sm:p-8'
+        className={`relative max-h-[calc(100vh-2rem)] w-full overflow-y-auto shadow-2xl transition-all duration-200 ease-out motion-reduce:transition-none ${
+          sv ? 'sv-auth max-w-md rounded-none border border-black/10 bg-white p-6 sm:p-8' : pm ? 'pm-auth max-w-sm rounded-2xl bg-white p-5 sm:p-6' : 'max-w-[420px] rounded-2xl bg-canvas p-6 sm:p-8'
         } ${shown ? 'translate-y-0 scale-100 opacity-100' : 'translate-y-3 scale-95 opacity-0'}`}
       >
         <button
@@ -593,19 +597,29 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
         >
           <X size={18} />
         </button>
-        <h2 id={titleId} className={pm ? 'pr-8 text-lg font-bold text-ink' : 'pr-8 text-[22px] font-bold leading-tight text-ink'}>
+        <h2 id={titleId} className={sv ? 'pr-8 font-display text-2xl font-semibold text-ink sm:text-3xl' : pm ? 'pr-8 text-lg font-bold text-ink' : 'pr-8 text-[22px] font-bold leading-tight text-ink'}>
           {pm && mode === 'login' ? t('Welcome back') : t(copy.title)}
         </h2>
         {copy.subtitle ? <p className={pm ? 'mt-0.5 text-sm text-muted' : 'mb-5 mt-1 text-[13.5px] text-muted'}>{t(copy.subtitle)}</p> : pm ? null : <div className="mb-5" />}
         {pm && mode !== 'forgot' && (
-          <div className="mb-4 mt-4 grid grid-cols-2 rounded-lg bg-accent-light p-1 text-sm font-semibold">
+          <div
+            className={
+              sv
+                ? 'mb-5 mt-5 grid grid-cols-2 border border-black/15 text-[11px] font-semibold uppercase tracking-wider'
+                : 'mb-4 mt-4 grid grid-cols-2 rounded-lg bg-accent-light p-1 text-sm font-semibold'
+            }
+          >
             {(['login', 'signup'] as const).map((m) => (
               <button
                 key={m}
                 type="button"
                 onClick={() => setMode(m)}
                 aria-pressed={mode === m}
-                className={`rounded-md py-2 transition ${mode === m ? 'bg-white text-accent shadow-sm' : 'text-muted'}`}
+                className={
+                  sv
+                    ? `py-2.5 transition ${mode === m ? 'bg-ink text-white' : 'hover:bg-[var(--sv-sand)]'}`
+                    : `rounded-md py-2 transition ${mode === m ? 'bg-white text-accent shadow-sm' : 'text-muted'}`
+                }
               >
                 {m === 'login' ? t('Log in') : t('Register')}
               </button>

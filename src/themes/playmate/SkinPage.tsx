@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { useStoreSkin } from '../storepal/lib/designSettings';
 import { useStoreText } from '../storepal/lib/storeText';
 import { PlaymateBreadcrumb } from './PlaymateBreadcrumb';
+import { SolevoPageHeader } from '../solevo/SolevoBreadcrumb';
 
 /**
  * The body of a simple store page (FAQ, contact, locations, CMS pages, magazine, report, gift card...). StorePal keeps its
@@ -30,6 +31,16 @@ export function SkinPage({
 }) {
   const skin = useStoreSkin();
   const t = useStoreText();
+  if (skin === 'solevo') {
+    return (
+      <main className="w-full flex-1">
+        <SolevoPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="sv-wrap py-8 sm:py-10">
+          <div className="sv-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
   if (skin === 'playmate') {
     return (
       <main className="pm-wrap w-full flex-1 py-6 sm:py-8">
