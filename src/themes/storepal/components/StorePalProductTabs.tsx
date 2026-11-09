@@ -40,7 +40,7 @@ export function StorePalProductTabs({
   description?: string | null;
   infoTabs?: { title: string; text: string }[] | null;
   /** PlayMate and Solevo draw the same content as the template's stacked sections (details, customer reviews, questions). */
-  look?: 'playmate' | 'solevo';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'chronics';
 }) {
   const t = useStoreText();
   // Extra information tabs (TellMe idea 119) sit after the description: "info:0", "info:1", "info:2".
@@ -119,7 +119,7 @@ export function StorePalProductTabs({
       .catch((err) => setReviewsError(err instanceof Error ? err.message : 'Could not load reviews.'));
   }, [subdomain, slug, sort]);
 
-  if (look === 'playmate' || look === 'solevo') {
+  if (look === 'playmate' || look === 'solevo' || look === 'chicwove' || look === 'chronics') {
     return (
       <PlaymateProductSections
         subdomain={subdomain}

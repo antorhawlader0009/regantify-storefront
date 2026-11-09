@@ -4,6 +4,8 @@ import { getStoreProducts, StoreNotFoundError } from '@/lib/storefrontApi';
 import { isPageSkin, storeSkin } from '@/lib/theme';
 import { PlaymateWishlistPage } from '@/themes/playmate/PlaymateWishlistPage';
 import { SolevoWishlistPage } from '@/themes/solevo/SolevoWishlistPage';
+import { ChronicsWishlistPage } from '@/themes/chronics/ChronicsWishlistPage';
+import { ChicwoveWishlistPage } from '@/themes/chicwove/ChicwoveWishlistPage';
 import { storeParams } from '@/lib/storeRequest';
 
 interface PageProps {
@@ -34,6 +36,6 @@ export default async function WishlistPage({ params }: PageProps) {
   const { store, products, categories } = data;
   const skin = storeSkin(store.theme);
   if (!isPageSkin(skin)) redirect(`/store/${subdomain}/account/wishlist`);
-  const WishlistPage = skin === 'solevo' ? SolevoWishlistPage : PlaymateWishlistPage;
+  const WishlistPage = skin === 'chronics' ? ChronicsWishlistPage : skin === 'chicwove' ? ChicwoveWishlistPage : skin === 'solevo' ? SolevoWishlistPage : PlaymateWishlistPage;
   return <WishlistPage subdomain={subdomain} storeName={store.storeName} categories={categories} products={products} logoUrl={store.logoUrl} />;
 }

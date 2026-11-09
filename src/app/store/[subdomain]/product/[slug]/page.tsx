@@ -10,6 +10,8 @@ import {
 import { resolveTheme, storeSkin } from '@/lib/theme';
 import { PlaymateProductView } from '@/themes/playmate/PlaymateProductView';
 import { SolevoProductView } from '@/themes/solevo/SolevoProductView';
+import { ChronicsProductView } from '@/themes/chronics/ChronicsProductView';
+import { ChicwoveProductView } from '@/themes/chicwove/ChicwoveProductView';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { safeJsonLd } from '@/lib/safeJsonLd';
 import { resolvePolicy } from '@/themes/storepal/lib/policy';
@@ -199,6 +201,24 @@ export default async function ProductPage({ params }: PageProps) {
       />
       {resolveTheme(store.theme) === 'MINIMAL' ? (
         <MinimalProductView {...viewProps} />
+      ) : storeSkin(store.theme) === 'chronics' ? (
+        <ChronicsProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'chicwove' ? (
+        <ChicwoveProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
       ) : storeSkin(store.theme) === 'solevo' ? (
         <SolevoProductView
           {...viewProps}

@@ -604,6 +604,8 @@ const BN: Record<string, string> = {
   "Use at checkout": "চেকআউটে ব্যবহার করুন",
   "Shop now": "এখনই কিনুন",
   "{price} each": "প্রতিটি {price}",
+  // Chronics template (themes/chronics)
+  "Trending Products": "ট্রেন্ডিং পণ্য",
   // Solevo template (themes/solevo)
   "View Full Cart": "পুরো কার্ট দেখুন",
   "Searching…": "খোঁজা হচ্ছে…",

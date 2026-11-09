@@ -5,6 +5,8 @@ import { useStoreSkin } from '../storepal/lib/designSettings';
 import { useStoreText } from '../storepal/lib/storeText';
 import { PlaymateBreadcrumb } from './PlaymateBreadcrumb';
 import { SolevoPageHeader } from '../solevo/SolevoBreadcrumb';
+import { ChronicsPageHeader } from '../chronics/ChronicsBreadcrumb';
+import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
 
 /**
  * The body of a simple store page (FAQ, contact, locations, CMS pages, magazine, report, gift card...). StorePal keeps its
@@ -31,6 +33,26 @@ export function SkinPage({
 }) {
   const skin = useStoreSkin();
   const t = useStoreText();
+  if (skin === 'chronics') {
+    return (
+      <main className="w-full flex-1">
+        <ChronicsPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="cr-wrap py-8 sm:py-10">
+          <div className="cr-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'chicwove') {
+    return (
+      <main className="w-full flex-1">
+        <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="cw-wrap py-8 sm:py-10">
+          <div className="cw-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
   if (skin === 'solevo') {
     return (
       <main className="w-full flex-1">

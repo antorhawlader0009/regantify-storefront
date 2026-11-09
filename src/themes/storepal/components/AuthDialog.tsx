@@ -527,7 +527,7 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
   // Solevo: the template's AuthForm (square white card, serif title, black Sign In / Sign Up tabs).
   const skin = useStoreSkin();
   const pm = isPageSkin(skin);
-  const sv = skin === 'solevo';
+  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics';
   const close = useAuthDialog((s) => s.close);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();

@@ -14,6 +14,8 @@ import { useHeaderNav } from '../lib/headerNav';
 import { useSiteBanner } from '../lib/siteBanner';
 import { PlaymateHeader } from '../../playmate/PlaymateHeader';
 import { SolevoHeader } from '../../solevo/SolevoHeader';
+import { ChronicsHeader } from '../../chronics/ChronicsHeader';
+import { ChicwoveHeader } from '../../chicwove/ChicwoveHeader';
 import { useStoreSkin } from '../lib/designSettings';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
 import { ChatBubble } from './ChatBubble';
@@ -150,6 +152,8 @@ function MenuLink({
 /** The store header: StorePal's own, or the PlayMate look for a PlayMate store (same features, lib/theme.ts storeSkin). */
 export function StoreHeader(props: StoreHeaderProps) {
   const skin = useStoreSkin();
+  if (skin === 'chronics') return <ChronicsHeader {...props} />;
+  if (skin === 'chicwove') return <ChicwoveHeader {...props} />;
   if (skin === 'solevo') return <SolevoHeader {...props} />;
   return skin === 'playmate' ? <PlaymateHeader {...props} /> : <StorePalHeader {...props} />;
 }

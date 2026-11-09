@@ -13,6 +13,8 @@ import { useStoreText } from '../lib/storeText';
 import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
 import { PlaymateFooter } from '../../playmate/PlaymateFooter';
 import { SolevoFooter } from '../../solevo/SolevoFooter';
+import { ChronicsFooter } from '../../chronics/ChronicsFooter';
+import { ChicwoveFooter } from '../../chicwove/ChicwoveFooter';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { FooterLocation } from './FooterLocation';
 import { AboutAppLink, GetAppLink } from '@/components/GetAppLink';
@@ -118,6 +120,8 @@ function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }
 /** The store footer: StorePal's own, or PlayMate's for a PlayMate store (same content, lib/theme.ts storeSkin). */
 export function StoreFooter(props: StoreFooterProps) {
   const skin = useStoreSkin();
+  if (skin === 'chronics') return <ChronicsFooter {...props} />;
+  if (skin === 'chicwove') return <ChicwoveFooter {...props} />;
   if (skin === 'solevo') return <SolevoFooter {...props} />;
   return skin === 'playmate' ? <PlaymateFooter {...props} /> : <StorePalFooter {...props} />;
 }
@@ -557,7 +561,7 @@ export function FooterCallBar({
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
   /** PlayMate draws it as the template's light band, Solevo as its dark newsletter band. */
-  look?: 'playmate' | 'solevo';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'chronics';
   /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
   design?: CallBarStyle | null;
 }) {
@@ -605,6 +609,100 @@ export function FooterCallBar({
       ? 'flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between md:gap-8'
       : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between';
 
+  // Chronics: drawn like a pink gradient band (the template's pink buttons and banner colours) sitting on top of its indigo
+  // footer: a coral rounded band with white text, a white Call button and a white outline WhatsApp one.
+  if (look === 'chronics') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="cr-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-3xl bg-gradient-to-r from-[#F23D7F] to-[#F66CA0] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-bold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-[var(--cr-cream)] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/80 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  // Chicwove: drawn like the template's coral offer banner (templete/chicwove PromoBanner.tsx) sitting on top of its dark brown
+  // footer: a coral rounded band with white text, a white Call button and a white outline WhatsApp one.
+  if (look === 'chicwove') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="cw-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-3xl bg-gradient-to-r from-[#EE5A52] to-[#F27A6F] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-bold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-[var(--cw-cream)] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/80 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
   // Solevo: drawn like the template's newsletter band inside its dark footer (templete/solevo Newsletter.tsx): a mail icon, the
   // heading in small bold capitals with a grey line, and a copper button on the right (WhatsApp as an outline one).
   if (look === 'solevo') {

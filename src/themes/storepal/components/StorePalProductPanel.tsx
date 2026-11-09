@@ -116,7 +116,8 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   // Solevo (templete/solevo ProductDetail.tsx) is drawn the same way with its own classes (sv).
   const skin = useStoreSkin();
   const pm = isPageSkin(skin);
-  const sv = skin === 'solevo';
+  // Chicwove shares Solevo's markup (the sv-* classes and --sv-* variables are re-pointed to its own look in globals.css).
+  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics';
   const btnPrimary = sv ? 'sv-btn-dark' : 'pm-btn-primary';
   const btnOutline = sv ? 'sv-btn-outline !border-ink' : 'pm-btn-outline';
   const wishlist = useWishlist(subdomain);

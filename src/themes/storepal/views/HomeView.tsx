@@ -31,9 +31,13 @@ import { highlightIcon } from '../lib/highlightIcons';
 import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, SectionTitle, type PmHeroSlide } from '../../playmate/PlaymateHome';
 import { PlaymateProductsView } from '../../playmate/PlaymateProductsView';
 
-import { PLAYMATE_ORDER, SOLEVO_ORDER, resolveHomeSections } from '../lib/homeSections';
+import { CHICWOVE_ORDER, CHRONICS_ORDER, PLAYMATE_ORDER, SOLEVO_ORDER, resolveHomeSections } from '../lib/homeSections';
 import { SvBrands, SvCategories, SvFeatures, SvHero, SvProductGrid, SvPromoBanners, SvReviews, SvSectionTitle, type SvHeroSlide } from '../../solevo/SolevoHome';
 import { SolevoProductsView } from '../../solevo/SolevoProductsView';
+import { CrBrands, CrCategories, CrFeatures, CrHero, CrProductGrid, CrPromoBanners, CrReviews, CrSectionTitle } from '../../chronics/ChronicsHome';
+import { CwBrands, CwCategories, CwFeatures, CwHero, CwProductGrid, CwPromoBanners, CwReviews, CwSectionTitle } from '../../chicwove/ChicwoveHome';
+import { ChronicsProductsView } from '../../chronics/ChronicsProductsView';
+import { ChicwoveProductsView } from '../../chicwove/ChicwoveProductsView';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
 import { SlidersHorizontal, X, Tag, ChevronRight } from 'lucide-react';
@@ -143,7 +147,7 @@ export function HomeView({
   // Card numbers on the voice call's picks: Bangla digits on a Bangla store.
   const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
   // A store that never arranged its home page gets its template's own order (PlayMate's differs from StorePal's).
-  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : skin === 'solevo' ? SOLEVO_ORDER : undefined);
+  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : skin === 'solevo' ? SOLEVO_ORDER : skin === 'chicwove' ? CHICWOVE_ORDER : skin === 'chronics' ? CHRONICS_ORDER : undefined);
 
   // "Create custom link for this coupon" - resolve the shared link to a
   // real coupon code once, stash it for checkout to pick up (see
@@ -514,7 +518,14 @@ export function HomeView({
 
   // Solevo (lib/theme.ts storeSkin): the same sections from the same data, drawn as Solevo's home
   // (themes/solevo/SolevoHome.tsx). Undefined = this section keeps StorePal's part, in Solevo's colours.
-  const solevoSection = (id: string): ReactNode | undefined => {
+  const bandSection = (id: string): ReactNode | undefined => {
+    // Solevo and Chicwove draw the same sections with the same props (their own Home files export parts with the same shape).
+    const P = skin === 'chronics'
+      ? { Hero: CrHero, Features: CrFeatures, Categories: CrCategories, ProductGrid: CrProductGrid, PromoBanners: CrPromoBanners, Brands: CrBrands, Reviews: CrReviews, SectionTitle: CrSectionTitle }
+      : skin === 'chicwove'
+      ? { Hero: CwHero, Features: CwFeatures, Categories: CwCategories, ProductGrid: CwProductGrid, PromoBanners: CwPromoBanners, Brands: CwBrands, Reviews: CwReviews, SectionTitle: CwSectionTitle }
+      : { Hero: SvHero, Features: SvFeatures, Categories: SvCategories, ProductGrid: SvProductGrid, PromoBanners: SvPromoBanners, Brands: SvBrands, Reviews: SvReviews, SectionTitle: SvSectionTitle };
+    const wrapCls = skin === 'chronics' ? 'cr-wrap' : skin === 'chicwove' ? 'cw-wrap' : 'sv-wrap';
     const categoryHref = (name: string) => `/store/${subdomain}?category=${encodeURIComponent(name)}`;
     const card = (product: StorefrontProduct) => <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />;
     switch (id) {
@@ -528,7 +539,7 @@ export function HomeView({
         ];
         if (slides.length === 0) slides.push({ key: '__name__', title: [storeName], href: `/store/${subdomain}#products` });
         return (
-          <SvHero
+          <P.Hero
             slides={slides}
             shopLabel={t('Shop now')}
             exploreLabel={categories.length > 0 ? t('Explore categories') : undefined}
@@ -543,7 +554,7 @@ export function HomeView({
           const Icon = highlightIcon(item.icon);
           return { key: item.id, icon: <Icon size={30} strokeWidth={1.5} aria-hidden />, title: t(item.title), text: item.text ? t(item.text) : null };
         });
-        return <SvFeatures title={t('Why Shop With Us?')} items={items} />;
+        return <P.Features title={t('Why Shop With Us?')} items={items} />;
       }
       case 'CATEGORY_SHORTCUTS': {
         const items = categories.map((name) => {
@@ -555,22 +566,23 @@ export function HomeView({
             null;
           return { name, href: categoryHref(name), image };
         });
-        return <SvCategories items={items} exploreLabel={t('Explore Now')} />;
+        return <P.Categories items={items} exploreLabel={t('Explore Now')} title={t('Shop by Category')} viewAllLabel={t('View all')} viewAllHref={`/store/${subdomain}/products`} />;
       }
       case 'TOP_SELLING': {
         const best = topSelling.length >= 4 ? products.filter((p) => (p.soldRecent ?? 0) >= 5).slice(0, 10) : [];
-        const row = best.length >= 4 ? best : products.slice(0, 10);
+        // Chicwove's template shows "New Arrivals" (the newest eight); Solevo shows featured products.
+        const row = skin === 'chicwove' || skin === 'chronics' ? products.slice(0, 8) : best.length >= 4 ? best : products.slice(0, 10);
         return (
           <div id="products">
-            <SvProductGrid title={t('Featured Products')} viewAllLabel={t('View All Products')} viewAllHref={`/store/${subdomain}/products`}>
+            <P.ProductGrid title={skin === 'chicwove' ? t('New Arrivals') : skin === 'chronics' ? t('Trending Products') : t('Featured Products')} viewAllLabel={t('View All Products')} viewAllHref={`/store/${subdomain}/products`}>
               {row.map(card)}
-            </SvProductGrid>
+            </P.ProductGrid>
           </div>
         );
       }
       case 'CAMPAIGNS':
         return (
-          <SvPromoBanners
+          <P.PromoBanners
             banners={campaigns.slice(0, 3).map((c) => ({
               key: c.id,
               title: c.name,
@@ -585,11 +597,11 @@ export function HomeView({
         return (
           <>
             {grouped?.map((section) => (
-              <SvProductGrid key={section.name} title={section.name} viewAllLabel={t('View all')} viewAllHref={categoryHref(section.name)}>
+              <P.ProductGrid key={section.name} title={section.name} viewAllLabel={t('View all')} viewAllHref={categoryHref(section.name)}>
                 {section.items.slice(0, 10).map(card)}
-              </SvProductGrid>
+              </P.ProductGrid>
             ))}
-            <SvBrands
+            <P.Brands
               title={t('Trending Brands')}
               allLabel={t('Shop All Brands')}
               allHref={`/store/${subdomain}/products`}
@@ -605,7 +617,7 @@ export function HomeView({
       }
       case 'REVIEWS':
         return (
-          <SvReviews
+          <P.Reviews
             title={t('Our Customer Review')}
             verifiedLabel={t('Verified buyer')}
             reviews={reviews.map((r) => ({ id: r.id, name: r.customerName ?? 'Anonymous', rating: r.rating, title: r.title, content: r.content, verified: r.verified }))}
@@ -619,17 +631,17 @@ export function HomeView({
           .slice(0, 10);
         if (onSale.length === 0) return null;
         return (
-          <SvProductGrid title={t('Flash Sale')} extra={<FlashSaleTimer endsAt={onSale[0].flashSaleEndsAt!} />}>
+          <P.ProductGrid title={t('Flash Sale')} extra={<FlashSaleTimer endsAt={onSale[0].flashSaleEndsAt!} />}>
             {onSale.map(card)}
-          </SvProductGrid>
+          </P.ProductGrid>
         );
       }
       case 'FAQ':
         if (faqItems.length === 0) return null;
         return (
-          <section className="sv-wrap pt-10">
+          <section className={`${wrapCls} pt-10`}>
             <div className="mb-5 flex items-center justify-between gap-3">
-              <SvSectionTitle title={t('FAQ')} />
+              <P.SectionTitle title={t('FAQ')} />
               <Link href={`/store/${subdomain}/faq`} className="text-[11px] font-semibold uppercase tracking-wider hover:text-[var(--sv-gold)]">
                 {t('View all')}
               </Link>
@@ -642,16 +654,16 @@ export function HomeView({
       case 'MAGAZINE':
         if (blogPosts.length === 0) return null;
         return (
-          <SvProductGrid title={t('Magazine')} viewAllLabel={blogTotal > blogPosts.length ? t('View all') : undefined} viewAllHref={`/store/${subdomain}/blog`}>
+          <P.ProductGrid title={t('Magazine')} viewAllLabel={blogTotal > blogPosts.length ? t('View all') : undefined} viewAllHref={`/store/${subdomain}/blog`}>
             {blogPosts.map((post) => (
               <MagazineCard key={post.slug} post={post} subdomain={subdomain} storeName={storeName} />
             ))}
-          </SvProductGrid>
+          </P.ProductGrid>
         );
       case 'SOCIAL_FEED':
         if (!socialFeed || socialFeed.posts.length === 0) return null;
         return (
-          <section className="sv-wrap pt-10">
+          <section className={`${wrapCls} pt-10`}>
             <SocialFeedSection feed={socialFeed} />
           </section>
         );
@@ -661,7 +673,8 @@ export function HomeView({
   };
 
   // Solevo's category / brand / search / picks list is the template's own product list page.
-  if (skin === 'solevo' && isFiltered) {
+  if ((skin === 'solevo' || skin === 'chicwove' || skin === 'chronics') && isFiltered) {
+    const ListView = skin === 'chronics' ? ChronicsProductsView : skin === 'chicwove' ? ChicwoveProductsView : SolevoProductsView;
     return (
       <div className="flex min-h-screen flex-col bg-white text-ink">
         <StoreHeader
@@ -673,7 +686,7 @@ export function HomeView({
           categoryDetails={categoryDetails}
         />
         <main className="flex-1">
-          <SolevoProductsView
+          <ListView
             subdomain={subdomain}
             storeName={storeName}
             products={products}
@@ -903,8 +916,8 @@ export function HomeView({
               const section = playmateSection(id);
               if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
             }
-            if (skin === 'solevo' && !(showPreview && id === 'HERO')) {
-              const section = solevoSection(id);
+            if ((skin === 'solevo' || skin === 'chicwove' || skin === 'chronics') && !(showPreview && id === 'HERO')) {
+              const section = bandSection(id);
               if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
             }
             switch (id) {

@@ -17,7 +17,7 @@ const API_URL = process.env.API_URL ?? 'http://localhost:4000';
  * resolveTheme (lib/theme.ts), with storeSkin() giving its look. */
 export type StoreTheme = 'MEDIUM' | 'MINIMAL' | 'STOREPAL';
 /** The value the API sends, PlayMate included; pass it through resolveTheme / storeSkin before comparing. */
-export type ApiStoreTheme = StoreTheme | 'PLAYMATE' | 'SOLEVO';
+export type ApiStoreTheme = StoreTheme | 'PLAYMATE' | 'SOLEVO' | 'CHICWOVE' | 'CHRONICS';
 
 // Store > Footer - kept in lockstep by hand with
 // server/src/vendor/footer-templates.ts (the canonical registry) and its

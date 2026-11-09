@@ -10,6 +10,8 @@ import { useStoreDisplayName } from '../lib/useStoreDisplayName';
 import { StoreFooter } from './StoreFooter';
 import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
 import { SolevoPageHeader } from '../../solevo/SolevoBreadcrumb';
+import { ChronicsPageHeader } from '../../chronics/ChronicsBreadcrumb';
+import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
 import { isPageSkin } from '@/lib/theme';
 
 /**
@@ -42,6 +44,28 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
     };
   }, [close, pm]);
 
+  if (skin === 'chronics') {
+    return (
+      <>
+        <ChronicsPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="cr-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-gray-100 bg-white ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'chicwove') {
+    return (
+      <>
+        <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="cw-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
   if (skin === 'solevo') {
     return (
       <>
