@@ -37,7 +37,7 @@ import type {
   StorefrontPopupCampaign,
   StorefrontTiktokPixel,
 } from '@/lib/storefrontApi';
-import { storeParams } from '@/lib/storeRequest';
+import { currentStoreAddress, storeParams } from '@/lib/storeRequest';
 import { StoreQueryAdapter } from '@/components/StoreQueryAdapter';
 
 // PERFORMANCE-PLAN.md Step 8: a store page reads no request data (the address travels in the path, see
@@ -170,6 +170,8 @@ export async function generateViewport({ params }: LayoutProps): Promise<Viewpor
  */
 export default async function StoreLayout({ children, params }: LayoutProps) {
   const { subdomain } = await storeParams(params);
+  // The host this page was opened on (from the address the middleware put in the path), for the custom-scripts rule below.
+  const pageHost = (() => { const a = currentStoreAddress(); try { return a ? new URL(a.origin).hostname.toLowerCase() : null; } catch { return null; } })();
 
   let theme = resolveTheme('MEDIUM');
   // The look of a StorePal-family store (lib/theme.ts): PlayMate draws StorePal's pages in its own colours and fonts.
@@ -369,7 +371,9 @@ export default async function StoreLayout({ children, params }: LayoutProps) {
           dangerouslySetInnerHTML={{ __html: customCode.customCss.replace(/<\/style/gi, '<\\/style') }}
         />
       )}
-      {theme === 'STOREPAL' && customCode && (customCode.headScripts || customCode.headJs.length > 0 || customCode.bodyJs.length > 0) && (
+      {/* A store's own scripts run only on its own live domain (the server sends scriptsHost only then), never on {sub}.ROOT_DOMAIN: a bad script
+          can then harm only that domain, not the platform's (the owner's rule, 2026-11-10). */}
+      {theme === 'STOREPAL' && customCode && !!customCode.scriptsHost && pageHost !== null && (pageHost === customCode.scriptsHost || pageHost === `www.${customCode.scriptsHost}` || `www.${pageHost}` === customCode.scriptsHost) && (customCode.headScripts || customCode.headJs.length > 0 || customCode.bodyJs.length > 0) && (
         <CustomCodeInjector subdomain={subdomain} code={customCode} />
       )}
     </div>

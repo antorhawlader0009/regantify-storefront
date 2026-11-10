@@ -339,6 +339,8 @@ export interface StorefrontCustomCode {
   // Plain JS, no <script> wrapper, in run order.
   headJs: { id: string; code: string }[];
   bodyJs: { id: string; code: string }[];
+  /** The store's own domain: scripts run only on a page opened there, never on {sub}.ROOT_DOMAIN (2026-11-10). Null = no scripts. */
+  scriptsHost?: string | null;
 }
 
 export interface StorefrontStockSettings {
