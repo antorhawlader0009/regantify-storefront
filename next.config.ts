@@ -5,6 +5,10 @@ const nextConfig: NextConfig = {
   // files actually needed at runtime) so the Docker image stays small -
   // see storefront/Dockerfile.
   output: 'standalone',
+  // Caddy compresses every store answer (`encode zstd gzip` in each site block, z-others/vps/caddy/Caddyfile).
+  // Next gzipping on its one JavaScript thread made even a cached page take ~100 ms under load (k6 test 2026-11-11).
+  // Local `npm run dev` / `npm start` without Caddy now sends uncompressed pages, which is fine for testing.
+  compress: false,
   // Security F-56: don't advertise the framework, and send the standard safety headers on every page. HSTS without
   // includeSubDomains, since a custom domain's own other subdomains are the store owner's business.
   poweredByHeader: false,
