@@ -169,13 +169,13 @@ export function StorePalProductTabs({
 
       {activeTab === 'description' ? (
         description ? (
-          <div className="text-[13px] text-ink/85 leading-relaxed max-w-2xl" dangerouslySetInnerHTML={{ __html: description }} />
+          <div className="rg-rich text-[13px] text-ink/85 leading-relaxed max-w-2xl" dangerouslySetInnerHTML={{ __html: description }} />
         ) : (
           <p className="text-[13px] text-muted">No description provided for this product.</p>
         )
       ) : activeTab.startsWith('info:') ? (
         <div
-          className="text-[13px] text-ink/85 leading-relaxed max-w-2xl [&_ul]:list-disc [&_ul]:pl-5 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2"
+          className="rg-rich text-[13px] text-ink/85 leading-relaxed max-w-2xl [&_p]:mb-2"
           // The text was cleaned when the store saved it (products/info-tabs.ts).
           dangerouslySetInnerHTML={{ __html: extraTabs[Number(activeTab.slice(5))]?.text ?? '' }}
         />
@@ -709,7 +709,7 @@ function PlaymateProductSections({
             ))}
           </div>
           <div
-            className="mt-5 max-w-3xl text-[13.5px] leading-relaxed text-ink/85 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
+            className="rg-rich mt-5 max-w-3xl text-[13.5px] leading-relaxed text-ink/85 [&_p]:mb-2"
             // The store's own editor text, cleaned when saved.
             dangerouslySetInnerHTML={{ __html: details[Math.min(detailTab, details.length - 1)]?.html ?? '' }}
           />

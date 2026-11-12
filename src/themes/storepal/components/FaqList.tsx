@@ -14,7 +14,7 @@ export function FaqList({ items }: { items: Array<{ id: string; question: string
             </span>
           </summary>
           <div
-            className="px-4 pb-4 text-[13.5px] leading-relaxed text-ink/85 [&_a]:text-accent [&_a]:underline [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-2 [&_ul]:list-disc [&_ul]:pl-5"
+            className="rg-rich px-4 pb-4 text-[13.5px] leading-relaxed text-ink/85 [&_p]:mb-2"
             // Cleaned when the owner saved it (faq/faq.ts).
             dangerouslySetInnerHTML={{ __html: item.answer }}
           />

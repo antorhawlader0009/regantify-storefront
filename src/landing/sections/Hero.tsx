@@ -102,7 +102,7 @@ function TwoColumnSidePane({ side }: { side: TwoColumnSide }) {
       <img src={side.imageUrl} alt={side.alt || ''} className="h-full w-full rounded-lg object-cover" />
     );
   }
-  return <div className="prose prose-neutral" dangerouslySetInnerHTML={{ __html: side.html || '' }} />;
+  return <div className="rg-rich prose prose-neutral" dangerouslySetInnerHTML={{ __html: side.html || '' }} />;
 }
 
 export function TwoColumnSection({ props }: { props: TwoColumnProps }) {

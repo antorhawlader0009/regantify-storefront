@@ -38,7 +38,7 @@ export function BlogPostView({ subdomain, storeName, categories, post, others }:
           )}
           {post.content && (
             <div
-              className="text-[14px] leading-relaxed text-ink/85 [&_a]:text-accent [&_a]:underline [&_h2]:mb-3 [&_h2]:mt-6 [&_h2]:text-[18px] [&_h2]:font-bold [&_h3]:mb-2 [&_h3]:mt-5 [&_h3]:font-semibold [&_img]:my-4 [&_img]:h-auto [&_img]:max-w-full [&_ol]:mb-4 [&_ol]:list-decimal [&_ol]:pl-5 [&_p]:mb-4 [&_strong]:font-semibold [&_ul]:mb-4 [&_ul]:list-disc [&_ul]:pl-5"
+              className="rg-rich text-[14px] leading-relaxed text-ink/85 [&_p]:mb-4 [&_ul]:mb-4 [&_ol]:mb-4 [&_h2]:text-[18px] [&_h2]:mt-6 [&_h2]:mb-3"
               // eslint-disable-next-line react/no-danger
               dangerouslySetInnerHTML={{ __html: post.content }}
             />

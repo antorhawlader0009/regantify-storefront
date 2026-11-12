@@ -40,7 +40,7 @@ export function CollectionView({ subdomain, storeName, categories, collection, p
       )}
       <main className="max-w-6xl mx-auto px-3 sm:px-6 py-8">
         {collection.content && (
-          <div className="mb-6 text-[14px] leading-relaxed text-ink [&_a]:underline" dangerouslySetInnerHTML={{ __html: collection.content }} />
+          <div className="rg-rich mb-6 text-[14px] leading-relaxed text-ink" dangerouslySetInnerHTML={{ __html: collection.content }} />
         )}
         {products.length === 0 ? (
           <div className="text-center py-20 bg-surface border border-line">

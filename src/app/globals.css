@@ -1401,3 +1401,26 @@ body {
 [data-regantify-app] .rg-hide-in-app { display: none !important; }
 .rg-show-in-app { display: none; }
 [data-regantify-app] .rg-show-in-app { display: block; }
+
+/* Text written in the dashboard's rich text editor (product description, info tabs, pages, magazine posts, FAQ answers,
+   collection text, landing page text). Tailwind's reset removes list markers and an empty <p></p> has no height, so
+   bullets, numbers and blank lines vanished on the store. Every template shows such HTML inside .rg-rich
+   (NEW-TEMPLATE-guide.md). It sits in the components layer: above the reset, below utilities, so a page's own
+   spacing classes ([&_p]:mb-4 ...) still win. */
+@layer components {
+  .rg-rich ul { list-style: disc; padding-left: 1.4em; margin: 0.4em 0; }
+  .rg-rich ol { list-style: decimal; padding-left: 1.4em; margin: 0.4em 0; }
+  .rg-rich ul ul { list-style: circle; }
+  .rg-rich li { margin: 0.15em 0; }
+  .rg-rich li > p { margin: 0; }
+  .rg-rich p { min-height: 1lh; }
+  .rg-rich p:empty::before { content: '\00a0'; }
+  .rg-rich h2 { font-size: 1.25em; font-weight: 700; margin: 0.8em 0 0.4em; }
+  .rg-rich h3 { font-size: 1.1em; font-weight: 600; margin: 0.7em 0 0.3em; }
+  .rg-rich a { color: var(--color-accent); text-decoration: underline; }
+  .rg-rich strong, .rg-rich b { font-weight: 700; }
+  .rg-rich img { max-width: 100%; height: auto; margin: 0.75em 0; }
+  .rg-rich blockquote { border-left: 3px solid currentColor; padding-left: 0.9em; margin: 0.6em 0; }
+  .rg-rich hr { border: 0; border-top: 1px solid currentColor; opacity: 0.2; margin: 1em 0; }
+  .rg-rich mark { padding: 0 0.1em; border-radius: 2px; }
+}
