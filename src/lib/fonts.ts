@@ -73,6 +73,16 @@ const poppins = Poppins({
   display: 'swap',
 });
 
+// Mahabesh skin (2026-11-12): Archivo with the heavy 800 weight its headings use. A separate instance (not the shared
+// `archivo` above, which Medium uses at up to 700) so only a Mahabesh store downloads the extra weight.
+const archivoMahabesh = Archivo({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700', '800'],
+  variable: '--font-archivo-mh',
+  display: 'swap',
+  preload: false,
+});
+
 // PlayMate skin (StorePal pages with a toy-store look, 2026-11-03): DM Sans for everything, Pacifico for the script
 // wordmark only. A browser downloads them only on a PlayMate store, where globals.css uses them.
 const dmSans = DM_Sans({
@@ -114,4 +124,4 @@ const playfair = Playfair_Display({
 // values) and its [data-theme="minimal"]/[data-theme="storepal"] blocks
 // (each theme's own override values), both of which reference these
 // same CSS variables.
-export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${hindSiliguri.variable}`;
+export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${archivoMahabesh.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${hindSiliguri.variable}`;

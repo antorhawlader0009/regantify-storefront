@@ -14,6 +14,7 @@ import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
 import { PlaymateFooter } from '../../playmate/PlaymateFooter';
 import { SolevoFooter } from '../../solevo/SolevoFooter';
 import { ChronicsFooter } from '../../chronics/ChronicsFooter';
+import { MahabeshFooter } from '../../mahabesh/MahabeshFooter';
 import { ChicwoveFooter } from '../../chicwove/ChicwoveFooter';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { FooterLocation } from './FooterLocation';
@@ -120,6 +121,7 @@ function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }
 /** The store footer: StorePal's own, or PlayMate's for a PlayMate store (same content, lib/theme.ts storeSkin). */
 export function StoreFooter(props: StoreFooterProps) {
   const skin = useStoreSkin();
+  if (skin === 'mahabesh') return <MahabeshFooter {...props} />;
   if (skin === 'chronics') return <ChronicsFooter {...props} />;
   if (skin === 'chicwove') return <ChicwoveFooter {...props} />;
   if (skin === 'solevo') return <SolevoFooter {...props} />;
@@ -561,7 +563,7 @@ export function FooterCallBar({
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
   /** PlayMate draws it as the template's light band, Solevo as its dark newsletter band. */
-  look?: 'playmate' | 'solevo' | 'chicwove' | 'chronics';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'chronics' | 'mahabesh';
   /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
   design?: CallBarStyle | null;
 }) {
@@ -609,6 +611,40 @@ export function FooterCallBar({
       ? 'flex flex-col items-start gap-4 md:flex-row md:items-center md:justify-between md:gap-8'
       : 'flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between';
 
+  // Mahabesh: a light grey rounded band (the template's well colour) with black text, a black pill Call button and an
+  // outlined pill WhatsApp one, sitting on top of its black footer.
+  if (look === 'mahabesh') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="mh-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-2xl bg-[var(--mh-well)] p-6 text-black sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="min-w-0">
+              <p className="text-xl font-extrabold tracking-tight sm:text-2xl" style={textStyle}>
+                {heading}
+              </p>
+              <p className="mt-1 text-sm text-[#62646b]" style={lineStyle}>
+                {line}
+              </p>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a href={phoneHref} className="mh-btn flex-1 sm:flex-none" style={callStyle}>
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a href={waHref} target="_blank" rel="noopener noreferrer" className="mh-btn mh-btn-line flex-1 sm:flex-none" style={waStyle}>
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
   // Chronics: drawn like a pink gradient band (the template's pink buttons and banner colours) sitting on top of its indigo
   // footer: a coral rounded band with white text, a white Call button and a white outline WhatsApp one.
   if (look === 'chronics') {

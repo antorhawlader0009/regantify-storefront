@@ -5,6 +5,7 @@ import { resolveTheme, storeSkin } from '@/lib/theme';
 import { PlaymateCartPage } from '@/themes/playmate/PlaymateCartPage';
 import { SolevoCartPage } from '@/themes/solevo/SolevoCartPage';
 import { ChronicsCartPage } from '@/themes/chronics/ChronicsCartPage';
+import { MahabeshCartPage } from '@/themes/mahabesh/MahabeshCartPage';
 import { ChicwoveCartPage } from '@/themes/chicwove/ChicwoveCartPage';
 import { CartView as MediumCartView } from '@/themes/medium/views/CartView';
 import { CartView as MinimalCartView } from '@/themes/minimal/views/CartView';
@@ -39,6 +40,7 @@ export default async function CartPage({ params }: PageProps) {
   const { store, categories, products } = data;
   const viewProps = { subdomain, storeName: store.storeName, categories };
   // PlayMate has its own cart page (the template's CartView), with suggestions from the store's products.
+  if (storeSkin(store.theme) === 'mahabesh') return <MahabeshCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'chronics') return <ChronicsCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'chicwove') return <ChicwoveCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'solevo') return <SolevoCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;

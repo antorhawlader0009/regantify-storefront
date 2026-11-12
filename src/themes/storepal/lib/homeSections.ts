@@ -90,6 +90,21 @@ export const CHRONICS_ORDER: HomeSectionId[] = [
 
 
 
+// Mahabesh's own order, as the template's home page: hero, shop by category, then the product rows (on sale, new, latest).
+export const MAHABESH_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Chicwove's own order, as the template's home page: hero, shop by category, new arrivals, the offer banner, then the rest.
 export const CHICWOVE_ORDER: HomeSectionId[] = [
   'HERO',

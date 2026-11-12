@@ -26,6 +26,27 @@ export function LanguageSwitch({ className = '' }: { className?: string }) {
   );
 }
 
+/** Mahabesh's switch: two small pills like its category links, the chosen language filled black. */
+export function MahabeshLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-0.5 text-[12.5px] font-semibold ${className}`}>
+      {(['bn', 'en'] as const).map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => setLanguage(l)}
+          aria-pressed={language === l}
+          lang={l}
+          className={`rounded-full px-2.5 py-1 transition-colors ${language === l ? 'bg-black text-white' : 'text-[#62646b] hover:bg-[var(--mh-well)] hover:text-black'}`}
+        >
+          {l === 'bn' ? 'বাং' : 'EN'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
 /** Chronics's switch, in its header's style: small text like its menu links, the chosen language in coral. */
 export function ChronicsLanguageSwitch({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useStoreLanguageSwitch();

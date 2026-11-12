@@ -11,6 +11,7 @@ import { resolveTheme, storeSkin } from '@/lib/theme';
 import { PlaymateProductView } from '@/themes/playmate/PlaymateProductView';
 import { SolevoProductView } from '@/themes/solevo/SolevoProductView';
 import { ChronicsProductView } from '@/themes/chronics/ChronicsProductView';
+import { MahabeshProductView } from '@/themes/mahabesh/MahabeshProductView';
 import { ChicwoveProductView } from '@/themes/chicwove/ChicwoveProductView';
 import { isOutOfStock } from '@/lib/productDisplay';
 import { safeJsonLd } from '@/lib/safeJsonLd';
@@ -201,6 +202,15 @@ export default async function ProductPage({ params }: PageProps) {
       />
       {resolveTheme(store.theme) === 'MINIMAL' ? (
         <MinimalProductView {...viewProps} />
+      ) : storeSkin(store.theme) === 'mahabesh' ? (
+        <MahabeshProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
       ) : storeSkin(store.theme) === 'chronics' ? (
         <ChronicsProductView
           {...viewProps}

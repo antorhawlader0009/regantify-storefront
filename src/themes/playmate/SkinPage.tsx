@@ -6,6 +6,7 @@ import { useStoreText } from '../storepal/lib/storeText';
 import { PlaymateBreadcrumb } from './PlaymateBreadcrumb';
 import { SolevoPageHeader } from '../solevo/SolevoBreadcrumb';
 import { ChronicsPageHeader } from '../chronics/ChronicsBreadcrumb';
+import { MahabeshPageHeader } from '../mahabesh/MahabeshBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
 
 /**
@@ -33,6 +34,16 @@ export function SkinPage({
 }) {
   const skin = useStoreSkin();
   const t = useStoreText();
+  if (skin === 'mahabesh') {
+    return (
+      <main className="w-full flex-1">
+        <MahabeshPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="mh-wrap py-8 sm:py-10">
+          <div className="mh-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
   if (skin === 'chronics') {
     return (
       <main className="w-full flex-1">

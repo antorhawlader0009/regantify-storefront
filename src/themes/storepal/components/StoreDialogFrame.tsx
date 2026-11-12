@@ -11,6 +11,7 @@ import { StoreFooter } from './StoreFooter';
 import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
 import { SolevoPageHeader } from '../../solevo/SolevoBreadcrumb';
 import { ChronicsPageHeader } from '../../chronics/ChronicsBreadcrumb';
+import { MahabeshPageHeader } from '../../mahabesh/MahabeshBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
 import { isPageSkin } from '@/lib/theme';
 
@@ -44,6 +45,17 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
     };
   }, [close, pm]);
 
+  if (skin === 'mahabesh') {
+    return (
+      <>
+        <MahabeshPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="mh-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl border border-[var(--mh-line)] bg-white ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
   if (skin === 'chronics') {
     return (
       <>

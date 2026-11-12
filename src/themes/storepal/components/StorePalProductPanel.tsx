@@ -117,9 +117,12 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const skin = useStoreSkin();
   const pm = isPageSkin(skin);
   // Chicwove shares Solevo's markup (the sv-* classes and --sv-* variables are re-pointed to its own look in globals.css).
-  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics';
-  const btnPrimary = sv ? 'sv-btn-dark' : 'pm-btn-primary';
-  const btnOutline = sv ? 'sv-btn-outline !border-ink' : 'pm-btn-outline';
+  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh';
+  // Mahabesh (templete resources/views/details.blade.php): rounded 4:5 photo with the thumbnails in a column on its left,
+  // round pill buttons (black, blue on hover; outlined), rounded option buttons, a pill quantity box.
+  const mh = skin === 'mahabesh';
+  const btnPrimary = mh ? 'mh-btn' : sv ? 'sv-btn-dark' : 'pm-btn-primary';
+  const btnOutline = mh ? 'mh-btn mh-btn-line' : sv ? 'sv-btn-outline !border-ink' : 'pm-btn-outline';
   const wishlist = useWishlist(subdomain);
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -434,12 +437,12 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
     <>
       {/* Gallery */}
       <div data-rg="product-gallery">
-        <div className={sideGallery ? `flex gap-3 items-start ${display.galleryStyle === 'LEFT' ? 'flex-row-reverse' : ''}` : ''}>
+        <div className={mh && allPhotos.length > 1 ? 'flex flex-col-reverse gap-3 md:flex-row md:items-start' : sideGallery ? `flex gap-3 items-start ${display.galleryStyle === 'LEFT' ? 'flex-row-reverse' : ''}` : ''}>
         <HoverZoom
           src={activePhotoUrl}
           onOpen={() => setViewerIndex(activePhoto)}
           label={t('Open photo')}
-          className={`${sv ? 'rounded-xl bg-[var(--sv-card)]' : pm ? 'rounded-lg bg-[var(--pm-card)]' : 'bg-canvas rounded-xl'} overflow-hidden ${sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${portrait ? 'aspect-[3/4]' : sv ? 'aspect-[4/3]' : 'aspect-square'}`}
+          className={`${mh ? 'rounded-2xl bg-[var(--mh-well)]' : sv ? 'rounded-xl bg-[var(--sv-card)]' : pm ? 'rounded-lg bg-[var(--pm-card)]' : 'bg-canvas rounded-xl'} overflow-hidden ${mh ? (allPhotos.length > 1 ? 'min-w-0 md:flex-1' : '') : sideGallery ? 'flex-1 min-w-0' : 'mb-3'} ${mh ? 'aspect-[4/5]' : portrait ? 'aspect-[3/4]' : sv ? 'aspect-[4/3]' : 'aspect-square'}`}
         >
           {activePhotoUrl ? (
             <Image
@@ -449,7 +452,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
               fill
               priority
               sizes="(max-width: 900px) 100vw, 550px"
-              className={sv ? 'object-cover mix-blend-multiply' : 'object-cover'}
+              className={sv && !mh ? 'object-cover mix-blend-multiply' : 'object-cover'}
             />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
@@ -458,7 +461,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           )}
           {displayOriginalPrice && (
             <span
-              className={`absolute top-3 left-3 z-[3] pointer-events-none text-white font-bold ${sv ? 'bg-[var(--sv-gold)] px-1.5 py-0.5 text-[10px]' : pm ? 'rounded-full bg-red-500 px-2.5 py-1 text-[11px]' : 'bg-accent px-2.5 py-1 text-[12px] rounded shadow-sm'}`}
+              className={`${mh ? 'mh-tag' : 'absolute top-3 left-3 z-[3] pointer-events-none text-white font-bold'} ${mh ? '' : sv ? 'bg-[var(--sv-gold)] px-1.5 py-0.5 text-[10px]' : pm ? 'rounded-full bg-red-500 px-2.5 py-1 text-[11px]' : 'bg-accent px-2.5 py-1 text-[12px] rounded shadow-sm'}`}
             >
               -{percentOff}%
             </span>
@@ -476,7 +479,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           labels={{ close: t('Close'), previous: t('Previous photo'), next: t('Next photo'), zoomIn: t('Zoom in'), zoomOut: t('Zoom out') }}
         />
         {allPhotos.length > 1 && (
-          <div className={sv ? 'grid grid-cols-3 gap-3' : pm ? 'grid grid-cols-4 gap-3 sm:grid-cols-5' : sideGallery ? 'flex flex-col gap-2 shrink-0 max-h-[520px] overflow-y-auto p-0.5' : 'flex gap-2 flex-wrap'}>
+          <div className={mh ? 'flex gap-2 overflow-x-auto md:max-h-[640px] md:w-[72px] md:shrink-0 md:flex-col md:overflow-y-auto' : sv ? 'grid grid-cols-3 gap-3' : pm ? 'grid grid-cols-4 gap-3 sm:grid-cols-5' : sideGallery ? 'flex flex-col gap-2 shrink-0 max-h-[520px] overflow-y-auto p-0.5' : 'flex gap-2 flex-wrap'}>
             {allPhotos.map((url, i) => (
               <button
                 key={url + i}
@@ -484,7 +487,9 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                 aria-label={`${t('Open photo')} ${i + 1}`}
                 aria-current={i === activePhoto ? 'true' : undefined}
                 className={
-                  sv
+                  mh
+                    ? `relative block aspect-[4/5] w-[72px] shrink-0 overflow-hidden rounded-lg border-[1.5px] bg-[var(--mh-well)] transition ${i === activePhoto ? 'border-black' : 'border-transparent'}`
+                    : sv
                     ? `relative block aspect-[4/3] w-full overflow-hidden rounded-lg bg-[var(--sv-card)] ring-2 ring-offset-2 transition ${i === activePhoto ? 'ring-[var(--sv-gold)]' : 'ring-transparent hover:ring-black/20'}`
                     : pm
                       ? `relative block aspect-square w-full overflow-hidden rounded-md bg-[var(--pm-card)] ring-2 transition ${i === activePhoto ? 'ring-accent' : 'ring-transparent hover:ring-accent/40'}`
@@ -493,7 +498,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                         }`
                 }
               >
-                <Image src={url} alt="" fill sizes="160px" className={sv ? 'object-cover mix-blend-multiply' : 'object-cover'} />
+                <Image src={url} alt="" fill sizes="160px" className={sv && !mh ? 'object-cover mix-blend-multiply' : 'object-cover'} />
               </button>
             ))}
           </div>
@@ -703,7 +708,16 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                     aria-label={soldOutValue ? `${val}, ${t('Out of stock')}` : undefined}
                     title={soldOutValue ? t('Out of stock') : undefined}
                     className={
-                      sv
+                      mh
+                        ? // Mahabesh: rounded option buttons, black when chosen.
+                          `flex min-h-[42px] min-w-[50px] items-center justify-center gap-1.5 rounded-lg border-[1.5px] text-[14px] font-semibold transition ${swatchPhoto ? 'pl-1 pr-3.5' : 'px-3'} ${
+                            isSelected
+                              ? 'border-black bg-black text-white'
+                              : soldOutValue
+                                ? 'border-dashed border-[var(--mh-line)] text-muted line-through'
+                                : 'border-[var(--mh-line)] text-ink hover:border-black'
+                          }`
+                        : sv
                         ? // Solevo: square option buttons, black when chosen.
                           `flex min-h-10 min-w-11 items-center justify-center gap-1.5 border text-[12px] font-medium transition ${swatchPhoto ? 'pl-1 pr-3.5' : 'px-3.5'} ${
                             isSelected
@@ -796,7 +810,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           <>
             {/* The template's row: quantity box, Add to Cart, Buy Now; then the wishlist button. */}
             <div data-rg="product-buttons" className="mt-5 flex flex-wrap items-center gap-3">
-              <div className={`inline-flex items-center border ${sv ? 'border-black/15' : 'rounded-md border-line-strong'}`}>
+              <div className={`inline-flex items-center border ${mh ? 'rounded-full border-[1.5px] border-[var(--mh-line)]' : sv ? 'border-black/15' : 'rounded-md border-line-strong'}`}>
                 <button type="button" className="p-3 disabled:opacity-40" aria-label={t('Decrease quantity')} onClick={() => setQuantity((q) => Math.max(minQty, q - packStep))}>
                   <Minus size={14} />
                 </button>
@@ -925,7 +939,9 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             onClick={() => wishlist.toggle(product.slug)}
             aria-pressed={wishlist.has(product.slug)}
             className={
-              sv
+              mh
+                ? 'mt-3 inline-flex items-center gap-2 rounded-full border-[1.5px] border-[var(--mh-line)] px-5 py-3 text-[13.5px] font-semibold transition hover:border-black'
+                : sv
                 ? 'mt-3 inline-flex items-center gap-2 border border-black/15 px-5 py-3 text-xs font-semibold transition hover:border-ink'
                 : 'mt-3 inline-flex items-center gap-2 rounded-md border border-line-strong px-4 py-2.5 text-[12px] font-semibold transition hover:border-accent hover:text-accent'
             }

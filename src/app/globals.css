@@ -941,6 +941,334 @@
   --color-accent-dark: #d92d6d;
 }
 
+/* ---------------------------------------------------------------------------------------------------------------------
+   Mahabesh (2026-11-12): the Mahabesh home-and-kitchen template (Laravel views and public/assets/css/store.css) on
+   StorePal's features. The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="mahabesh" next to
+   data-theme="storepal". Black ink on white, one blue dot (#1e54f5) as the only accent (counts, hover, links), a yellow arrow
+   tag for discounts, light grey wells (#f1f2f4), Archivo, round pill buttons that are black and turn blue on hover.
+   --color-accent is black (the template's chosen / selected state is black) and --color-accent-dark is the blue, so the
+   shared StorePal parts that go from accent to accent-dark on hover do the template's black-to-blue. Store > Branding's own
+   colour and fonts still win (inline on the same wrapper). Shared StorePal parts that Solevo also draws read the sv-*
+   classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='mahabesh'] {
+  --color-ink: #000000;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #000000;
+  --color-accent-dark: #1e54f5;
+  --color-accent-light: #edf2ff;
+  --color-muted: #62646b;
+  --color-line: #e2e3e6;
+  --color-line-strong: #c9cad0;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --mh-brand: #1e54f5;
+  --mh-brand-dark: #1240c7;
+  --mh-soft: #edf2ff;
+  --mh-well: #f1f2f4;
+  --mh-line: #e2e3e6;
+  --mh-card: #f1f2f4;
+  --mh-panel: #f1f2f4;
+  --mh-peach: #f1f2f4;
+  --mh-tan: #e2e3e6;
+  --mh-signal: #ffd60a;
+  --mh-footer: #000000;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #1e54f5;
+  --sv-gold-dark: #1240c7;
+  --sv-sand: #f1f2f4;
+  --sv-card: #f1f2f4;
+  --sv-panel: #f1f2f4;
+  --pm-card: #f1f2f4;
+  --pm-soft: #edf2ff;
+  --pm-yellow: #1e54f5;
+  --pm-yellow-strong: #1240c7;
+  --font-display: var(--font-archivo-mh), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-archivo-mh), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.07);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.12);
+  --shadow-popover: 0 24px 48px -24px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy, tight. */
+[data-skin='mahabesh'] :is(h1, h2, h3) {
+  letter-spacing: -0.025em;
+}
+/* The template's container (.s-wrap: max 1320px, 24px side padding, 16px on a phone). */
+[data-skin='mahabesh'] .mh-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1320px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+@media (min-width: 992px) {
+  [data-skin='mahabesh'] .mh-wrap {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+}
+/* The template's button (.s-btn): a black pill that turns blue on hover; --line is the outlined one, --sm the small one. */
+[data-skin='mahabesh'] .mh-btn,
+[data-skin='mahabesh'] .mh-btn-dark,
+[data-skin='mahabesh'] .sv-btn-dark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 22px;
+  border: 1.5px solid #000;
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 650;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='mahabesh'] .mh-btn:hover,
+[data-skin='mahabesh'] .mh-btn-dark:hover,
+[data-skin='mahabesh'] .sv-btn-dark:hover {
+  background: #1e54f5;
+  border-color: #1e54f5;
+  color: #fff;
+}
+[data-skin='mahabesh'] .mh-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='mahabesh'] .mh-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='mahabesh'] .mh-btn-line,
+[data-skin='mahabesh'] .mh-btn-outline,
+[data-skin='mahabesh'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 46px;
+  padding: 0 22px;
+  border: 1.5px solid #000;
+  border-radius: 999px;
+  background: transparent;
+  color: #000;
+  font-size: 14.5px;
+  font-weight: 650;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='mahabesh'] .mh-btn.mh-btn-line {
+  background: transparent;
+  color: #000;
+  border-color: #000;
+}
+[data-skin='mahabesh'] .mh-btn-line:hover,
+[data-skin='mahabesh'] .mh-btn.mh-btn-line:hover,
+[data-skin='mahabesh'] .mh-btn-outline:hover,
+[data-skin='mahabesh'] .sv-btn-outline:hover {
+  background: #000;
+  border-color: #000;
+  color: #fff;
+}
+[data-skin='mahabesh'] .sv-btn-outline.\!border-ink {
+  border-color: #000 !important;
+}
+[data-skin='mahabesh'] .mh-btn-sm {
+  height: 38px;
+  padding: 0 16px;
+  font-size: 13.5px;
+}
+/* Round icon button (.s-icon-btn): 42px, grey well on hover. */
+[data-skin='mahabesh'] .mh-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 999px;
+  color: #000;
+  transition: background 0.15s;
+}
+[data-skin='mahabesh'] .mh-icon-btn:hover {
+  background: var(--mh-well);
+}
+/* The open page's pill in the category strip: a small blue dot under it (.s-catnav__link.is-active). */
+[data-skin='mahabesh'] .mh-nav-active {
+  color: #000;
+  font-weight: 700;
+}
+[data-skin='mahabesh'] .mh-nav-active::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 999px;
+  background: #1e54f5;
+}
+/* The discount tag (.s-tag): yellow with an arrow point on the right, on the photo's top left. */
+[data-skin='mahabesh'] .mh-tag {
+  position: absolute;
+  top: 10px;
+  left: 0;
+  z-index: 2;
+  padding: 4px 16px 4px 9px;
+  background: #ffd60a;
+  color: #000;
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+  clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 50%, 100% 100%, 0 100%);
+}
+/* The round heart (.s-wish) on the photo's top right. */
+[data-skin='mahabesh'] .mh-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #000;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='mahabesh'] .mh-wish:hover {
+  transform: scale(1.08);
+  color: #1e54f5;
+}
+[data-skin='mahabesh'] .mh-wish.is-on {
+  color: #1e54f5;
+}
+[data-skin='mahabesh'] .mh-soldout .mh-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='mahabesh'] .mh-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='mahabesh'] .mh-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The announcement strip: a slow scroll to the left that stops on hover; a blue dot before each message. */
+[data-skin='mahabesh'] .mh-announce-item::before {
+  content: '';
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  margin-right: 12px;
+  border-radius: 999px;
+  background: #1e54f5;
+  vertical-align: middle;
+}
+@keyframes mh-marquee-left {
+  to {
+    transform: translateX(-50%);
+  }
+}
+[data-skin='mahabesh'] .mh-announce-track {
+  animation: mh-marquee-left 40s linear infinite;
+}
+[data-skin='mahabesh'] .mh-announce:hover .mh-announce-track {
+  animation-play-state: paused;
+}
+@keyframes mh-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.mh-fade-up {
+  animation: mh-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='mahabesh'] .mh-announce-track {
+    animation: none;
+  }
+  .mh-fade-up {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='mahabesh'] .mh-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's black pill main button. */
+[data-skin='mahabesh'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1.5px solid #e2e3e6;
+  border-radius: 10px;
+  height: 48px;
+}
+[data-skin='mahabesh'] .sv-auth input:focus {
+  border-color: #000;
+  outline: 0;
+}
+[data-skin='mahabesh'] .sv-auth button[type='submit'] {
+  border-radius: 999px;
+  background: #000;
+  color: #fff;
+  font-size: 14.5px;
+  font-weight: 650;
+}
+[data-skin='mahabesh'] .sv-auth button[type='submit']:hover {
+  background: #1e54f5;
+}
+[data-skin='mahabesh'] [data-rg='product-tabs'] .border-accent {
+  border-color: #000;
+}
+[data-skin='mahabesh'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #000;
+}
+/* The template's pill select (.s-select): white, 1.5px line, a small chevron on the right. */
+[data-skin='mahabesh'] .mh-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1.5px solid #e2e3e6;
+  border-radius: 999px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23000' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 14px center;
+  outline: 0;
+}
+[data-skin='mahabesh'] .mh-select:focus {
+  border-color: #000;
+}
+/* Mahabesh's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='mahabesh'] .mh-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #e2e3e6;
+  border-radius: 16px;
+}
+/* Mahabesh's footer is black (StorePal's is navy), so StorePal's navy footer rule is undone here for the parts the
+   footer reuses. */
+[data-theme='storepal'][data-skin='mahabesh'] footer[data-rg='footer'] {
+  background-color: var(--mh-footer);
+  color: #c9cad0;
+  --color-ink: #ffffff;
+  --color-muted: #c9cad0;
+  --color-line: #2a2b30;
+  --color-line-strong: #3a3b40;
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #000000;
+  --color-accent: #ffffff;
+  --color-accent-dark: #1e54f5;
+}
+
 /* Store > Branding's heading font (lib/storeFonts.ts): the store layout marks its wrapper with data-brand-heading when one
    is chosen, and headings take it (the store name already uses font-display). */
 [data-brand-heading] :is(h1, h2, h3) {

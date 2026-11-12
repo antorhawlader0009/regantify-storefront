@@ -16,6 +16,7 @@ import { lowStockLabel, useLowStock, useShowOutOfStockBadge, useStorePalDesign, 
 import { PlaymateCardView } from '../../playmate/PlaymateCard';
 import { SolevoCardView } from '../../solevo/SolevoCard';
 import { ChronicsCardView } from '../../chronics/ChronicsCard';
+import { MahabeshCardView } from '../../mahabesh/MahabeshCard';
 import { ChicwoveCardView } from '../../chicwove/ChicwoveCard';
 import { useWishlist } from '../lib/wishlist';
 import { FlashSaleTimer } from './FlashSaleTimer';
@@ -274,8 +275,8 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
 
   // PlayMate (lib/theme.ts storeSkin): the same card behaviour drawn as PlayMate's card. It has no option pickers on
   // the card, so a product with sizes or colours always opens the quick add sheet.
-  if (skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'chronics') {
-    const TemplateCardView = skin === 'chronics' ? ChronicsCardView : skin === 'chicwove' ? ChicwoveCardView : skin === 'solevo' ? SolevoCardView : PlaymateCardView;
+  if (skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh') {
+    const TemplateCardView = skin === 'mahabesh' ? MahabeshCardView : skin === 'chronics' ? ChronicsCardView : skin === 'chicwove' ? ChicwoveCardView : skin === 'solevo' ? SolevoCardView : PlaymateCardView;
     const sheetReady = fullData && !outOfStock && hasVariations;
     const pmPurchase = (kind: 'add' | 'buy') => {
       if (sheetReady) {
