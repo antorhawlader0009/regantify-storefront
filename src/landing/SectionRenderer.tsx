@@ -1,5 +1,6 @@
 import type { StorefrontLandingPageProduct, StorefrontLandingPageSection } from '@/lib/storefrontApi';
 import { SectionShell } from './SectionShell';
+import type { LandingDelivery, LandingLang } from './landingText';
 import { HeadingSection, TextSection, ImageSection, SpacerSection, ButtonSection } from './sections/Basic';
 import { HeroSliderSection, BannerVideoSection, TwoColumnSection } from './sections/Hero';
 import { SelectProductsSection, PriceOfferSection, CountdownTimerSection, StickyOrderBarSection } from './sections/Products';
@@ -53,11 +54,15 @@ export function SectionRenderer({
   subdomain,
   slug,
   productsById,
+  lang = 'en',
+  delivery = null,
 }: {
   section: StorefrontLandingPageSection;
   subdomain: string;
   slug: string;
   productsById: Map<string, StorefrontLandingPageProduct>;
+  lang?: LandingLang;
+  delivery?: LandingDelivery | null;
 }) {
   const props = section.props ?? {};
   const style = (props as { style?: import('./types').SectionStyle }).style;
@@ -75,19 +80,19 @@ export function SectionRenderer({
       case 'button':
         return <ButtonSection props={props as unknown as ButtonProps} />;
       case 'hero-slider':
-        return <HeroSliderSection props={props as unknown as HeroSliderProps} />;
+        return <HeroSliderSection props={props as unknown as HeroSliderProps} lang={lang} />;
       case 'banner-video':
         return <BannerVideoSection props={props as unknown as BannerVideoProps} />;
       case 'two-column':
-        return <TwoColumnSection props={props as unknown as TwoColumnProps} />;
+        return <TwoColumnSection props={props as unknown as TwoColumnProps} lang={lang} />;
       case 'select-products':
-        return <SelectProductsSection props={props as unknown as SelectProductsProps} productsById={productsById} />;
+        return <SelectProductsSection props={props as unknown as SelectProductsProps} productsById={productsById} lang={lang} />;
       case 'price-offer':
-        return <PriceOfferSection props={props as unknown as PriceOfferProps} productsById={productsById} />;
+        return <PriceOfferSection props={props as unknown as PriceOfferProps} productsById={productsById} lang={lang} delivery={delivery} />;
       case 'countdown-timer':
-        return <CountdownTimerSection props={props as unknown as CountdownTimerProps} />;
+        return <CountdownTimerSection props={props as unknown as CountdownTimerProps} lang={lang} />;
       case 'sticky-order-bar':
-        return <StickyOrderBarSection props={props as unknown as StickyOrderBarProps} productsById={productsById} />;
+        return <StickyOrderBarSection props={props as unknown as StickyOrderBarProps} productsById={productsById} lang={lang} />;
       case 'customer-reviews':
         return <CustomerReviewsSection props={props as unknown as CustomerReviewsProps} />;
       case 'trust-badges':
@@ -99,16 +104,16 @@ export function SectionRenderer({
       case 'feature-grid':
         return <FeatureGridSection props={props as unknown as FeatureGridProps} />;
       case 'carousel':
-        return <CarouselSection props={props as unknown as CarouselProps} />;
+        return <CarouselSection props={props as unknown as CarouselProps} lang={lang} />;
       case 'checkout-form': {
         const checkoutProps = props as unknown as CheckoutFormProps;
         const products = (checkoutProps.productIds ?? [])
           .map((id) => productsById.get(id))
           .filter((p): p is StorefrontLandingPageProduct => !!p);
-        return <CheckoutFormSection props={checkoutProps} subdomain={subdomain} products={products} />;
+        return <CheckoutFormSection props={checkoutProps} subdomain={subdomain} products={products} lang={lang} />;
       }
       case 'lead-form':
-        return <LeadFormSection props={props as unknown as LeadFormProps} subdomain={subdomain} slug={slug} />;
+        return <LeadFormSection props={props as unknown as LeadFormProps} subdomain={subdomain} slug={slug} lang={lang} />;
       default:
         return null;
     }

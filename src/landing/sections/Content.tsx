@@ -1,6 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { BadgeCheck } from 'lucide-react';
+import { LandingPhoto, usePhotoZoom } from '../LandingPhoto';
+import type { LandingLang } from '../landingText';
 import type { CarouselProps, FaqProps, FeatureGridProps } from '../types';
 
 export function FeatureGridSection({ props }: { props: FeatureGridProps }) {
@@ -17,11 +20,14 @@ export function FeatureGridSection({ props }: { props: FeatureGridProps }) {
       <div className={`mx-auto grid max-w-5xl grid-cols-1 gap-5 ${colsClass}`}>
         {items.map((item, i) => (
           <div key={i} className="group overflow-hidden rounded-xl border border-neutral-200 text-center">
+            {/* No picture = a tick badge instead of an empty grey box (ready-made pages start with text-only cards). */}
             {item.imageUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img src={item.imageUrl} alt="" className="aspect-video w-full object-cover" />
             ) : (
-              <div className="aspect-video w-full bg-neutral-100" />
+              <span className="mx-auto mt-5 flex h-11 w-11 items-center justify-center rounded-full bg-orange-50 text-orange-600" aria-hidden>
+                <BadgeCheck size={22} />
+              </span>
             )}
             <div className="relative p-4">
               <h3 className="text-[15px] font-semibold text-neutral-900">{item.title}</h3>
@@ -54,15 +60,16 @@ export function FaqSection({ props }: { props: FaqProps }) {
       )}
       <div className="mx-auto flex max-w-2xl flex-col gap-2">
         {items.map((item, i) => (
-          <FaqItem key={i} question={item.question} answer={item.answer} />
+          <FaqItem key={i} question={item.question} answer={item.answer} startOpen={i === 0} />
         ))}
       </div>
     </div>
   );
 }
 
-function FaqItem({ question, answer }: { question: string; answer: string }) {
-  const [open, setOpen] = useState(false);
+function FaqItem({ question, answer, startOpen = false }: { question: string; answer: string; startOpen?: boolean }) {
+  // The first answer starts open, so a shopper sees at once that the list opens.
+  const [open, setOpen] = useState(startOpen);
   return (
     <div className="overflow-hidden rounded-lg border border-neutral-200">
       <button
@@ -77,30 +84,48 @@ function FaqItem({ question, answer }: { question: string; answer: string }) {
   );
 }
 
-export function CarouselSection({ props }: { props: CarouselProps }) {
-  const items = props.items ?? [];
+/**
+ * The photo row. Each photo shows whole in a square (never cropped), the row scrolls sideways with a peek of the next
+ * photo so a phone user sees there are more, and a tap opens the full-screen viewer with zoom (photos without a link).
+ * A photo with a link still goes to its link.
+ */
+export function CarouselSection({ props, lang = 'en' }: { props: CarouselProps; lang?: LandingLang }) {
+  const items = (props.items ?? []).filter((item) => item.imageUrl);
+  const photos = items.map((item) => item.imageUrl);
+  const zoom = usePhotoZoom(photos, 'Photo', lang);
   if (items.length === 0) return null;
   return (
-    <div className="px-5 py-8 sm:px-8">
-      <div className="flex snap-x gap-4 overflow-x-auto pb-2">
-        {items.map((item, i) => (
-          <a
-            key={i}
-            href={item.link || undefined}
-            className="w-64 shrink-0 snap-start"
-            target={item.link?.startsWith('#') ? undefined : item.link ? '_blank' : undefined}
-            rel={item.link && !item.link.startsWith('#') ? 'noreferrer' : undefined}
-          >
-            {item.imageUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={item.imageUrl} alt="" className="aspect-[4/3] w-full rounded-lg object-cover" />
-            ) : (
-              <div className="aspect-[4/3] w-full rounded-lg bg-neutral-100" />
-            )}
-            {item.caption && <p className="mt-1.5 truncate text-center text-[12.5px] text-neutral-600">{item.caption}</p>}
-          </a>
-        ))}
+    <div className="py-8">
+      <div className="mx-auto flex max-w-5xl snap-x snap-mandatory gap-3 overflow-x-auto px-5 pb-2 sm:px-8 [scrollbar-width:thin]">
+        {items.map((item, i) => {
+          const photo = (
+            <LandingPhoto
+              src={item.imageUrl}
+              alt={item.caption || ''}
+              className="aspect-square w-full rounded-xl ring-1 ring-black/5"
+              sizes="(max-width: 640px) 75vw, 288px"
+              onOpen={item.link ? undefined : () => zoom.open(i)}
+            />
+          );
+          return (
+            <div key={i} className="w-[75%] shrink-0 snap-start sm:w-72">
+              {item.link ? (
+                <a
+                  href={item.link}
+                  target={item.link.startsWith('#') ? undefined : '_blank'}
+                  rel={item.link.startsWith('#') ? undefined : 'noreferrer'}
+                >
+                  {photo}
+                </a>
+              ) : (
+                photo
+              )}
+              {item.caption && <p className="mt-1.5 truncate text-center text-[12.5px] text-neutral-600">{item.caption}</p>}
+            </div>
+          );
+        })}
       </div>
+      {zoom.viewer}
     </div>
   );
 }

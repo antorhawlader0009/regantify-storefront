@@ -4,6 +4,7 @@ import { LandingPageVisitBeacon } from './LandingPageVisitBeacon';
 import { ChatButton } from './ChatButton';
 import { MetaPixelLanding } from '@/components/MetaPixel';
 import { TiktokPixelLanding } from '@/components/TiktokPixel';
+import { landingDelivery, landingLang } from './landingText';
 
 /** Turns a free-text font-family name (LandingPage.headingFont/bodyFont - landing-page-sections.md's own note: "plain free-text ... handed to a CSS font-family/Google Fonts lookup at render time, not a constrained internal choice") into a Google Fonts URL, best-effort. A vendor who types a name Google Fonts doesn't have just gets the browser's own fallback chain below, never a broken page. */
 function googleFontsHref(fontNames: string[]): string | null {
@@ -26,6 +27,9 @@ function googleFontsHref(fontNames: string[]): string | null {
 export function LandingPageView({ subdomain, data }: { subdomain: string; data: StorefrontLandingPageData }) {
   const { landingPage, products } = data;
   const productsById = new Map(products.map((p) => [p.id, p]));
+  // The page's own words (order form, timer) follow the page: Bangla for a Bangla store or a page written in Bangla.
+  const lang = landingLang(data);
+  const delivery = landingDelivery(data);
 
   const fontHref = googleFontsHref([landingPage.headingFont ?? '', landingPage.bodyFont ?? '']);
   const bodyFontFamily = landingPage.bodyFont ? `"${landingPage.bodyFont}", sans-serif` : undefined;
@@ -56,6 +60,8 @@ export function LandingPageView({ subdomain, data }: { subdomain: string; data: 
             subdomain={subdomain}
             slug={landingPage.slug}
             productsById={productsById}
+            lang={lang}
+            delivery={delivery}
           />
         ))}
       </div>

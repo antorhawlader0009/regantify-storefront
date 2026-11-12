@@ -219,7 +219,7 @@ export function PhotoViewer({
           src={photos[i]}
           alt=""
           draggable={false}
-          className={`max-h-full max-w-full object-contain ${pointers.current.size ? '' : 'transition-transform duration-150'} ${scale > 1 ? 'cursor-grab' : ''}`}
+          className={`h-full w-full object-contain ${pointers.current.size ? '' : 'transition-transform duration-150'} ${scale > 1 ? 'cursor-grab' : ''}`}
           style={{ transform: `translate(${pan.x}px, ${pan.y}px) scale(${scale})` }}
         />
         {many && scale === 1 && (

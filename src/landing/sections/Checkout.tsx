@@ -14,6 +14,15 @@ import type { CheckoutFormProps, LeadFormProps } from '../types';
 import { trackMetaInitiateCheckout, trackMetaLead } from '@/lib/metaPixelEvents';
 import { trackBeginCheckout, trackGenerateLead } from '@/lib/ecommerceEvents';
 import { sendStoreEvent } from '@/lib/storeEvents';
+import { phoneInput } from '@/lib/phoneInput';
+import { addressProblem } from '@/lib/addressCheck';
+import { landingT, type LandingLang } from '../landingText';
+
+/** A typed or pasted phone as 01XXXXXXXXX: Bangla digits become English and +880 / 880 is cut (IDEA-18); 11 digits once it is local. */
+function landingPhone(value: string): string {
+  const v = phoneInput(value).replace(/[^0-9+]/g, '');
+  return /^(\+|88)/.test(v) ? v.slice(0, 14) : v.slice(0, 11);
+}
 
 /**
  * The price the order will charge for this product with these options: the picked combination's own sale price, else
@@ -82,12 +91,17 @@ export function CheckoutFormSection({
   props,
   subdomain,
   products,
+  lang = 'en',
 }: {
   props: CheckoutFormProps;
   subdomain: string;
   products: StorefrontLandingPageProduct[];
+  lang?: LandingLang;
 }) {
   const theme = useStoreTheme();
+  const t = (text: string, vars?: Record<string, string>) => landingT(lang, text, vars);
+  // The soft "add a landmark" hint shows once the shopper has left the address box (same rule as StorePal's checkout).
+  const [addressLeft, setAddressLeft] = useState(false);
   const collect = props.collectFields ?? { name: true, phone: true, address: true, district: true, shippingOption: true };
 
   const orderable = (p: StorefrontLandingPageProduct) => p.inStock || p.isPreOrder;
@@ -187,7 +201,7 @@ export function CheckoutFormSection({
 
   const onSubmit = () => {
     if (lines.length === 0) {
-      setNoProductError(products.length === 0 ? 'No product is set up for this order form yet.' : 'Select at least one product.');
+      setNoProductError(t(products.length === 0 ? 'No product is set up for this order form yet.' : 'Select at least one product.'));
       return;
     }
     setNoProductError(null);
@@ -197,11 +211,11 @@ export function CheckoutFormSection({
       const picked = choices[p.id] ?? {};
       const missing = (p.options ?? []).find((o) => !picked[o.name]);
       if (missing) {
-        setOptionError(`Choose ${missing.name} for ${p.name}.`);
+        setOptionError(t('Choose {option} for {product}.', { option: missing.name, product: p.name }));
         return;
       }
       if (soldOutPick(p, picked)) {
-        setOptionError(`${p.name} (${Object.values(picked).join(', ')}) is out of stock. Choose another option.`);
+        setOptionError(t('{product} ({choice}) is out of stock. Choose another option.', { product: p.name, choice: Object.values(picked).join(', ') }));
         return;
       }
     }
@@ -219,7 +233,7 @@ export function CheckoutFormSection({
     if (next !== zone) updateField('zone', next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [aroundDhaka, form.district, form.city, zone, collect.district]);
-  const zoneLabel = zone === 'DHAKA' ? 'Inside Dhaka' : zone === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka';
+  const zoneLabel = t(zone === 'DHAKA' ? 'Inside Dhaka' : zone === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka');
 
   // Never below the product's minimum order; at least 99 above it.
   const setQuantity = (id: string, qty: number) => {
@@ -242,35 +256,44 @@ export function CheckoutFormSection({
   return (
     <div id="checkout" className="px-5 py-10 sm:px-8" onFocusCapture={onFormFocus}>
       <div className="mx-auto max-w-4xl rounded-2xl border border-neutral-200 p-5 sm:p-8">
-        <h2 className="mb-5 text-xl font-bold text-neutral-900 sm:text-2xl">Submit Your Order Information</h2>
+        <h2 className="mb-5 text-xl font-bold text-neutral-900 sm:text-2xl">{t('Submit Your Order Information')}</h2>
 
         <div className="grid gap-6 md:grid-cols-2">
           <div className="flex flex-col gap-3.5">
-            <Field label="Full Name" required error={errors.fullName}>
+            <Field label={t('Full Name')} required error={errors.fullName && t(errors.fullName)}>
               <input
                 value={form.fullName}
                 onChange={(e) => updateField('fullName', e.target.value)}
                 className={INPUT_CLASS}
-                placeholder="Your name"
+                placeholder={t('Your name')}
+                autoComplete="name"
               />
             </Field>
-            <Field label="Mobile Number" required error={errors.phone}>
+            <Field label={t('Mobile Number')} required error={errors.phone && t(errors.phone)}>
               <input
                 value={form.phone}
-                onChange={(e) => updateField('phone', e.target.value.replace(/[^0-9]/g, '').slice(0, 11))}
+                onChange={(e) => updateField('phone', landingPhone(e.target.value))}
                 className={INPUT_CLASS}
                 placeholder="01XXXXXXXXX"
-                inputMode="numeric"
+                inputMode="tel"
+                autoComplete="tel"
               />
             </Field>
-            <Field label="Full Address" required error={errors.address}>
+            <Field label={t('Full Address')} required error={errors.address && t(errors.address)}>
               <textarea
                 value={form.address}
                 onChange={(e) => updateField('address', e.target.value)}
+                onBlur={() => setAddressLeft(true)}
                 className={`${INPUT_CLASS} min-h-[72px] resize-none`}
-                placeholder="House, road, area or village, and a nearby landmark"
+                placeholder={t('House, road, area or village, and a nearby landmark')}
+                autoComplete="street-address"
               />
             </Field>
+            {!errors.address && addressLeft && addressProblem(form.address, [form.city, form.district]) && (
+              <p role="status" className="-mt-2 text-[12px] text-neutral-500">
+                {t('Add a house or road number, a village name or a nearby landmark so the rider can find you.')}
+              </p>
+            )}
             {collect.district && (
               <div className="flex flex-col gap-1.5">
                 {/* One "District & Thana" field (the same picker as StorePal's checkout); the delivery zone follows it. */}
@@ -279,18 +302,18 @@ export function CheckoutFormSection({
                   thana={form.city}
                   onDistrict={(value) => updateField('district', value)}
                   onThana={(value) => updateField('city', value)}
-                  lang="en"
+                  lang={lang}
                   labels={{
-                    district: 'District',
-                    thana: 'Thana / Upazila',
-                    districtPlaceholder: 'Select your district and thana',
-                    thanaPlaceholder: 'Thana / Upazila',
-                    thanaNeedsDistrict: 'Choose a district first',
-                    other: 'Other (type it)',
-                    typeDistrict: 'Type your district',
-                    typeThana: 'Type your thana / upazila',
-                    place: 'District & Thana / Upazila',
-                    search: 'Search',
+                    district: t('District'),
+                    thana: t('Thana / Upazila'),
+                    districtPlaceholder: t('Select your district and thana'),
+                    thanaPlaceholder: t('Thana / Upazila'),
+                    thanaNeedsDistrict: t('Choose a district first'),
+                    other: t('Other (type it)'),
+                    typeDistrict: t('Type your district'),
+                    typeThana: t('Type your thana / upazila'),
+                    place: t('District & Thana / Upazila'),
+                    search: t('Search'),
                   }}
                   labelClassName="mb-1.5 block text-[13px] font-medium text-neutral-800"
                   controlClassName={INPUT_CLASS}
@@ -298,38 +321,38 @@ export function CheckoutFormSection({
                 {errors.city && <p className="text-[12px] text-red-600">{errors.city}</p>}
                 {form.district.trim() && (
                   <p role="status" className="text-[12.5px] text-neutral-500">
-                    {zoneLabel} delivery: {formatPrice(deliveryChargeByZone[zone as keyof typeof deliveryChargeByZone] ?? deliveryCharge)}
+                    {zoneLabel} {t('delivery')}: {formatPrice(deliveryChargeByZone[zone as keyof typeof deliveryChargeByZone] ?? deliveryCharge)}
                   </p>
                 )}
               </div>
             )}
             {/* Without a district there is nothing to work the zone out from, so the shopper still picks it. */}
             {collect.shippingOption && !collect.district && (
-              <Field label="Shipping Option">
+              <Field label={t('Shipping Option')}>
                 <div className="flex flex-col gap-2">
                   {(aroundDhaka ? (['DHAKA', 'AROUND_DHAKA', 'OUTSIDE_DHAKA'] as const) : (['DHAKA', 'OUTSIDE_DHAKA'] as const)).map((z) => (
                     <label key={z} className="flex items-center gap-2 text-[13.5px] text-neutral-700">
                       <input type="radio" checked={zone === z} onChange={() => updateField('zone', z)} />
-                      {z === 'DHAKA' ? 'Inside Dhaka' : z === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka'} - {formatPrice(deliveryChargeByZone[z])}
+                      {t(z === 'DHAKA' ? 'Inside Dhaka' : z === 'AROUND_DHAKA' ? 'Around Dhaka' : 'Outside Dhaka')} - {formatPrice(deliveryChargeByZone[z])}
                     </label>
                   ))}
                 </div>
               </Field>
             )}
-            <Field label="Note">
+            <Field label={t('Note')}>
               <textarea
                 value={form.note}
                 onChange={(e) => updateField('note', e.target.value)}
                 className={`${INPUT_CLASS} min-h-[60px] resize-none`}
-                placeholder="Anything we should know? (optional)"
+                placeholder={t('Anything we should know? (optional)')}
               />
             </Field>
           </div>
 
           <div className="h-fit rounded-xl border border-neutral-200 p-4">
-            <p className="mb-2.5 text-[13.5px] font-semibold text-neutral-900">Your order</p>
+            <p className="mb-2.5 text-[13.5px] font-semibold text-neutral-900">{t('Your order')}</p>
             {products.length === 0 && (
-              <p className="text-[12.5px] text-red-600">No product is set up for this order form yet.</p>
+              <p className="text-[12.5px] text-red-600">{t('No product is set up for this order form yet.')}</p>
             )}
             <div className="flex flex-col gap-3">
               {products.map((p) => {
@@ -384,7 +407,7 @@ export function CheckoutFormSection({
                         </div>
                       ))}
                       {canOrder && isOn && soldOutPick(p, choices[p.id] ?? {}) && (
-                        <p className="mt-1 text-[11.5px] font-medium text-red-600">This option is out of stock</p>
+                        <p className="mt-1 text-[11.5px] font-medium text-red-600">{t('This option is out of stock')}</p>
                       )}
                       {canOrder ? (
                         <div className="mt-1 flex items-center">
@@ -409,7 +432,7 @@ export function CheckoutFormSection({
                           </div>
                         </div>
                       ) : (
-                        <p className="mt-0.5 text-[11.5px] font-medium text-red-600">Out of stock</p>
+                        <p className="mt-0.5 text-[11.5px] font-medium text-red-600">{t('Out of stock')}</p>
                       )}
                     </div>
                     <span className="shrink-0 text-[13px] font-medium text-neutral-900">{formatPrice(unit * (isOn ? qty : 1))}</span>
@@ -419,23 +442,23 @@ export function CheckoutFormSection({
             </div>
 
             <div className="mt-3 flex flex-col gap-1.5 border-t border-neutral-200 pt-3 text-[13px]">
-              <Row label="Subtotal" value={formatPrice(subtotal)} />
+              <Row label={t('Subtotal')} value={formatPrice(subtotal)} />
               {/* Until the store's own charges arrive, a placeholder rather than the fallback number (it used to jump). */}
               {chargesReady ? (
-                <Row label="Delivery Charge" value={formatPrice(deliveryCharge)} />
+                <Row label={t('Delivery Charge')} value={formatPrice(deliveryCharge)} />
               ) : (
                 <div className="flex justify-between">
-                  <span className="text-neutral-700">Delivery Charge</span>
+                  <span className="text-neutral-700">{t('Delivery Charge')}</span>
                   <span className="h-4 w-12 animate-pulse rounded bg-neutral-200 motion-reduce:animate-none" aria-hidden />
                 </div>
               )}
-              {vatAmount > 0 && <Row label="VAT" value={formatPrice(vatAmount)} />}
+              {vatAmount > 0 && <Row label={t('VAT')} value={formatPrice(vatAmount)} />}
               {visiblePlatformChargeAmount > 0 && (
-                <Row label="Platform Charge" value={formatPrice(visiblePlatformChargeAmount)} />
+                <Row label={t('Platform Charge')} value={formatPrice(visiblePlatformChargeAmount)} />
               )}
               {appliedCoupon && (
                 <div className="flex justify-between text-green-700">
-                  <span>{appliedCoupon.discountType === 'FREE_SHIPPING' ? 'Free shipping' : `Coupon ${appliedCoupon.code}`}</span>
+                  <span>{appliedCoupon.discountType === 'FREE_SHIPPING' ? t('Free shipping') : `${t('Coupon')} ${appliedCoupon.code}`}</span>
                   <span className="font-medium">
                     {appliedCoupon.discountType === 'FREE_SHIPPING' ? '-' : `-${formatPrice(couponDiscountAmount)}`}
                   </span>
@@ -450,11 +473,11 @@ export function CheckoutFormSection({
               {automaticFreeShipping && (
                 <div className="flex justify-between text-green-700">
                   <span>{automaticFreeShipping.name}</span>
-                  <span className="font-medium">Free shipping</span>
+                  <span className="font-medium">{t('Free shipping')}</span>
                 </div>
               )}
               <div className="mt-1 flex justify-between border-t border-neutral-200 pt-2 text-[15px] font-bold text-neutral-900">
-                <span>Total</span>
+                <span>{t('Total')}</span>
                 {chargesReady ? (
                   <span>{formatPrice(visibleGrandTotal)}</span>
                 ) : (
@@ -465,9 +488,9 @@ export function CheckoutFormSection({
 
             {appliedCoupon ? (
               <div className="mt-3 flex items-center justify-between rounded-md bg-green-50 px-3 py-2 text-[12.5px] font-semibold text-green-700">
-                <span>{appliedCoupon.code} applied</span>
+                <span>{appliedCoupon.code} {t('applied')}</span>
                 <button type="button" onClick={removeCoupon} className="hover:opacity-70">
-                  Remove
+                  {t('Remove')}
                 </button>
               </div>
             ) : couponBoxOpen ? (
@@ -476,7 +499,7 @@ export function CheckoutFormSection({
                   <input
                     value={couponCode}
                     onChange={(e) => setCouponCode(e.target.value.slice(0, 50))}
-                    placeholder="Enter coupon code"
+                    placeholder={t('Enter coupon code')}
                     className="min-w-0 flex-1 rounded-md border border-neutral-300 px-3 py-2 text-[13px] uppercase outline-none focus:border-neutral-900"
                   />
                   <button
@@ -485,7 +508,7 @@ export function CheckoutFormSection({
                     disabled={couponChecking || !couponCode.trim()}
                     className="rounded-md bg-neutral-900 px-4 py-2 text-[12.5px] font-bold text-white disabled:opacity-60"
                   >
-                    {couponChecking ? 'Checking…' : 'Apply'}
+                    {t(couponChecking ? 'Checking…' : 'Apply')}
                   </button>
                 </div>
                 {couponError && <p className="mt-1.5 text-[12px] text-red-600">{couponError}</p>}
@@ -497,20 +520,20 @@ export function CheckoutFormSection({
                   onClick={() => setCouponBoxOpen(true)}
                   className="text-[12.5px] font-medium text-orange-600 hover:text-orange-700"
                 >
-                  Have Coupon?
+                  {t('Have Coupon?')}
                 </button>
               </div>
             )}
 
             <div className="mt-4 border-t border-neutral-200 pt-3">
-              <p className="mb-2 text-[13px] font-semibold text-neutral-900">Payment Method</p>
+              <p className="mb-2 text-[13px] font-semibold text-neutral-900">{t('Payment Method')}</p>
               <div className="flex flex-col gap-2">
                 {gateways.map((gateway) => (
                   <label key={gateway.id} className="flex cursor-pointer items-center gap-2 text-[13px] text-neutral-800">
                     <input type="radio" checked={paymentMethod === gateway.id} onChange={() => setPaymentMethod(gateway.id)} />
-                    {gateway.displayLabel ?? DEFAULT_GATEWAY_LABELS[gateway.type]}
+                    {gateway.displayLabel ?? t(DEFAULT_GATEWAY_LABELS[gateway.type] ?? gateway.type)}
                     {gateway.type === 'ONLINE_PAYMENT' && (
-                      <span className="text-[11px] text-neutral-500">(bKash, Nagad, cards &amp; more)</span>
+                      <span className="text-[11px] text-neutral-500">{t('(bKash, Nagad, cards & more)')}</span>
                     )}
                   </label>
                 ))}
@@ -520,17 +543,17 @@ export function CheckoutFormSection({
             {/* Store > COD Guard "Before Checkout" - see useCheckout's codOtp. */}
             {showCodOtp && (
               <div className="mt-4 rounded-md border border-orange-200 bg-orange-50 p-3.5">
-                <p className="text-[13px] font-semibold text-neutral-900">Verify your phone number</p>
+                <p className="text-[13px] font-semibold text-neutral-900">{t('Verify your phone number')}</p>
                 <p className="mt-1 text-[12.5px] text-neutral-600">
-                  We sent a 6-digit code to {codOtpPhone}. Enter it to place your order.
+                  {t('We sent a 6-digit code to {phone}. Enter it to place your order.', { phone: codOtpPhone ?? '' })}
                 </p>
                 <input
                   type="text"
                   inputMode="numeric"
                   autoComplete="one-time-code"
                   value={codOtpCode}
-                  onChange={(e) => setCodOtpCode(e.target.value)}
-                  placeholder="Enter code"
+                  onChange={(e) => setCodOtpCode(phoneInput(e.target.value))}
+                  placeholder={t('Enter code')}
                   aria-label="Verification code"
                   className="mt-2.5 w-full rounded-md border border-neutral-300 bg-white px-3 py-2 text-[15px] tracking-[0.3em] text-neutral-900 outline-none focus:border-orange-600 sm:w-48"
                 />
@@ -541,7 +564,7 @@ export function CheckoutFormSection({
                   disabled={codOtpSending}
                   className="mt-2 block text-[12.5px] font-semibold text-orange-700 underline underline-offset-2 disabled:opacity-60"
                 >
-                  {codOtpSending ? 'Sending…' : 'Resend code'}
+                  {t(codOtpSending ? 'Sending…' : 'Resend code')}
                 </button>
               </div>
             )}
@@ -551,11 +574,11 @@ export function CheckoutFormSection({
                 {storeAway.message ? `${storeAway.message} ` : ''}
                 {ordersPaused
                   ? storeAway.returnDate
-                    ? `Orders are paused until ${formatReturnDay(storeAway.returnDate)}.`
-                    : 'Orders are paused for now.'
+                    ? t('Orders are paused until {date}.', { date: formatReturnDay(storeAway.returnDate) })
+                    : t('Orders are paused for now.')
                   : storeAway.returnDate
-                    ? `Delivery starts from ${formatReturnDay(storeAway.returnDate)}.`
-                    : 'Delivery starts when the store is back.'}
+                    ? t('Delivery starts from {date}.', { date: formatReturnDay(storeAway.returnDate) })
+                    : t('Delivery starts when the store is back.')}
               </p>
             )}
 
@@ -568,27 +591,30 @@ export function CheckoutFormSection({
               type="button"
               onClick={onSubmit}
               disabled={placing || codOtpSending || ordersPaused}
-              className="mt-3 w-full rounded-lg bg-neutral-900 py-3 text-sm font-semibold text-white transition-colors hover:bg-neutral-800 disabled:opacity-50"
+              className="mt-3 w-full rounded-xl bg-orange-600 py-3.5 text-[15px] font-bold text-white shadow-sm transition-colors hover:bg-orange-700 disabled:opacity-50"
             >
               {codOtpSending && !showCodOtp
-                ? 'Sending verification code…'
+                ? t('Sending verification code…')
                 : placing
                   ? isRedirectGateway
-                    ? 'Redirecting to payment…'
-                    : 'Placing order…'
+                    ? t('Redirecting to payment…')
+                    : t('Placing order…')
                   : showCodOtp
-                    ? 'Verify & Place Order'
+                    ? t('Verify & Place Order')
                     : chargesReady && lines.length > 0
                       ? (
                           // The action and the amount it pays, split by a thin line (as in StorePal's checkout).
                           <span className="flex items-center justify-center gap-3">
-                            <span>Place Order</span>
+                            <span>{t('Place Order')}</span>
                             <span className="h-5 w-px bg-white/45" aria-hidden />
                             <span className="text-[15.5px] font-extrabold tabular-nums tracking-tight">{formatPrice(visibleGrandTotal)}</span>
                           </span>
                         )
-                      : 'Place Order'}
+                      : t('Place Order')}
             </button>
+            {isCodSelected && !showCodOtp && (
+              <p className="mt-2 text-center text-[12px] text-neutral-500">{t('Pay the delivery person when the product reaches you.')}</p>
+            )}
           </div>
         </div>
       </div>
@@ -621,11 +647,14 @@ export function LeadFormSection({
   props,
   subdomain,
   slug,
+  lang = 'en',
 }: {
   props: LeadFormProps;
   subdomain: string;
   slug: string;
+  lang?: LandingLang;
 }) {
+  const t = (text: string) => landingT(lang, text);
   const collect = props.collectFields ?? { name: true, phone: true, email: false };
 
   const [name, setName] = useState('');
@@ -638,8 +667,8 @@ export function LeadFormSection({
 
   const validate = () => {
     const next: Record<string, string> = {};
-    if (!name.trim()) next.name = 'Enter your name.';
-    if (!PHONE_PATTERN.test(phone.trim())) next.phone = 'Enter a valid 11-digit phone number.';
+    if (!name.trim()) next.name = t('Enter your name.');
+    if (!PHONE_PATTERN.test(phone.trim())) next.phone = t('Enter a valid 11-digit phone number.');
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -669,7 +698,7 @@ export function LeadFormSection({
       trackGenerateLead();
       setDone(true);
     } catch (err) {
-      setSubmitError(err instanceof Error ? err.message : 'Could not submit your information. Please try again.');
+      setSubmitError(err instanceof Error ? err.message : t('Could not submit your information. Please try again.'));
     } finally {
       setSubmitting(false);
     }
@@ -679,7 +708,7 @@ export function LeadFormSection({
     return (
       <div className="px-5 py-10 text-center sm:px-8">
         <p className="mx-auto max-w-sm text-[15px] font-medium text-neutral-800">
-          {props.successMessage || 'Thank you! We will contact you shortly.'}
+          {props.successMessage || t('Thank you! We will contact you shortly.')}
         </p>
       </div>
     );
@@ -688,20 +717,21 @@ export function LeadFormSection({
   return (
     <div className="px-5 py-10 sm:px-8">
       <div className="mx-auto flex max-w-sm flex-col gap-3.5">
-        <Field label="Full Name" required error={errors.name}>
-          <input value={name} onChange={(e) => setName(e.target.value.slice(0, 100))} className="w-full rounded-md border border-neutral-300 px-3.5 py-2.5 text-[13.5px] text-neutral-900 outline-none transition-colors focus:border-neutral-900" placeholder="Your name" />
+        <Field label={t('Full Name')} required error={errors.name}>
+          <input value={name} onChange={(e) => setName(e.target.value.slice(0, 100))} className="w-full rounded-md border border-neutral-300 px-3.5 py-2.5 text-[13.5px] text-neutral-900 outline-none transition-colors focus:border-neutral-900" placeholder={t('Your name')} autoComplete="name" />
         </Field>
-        <Field label="Mobile Number" required error={errors.phone}>
+        <Field label={t('Mobile Number')} required error={errors.phone}>
           <input
             value={phone}
-            onChange={(e) => setPhone(e.target.value.replace(/[^0-9]/g, '').slice(0, 11))}
+            onChange={(e) => setPhone(landingPhone(e.target.value))}
             className="w-full rounded-md border border-neutral-300 px-3.5 py-2.5 text-[13.5px] text-neutral-900 outline-none transition-colors focus:border-neutral-900"
             placeholder="01XXXXXXXXX"
-            inputMode="numeric"
+            inputMode="tel"
+            autoComplete="tel"
           />
         </Field>
         {collect.email && (
-          <Field label="Email">
+          <Field label={t('Email')}>
             <input value={email} onChange={(e) => setEmail(e.target.value.slice(0, 150))} className="w-full rounded-md border border-neutral-300 px-3.5 py-2.5 text-[13.5px] text-neutral-900 outline-none transition-colors focus:border-neutral-900" placeholder="you@example.com" type="email" />
           </Field>
         )}
@@ -713,7 +743,7 @@ export function LeadFormSection({
           disabled={submitting}
           className="mt-1 rounded-lg bg-orange-600 py-3 text-sm font-semibold text-white transition-colors hover:bg-orange-700 disabled:opacity-50"
         >
-          {submitting ? 'Submitting...' : 'Submit'}
+          {t(submitting ? 'Submitting...' : 'Submit')}
         </button>
       </div>
     </div>
