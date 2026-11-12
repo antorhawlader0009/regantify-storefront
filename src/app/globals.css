@@ -1012,11 +1012,21 @@
     padding-right: 24px;
   }
 }
+/* Display of the buttons, in the components layer so Tailwind's hidden / lg:hidden / sm:grid on the same element still
+   win. Unlayered, this display beat them: the phone-only menu and search buttons showed on a computer and pushed the
+   account, wishlist and cart icons onto a second row over the category strip. */
+@layer components {
+  [data-skin='mahabesh'] :is(.mh-btn, .mh-btn-dark, .sv-btn-dark, .mh-btn-line, .mh-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+  [data-skin='mahabesh'] .mh-icon-btn {
+    display: inline-grid;
+  }
+}
 /* The template's button (.s-btn): a black pill that turns blue on hover; --line is the outlined one, --sm the small one. */
 [data-skin='mahabesh'] .mh-btn,
 [data-skin='mahabesh'] .mh-btn-dark,
 [data-skin='mahabesh'] .sv-btn-dark {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -1049,7 +1059,6 @@
 [data-skin='mahabesh'] .mh-btn-line,
 [data-skin='mahabesh'] .mh-btn-outline,
 [data-skin='mahabesh'] .sv-btn-outline {
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
@@ -1088,7 +1097,6 @@
 /* Round icon button (.s-icon-btn): 42px, grey well on hover. */
 [data-skin='mahabesh'] .mh-icon-btn {
   position: relative;
-  display: inline-grid;
   place-items: center;
   width: 42px;
   height: 42px;
