@@ -7,6 +7,8 @@ import { SolevoWishlistPage } from '@/themes/solevo/SolevoWishlistPage';
 import { ChronicsWishlistPage } from '@/themes/chronics/ChronicsWishlistPage';
 import { MahabeshWishlistPage } from '@/themes/mahabesh/MahabeshWishlistPage';
 import { TechzoneWishlistPage } from '@/themes/techzone/TechzoneWishlistPage';
+import { StrideWishlistPage } from '@/themes/stride/StrideWishlistPage';
+import { VaeloraWishlistPage } from '@/themes/vaelora/VaeloraWishlistPage';
 import { ChicwoveWishlistPage } from '@/themes/chicwove/ChicwoveWishlistPage';
 import { storeParams } from '@/lib/storeRequest';
 
@@ -38,6 +40,6 @@ export default async function WishlistPage({ params }: PageProps) {
   const { store, products, categories } = data;
   const skin = storeSkin(store.theme);
   if (!isPageSkin(skin)) redirect(`/store/${subdomain}/account/wishlist`);
-  const WishlistPage = skin === 'techzone' ? TechzoneWishlistPage : skin === 'mahabesh' ? MahabeshWishlistPage : skin === 'chronics' ? ChronicsWishlistPage : skin === 'chicwove' ? ChicwoveWishlistPage : skin === 'solevo' ? SolevoWishlistPage : PlaymateWishlistPage;
+  const WishlistPage = skin === 'stride' ? StrideWishlistPage : skin === 'vaelora' ? VaeloraWishlistPage : skin === 'techzone' ? TechzoneWishlistPage : skin === 'mahabesh' ? MahabeshWishlistPage : skin === 'chronics' ? ChronicsWishlistPage : skin === 'chicwove' ? ChicwoveWishlistPage : skin === 'solevo' ? SolevoWishlistPage : PlaymateWishlistPage;
   return <WishlistPage subdomain={subdomain} storeName={store.storeName} categories={categories} products={products} logoUrl={store.logoUrl} />;
 }

@@ -8,6 +8,8 @@ import { SolevoPageHeader } from '../solevo/SolevoBreadcrumb';
 import { ChronicsPageHeader } from '../chronics/ChronicsBreadcrumb';
 import { MahabeshPageHeader } from '../mahabesh/MahabeshBreadcrumb';
 import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
+import { StridePageHeader } from '../stride/StrideBreadcrumb';
+import { VaeloraPageHeader } from '../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
 
 /**
@@ -35,6 +37,26 @@ export function SkinPage({
 }) {
   const skin = useStoreSkin();
   const t = useStoreText();
+  if (skin === 'stride') {
+    return (
+      <main className="w-full flex-1">
+        <StridePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="st-wrap py-8 sm:py-10">
+          <div className="st-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'vaelora') {
+    return (
+      <main className="w-full flex-1">
+        <VaeloraPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="va-wrap py-8 sm:py-10">
+          <div className="va-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
   if (skin === 'techzone') {
     return (
       <main className="w-full flex-1">

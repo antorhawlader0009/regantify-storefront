@@ -16,6 +16,8 @@ import { SolevoFooter } from '../../solevo/SolevoFooter';
 import { ChronicsFooter } from '../../chronics/ChronicsFooter';
 import { MahabeshFooter } from '../../mahabesh/MahabeshFooter';
 import { TechzoneFooter } from '../../techzone/TechzoneFooter';
+import { StrideFooter } from '../../stride/StrideFooter';
+import { VaeloraFooter } from '../../vaelora/VaeloraFooter';
 import { ChicwoveFooter } from '../../chicwove/ChicwoveFooter';
 import { BusinessHoursTable } from './BusinessHoursTable';
 import { FooterLocation } from './FooterLocation';
@@ -122,6 +124,8 @@ function AppBadge({ href, src, alt }: { href: string; src: string; alt: string }
 /** The store footer: StorePal's own, or PlayMate's for a PlayMate store (same content, lib/theme.ts storeSkin). */
 export function StoreFooter(props: StoreFooterProps) {
   const skin = useStoreSkin();
+  if (skin === 'stride') return <StrideFooter {...props} />;
+  if (skin === 'vaelora') return <VaeloraFooter {...props} />;
   if (skin === 'techzone') return <TechzoneFooter {...props} />;
   if (skin === 'mahabesh') return <MahabeshFooter {...props} />;
   if (skin === 'chronics') return <ChronicsFooter {...props} />;
@@ -565,7 +569,7 @@ export function FooterCallBar({
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
   /** PlayMate draws it as the template's light band, Solevo as its dark newsletter band. */
-  look?: 'playmate' | 'solevo' | 'chicwove' | 'chronics' | 'mahabesh' | 'techzone';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
   /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
   design?: CallBarStyle | null;
 }) {
@@ -615,6 +619,74 @@ export function FooterCallBar({
 
   // Mahabesh: a light grey rounded band (the template's well colour) with black text, a black pill Call button and an
   // outlined pill WhatsApp one, sitting on top of its black footer.
+  // TechZone: a light blue-tinted rounded band (the template's soft blue) with navy text, a blue Call button and an outlined
+  // WhatsApp one, sitting on top of its navy footer.
+  if (look === 'stride') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="st-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-xl bg-[var(--st-soft)] p-6 text-[var(--st-navy)] sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="min-w-0">
+              <p className="text-xl font-extrabold tracking-tight sm:text-2xl" style={textStyle}>
+                {heading}
+              </p>
+              <p className="mt-1 text-sm text-slate-600" style={lineStyle}>
+                {line}
+              </p>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a href={phoneHref} className="st-btn flex-1 sm:flex-none" style={callStyle}>
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a href={waHref} target="_blank" rel="noopener noreferrer" className="st-btn st-btn-line flex-1 sm:flex-none" style={waStyle}>
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  // TechZone: a light blue-tinted rounded band (the template's soft blue) with navy text, a blue Call button and an outlined
+  // WhatsApp one, sitting on top of its navy footer.
+  if (look === 'vaelora') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="va-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-xl bg-[var(--va-soft)] p-6 text-[var(--va-navy)] sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="min-w-0">
+              <p className="text-xl font-extrabold tracking-tight sm:text-2xl" style={textStyle}>
+                {heading}
+              </p>
+              <p className="mt-1 text-sm text-slate-600" style={lineStyle}>
+                {line}
+              </p>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a href={phoneHref} className="va-btn flex-1 sm:flex-none" style={callStyle}>
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a href={waHref} target="_blank" rel="noopener noreferrer" className="va-btn va-btn-line flex-1 sm:flex-none" style={waStyle}>
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
   // TechZone: a light blue-tinted rounded band (the template's soft blue) with navy text, a blue Call button and an outlined
   // WhatsApp one, sitting on top of its navy footer.
   if (look === 'techzone') {

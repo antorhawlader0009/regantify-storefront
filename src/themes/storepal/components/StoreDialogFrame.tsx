@@ -13,6 +13,8 @@ import { SolevoPageHeader } from '../../solevo/SolevoBreadcrumb';
 import { ChronicsPageHeader } from '../../chronics/ChronicsBreadcrumb';
 import { MahabeshPageHeader } from '../../mahabesh/MahabeshBreadcrumb';
 import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
+import { StridePageHeader } from '../../stride/StrideBreadcrumb';
+import { VaeloraPageHeader } from '../../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
 import { isPageSkin } from '@/lib/theme';
 
@@ -46,6 +48,28 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
     };
   }, [close, pm]);
 
+  if (skin === 'stride') {
+    return (
+      <>
+        <StridePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="st-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'vaelora') {
+    return (
+      <>
+        <VaeloraPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="va-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
   if (skin === 'techzone') {
     return (
       <>

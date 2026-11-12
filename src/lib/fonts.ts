@@ -1,4 +1,4 @@
-import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins, DM_Sans, Pacifico, Inter, Playfair_Display } from 'next/font/google';
+import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins, DM_Sans, Pacifico, Inter, Playfair_Display, Oswald, Barlow_Condensed, Cormorant_Garamond } from 'next/font/google';
 
 // Five font families, self-hosted at build time (next/font) - no
 // runtime request to Google Fonts from a visitor's browser, no layout
@@ -111,6 +111,31 @@ const inter = Inter({
   preload: false,
 });
 
+// Stride skin (2026-11-12): Oswald for its heavy condensed capitals (DM Sans, already here, is its body face).
+const oswald = Oswald({
+  subsets: ['latin'],
+  weight: ['500', '600', '700'],
+  variable: '--font-oswald',
+  display: 'swap',
+  preload: false,
+});
+
+// Vaelora skin (2026-11-12): Barlow Condensed for the hero capitals, Cormorant Garamond for the serif headings and wordmark.
+const barlowCondensed = Barlow_Condensed({
+  subsets: ['latin'],
+  weight: ['600', '700'],
+  variable: '--font-barlow-cond',
+  display: 'swap',
+  preload: false,
+});
+const cormorant = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600'],
+  variable: '--font-cormorant',
+  display: 'swap',
+  preload: false,
+});
+
 const playfair = Playfair_Display({
   subsets: ['latin'],
   weight: ['400', '500', '600', '700'],
@@ -124,4 +149,4 @@ const playfair = Playfair_Display({
 // values) and its [data-theme="minimal"]/[data-theme="storepal"] blocks
 // (each theme's own override values), both of which reference these
 // same CSS variables.
-export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${archivoMahabesh.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${hindSiliguri.variable}`;
+export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${archivoMahabesh.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${oswald.variable} ${barlowCondensed.variable} ${cormorant.variable} ${hindSiliguri.variable}`;

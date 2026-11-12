@@ -117,7 +117,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const skin = useStoreSkin();
   const pm = isPageSkin(skin);
   // Chicwove shares Solevo's markup (the sv-* classes and --sv-* variables are re-pointed to its own look in globals.css).
-  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone';
+  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora';
   // Mahabesh (templete resources/views/details.blade.php): rounded 4:5 photo with the thumbnails in a column on its left,
   // round pill buttons (black, blue on hover; outlined), rounded option buttons, a pill quantity box.
   const mh = skin === 'mahabesh';

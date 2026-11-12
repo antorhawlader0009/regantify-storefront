@@ -1603,6 +1603,792 @@
   color: #fff;
 }
 
+/* ---------------------------------------------------------------------------------------------------------------------
+   Stride (2026-11-12): the Stride sneaker-store template (templete/others-templetes/Fashion/Shoes/stride-sneakers) on StorePal's
+   features. The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="stride" next to data-theme="storepal".
+   Near-black ink on white, lime (#b4cf14) only as a fill with black text or as text on black, light grey cards (#f7f7f7) on a
+   #ececec photo area, DM Sans with Oswald for the heavy condensed capitals, square black buttons with small spaced capitals,
+   a light split hero, a mint band over a black footer. --color-accent is black (the template's chosen state) and the lime
+   sits in --st-lime. Store > Branding's own colour and fonts still win. Shared StorePal parts that Solevo also draws read
+   the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='stride'] {
+  --color-ink: #0b0b0b;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #0b0b0b;
+  --color-accent-dark: #2a2a2a;
+  --color-accent-light: #f0f5cc;
+  --color-muted: #6b6b6b;
+  --color-line: #e5e5e5;
+  --color-line-strong: #cfcfcf;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --st-navy: #0b0b0b;
+  --st-navy-800: #1a1a1a;
+  --st-hero: #f1f0ec;
+  --st-brand: #0b0b0b;
+  --st-brand-dark: #2a2a2a;
+  --st-soft: #f0f5cc;
+  --st-well: #f4f4f4;
+  --st-line: #e5e5e5;
+  --st-card: #f4f4f4;
+  --st-panel: #f7f7f7;
+  --st-peach: #f4f4f4;
+  --st-signal: #b4cf14;
+  --st-footer: #0b0b0b;
+  --st-lime: #b4cf14;
+  --st-mint: #f0f5cc;
+  --st-photo: #ececec;
+  --st-hero-bg: #f1f0ec;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #0b0b0b;
+  --sv-gold-dark: #2a2a2a;
+  --sv-sand: #f4f4f4;
+  --sv-card: #f4f4f4;
+  --sv-panel: #f7f7f7;
+  --pm-card: #f4f4f4;
+  --pm-soft: #f0f5cc;
+  --pm-yellow: #0b0b0b;
+  --pm-yellow-strong: #2a2a2a;
+  --font-display: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-popover: 0 24px 48px -24px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy navy. */
+[data-skin='stride'] :is(h1, h2, h3) {
+  color: var(--st-navy);
+  letter-spacing: -0.01em;
+}
+/* The template's container (max-w-page 1200px, 16px side padding). */
+[data-skin='stride'] .st-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* The template's buttons: a rounded-lg blue one (bg-brand, brand-dark on hover); --line is the outlined one, --sm the small
+   one. .st-btn-dark is the navy one the cards use for Add to Cart (brand on hover). The display sits in the components layer
+   so Tailwind's hidden / lg:hidden on the same element still win. */
+@layer components {
+  [data-skin='stride'] :is(.st-btn, .st-btn-dark, .sv-btn-dark, .st-btn-line, .st-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+}
+[data-skin='stride'] .st-btn,
+[data-skin='stride'] .st-btn-dark,
+[data-skin='stride'] .sv-btn-dark {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #0b0b0b;
+  border-radius: 0;
+  background: #0b0b0b;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='stride'] .st-btn:hover,
+[data-skin='stride'] .sv-btn-dark:hover {
+  background: #2a2a2a;
+  border-color: #2a2a2a;
+  color: #fff;
+}
+[data-skin='stride'] .st-btn-dark {
+  background: #0b0b0b;
+  border-color: #0b0b0b;
+}
+[data-skin='stride'] .st-btn-dark:hover {
+  background: #0b0b0b;
+  border-color: #0b0b0b;
+  color: #fff;
+}
+[data-skin='stride'] .st-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='stride'] .st-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='stride'] .st-btn-line,
+[data-skin='stride'] .st-btn-outline,
+[data-skin='stride'] .sv-btn-outline {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff;
+  color: #0b0b0b;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='stride'] .st-btn.st-btn-line {
+  background: #fff;
+  color: #0b0b0b;
+  border-color: #cfcfcf;
+}
+[data-skin='stride'] .st-btn-line:hover,
+[data-skin='stride'] .st-btn.st-btn-line:hover,
+[data-skin='stride'] .st-btn-outline:hover,
+[data-skin='stride'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #0b0b0b;
+  color: #0b0b0b;
+}
+[data-skin='stride'] .sv-btn-outline.\!border-ink {
+  border-color: #cfcfcf !important;
+}
+[data-skin='stride'] .st-btn-sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12.5px;
+}
+/* Small round-cornered icon button (close buttons and the like). */
+[data-skin='stride'] .st-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  color: #0b0b0b;
+  transition: background 0.15s, color 0.15s;
+}
+[data-skin='stride'] .st-icon-btn:hover {
+  background: var(--st-soft);
+  color: #0b0b0b;
+}
+/* A discount tag on the photo's top left (the template's small blue badge). */
+[data-skin='stride'] .st-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 0;
+  background: #0b0b0b;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+/* The heart on the photo's top right (plain, navy; red when on). */
+[data-skin='stride'] .st-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #0b0b0b;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='stride'] .st-wish:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+[data-skin='stride'] .st-wish.is-on {
+  color: #ef4444;
+}
+[data-skin='stride'] .st-soldout .st-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='stride'] .st-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='stride'] .st-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The brand strip: the template's marquee, moving left to right, paused on hover. */
+@keyframes st-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='stride'] .st-marquee-track {
+  animation: st-marquee-right 28s linear infinite;
+}
+[data-skin='stride'] .st-marquee:hover .st-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes st-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.st-fade-up {
+  animation: st-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='stride'] .st-marquee-track {
+    animation: none;
+  }
+  .st-fade-up {
+    animation: none;
+  }
+}
+/* The hero fills the visible screen below the sticky header (the template's .hero-fill: 65px on a computer, 117px on a
+   phone with its search row), plus the top bar when the store has one. */
+[data-skin='stride'] .st-hero-fill {
+  min-height: max(460px, calc(100svh - 160px));
+}
+@media (min-width: 768px) {
+  [data-skin='stride'] .st-hero-fill {
+    min-height: max(480px, calc(100svh - 110px));
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='stride'] .st-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's blue main button. */
+[data-skin='stride'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  height: 44px;
+}
+[data-skin='stride'] .sv-auth input:focus {
+  border-color: #0b0b0b;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(11, 11, 11, 0.15);
+}
+[data-skin='stride'] .sv-auth button[type='submit'] {
+  border-radius: 0;
+  background: #0b0b0b;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-skin='stride'] .sv-auth button[type='submit']:hover {
+  background: #2a2a2a;
+}
+[data-skin='stride'] [data-rg='product-tabs'] .border-accent {
+  border-color: #0b0b0b;
+}
+[data-skin='stride'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #0b0b0b;
+}
+/* The template's select (white, slate border, rounded-md, a small chevron on the right). */
+[data-skin='stride'] .st-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23334155' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  outline: 0;
+}
+[data-skin='stride'] .st-select:focus {
+  border-color: #0b0b0b;
+}
+/* Stride's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='stride'] .st-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+/* Stride's footer is black: its colour variables are re-pointed for the parts the footer reuses (lime on hover). */
+[data-theme='storepal'][data-skin='stride'] footer[data-rg='footer'] {
+  background-color: var(--st-footer);
+  color: #d4d4d4;
+  --color-ink: #ffffff;
+  --color-muted: #d4d4d4;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #0b0b0b;
+  --color-accent: #b4cf14;
+  --color-accent-dark: #c9e41a;
+}
+[data-skin='stride'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
+  color: #fff;
+}
+/* Stride's own touches: heavy condensed capitals for page titles and the hero, spaced capitals on buttons, lime tags. */
+[data-skin='stride'] :is(h1) {
+  font-family: var(--font-oswald), var(--font-bangla-store, var(--font-bangla)), Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+}
+[data-skin='stride'] :is(.st-btn, .st-btn-dark, .sv-btn-dark, .st-btn-line, .st-btn-outline, .sv-btn-outline) {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 700;
+}
+[data-skin='stride'] .st-btn,
+[data-skin='stride'] .st-btn-dark,
+[data-skin='stride'] .sv-btn-dark {
+  border-color: #0b0b0b;
+  background: #0b0b0b;
+}
+[data-skin='stride'] .st-btn:hover,
+[data-skin='stride'] .st-btn-dark:hover,
+[data-skin='stride'] .sv-btn-dark:hover {
+  background: #2a2a2a;
+  border-color: #2a2a2a;
+}
+[data-skin='stride'] .st-btn-line,
+[data-skin='stride'] .st-btn.st-btn-line,
+[data-skin='stride'] .st-btn-outline,
+[data-skin='stride'] .sv-btn-outline {
+  border-color: #0b0b0b;
+  background: #fff;
+  color: #0b0b0b;
+}
+[data-skin='stride'] .st-btn-line:hover,
+[data-skin='stride'] .st-btn.st-btn-line:hover,
+[data-skin='stride'] .st-btn-outline:hover,
+[data-skin='stride'] .sv-btn-outline:hover {
+  background: #0b0b0b;
+  border-color: #0b0b0b;
+  color: #fff;
+}
+[data-skin='stride'] .sv-btn-outline.\!border-ink {
+  border-color: #0b0b0b !important;
+}
+[data-skin='stride'] .st-tag {
+  background: #0b0b0b;
+  color: #b4cf14;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+[data-skin='stride'] .st-tag.st-tag-sale {
+  background: #dc2626;
+  color: #fff;
+}
+[data-skin='stride'] .st-hero-fill {
+  min-height: 520px;
+}
+@media (min-width: 1024px) {
+  [data-skin='stride'] .st-hero-fill {
+    min-height: 600px;
+  }
+}
+[data-skin='stride'] .st-btn-dark.is-done,
+[data-skin='stride'] .st-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Vaelora (2026-11-12): the Vaelora Elite Class watch template (templete/vaelora/vaelora) on StorePal's features. The store
+   layout (and lib/portalRoot.ts for dialogs) adds data-skin="vaelora" next to data-theme="storepal". White, black and brass
+   (#b8935a), DM Sans body, Cormorant Garamond serif headings and wordmark, Barlow Condensed capitals in the hero, tall category
+   tiles, square black buttons with small spaced capitals that turn brass on hover, a full-screen dark hero, a black footer.
+   --color-accent is the brass. Store > Branding's own colour and fonts still win. Shared StorePal parts that Solevo also
+   draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='vaelora'] {
+  --color-ink: #0a0a0a;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #b8935a;
+  --color-accent-dark: #9c7a46;
+  --color-accent-light: #f4efe7;
+  --color-muted: #737373;
+  --color-line: #e5e5e5;
+  --color-line-strong: #d4d4d4;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --va-navy: #0a0a0a;
+  --va-navy-800: #1a1a1a;
+  --va-hero: #000000;
+  --va-brand: #b8935a;
+  --va-brand-dark: #9c7a46;
+  --va-soft: #f4efe7;
+  --va-well: #f5f5f5;
+  --va-line: #e5e5e5;
+  --va-card: #f5f5f5;
+  --va-panel: #fafafa;
+  --va-peach: #f5f5f5;
+  --va-signal: #d3b07a;
+  --va-footer: #0a0a0a;
+  --va-gold-light: #d3b07a;
+  --va-cream: #f4efe7;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #b8935a;
+  --sv-gold-dark: #9c7a46;
+  --sv-sand: #f5f5f5;
+  --sv-card: #f5f5f5;
+  --sv-panel: #fafafa;
+  --pm-card: #f5f5f5;
+  --pm-soft: #f4efe7;
+  --pm-yellow: #b8935a;
+  --pm-yellow-strong: #9c7a46;
+  --font-display: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-popover: 0 24px 48px -24px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy navy. */
+[data-skin='vaelora'] :is(h1, h2, h3) {
+  color: var(--va-navy);
+  letter-spacing: -0.01em;
+}
+/* The template's container (max-w-page 1200px, 16px side padding). */
+[data-skin='vaelora'] .va-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* The template's buttons: a rounded-lg blue one (bg-brand, brand-dark on hover); --line is the outlined one, --sm the small
+   one. .va-btn-dark is the navy one the cards use for Add to Cart (brand on hover). The display sits in the components layer
+   so Tailwind's hidden / lg:hidden on the same element still win. */
+@layer components {
+  [data-skin='vaelora'] :is(.va-btn, .va-btn-dark, .sv-btn-dark, .va-btn-line, .va-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+}
+[data-skin='vaelora'] .va-btn,
+[data-skin='vaelora'] .va-btn-dark,
+[data-skin='vaelora'] .sv-btn-dark {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #b8935a;
+  border-radius: 0;
+  background: #b8935a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='vaelora'] .va-btn:hover,
+[data-skin='vaelora'] .sv-btn-dark:hover {
+  background: #9c7a46;
+  border-color: #9c7a46;
+  color: #fff;
+}
+[data-skin='vaelora'] .va-btn-dark {
+  background: #0a0a0a;
+  border-color: #0a0a0a;
+}
+[data-skin='vaelora'] .va-btn-dark:hover {
+  background: #b8935a;
+  border-color: #b8935a;
+  color: #fff;
+}
+[data-skin='vaelora'] .va-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='vaelora'] .va-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='vaelora'] .va-btn-line,
+[data-skin='vaelora'] .va-btn-outline,
+[data-skin='vaelora'] .sv-btn-outline {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #d4d4d4;
+  border-radius: 0;
+  background: #fff;
+  color: #0a0a0a;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='vaelora'] .va-btn.va-btn-line {
+  background: #fff;
+  color: #0a0a0a;
+  border-color: #d4d4d4;
+}
+[data-skin='vaelora'] .va-btn-line:hover,
+[data-skin='vaelora'] .va-btn.va-btn-line:hover,
+[data-skin='vaelora'] .va-btn-outline:hover,
+[data-skin='vaelora'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #b8935a;
+  color: #b8935a;
+}
+[data-skin='vaelora'] .sv-btn-outline.\!border-ink {
+  border-color: #d4d4d4 !important;
+}
+[data-skin='vaelora'] .va-btn-sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12.5px;
+}
+/* Small round-cornered icon button (close buttons and the like). */
+[data-skin='vaelora'] .va-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  color: #0a0a0a;
+  transition: background 0.15s, color 0.15s;
+}
+[data-skin='vaelora'] .va-icon-btn:hover {
+  background: var(--va-soft);
+  color: #b8935a;
+}
+/* A discount tag on the photo's top left (the template's small blue badge). */
+[data-skin='vaelora'] .va-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 0;
+  background: #b8935a;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+/* The heart on the photo's top right (plain, navy; red when on). */
+[data-skin='vaelora'] .va-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #0a0a0a;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='vaelora'] .va-wish:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+[data-skin='vaelora'] .va-wish.is-on {
+  color: #ef4444;
+}
+[data-skin='vaelora'] .va-soldout .va-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='vaelora'] .va-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='vaelora'] .va-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The brand strip: the template's marquee, moving left to right, paused on hover. */
+@keyframes va-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='vaelora'] .va-marquee-track {
+  animation: va-marquee-right 28s linear infinite;
+}
+[data-skin='vaelora'] .va-marquee:hover .va-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes va-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.va-fade-up {
+  animation: va-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='vaelora'] .va-marquee-track {
+    animation: none;
+  }
+  .va-fade-up {
+    animation: none;
+  }
+}
+/* The hero fills the visible screen below the sticky header (the template's .hero-fill: 65px on a computer, 117px on a
+   phone with its search row), plus the top bar when the store has one. */
+[data-skin='vaelora'] .va-hero-fill {
+  min-height: max(460px, calc(100svh - 160px));
+}
+@media (min-width: 768px) {
+  [data-skin='vaelora'] .va-hero-fill {
+    min-height: max(480px, calc(100svh - 110px));
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='vaelora'] .va-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's blue main button. */
+[data-skin='vaelora'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1px solid #d4d4d4;
+  border-radius: 0;
+  height: 44px;
+}
+[data-skin='vaelora'] .sv-auth input:focus {
+  border-color: #b8935a;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(184, 147, 90, 0.25);
+}
+[data-skin='vaelora'] .sv-auth button[type='submit'] {
+  border-radius: 0;
+  background: #b8935a;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-skin='vaelora'] .sv-auth button[type='submit']:hover {
+  background: #9c7a46;
+}
+[data-skin='vaelora'] [data-rg='product-tabs'] .border-accent {
+  border-color: #b8935a;
+}
+[data-skin='vaelora'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #b8935a;
+}
+/* The template's select (white, slate border, rounded-md, a small chevron on the right). */
+[data-skin='vaelora'] .va-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #d4d4d4;
+  border-radius: 0;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23334155' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  outline: 0;
+}
+[data-skin='vaelora'] .va-select:focus {
+  border-color: #b8935a;
+}
+/* Vaelora's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='vaelora'] .va-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+/* Vaelora's footer is black: its colour variables are re-pointed for the parts the footer reuses (brass on hover). */
+[data-theme='storepal'][data-skin='vaelora'] footer[data-rg='footer'] {
+  background-color: var(--va-footer);
+  color: #a3a3a3;
+  --color-ink: #ffffff;
+  --color-muted: #a3a3a3;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #000000;
+  --color-accent: #d3b07a;
+  --color-accent-dark: #b8935a;
+}
+[data-skin='vaelora'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
+  color: #fff;
+}
+/* Vaelora's own touches: serif headings, spaced capitals on square black buttons that turn brass on hover. */
+[data-skin='vaelora'] :is(h1, h2, h3) {
+  font-family: var(--font-cormorant), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+[data-skin='vaelora'] :is(.va-btn, .va-btn-dark, .sv-btn-dark, .va-btn-line, .va-btn-outline, .sv-btn-outline) {
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-size: 11px;
+  font-weight: 500;
+}
+[data-skin='vaelora'] .va-btn,
+[data-skin='vaelora'] .va-btn-dark,
+[data-skin='vaelora'] .sv-btn-dark {
+  border-color: #0a0a0a;
+  background: #0a0a0a;
+}
+[data-skin='vaelora'] .va-btn:hover,
+[data-skin='vaelora'] .va-btn-dark:hover,
+[data-skin='vaelora'] .sv-btn-dark:hover {
+  background: #b8935a;
+  border-color: #b8935a;
+}
+[data-skin='vaelora'] .va-btn-line,
+[data-skin='vaelora'] .va-btn.va-btn-line,
+[data-skin='vaelora'] .va-btn-outline,
+[data-skin='vaelora'] .sv-btn-outline {
+  border-color: #0a0a0a;
+  background: #fff;
+  color: #0a0a0a;
+}
+[data-skin='vaelora'] .va-btn-line:hover,
+[data-skin='vaelora'] .va-btn.va-btn-line:hover,
+[data-skin='vaelora'] .va-btn-outline:hover,
+[data-skin='vaelora'] .sv-btn-outline:hover {
+  background: #0a0a0a;
+  border-color: #0a0a0a;
+  color: #fff;
+}
+[data-skin='vaelora'] .sv-btn-outline.\!border-ink {
+  border-color: #0a0a0a !important;
+}
+[data-skin='vaelora'] .va-tag {
+  background: #b8935a;
+  color: #fff;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-size: 9px;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+[data-skin='vaelora'] .va-hero-fill {
+  min-height: max(480px, calc(100svh - 125px));
+}
+@media (min-width: 1024px) {
+  [data-skin='vaelora'] .va-hero-fill {
+    min-height: max(520px, calc(100svh - 112px));
+  }
+}
+[data-skin='vaelora'] .va-btn-dark.is-done,
+[data-skin='vaelora'] .va-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+
 /* Store > Branding's heading font (lib/storeFonts.ts): the store layout marks its wrapper with data-brand-heading when one
    is chosen, and headings take it (the store name already uses font-display). */
 [data-brand-heading] :is(h1, h2, h3) {

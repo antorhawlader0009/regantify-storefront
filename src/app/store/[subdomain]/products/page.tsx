@@ -10,6 +10,8 @@ import { SolevoProductsView } from '@/themes/solevo/SolevoProductsView';
 import { ChronicsProductsView } from '@/themes/chronics/ChronicsProductsView';
 import { MahabeshProductsView } from '@/themes/mahabesh/MahabeshProductsView';
 import { TechzoneProductsView } from '@/themes/techzone/TechzoneProductsView';
+import { StrideProductsView } from '@/themes/stride/StrideProductsView';
+import { VaeloraProductsView } from '@/themes/vaelora/VaeloraProductsView';
 import { ChicwoveProductsView } from '@/themes/chicwove/ChicwoveProductsView';
 
 interface PageProps {
@@ -42,7 +44,7 @@ export default async function ProductsPage({ params }: PageProps) {
   const { store, products, categories, categoryDetails } = data;
   const skin = storeSkin(store.theme);
   if (!isPageSkin(skin)) notFound();
-  const ProductsView = skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'chicwove' ? ChicwoveProductsView : skin === 'solevo' ? SolevoProductsView : PlaymateProductsView;
+  const ProductsView = skin === 'stride' ? StrideProductsView : skin === 'vaelora' ? VaeloraProductsView : skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'chicwove' ? ChicwoveProductsView : skin === 'solevo' ? SolevoProductsView : PlaymateProductsView;
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
       <StoreHeader subdomain={subdomain} storeName={store.storeName} categories={categories} categoryDetails={categoryDetails} logoUrl={store.logoUrl} />

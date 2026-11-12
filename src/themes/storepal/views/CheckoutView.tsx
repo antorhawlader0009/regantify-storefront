@@ -13,6 +13,8 @@ import { SolevoCheckoutPage } from '../../solevo/SolevoCheckoutPage';
 import { ChronicsCheckoutPage } from '../../chronics/ChronicsCheckoutPage';
 import { MahabeshCheckoutPage } from '../../mahabesh/MahabeshCheckoutPage';
 import { TechzoneCheckoutPage } from '../../techzone/TechzoneCheckoutPage';
+import { StrideCheckoutPage } from '../../stride/StrideCheckoutPage';
+import { VaeloraCheckoutPage } from '../../vaelora/VaeloraCheckoutPage';
 import { ChicwoveCheckoutPage } from '../../chicwove/ChicwoveCheckoutPage';
 
 /**
@@ -62,6 +64,8 @@ function StorePalCheckoutView({ subdomain }: { subdomain: string }) {
 /** PlayMate's checkout is a page of its own (PlaymateCheckoutPage); StorePal's opens the checkout dialog here. */
 export function CheckoutView({ subdomain }: { subdomain: string }) {
   const skin = useStoreSkin();
+  if (skin === 'stride') return <StrideCheckoutPage subdomain={subdomain} />;
+  if (skin === 'vaelora') return <VaeloraCheckoutPage subdomain={subdomain} />;
   if (skin === 'techzone') return <TechzoneCheckoutPage subdomain={subdomain} />;
   if (skin === 'mahabesh') return <MahabeshCheckoutPage subdomain={subdomain} />;
   if (skin === 'chronics') return <ChronicsCheckoutPage subdomain={subdomain} />;

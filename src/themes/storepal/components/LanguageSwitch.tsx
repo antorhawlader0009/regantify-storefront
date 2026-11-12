@@ -27,6 +27,48 @@ export function LanguageSwitch({ className = '' }: { className?: string }) {
 }
 
 /** TechZone's switch: two small pills in its header's style, the chosen language filled in the template's blue. */
+export function StrideLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-0.5 text-[12px] font-semibold ${className}`}>
+      {(['bn', 'en'] as const).map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => setLanguage(l)}
+          aria-pressed={language === l}
+          lang={l}
+          className={`rounded-full px-2.5 py-1 transition-colors ${language === l ? 'bg-[var(--st-brand)] text-white' : 'text-slate-600 hover:bg-[var(--st-soft)] hover:text-[var(--st-brand)]'}`}
+        >
+          {l === 'bn' ? 'বাং' : 'EN'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** TechZone's switch: two small pills in its header's style, the chosen language filled in the template's blue. */
+export function VaeloraLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-0.5 text-[12px] font-semibold ${className}`}>
+      {(['bn', 'en'] as const).map((l) => (
+        <button
+          key={l}
+          type="button"
+          onClick={() => setLanguage(l)}
+          aria-pressed={language === l}
+          lang={l}
+          className={`rounded-full px-2.5 py-1 transition-colors ${language === l ? 'bg-[var(--va-brand)] text-white' : 'text-slate-600 hover:bg-[var(--va-soft)] hover:text-[var(--va-brand)]'}`}
+        >
+          {l === 'bn' ? 'বাং' : 'EN'}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/** TechZone's switch: two small pills in its header's style, the chosen language filled in the template's blue. */
 export function TechzoneLanguageSwitch({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useStoreLanguageSwitch();
   return (

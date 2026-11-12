@@ -18,6 +18,8 @@ import { SolevoHeader } from '../../solevo/SolevoHeader';
 import { ChronicsHeader } from '../../chronics/ChronicsHeader';
 import { MahabeshHeader } from '../../mahabesh/MahabeshHeader';
 import { TechzoneHeader } from '../../techzone/TechzoneHeader';
+import { StrideHeader } from '../../stride/StrideHeader';
+import { VaeloraHeader } from '../../vaelora/VaeloraHeader';
 import { ChicwoveHeader } from '../../chicwove/ChicwoveHeader';
 import { useStoreSkin } from '../lib/designSettings';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
@@ -161,6 +163,8 @@ function isStoreHomePath(pathname: string | null, subdomain: string): boolean {
 
 export function StoreHeader(props: StoreHeaderProps) {
   const skin = useStoreSkin();
+  if (skin === 'stride') return <StrideHeader {...props} />;
+  if (skin === 'vaelora') return <VaeloraHeader {...props} />;
   if (skin === 'techzone') return <TechzoneHeader {...props} />;
   if (skin === 'mahabesh') return <MahabeshHeader {...props} />;
   if (skin === 'chronics') return <ChronicsHeader {...props} />;
