@@ -4,6 +4,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { useQueryState } from 'nuqs';
 import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { Search, ShoppingBag, User, ChevronDown, X, Menu, Heart, Phone } from 'lucide-react';
 import { useCartStore, useCartHydrated } from '@/providers/cart-store-provider';
@@ -151,6 +152,12 @@ function MenuLink({
 }
 
 /** The store header: StorePal's own, or the PlayMate look for a PlayMate store (same features, lib/theme.ts storeSkin). */
+/** The store's home, where `?category=` / `?q=` show the product list: "/" on the store's own address, "/store/<sub>" in path form. */
+function isStoreHomePath(pathname: string | null, subdomain: string): boolean {
+  const path = (pathname ?? '').replace(/\/+$/, '');
+  return path === '' || path === `/store/${subdomain}`;
+}
+
 export function StoreHeader(props: StoreHeaderProps) {
   const skin = useStoreSkin();
   if (skin === 'mahabesh') return <MahabeshHeader {...props} />;
@@ -174,8 +181,20 @@ function StorePalHeader({
   const t = useStoreText();
   // The account dialog's × returns to the last store page (lib/accountReturn.ts).
   useRememberStorePage(subdomain);
-  const [activeCategory, setActiveCategory] = useQueryState('category', { shallow: false });
+  const [activeCategory, setCategoryQuery] = useQueryState('category', { shallow: false });
   const [search, setSearch] = useQueryState('q', { defaultValue: '', shallow: false });
+  // `?category=` and `?q=` only mean something on the store's home (its list view). On a product, cart or any other
+  // page, changing the query there did nothing, so a category or search from there opens the home with it instead.
+  const pathname = usePathname();
+  const router = useRouter();
+  const onListPage = isStoreHomePath(pathname, subdomain);
+  const setActiveCategory = (cat: string | null) => {
+    if (onListPage || !cat) {
+      void setCategoryQuery(cat);
+      return;
+    }
+    router.push(`/store/${subdomain}?category=${encodeURIComponent(cat)}`);
+  };
   const [searchDraft, setSearchDraft] = useState(search);
   const [fetchedLogoUrl, setFetchedLogoUrl] = useState<string | null>(null);
   const [fetchedSocialLinks, setFetchedSocialLinks] = useState<SocialLinks>({});
@@ -417,8 +436,13 @@ function StorePalHeader({
 
   const goToSearch = (value: string) => {
     setSuggestionsOpen(false);
+    const text = value.trim();
+    if (!onListPage && text) {
+      router.push(`/store/${subdomain}?q=${encodeURIComponent(text)}`);
+      return;
+    }
     // Back to the top, where the results start (StoreQueryAdapter scrolls when asked).
-    setSearch(value.trim() || null, { scroll: true });
+    setSearch(text || null, { scroll: true });
   };
 
   const handleSearchSubmit = (e: React.FormEvent) => {
