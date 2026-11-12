@@ -90,6 +90,22 @@ export const CHRONICS_ORDER: HomeSectionId[] = [
 
 
 
+// TechZone's own order, as the template's home page: hero, shop by category, best sellers, recommended, the two promo
+// banners, then the rest.
+export const TECHZONE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'CAMPAIGNS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Mahabesh's own order, as the template's home page: hero, shop by category, then the product rows (on sale, new, latest).
 export const MAHABESH_ORDER: HomeSectionId[] = [
   'HERO',

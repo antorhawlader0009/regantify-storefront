@@ -117,12 +117,15 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   const skin = useStoreSkin();
   const pm = isPageSkin(skin);
   // Chicwove shares Solevo's markup (the sv-* classes and --sv-* variables are re-pointed to its own look in globals.css).
-  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh';
+  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone';
   // Mahabesh (templete resources/views/details.blade.php): rounded 4:5 photo with the thumbnails in a column on its left,
   // round pill buttons (black, blue on hover; outlined), rounded option buttons, a pill quantity box.
   const mh = skin === 'mahabesh';
-  const btnPrimary = mh ? 'mh-btn' : sv ? 'sv-btn-dark' : 'pm-btn-primary';
-  const btnOutline = mh ? 'mh-btn mh-btn-line' : sv ? 'sv-btn-outline !border-ink' : 'pm-btn-outline';
+  // TechZone (templete components/ProductDetail.tsx): the Solevo-style photo box on its card grey with the photo multiplied in,
+  // rounded-lg blue buttons, rounded option chips that turn blue when chosen, a rounded quantity box.
+  const tz = skin === 'techzone';
+  const btnPrimary = tz ? 'tz-btn' : mh ? 'mh-btn' : sv ? 'sv-btn-dark' : 'pm-btn-primary';
+  const btnOutline = tz ? 'tz-btn tz-btn-line' : mh ? 'mh-btn mh-btn-line' : sv ? 'sv-btn-outline !border-ink' : 'pm-btn-outline';
   const wishlist = useWishlist(subdomain);
   const addLine = useCartStore((s) => s.addLine);
   const outOfStock = isOutOfStock(product);
@@ -461,7 +464,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           )}
           {displayOriginalPrice && (
             <span
-              className={`${mh ? 'mh-tag' : 'absolute top-3 left-3 z-[3] pointer-events-none text-white font-bold'} ${mh ? '' : sv ? 'bg-[var(--sv-gold)] px-1.5 py-0.5 text-[10px]' : pm ? 'rounded-full bg-red-500 px-2.5 py-1 text-[11px]' : 'bg-accent px-2.5 py-1 text-[12px] rounded shadow-sm'}`}
+              className={`${tz ? 'absolute left-3 top-3 z-[3] pointer-events-none rounded bg-[var(--tz-brand)] px-2 py-0.5 text-[11px] font-semibold text-white' : mh ? 'mh-tag' : 'absolute top-3 left-3 z-[3] pointer-events-none text-white font-bold'} ${mh || tz ? '' : sv ? 'bg-[var(--sv-gold)] px-1.5 py-0.5 text-[10px]' : pm ? 'rounded-full bg-red-500 px-2.5 py-1 text-[11px]' : 'bg-accent px-2.5 py-1 text-[12px] rounded shadow-sm'}`}
             >
               -{percentOff}%
             </span>
@@ -708,7 +711,16 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
                     aria-label={soldOutValue ? `${val}, ${t('Out of stock')}` : undefined}
                     title={soldOutValue ? t('Out of stock') : undefined}
                     className={
-                      mh
+                      tz
+                        ? // TechZone: rounded-md option chips, blue when chosen.
+                          `flex min-h-9 min-w-11 items-center justify-center gap-1.5 rounded-md border text-xs font-medium transition ${swatchPhoto ? 'pl-1 pr-3.5' : 'px-4'} ${
+                            isSelected
+                              ? 'border-[var(--tz-brand)] bg-[var(--tz-brand)] text-white'
+                              : soldOutValue
+                                ? 'border-dashed border-slate-300 text-muted line-through'
+                                : 'border-slate-300 bg-white text-ink hover:border-[var(--tz-brand)]'
+                          }`
+                        : mh
                         ? // Mahabesh: rounded option buttons, black when chosen.
                           `flex min-h-[42px] min-w-[50px] items-center justify-center gap-1.5 rounded-lg border-[1.5px] text-[14px] font-semibold transition ${swatchPhoto ? 'pl-1 pr-3.5' : 'px-3'} ${
                             isSelected
@@ -810,7 +822,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
           <>
             {/* The template's row: quantity box, Add to Cart, Buy Now; then the wishlist button. */}
             <div data-rg="product-buttons" className="mt-5 flex flex-wrap items-center gap-3">
-              <div className={`inline-flex items-center border ${mh ? 'rounded-full border-[1.5px] border-[var(--mh-line)]' : sv ? 'border-black/15' : 'rounded-md border-line-strong'}`}>
+              <div className={`inline-flex items-center border ${tz ? 'h-12 rounded-lg border-slate-300' : mh ? 'rounded-full border-[1.5px] border-[var(--mh-line)]' : sv ? 'border-black/15' : 'rounded-md border-line-strong'}`}>
                 <button type="button" className="p-3 disabled:opacity-40" aria-label={t('Decrease quantity')} onClick={() => setQuantity((q) => Math.max(minQty, q - packStep))}>
                   <Minus size={14} />
                 </button>
@@ -939,7 +951,9 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
             onClick={() => wishlist.toggle(product.slug)}
             aria-pressed={wishlist.has(product.slug)}
             className={
-              mh
+              tz
+                ? 'mt-3 inline-flex items-center gap-2 rounded-lg border border-slate-300 px-5 py-3 text-xs font-medium transition hover:border-[var(--tz-brand)] hover:text-[var(--tz-brand)]'
+                : mh
                 ? 'mt-3 inline-flex items-center gap-2 rounded-full border-[1.5px] border-[var(--mh-line)] px-5 py-3 text-[13.5px] font-semibold transition hover:border-black'
                 : sv
                 ? 'mt-3 inline-flex items-center gap-2 border border-black/15 px-5 py-3 text-xs font-semibold transition hover:border-ink'

@@ -31,7 +31,7 @@ import { highlightIcon } from '../lib/highlightIcons';
 import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, SectionTitle, type PmHeroSlide } from '../../playmate/PlaymateHome';
 import { PlaymateProductsView } from '../../playmate/PlaymateProductsView';
 
-import { CHICWOVE_ORDER, CHRONICS_ORDER, MAHABESH_ORDER, PLAYMATE_ORDER, SOLEVO_ORDER, resolveHomeSections } from '../lib/homeSections';
+import { CHICWOVE_ORDER, CHRONICS_ORDER, MAHABESH_ORDER, PLAYMATE_ORDER, SOLEVO_ORDER, TECHZONE_ORDER, resolveHomeSections } from '../lib/homeSections';
 import { SvBrands, SvCategories, SvFeatures, SvHero, SvProductGrid, SvPromoBanners, SvReviews, SvSectionTitle, type SvHeroSlide } from '../../solevo/SolevoHome';
 import { SolevoProductsView } from '../../solevo/SolevoProductsView';
 import { CrBrands, CrCategories, CrFeatures, CrHero, CrProductGrid, CrPromoBanners, CrReviews, CrSectionTitle } from '../../chronics/ChronicsHome';
@@ -39,6 +39,8 @@ import { CwBrands, CwCategories, CwFeatures, CwHero, CwProductGrid, CwPromoBanne
 import { ChronicsProductsView } from '../../chronics/ChronicsProductsView';
 import { MhBrands, MhCategories, MhFeatures, MhHero, MhProductGrid, MhPromoBanners, MhReviews, MhSectionTitle } from '../../mahabesh/MahabeshHome';
 import { MahabeshProductsView } from '../../mahabesh/MahabeshProductsView';
+import { TzBrands, TzCategories, TzFeatures, TzHero, TzProductGrid, TzPromoBanners, TzReviews, TzSectionTitle } from '../../techzone/TechzoneHome';
+import { TechzoneProductsView } from '../../techzone/TechzoneProductsView';
 import { ChicwoveProductsView } from '../../chicwove/ChicwoveProductsView';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
@@ -149,7 +151,7 @@ export function HomeView({
   // Card numbers on the voice call's picks: Bangla digits on a Bangla store.
   const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
   // A store that never arranged its home page gets its template's own order (PlayMate's differs from StorePal's).
-  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : skin === 'solevo' ? SOLEVO_ORDER : skin === 'chicwove' ? CHICWOVE_ORDER : skin === 'chronics' ? CHRONICS_ORDER : skin === 'mahabesh' ? MAHABESH_ORDER : undefined);
+  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : skin === 'solevo' ? SOLEVO_ORDER : skin === 'chicwove' ? CHICWOVE_ORDER : skin === 'chronics' ? CHRONICS_ORDER : skin === 'mahabesh' ? MAHABESH_ORDER : skin === 'techzone' ? TECHZONE_ORDER : undefined);
 
   // "Create custom link for this coupon" - resolve the shared link to a
   // real coupon code once, stash it for checkout to pick up (see
@@ -522,14 +524,16 @@ export function HomeView({
   // (themes/solevo/SolevoHome.tsx). Undefined = this section keeps StorePal's part, in Solevo's colours.
   const bandSection = (id: string): ReactNode | undefined => {
     // Solevo and Chicwove draw the same sections with the same props (their own Home files export parts with the same shape).
-    const P = skin === 'mahabesh'
+    const P = skin === 'techzone'
+      ? { Hero: TzHero, Features: TzFeatures, Categories: TzCategories, ProductGrid: TzProductGrid, PromoBanners: TzPromoBanners, Brands: TzBrands, Reviews: TzReviews, SectionTitle: TzSectionTitle }
+      : skin === 'mahabesh'
       ? { Hero: MhHero, Features: MhFeatures, Categories: MhCategories, ProductGrid: MhProductGrid, PromoBanners: MhPromoBanners, Brands: MhBrands, Reviews: MhReviews, SectionTitle: MhSectionTitle }
       : skin === 'chronics'
       ? { Hero: CrHero, Features: CrFeatures, Categories: CrCategories, ProductGrid: CrProductGrid, PromoBanners: CrPromoBanners, Brands: CrBrands, Reviews: CrReviews, SectionTitle: CrSectionTitle }
       : skin === 'chicwove'
       ? { Hero: CwHero, Features: CwFeatures, Categories: CwCategories, ProductGrid: CwProductGrid, PromoBanners: CwPromoBanners, Brands: CwBrands, Reviews: CwReviews, SectionTitle: CwSectionTitle }
       : { Hero: SvHero, Features: SvFeatures, Categories: SvCategories, ProductGrid: SvProductGrid, PromoBanners: SvPromoBanners, Brands: SvBrands, Reviews: SvReviews, SectionTitle: SvSectionTitle };
-    const wrapCls = skin === 'mahabesh' ? 'mh-wrap' : skin === 'chronics' ? 'cr-wrap' : skin === 'chicwove' ? 'cw-wrap' : 'sv-wrap';
+    const wrapCls = skin === 'techzone' ? 'tz-wrap' : skin === 'mahabesh' ? 'mh-wrap' : skin === 'chronics' ? 'cr-wrap' : skin === 'chicwove' ? 'cw-wrap' : 'sv-wrap';
     const categoryHref = (name: string) => `/store/${subdomain}?category=${encodeURIComponent(name)}`;
     const card = (product: StorefrontProduct) => <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />;
     switch (id) {
@@ -575,10 +579,10 @@ export function HomeView({
       case 'TOP_SELLING': {
         const best = topSelling.length >= 4 ? products.filter((p) => (p.soldRecent ?? 0) >= 5).slice(0, 10) : [];
         // Chicwove's template shows "New Arrivals" (the newest eight); Solevo shows featured products.
-        const row = skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' ? products.slice(0, 10) : best.length >= 4 ? best : products.slice(0, 10);
+        const row = skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' ? products.slice(0, 10) : best.length >= 4 ? best : products.slice(0, 10);
         return (
           <div id="products">
-            <P.ProductGrid title={skin === 'chicwove' ? t('New Arrivals') : skin === 'chronics' ? t('Trending Products') : skin === 'mahabesh' ? t('New Arrivals') : t('Featured Products')} viewAllLabel={t('View All Products')} viewAllHref={`/store/${subdomain}/products`}>
+            <P.ProductGrid title={skin === 'chicwove' ? t('New Arrivals') : skin === 'chronics' ? t('Trending Products') : skin === 'mahabesh' ? t('New Arrivals') : skin === 'techzone' ? t('Best Sellers') : t('Featured Products')} viewAllLabel={t('View All Products')} viewAllHref={`/store/${subdomain}/products`}>
               {row.map(card)}
             </P.ProductGrid>
           </div>
@@ -677,8 +681,8 @@ export function HomeView({
   };
 
   // Solevo's category / brand / search / picks list is the template's own product list page.
-  if ((skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh') && isFiltered) {
-    const ListView = skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'chicwove' ? ChicwoveProductsView : SolevoProductsView;
+  if ((skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone') && isFiltered) {
+    const ListView = skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'chicwove' ? ChicwoveProductsView : SolevoProductsView;
     return (
       <div className="flex min-h-screen flex-col bg-white text-ink">
         <StoreHeader
@@ -920,7 +924,7 @@ export function HomeView({
               const section = playmateSection(id);
               if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
             }
-            if ((skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh') && !(showPreview && id === 'HERO')) {
+            if ((skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone') && !(showPreview && id === 'HERO')) {
               const section = bandSection(id);
               if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
             }

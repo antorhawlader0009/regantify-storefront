@@ -1277,6 +1277,332 @@
   --color-accent-dark: #1e54f5;
 }
 
+/* ---------------------------------------------------------------------------------------------------------------------
+   TechZone (2026-11-12): the TechZone electronics template (templete/others-templetes/Technology & Gadget/techzone) on
+   StorePal's features. The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="techzone" next to
+   data-theme="storepal". Navy (#0a1c3a) and electric blue (#2f6bff) on white, Inter, rounded cards on a soft grey photo
+   area, a dark full-screen hero slider and a navy footer. --color-accent is the blue; --color-ink is near black and the
+   headings take the navy. Store > Branding's own colour and fonts still win (inline on the same wrapper). Shared StorePal
+   parts that Solevo also draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='techzone'] {
+  --color-ink: #0f172a;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #2f6bff;
+  --color-accent-dark: #1f55e0;
+  --color-accent-light: #eef5fc;
+  --color-muted: #64748b;
+  --color-line: #e2e8f0;
+  --color-line-strong: #cbd5e1;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --tz-navy: #0a1c3a;
+  --tz-navy-800: #0d2347;
+  --tz-hero: #050f22;
+  --tz-brand: #2f6bff;
+  --tz-brand-dark: #1f55e0;
+  --tz-soft: #eef5fc;
+  --tz-well: #f1f5f9;
+  --tz-line: #e2e8f0;
+  --tz-card: #f1f5f9;
+  --tz-panel: #f8fafc;
+  --tz-peach: #f1f5f9;
+  --tz-signal: #fbbf24;
+  --tz-footer: #0a1c3a;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #2f6bff;
+  --sv-gold-dark: #1f55e0;
+  --sv-sand: #f1f5f9;
+  --sv-card: #f1f5f9;
+  --sv-panel: #f8fafc;
+  --pm-card: #f1f5f9;
+  --pm-soft: #eef5fc;
+  --pm-yellow: #2f6bff;
+  --pm-yellow-strong: #1f55e0;
+  --font-display: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 16px rgba(10, 28, 58, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(10, 28, 58, 0.14);
+  --shadow-popover: 0 24px 48px -24px rgba(10, 28, 58, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy navy. */
+[data-skin='techzone'] :is(h1, h2, h3) {
+  color: var(--tz-navy);
+  letter-spacing: -0.01em;
+}
+/* The template's container (max-w-page 1200px, 16px side padding). */
+[data-skin='techzone'] .tz-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* The template's buttons: a rounded-lg blue one (bg-brand, brand-dark on hover); --line is the outlined one, --sm the small
+   one. .tz-btn-dark is the navy one the cards use for Add to Cart (brand on hover). The display sits in the components layer
+   so Tailwind's hidden / lg:hidden on the same element still win. */
+@layer components {
+  [data-skin='techzone'] :is(.tz-btn, .tz-btn-dark, .sv-btn-dark, .tz-btn-line, .tz-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+}
+[data-skin='techzone'] .tz-btn,
+[data-skin='techzone'] .tz-btn-dark,
+[data-skin='techzone'] .sv-btn-dark {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #2f6bff;
+  border-radius: 8px;
+  background: #2f6bff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='techzone'] .tz-btn:hover,
+[data-skin='techzone'] .sv-btn-dark:hover {
+  background: #1f55e0;
+  border-color: #1f55e0;
+  color: #fff;
+}
+[data-skin='techzone'] .tz-btn-dark {
+  background: #0a1c3a;
+  border-color: #0a1c3a;
+}
+[data-skin='techzone'] .tz-btn-dark:hover {
+  background: #2f6bff;
+  border-color: #2f6bff;
+  color: #fff;
+}
+[data-skin='techzone'] .tz-btn-dark.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='techzone'] .tz-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='techzone'] .tz-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='techzone'] .tz-btn-line,
+[data-skin='techzone'] .tz-btn-outline,
+[data-skin='techzone'] .sv-btn-outline {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  background: #fff;
+  color: #0f172a;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='techzone'] .tz-btn.tz-btn-line {
+  background: #fff;
+  color: #0f172a;
+  border-color: #cbd5e1;
+}
+[data-skin='techzone'] .tz-btn-line:hover,
+[data-skin='techzone'] .tz-btn.tz-btn-line:hover,
+[data-skin='techzone'] .tz-btn-outline:hover,
+[data-skin='techzone'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #2f6bff;
+  color: #2f6bff;
+}
+[data-skin='techzone'] .sv-btn-outline.\!border-ink {
+  border-color: #cbd5e1 !important;
+}
+[data-skin='techzone'] .tz-btn-sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12.5px;
+}
+/* Small round-cornered icon button (close buttons and the like). */
+[data-skin='techzone'] .tz-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  color: #0f172a;
+  transition: background 0.15s, color 0.15s;
+}
+[data-skin='techzone'] .tz-icon-btn:hover {
+  background: var(--tz-soft);
+  color: #2f6bff;
+}
+/* A discount tag on the photo's top left (the template's small blue badge). */
+[data-skin='techzone'] .tz-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: #2f6bff;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+/* The heart on the photo's top right (plain, navy; red when on). */
+[data-skin='techzone'] .tz-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #0a1c3a;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='techzone'] .tz-wish:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+[data-skin='techzone'] .tz-wish.is-on {
+  color: #ef4444;
+}
+[data-skin='techzone'] .tz-soldout .tz-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='techzone'] .tz-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='techzone'] .tz-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The brand strip: the template's marquee, moving left to right, paused on hover. */
+@keyframes tz-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='techzone'] .tz-marquee-track {
+  animation: tz-marquee-right 28s linear infinite;
+}
+[data-skin='techzone'] .tz-marquee:hover .tz-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes tz-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tz-fade-up {
+  animation: tz-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='techzone'] .tz-marquee-track {
+    animation: none;
+  }
+  .tz-fade-up {
+    animation: none;
+  }
+}
+/* The hero fills the visible screen below the sticky header (the template's .hero-fill: 65px on a computer, 117px on a
+   phone with its search row), plus the top bar when the store has one. */
+[data-skin='techzone'] .tz-hero-fill {
+  min-height: max(460px, calc(100svh - 160px));
+}
+@media (min-width: 768px) {
+  [data-skin='techzone'] .tz-hero-fill {
+    min-height: max(480px, calc(100svh - 110px));
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='techzone'] .tz-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's blue main button. */
+[data-skin='techzone'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1px solid #cbd5e1;
+  border-radius: 8px;
+  height: 44px;
+}
+[data-skin='techzone'] .sv-auth input:focus {
+  border-color: #2f6bff;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(47, 107, 255, 0.2);
+}
+[data-skin='techzone'] .sv-auth button[type='submit'] {
+  border-radius: 8px;
+  background: #2f6bff;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-skin='techzone'] .sv-auth button[type='submit']:hover {
+  background: #1f55e0;
+}
+[data-skin='techzone'] [data-rg='product-tabs'] .border-accent {
+  border-color: #2f6bff;
+}
+[data-skin='techzone'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #2f6bff;
+}
+/* The template's select (white, slate border, rounded-md, a small chevron on the right). */
+[data-skin='techzone'] .tz-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23334155' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  outline: 0;
+}
+[data-skin='techzone'] .tz-select:focus {
+  border-color: #2f6bff;
+}
+/* TechZone's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='techzone'] .tz-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #e2e8f0;
+  border-radius: 12px;
+}
+/* TechZone's footer is navy (StorePal's is too, but its colours are re-pointed here for the parts the footer reuses). */
+[data-theme='storepal'][data-skin='techzone'] footer[data-rg='footer'] {
+  background-color: var(--tz-footer);
+  color: #cbd5e1;
+  --color-ink: #ffffff;
+  --color-muted: #cbd5e1;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #0a1c3a;
+  --color-accent: #2f6bff;
+  --color-accent-dark: #1f55e0;
+}
+[data-skin='techzone'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
+  color: #fff;
+}
+
 /* Store > Branding's heading font (lib/storeFonts.ts): the store layout marks its wrapper with data-brand-heading when one
    is chosen, and headings take it (the store name already uses font-display). */
 [data-brand-heading] :is(h1, h2, h3) {

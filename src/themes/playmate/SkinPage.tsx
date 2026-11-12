@@ -7,6 +7,7 @@ import { PlaymateBreadcrumb } from './PlaymateBreadcrumb';
 import { SolevoPageHeader } from '../solevo/SolevoBreadcrumb';
 import { ChronicsPageHeader } from '../chronics/ChronicsBreadcrumb';
 import { MahabeshPageHeader } from '../mahabesh/MahabeshBreadcrumb';
+import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
 
 /**
@@ -34,6 +35,16 @@ export function SkinPage({
 }) {
   const skin = useStoreSkin();
   const t = useStoreText();
+  if (skin === 'techzone') {
+    return (
+      <main className="w-full flex-1">
+        <TechzonePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="tz-wrap py-8 sm:py-10">
+          <div className="tz-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
   if (skin === 'mahabesh') {
     return (
       <main className="w-full flex-1">

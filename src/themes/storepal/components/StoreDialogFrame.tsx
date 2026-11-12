@@ -12,6 +12,7 @@ import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
 import { SolevoPageHeader } from '../../solevo/SolevoBreadcrumb';
 import { ChronicsPageHeader } from '../../chronics/ChronicsBreadcrumb';
 import { MahabeshPageHeader } from '../../mahabesh/MahabeshBreadcrumb';
+import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
 import { isPageSkin } from '@/lib/theme';
 
@@ -45,6 +46,17 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
     };
   }, [close, pm]);
 
+  if (skin === 'techzone') {
+    return (
+      <>
+        <TechzonePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="tz-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-xl border border-slate-200 bg-white ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
   if (skin === 'mahabesh') {
     return (
       <>

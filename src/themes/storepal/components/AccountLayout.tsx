@@ -15,6 +15,7 @@ import { PlaymateBreadcrumb } from '../../playmate/PlaymateBreadcrumb';
 import { SolevoPageHeader } from '../../solevo/SolevoBreadcrumb';
 import { ChronicsPageHeader } from '../../chronics/ChronicsBreadcrumb';
 import { MahabeshPageHeader } from '../../mahabesh/MahabeshBreadcrumb';
+import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
 import { isPageSkin } from '@/lib/theme';
 import { useStoreText } from '../lib/storeText';
@@ -77,6 +78,44 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
     dialogRef.current?.focus({ preventScroll: true });
   }, []);
 
+  if (skin === 'techzone') {
+    return (
+      <div className="flex min-h-screen flex-col bg-white text-ink">
+        <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+        <LogoutConfirm
+          open={askLogout}
+          onCancel={cancelLogout}
+          onConfirm={() => {
+            setAskLogout(false);
+            logout();
+          }}
+        />
+        <TechzonePageHeader
+          subdomain={subdomain}
+          homeLabel={t('Home')}
+          crumbs={[{ label: t('My account') }]}
+          title={t('My account')}
+          subtitle={firstName ? t('Hi, {name}').replace('{name}', firstName) : null}
+        >
+          <div className="flex items-center gap-2">
+            <GoogleConnectBadge />
+            {signedIn && (
+              <button type="button" onClick={() => setAskLogout(true)} className="tz-btn tz-btn-line tz-btn-sm sm:hidden">
+                {t('Log Out')}
+              </button>
+            )}
+          </div>
+        </TechzonePageHeader>
+        <main className="tz-wrap w-full flex-1 py-8 sm:py-10">
+          <div className="flex flex-col gap-6 overflow-hidden rounded-xl border border-slate-200 bg-white sm:flex-row sm:gap-0">
+            <AccountSidebar subdomain={subdomain} />
+            <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</div>
+          </div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </div>
+    );
+  }
   if (skin === 'mahabesh') {
     return (
       <div className="flex min-h-screen flex-col bg-white text-ink">
