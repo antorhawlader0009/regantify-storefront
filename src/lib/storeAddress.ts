@@ -38,7 +38,12 @@ export function encodeStoreSegment(subdomain: string, address: StoreAddress | nu
 /** The plain subdomain and the address from a `[subdomain]` route param. */
 export function decodeStoreSegment(raw: string): { subdomain: string; address: StoreAddress | null } {
   const segment = safeDecode(raw);
+  // A real segment is only letters, digits, "-", "_" and "~" (subdomain + base64url), so it is decoded once and anything still holding
+  // a "%" was encoded twice on purpose (security audit step 27: "%257Ec%257E<origin>" turned into a forged address after a second
+  // decode). Such a segment, or a subdomain that isn't a plain store address, names no store at all.
+  if (segment.includes('%')) return { subdomain: '', address: null };
   const [subdomain, mode, origin] = segment.split('~');
+  if (!/^[a-z0-9][a-z0-9-]{0,62}$/i.test(subdomain)) return { subdomain: '', address: null };
   if ((mode === 'c' || mode === 'h') && origin) {
     const decoded = fromBase64Url(origin);
     if (decoded && /^https?:\/\/[^/\s]+$/.test(decoded)) return { subdomain, address: { clean: mode === 'c', origin: decoded } };

@@ -84,9 +84,15 @@ function rewriteToStore(request: NextRequest, subdomain: string) {
   // Short public addresses (2026-10-16): on the store's own address the browser always shows /p/<slug> and no
   // /store/{sub} prefix. The store's links are still written in the long form, so those (and old shared /product/
   // links) are sent on with a permanent redirect; the address bar, bookmarks and search engines get the short form.
-  const short = rest.replace(/^\/product\//, '/p/');
+  // Leading slashes (and backslashes, which browsers read as slashes) are folded into one (security audit step 27): "/store/<sub>//evil.com"
+  // left "//evil.com", which new URL() reads as another site, so the store's own domain redirected shoppers away.
+  const short = rest.replace(/^\/product\//, '/p/').replace(/^[/\\]+/, '/');
   if ((rest !== path || short !== rest) && (request.method === 'GET' || request.method === 'HEAD')) {
-    return NextResponse.redirect(new URL(`${short || '/'}${request.nextUrl.search}`, originOf(request)), 308);
+    const home = new URL('/', originOf(request));
+    const target = new URL(`${short || '/'}${request.nextUrl.search}`, home);
+    // Never anywhere but this store's own address.
+    if (target.origin !== home.origin) return NextResponse.redirect(home, 308);
+    return NextResponse.redirect(target, 308);
   }
 
   return NextResponse.rewrite(storeUrl(request, subdomain, { clean: true, origin: originOf(request) }, rest), { request: { headers } });

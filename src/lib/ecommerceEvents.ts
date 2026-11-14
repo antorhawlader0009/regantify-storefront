@@ -337,23 +337,22 @@ export type OrderCustomerInput = {
 };
 
 /**
- * The shopper as `ecommerce.customer` on order_place and purchase: what the shopper typed at checkout (the order page shows
- * the same), in plain text, for the store's own tags (a server-side GTM that hashes it for Meta / Google, a courier fraud
- * check...). Phone also in E.164 (+8801...). Only on the store's own pages; the store decides which tags may read it.
+ * The shopper as `ecommerce.customer` on order_place and purchase: only where the parcel goes (city, district, delivery zone,
+ * country). The personal fields are kept as null for older code (see inside).
  */
 function customerOf(c: OrderCustomerInput) {
-  const name = (c.name ?? '').trim();
-  const [first, ...rest] = name.split(/s+/);
-  const phone = (c.phone ?? '').replace(/[s-]/g, '');
-  const e164 = normalizeBdPhone(phone);
+  // No personal details any more (security audit step 28, 2026-11-14): every script on the page and every tag in the dataLayer could
+  // read the shopper's name, phone, email and address here. The keys stay (as null) so a store's saved code that reads them doesn't
+  // break; a store that needs the shopper for its tags turns on the hashed `user_data` (Store > Integrations), which is all a tag
+  // like Meta or Google needs.
   return {
-    name: name || null,
-    first_name: first || null,
-    last_name: rest.join(' ') || null,
-    phone: phone || null,
-    phone_e164: e164 ? `+${e164}` : null,
-    email: c.email?.trim().toLowerCase() || null,
-    address: c.address?.trim() || null,
+    name: null,
+    first_name: null,
+    last_name: null,
+    phone: null,
+    phone_e164: null,
+    email: null,
+    address: null,
     city: c.city?.trim() || null,
     district: c.district?.trim() || null,
     delivery_zone: c.zone || null,
