@@ -282,6 +282,7 @@ export interface StorefrontDesignSettings {
   checkoutAltPhone?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
   checkoutEmail?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
   checkoutThana?: 'OPTIONAL' | 'REQUIRED';
+  checkoutLocation?: boolean;
   checkoutNote?: 'SHOWN' | 'HIDDEN';
   recentBuyersEnabled?: boolean;
   recentBuyersPosition?: 'LEFT' | 'RIGHT';

@@ -48,7 +48,7 @@ function MahabeshProductSide({ subdomain, product, policy }: { subdomain: string
       )}
       {!quote && (
         <div className="rounded-2xl bg-[var(--mh-well)] p-5 text-[14.5px] text-[#1d1d1f]">
-          <DeliveryCheck subdomain={subdomain} />
+          <DeliveryCheck subdomain={subdomain} productSlug={product.slug} />
           {policy && (
             <div className="mt-4">
               <ProductPolicyLines policy={policy} />

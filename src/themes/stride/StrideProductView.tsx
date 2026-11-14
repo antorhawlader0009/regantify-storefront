@@ -48,7 +48,7 @@ function StrideProductSide({ subdomain, product, policy }: { subdomain: string; 
       )}
       {!quote && (
         <div className="rounded-xl bg-[var(--st-well)] p-5 text-sm text-neutral-700">
-          <DeliveryCheck subdomain={subdomain} />
+          <DeliveryCheck subdomain={subdomain} productSlug={product.slug} />
           {policy && (
             <div className="mt-4">
               <ProductPolicyLines policy={policy} />

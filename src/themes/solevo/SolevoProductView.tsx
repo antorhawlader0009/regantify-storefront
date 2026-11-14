@@ -48,7 +48,7 @@ function SolevoProductSide({ subdomain, product, policy }: { subdomain: string; 
       )}
       {!quote && (
         <div className="rounded-lg bg-[var(--sv-panel)] p-5 text-sm text-ink/80">
-          <DeliveryCheck subdomain={subdomain} />
+          <DeliveryCheck subdomain={subdomain} productSlug={product.slug} />
           {policy && (
             <div className="mt-4">
               <ProductPolicyLines policy={policy} />

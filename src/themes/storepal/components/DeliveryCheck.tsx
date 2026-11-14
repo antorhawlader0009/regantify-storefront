@@ -60,10 +60,11 @@ const LABELS = {
  * Product page "Delivery: how much, and when?" (TellMe idea 68). The shopper picks district and thana in the same one-field
  * picker as the checkout and sees the zone, the delivery charge and the expected date, or "we do not deliver there" when the
  * store limits its area. Every number comes from the server (`/v1/store/:subdomain/delivery-quote`), the same settings
- * checkout uses. The place is remembered in this browser (lib/savedPlace.ts): every product shows it, the checkout starts
+ * checkout uses, except the expected date: on a product page it shows only when that product has its own delivery days
+ * (Edit Product > More options > Expected delivery time). The place is remembered in this browser (lib/savedPlace.ts): every product shows it, the checkout starts
  * with it, and a change made in either place shows in the other. Nothing is stored on the server.
  */
-export function DeliveryCheck({ subdomain }: { subdomain: string }) {
+export function DeliveryCheck({ subdomain, productSlug }: { subdomain: string; productSlug?: string }) {
   const formatPrice = useFormatPrice(plainPrice);
   const design = useStorePalDesign();
   const bn = design.storeLanguage === 'bn';
@@ -90,7 +91,8 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
     }
     let cancelled = false;
     setFailed(false);
-    const qs = `district=${encodeURIComponent(district)}${thana.trim() ? `&thana=${encodeURIComponent(thana)}` : ''}`;
+    // With the product, the expected date is that product's own delivery time (none set = no date shown).
+    const qs = `district=${encodeURIComponent(district)}${thana.trim() ? `&thana=${encodeURIComponent(thana)}` : ''}${productSlug ? `&product=${encodeURIComponent(productSlug)}` : ''}`;
     fetch(`${apiOrigin()}/v1/store/${subdomain}/delivery-quote?${qs}`)
       .then((r) => (r.ok ? r.json() : Promise.reject(new Error('quote'))))
       .then((q: Quote) => !cancelled && setQuote(q))
@@ -98,7 +100,7 @@ export function DeliveryCheck({ subdomain }: { subdomain: string }) {
     return () => {
       cancelled = true;
     };
-  }, [district, thana, subdomain]);
+  }, [district, thana, subdomain, productSlug]);
 
   const save = (next: { district: string; thana: string; area: string }) => {
     if (next.district && next.district !== district) trackFeature('DELIVERY_CHECK');

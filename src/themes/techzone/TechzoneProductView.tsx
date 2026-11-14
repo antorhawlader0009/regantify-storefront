@@ -48,7 +48,7 @@ function TechzoneProductSide({ subdomain, product, policy }: { subdomain: string
       )}
       {!quote && (
         <div className="rounded-xl bg-[var(--tz-well)] p-5 text-sm text-slate-700">
-          <DeliveryCheck subdomain={subdomain} />
+          <DeliveryCheck subdomain={subdomain} productSlug={product.slug} />
           {policy && (
             <div className="mt-4">
               <ProductPolicyLines policy={policy} />

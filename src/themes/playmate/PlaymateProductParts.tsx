@@ -82,7 +82,7 @@ export function PlaymateProductSide({ subdomain, product, policy }: { subdomain:
       )}
       {!quote && (
         <div className="rounded-md bg-[var(--pm-card)] p-4 text-[12px]">
-          <DeliveryCheck subdomain={subdomain} />
+          <DeliveryCheck subdomain={subdomain} productSlug={product.slug} />
           {policy && (
             <div className="mt-3">
               <ProductPolicyLines policy={policy} />

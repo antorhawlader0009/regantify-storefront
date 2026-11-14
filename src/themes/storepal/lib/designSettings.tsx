@@ -41,6 +41,7 @@ export const DEFAULT_DESIGN: StorefrontDesignSettings = {
   checkoutAltPhone: 'HIDDEN',
   checkoutEmail: 'HIDDEN',
   checkoutThana: 'OPTIONAL',
+  checkoutLocation: false,
   checkoutNote: 'SHOWN',
   recentBuyersEnabled: false,
   recentBuyersPosition: 'LEFT',

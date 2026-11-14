@@ -99,6 +99,7 @@ const EN = {
   typeThana: 'Type your thana / upazila',
   shipping: 'Shipping Option',
   insideDhaka: 'Inside Dhaka',
+  zonePick: 'Delivery area',
   outsideDhaka: 'Outside Dhaka',
   note: 'Note',
   paymentMethod: 'Payment Method',
@@ -237,6 +238,7 @@ const BN: Copy = {
   typeThana: 'আপনার থানা / উপজেলা লিখুন',
   shipping: 'ডেলিভারি অপশন',
   insideDhaka: 'ঢাকার ভিতরে',
+  zonePick: 'ডেলিভারি এলাকা',
   outsideDhaka: 'ঢাকার বাইরে',
   note: 'নোট',
   paymentMethod: 'পেমেন্ট পদ্ধতি',
@@ -327,6 +329,7 @@ const BN: Copy = {
     'Enter a valid 11-digit phone number.': 'সঠিক 11 সংখ্যার ফোন নম্বর দিন।',
     'Enter your delivery address.': 'আপনার ডেলিভারি ঠিকানা দিন।',
     'Choose your district.': 'আপনার জেলা বাছাই করুন।',
+    'Choose Inside Dhaka or Outside Dhaka.': 'ঢাকার ভিতরে না বাইরে, বাছাই করুন।',
     'Choose your thana or area.': 'আপনার থানা বা এলাকা বাছাই করুন।',
   },
 };
@@ -341,6 +344,8 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
   const t = COPY[lang];
   // The store's choices for the optional checkout boxes (TellMe idea 128).
   const design = useStorePalDesign();
+  // "District, Thana & Area" picker: off unless the store turned it on (the owner's rule, 2026-11-14). Off, the shopper ticks the zone.
+  const showLocation = design.checkoutLocation === true;
   const tr = (message: string) => t.errors[message] ?? message;
   // Soft address hint (TellMe idea 144): shown once the shopper leaves the box, never blocks the order.
   const [addressLeft, setAddressLeft] = useState(false);
@@ -449,6 +454,8 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
     preferredSlotId,
     setPreferredSlot,
     zone,
+    zoneChosen,
+    setZoneChosen,
     storeAway,
     codOtpPhone,
     codOtpCode,
@@ -456,7 +463,7 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
     codOtpSending,
     codOtpError,
     resendCodOtp,
-  } = useCheckout(subdomain, 'thank-you', { formRules: { altPhone: design.checkoutAltPhone, email: design.checkoutEmail, thana: design.checkoutThana } });
+  } = useCheckout(subdomain, 'thank-you', { formRules: { altPhone: design.checkoutAltPhone, email: design.checkoutEmail, thana: design.checkoutThana, location: showLocation } });
   const usd = isGift ? usdFor : usdAbroad;
   // Store > Store Away: "browse only" stops the order here (the server refuses it too).
   const ordersPaused = storeAway?.mode === 'BROWSE_ONLY';
@@ -465,13 +472,13 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
   // dropdown, lib/deliveryZone.ts decides). An around-Dhaka address counts as Outside Dhaka at a store that doesn't offer
   // Around Dhaka (the server and useCheckout do the same). Store pickup is the shopper's own choice and is never undone.
   useEffect(() => {
-    if (zone === 'PICKUP') return;
+    if (zone === 'PICKUP' || !showLocation) return;
     const suggested = suggestZone(form.district, form.city);
     if (!suggested) return;
     const next = suggested === 'AROUND_DHAKA' && !aroundDhaka ? 'OUTSIDE_DHAKA' : suggested;
     if (next !== zone) updateField('zone', next);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [aroundDhaka, form.district, form.city, zone]);
+  }, [aroundDhaka, form.district, form.city, zone, showLocation]);
   const zoneLabel = zone === 'DHAKA' ? t.insideDhaka : zone === 'AROUND_DHAKA' ? t.aroundDhaka : t.outsideDhaka;
   // Coupon and gift card boxes: folded until the shopper asks, open by themselves when a code is already in play.
   const [codesOpen, setCodesOpen] = useState(false);
@@ -758,46 +765,72 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
                 )}
               </div>
 
-              {/* District, then thana/upazila, picked from the list (lib/bdLocations.ts) so every order spells a place the same way. */}
-              <BdAddressPicker
-                district={form.district}
-                thana={form.city}
-                area={area}
-                onDistrict={(value) => updateField('district', value)}
-                onThana={(value) => updateField('city', value)}
-                onArea={setArea}
-                lang={lang}
-                labels={{
-                  district: t.district,
-                  thana: t.thana,
-                  districtPlaceholder: t.districtPlaceholder,
-                  thanaPlaceholder: t.thanaPlaceholder,
-                  thanaNeedsDistrict: t.thanaNeedsDistrict,
-                  other: t.otherPlace,
-                  typeDistrict: t.typeDistrict,
-                  typeThana: t.typeThana,
-                  place: t.place,
-                  search: t.searchPlace,
-                  area: t.area,
-                  areaPlaceholder: t.areaPlaceholder,
-                  typeArea: t.typeArea,
-                }}
-                labelClassName="block text-[13.5px] font-medium text-ink mb-1.5"
-                controlClassName="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
-              />
-              {errors.district && <p className="-mt-2 text-[12px] text-accent">{tr(errors.district)}</p>}
-              {errors.city && <p className="-mt-2 text-[12px] text-accent">{tr(errors.city)}</p>}
-              {/* Thana and area are optional, but without them the rider has a harder time: a gentle warning, never a block. */}
-              {!errors.district && !errors.city && form.district.trim() && (!form.city.trim() || !area.trim()) && (
-                <p role="status" className="-mt-2 text-[12px] text-muted">
-                  {!form.city.trim() ? t.noThanaWarning : t.noAreaWarning}
-                </p>
-              )}
-              {/* What the address works out to (there is no zone dropdown any more). */}
-              {form.district.trim() && (
-                <p role="status" className="-mt-2 text-[12.5px] text-muted">
-                  {t.deliveryFound(zoneLabel, formatPrice(deliveryChargeByZone[zone as keyof typeof deliveryChargeByZone] ?? deliveryCharge))}
-                </p>
+              {showLocation ? (
+                <>
+              {/* District, then thana/upazila, picked from the list (lib/bdLocations.ts) so every order spells a place the same way. */}
+              <BdAddressPicker
+                district={form.district}
+                thana={form.city}
+                area={area}
+                onDistrict={(value) => updateField('district', value)}
+                onThana={(value) => updateField('city', value)}
+                onArea={setArea}
+                lang={lang}
+                labels={{
+                  district: t.district,
+                  thana: t.thana,
+                  districtPlaceholder: t.districtPlaceholder,
+                  thanaPlaceholder: t.thanaPlaceholder,
+                  thanaNeedsDistrict: t.thanaNeedsDistrict,
+                  other: t.otherPlace,
+                  typeDistrict: t.typeDistrict,
+                  typeThana: t.typeThana,
+                  place: t.place,
+                  search: t.searchPlace,
+                  area: t.area,
+                  areaPlaceholder: t.areaPlaceholder,
+                  typeArea: t.typeArea,
+                }}
+                labelClassName="block text-[13.5px] font-medium text-ink mb-1.5"
+                controlClassName="w-full px-3.5 py-2.5 rounded-md text-[13.5px] bg-surface border border-line-strong outline-none focus:border-ink transition-colors"
+              />
+              {errors.district && <p className="-mt-2 text-[12px] text-accent">{tr(errors.district)}</p>}
+              {errors.city && <p className="-mt-2 text-[12px] text-accent">{tr(errors.city)}</p>}
+              {/* Thana and area are optional, but without them the rider has a harder time: a gentle warning, never a block. */}
+              {!errors.district && !errors.city && form.district.trim() && (!form.city.trim() || !area.trim()) && (
+                <p role="status" className="-mt-2 text-[12px] text-muted">
+                  {!form.city.trim() ? t.noThanaWarning : t.noAreaWarning}
+                </p>
+              )}
+              {/* What the address works out to (there is no zone dropdown any more). */}
+              {form.district.trim() && (
+                <p role="status" className="-mt-2 text-[12.5px] text-muted">
+                  {t.deliveryFound(zoneLabel, formatPrice(deliveryChargeByZone[zone as keyof typeof deliveryChargeByZone] ?? deliveryCharge))}
+                </p>
+              )}
+                </>
+              ) : (
+                /* Picker off (the default): the shopper ticks the delivery area; the charge follows it. */
+                <div>
+                  <p className="m-0 mb-1.5 block text-[13.5px] font-medium text-ink">{t.zonePick}</p>
+                  <div className={`grid gap-2 ${aroundDhaka ? 'sm:grid-cols-3' : 'grid-cols-2'}`} role="radiogroup" aria-label={t.zonePick}>
+                    {(aroundDhaka ? (['DHAKA', 'AROUND_DHAKA', 'OUTSIDE_DHAKA'] as const) : (['DHAKA', 'OUTSIDE_DHAKA'] as const)).map((z) => {
+                      const on = zoneChosen && zone === z;
+                      const label = z === 'DHAKA' ? t.insideDhaka : z === 'AROUND_DHAKA' ? t.aroundDhaka : t.outsideDhaka;
+                      return (
+                        <label
+                          key={z}
+                          className={`flex cursor-pointer items-center gap-2.5 rounded-md border px-3.5 py-2.5 text-[13.5px] text-ink ${on ? 'border-ink bg-surface' : errors.zone ? 'border-accent bg-surface' : 'border-line-strong bg-surface'}`}
+                        >
+                          <input type="radio" name="delivery-zone" checked={on} onChange={() => updateField('zone', z)} />
+                          <span className="flex-1">{label}</span>
+                          <span className="font-semibold">{formatPrice(deliveryChargeByZone[z] ?? deliveryCharge)}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                  {errors.zone && <p className="mt-1.5 text-[12px] text-accent">{tr(errors.zone)}</p>}
+                </div>
               )}
                 </>
               )}
@@ -906,6 +939,10 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
                           checked={on}
                           onChange={() => {
                             if (kind === 'PICKUP') return updateField('zone', 'PICKUP');
+                            if (!showLocation) {
+                              updateField('zone', 'DHAKA');
+                              return setZoneChosen(false);
+                            }
                             const suggested = suggestZone(form.district, form.city) ?? 'DHAKA';
                             updateField('zone', suggested === 'AROUND_DHAKA' && !aroundDhaka ? 'OUTSIDE_DHAKA' : suggested);
                           }}

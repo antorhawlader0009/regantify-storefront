@@ -84,7 +84,7 @@ export function StorePalPurchasePanel({ policy, ...props }: PanelProps) {
           after: (
             <>
               {!pm && !quoteOnly && !comingSoon && <ProductTrustRow subdomain={props.subdomain} preOrder={!!product.isPreOrder} />}
-              {!pm && !quoteOnly && <DeliveryCheck subdomain={props.subdomain} />}
+              {!pm && !quoteOnly && <DeliveryCheck subdomain={props.subdomain} productSlug={product.slug} />}
               <SoldRecentLine product={product} />
               {bundleInfo}
               {!pm && policyLines}

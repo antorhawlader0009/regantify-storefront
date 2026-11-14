@@ -104,6 +104,8 @@ export interface CheckoutFormRules {
   altPhone?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
   email?: 'HIDDEN' | 'OPTIONAL' | 'REQUIRED';
   thana?: 'OPTIONAL' | 'REQUIRED';
+  /** The District, Thana & Area picker (off by default since 2026-11-14): off, the shopper ticks the delivery zone instead. */
+  location?: boolean;
 }
 
 /**
@@ -153,6 +155,8 @@ export function useCheckout(
   const hydrated = externalLines ? true : cartHydrated;
   const sessionStorageKey = `regantify-checkout-session:${subdomain}${externalLines ? ':landing' : ''}`;
 
+  // Whether the shopper ticked a delivery zone (or picked a saved address). Needed when the District, Thana & Area picker is off.
+  const [zoneChosen, setZoneChosen] = useState(false);
   const [form, setForm] = useState<CheckoutFormState>({
     fullName: '',
     phone: '',
@@ -386,6 +390,7 @@ export function useCheckout(
 
   /** Fills receiver, phone, address, thana, district and delivery zone from a saved address. */
   const applyAddress = (a: SavedAddress) => {
+    setZoneChosen(true);
     setForm((prev) => ({
       ...prev,
       fullName: a.recipientName,
@@ -564,7 +569,7 @@ export function useCheckout(
   // Delivery area control (TellMe idea 65): the shopper's district against the store's list, so the shopper hears it at once.
   const deliveryArea = vendorCharges?.deliveryArea ?? null;
   const areaRefusal =
-    deliveryArea && zone !== 'PICKUP' && lines.length > 0
+    deliveryArea && (!formRules || formRules.location) && zone !== 'PICKUP' && lines.length > 0
       ? deliveryAreaRefusal(deliveryArea.mode, deliveryArea.districts, form.district, deliveryArea.message)
       : null;
   // Daily order limit and cut-off (TellMe idea 69): full today means no order; after the cut-off the shopper is told it counts as tomorrow's.
@@ -735,6 +740,7 @@ export function useCheckout(
   };
 
   const updateField = (field: keyof CheckoutFormState, value: string) => {
+    if (field === 'zone') setZoneChosen(true);
     const capped = value.slice(0, FIELD_MAX_LENGTH[field]);
     setForm((prev) => ({ ...prev, [field]: capped }));
     setErrors((prev) => ({ ...prev, [field]: undefined }));
@@ -815,7 +821,10 @@ export function useCheckout(
     else if (formRules?.email === 'REQUIRED' && !form.email.trim()) next.email = 'Enter your email.';
     // StorePal's checkout always needs the district (the owner's rule, 2026-10-29; the server checks it too). Thana and area
     // stay optional unless the store requires the thana; the dialog only warns when they are missing.
-    if (formRules && zone !== 'PICKUP' && !form.district.trim()) next.district = 'Choose your district.';
+    // With the District, Thana & Area picker off (the default since 2026-11-14) no district is asked: the shopper must tick a zone.
+    if (formRules && !formRules.location) {
+      if (zone !== 'PICKUP' && !zoneChosen) next.zone = 'Choose Inside Dhaka or Outside Dhaka.';
+    } else if (formRules && zone !== 'PICKUP' && !form.district.trim()) next.district = 'Choose your district.';
     else if (formRules?.thana === 'REQUIRED' && zone !== 'PICKUP' && !form.city.trim()) next.city = 'Choose your thana or area.';
     // The sender of a gift (IDEA-21): a name is needed, a phone is optional and may be from any country.
     let senderOk = true;
@@ -1134,6 +1143,8 @@ export function useCheckout(
     preferredSlotId,
     setPreferredSlot: setSlotPick,
     zone,
+    zoneChosen,
+    setZoneChosen,
     // Applies regardless of payment method now (see comment above) -
     // StorePal's CheckoutView/ThankYouView show this as "VAT";
     // Medium/Minimal don't render it as its own line (their JSX is
