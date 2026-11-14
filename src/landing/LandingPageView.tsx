@@ -45,11 +45,10 @@ export function LandingPageView({ subdomain, data }: { subdomain: string; data: 
         // Store > Landing Pages > Advanced > Custom CSS - scoped to this
         // page only per landing-page-sections.md's own framing ("Custom
         // CSS stays available under Advanced for power users, scoped to
-        // that page only"). Trusted as-is: this is vendor-authored
-        // content entered in the authenticated builder, same trust level
-        // Page.content's HTML already gets - never shopper-supplied.
+        // that page only"). A literal "</style" is escaped so the store's
+        // CSS can never close this tag and start HTML (security audit step 28).
         // eslint-disable-next-line react/no-danger
-        <style dangerouslySetInnerHTML={{ __html: landingPage.customCss }} />
+        <style dangerouslySetInnerHTML={{ __html: landingPage.customCss.replace(/<\/style/gi, '<\\/style') }} />
       )}
 
       <div id={`landing-page-${landingPage.id}`}>
