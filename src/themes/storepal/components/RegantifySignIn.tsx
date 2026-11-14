@@ -130,19 +130,17 @@ export function OtherStoreAddressesCard({ subdomain, onCopied }: { subdomain: st
       setBusy(false);
     }
   };
-  // Connected: copy them here in one tap, no second Google sign-in.
+  // Connected: no second Google sign-in, but the addresses are picked on the central Regantify page, never on this store's page (security
+  // F-46: a store's own code runs here). The page comes back here signed in, with the picked addresses in the list.
   const bring = async () => {
     if (!accessToken) return;
     setBusy(true);
     setError(null);
     try {
-      const { copied } = await copyOtherStoreAddresses(accessToken);
-      setDone(copied);
-      onCopied?.();
-      setReload((n) => n + 1);
+      const { url } = await copyOtherStoreAddresses(accessToken, window.location.href);
+      window.location.assign(url);
     } catch (err) {
       setError(err instanceof Error ? err.message : t('Something went wrong. Please try again.'));
-    } finally {
       setBusy(false);
     }
   };

@@ -353,9 +353,9 @@ export function otherStoreAddressCount(accessToken: string): Promise<{ google: b
   return authFetch('/v1/customer-auth/me/other-store-addresses', accessToken);
 }
 
-/** Copies the addresses saved at other stores into this store's list (as many as fit). */
-export function copyOtherStoreAddresses(accessToken: string): Promise<{ copied: number }> {
-  return authFetch('/v1/customer-auth/me/other-store-addresses/copy', accessToken, { method: 'POST', body: {} });
+/** The central Regantify page's address where the shopper picks which addresses from other stores to bring here (never shown on this page). */
+export function copyOtherStoreAddresses(accessToken: string, returnTo: string): Promise<{ url: string }> {
+  return authFetch('/v1/customer-auth/me/other-store-addresses/copy', accessToken, { method: 'POST', body: { subdomain: storeOrThrow(), returnTo } });
 }
 
 export function listMyAddresses(accessToken: string): Promise<SavedAddressList> {

@@ -51,6 +51,8 @@ export const connectApi = {
   googleStart: (subdomain: string, returnTo: string, link?: string) =>
     post<{ url: string }>('/google/start', link ? { subdomain, returnTo, link } : { subdomain, returnTo }),
   googleCallback: (code: string, state: string) => post<ConnectAnswer>('/google/callback', { code, state }),
+  // A store's "Add them here": the address step for the shopper in the ticket (bound to this browser by a cookie).
+  copyStart: (subdomain: string, returnTo: string, copy: string) => post<ConnectAnswer>('/copy/start', { subdomain, returnTo, copy }),
   phoneSend: (subdomain: string, returnTo: string, phone: string) => post<{ sent: boolean }>('/phone/send', { subdomain, returnTo, phone }),
   phoneVerify: (subdomain: string, returnTo: string, phone: string, code: string) => post<ConnectAnswer>('/phone/verify', { subdomain, returnTo, phone, code }),
   finish: (connectToken: string, addressIds: string[]) => post<{ redirect: string; copied: number }>('/finish', { connectToken, addressIds }),

@@ -128,6 +128,16 @@ export function ConnectFlow({ mode }: { mode: 'start' | 'callback' }) {
         setStoreName(t.store.name);
         setGoogle(cfg.google);
         sessionStorage.setItem(TRIP_KEY, JSON.stringify({ store, storeName: t.store.name, returnTo, app: params.get('app') === '1' } satisfies Trip));
+        // A store's "Add them here" (already Google-connected): straight to picking the addresses, here, where no store code runs.
+        const copy = params.get('copy');
+        if (copy) {
+          window.history.replaceState(null, '', window.location.pathname);
+          connectApi
+            .copyStart(store, returnTo, copy)
+            .then(arrive)
+            .catch((err: Error) => setStep({ kind: 'error', message: err.message }));
+          return;
+        }
         // The store's "Login with Google" button: straight on to Google, no choice screen. If Google can't start, the choice screen shows the error.
         if (params.get('via') === 'google' && cfg.google) {
           atLeast(GOOGLE_WAIT_MS, connectApi.googleStart(store, returnTo, link))
