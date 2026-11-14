@@ -22,7 +22,17 @@ function target(path: string[], method: string): string | null {
   if (p === 'auth/google/start' && method === 'POST') return '/v1/app/google/shop/start';
   if (p === 'auth/google/finish' && method === 'POST') return '/v1/app/google/shop/finish';
   if (p === 'me' && method === 'GET') return '/v1/app/me';
-  if (path[0] === 'market' && path.length > 1 && path.every((s) => /^[A-Za-z0-9._~-]{1,200}$/.test(s))) return `/v1/app/${p}`;
+  // No "." or ".." segment (security audit step 23): "market/../me" was sent as /v1/app/market/../me, which the request resolved to
+  // /v1/app/me (or further up with more ".."), so any app route could be called with the shopper's token.
+  if (
+    path[0] === 'market' &&
+    path.length > 1 &&
+    path.every((s) => /^[A-Za-z0-9._~-]{1,200}$/.test(s) && s !== '.' && s !== '..')
+  ) {
+    const to = `/v1/app/${p}`;
+    // And the address that would really be called must still be under /v1/app/market/.
+    return new URL(to, 'http://x').pathname.startsWith('/v1/app/market/') ? to : null;
+  }
   return null;
 }
 
