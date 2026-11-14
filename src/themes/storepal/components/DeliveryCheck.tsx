@@ -17,6 +17,7 @@ interface Quote {
   charge: number;
   estimatedDate: string | null;
   freeShippingOver: number | null;
+  charges?: { DHAKA: number; OUTSIDE_DHAKA: number; AROUND_DHAKA: number | null };
 }
 
 const ZONE_EN = { DHAKA: 'Inside Dhaka', AROUND_DHAKA: 'Around Dhaka', OUTSIDE_DHAKA: 'Outside Dhaka' };
@@ -74,6 +75,8 @@ export function DeliveryCheck({ subdomain, productSlug }: { subdomain: string; p
   const [area, setArea] = useState('');
   const [quote, setQuote] = useState<Quote | null>(null);
   const [failed, setFailed] = useState(false);
+  // Before a district is picked: every zone's charge (2026-11-14, the owner's request), from the same quote route.
+  const [allCharges, setAllCharges] = useState<Quote['charges'] | null>(null);
 
   useEffect(() => {
     const saved = readSavedPlace(subdomain);
@@ -87,7 +90,15 @@ export function DeliveryCheck({ subdomain, productSlug }: { subdomain: string; p
   useEffect(() => {
     if (!district.trim()) {
       setQuote(null);
-      return;
+      if (allCharges) return;
+      let stop = false;
+      fetch(`${apiOrigin()}/v1/store/${subdomain}/delivery-quote?district=`)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error('quote'))))
+        .then((q: Quote) => !stop && q.charges && setAllCharges(q.charges))
+        .catch(() => undefined);
+      return () => {
+        stop = true;
+      };
     }
     let cancelled = false;
     setFailed(false);
@@ -100,7 +111,7 @@ export function DeliveryCheck({ subdomain, productSlug }: { subdomain: string; p
     return () => {
       cancelled = true;
     };
-  }, [district, thana, subdomain, productSlug]);
+  }, [district, thana, subdomain, productSlug, allCharges]);
 
   const save = (next: { district: string; thana: string; area: string }) => {
     if (next.district && next.district !== district) trackFeature('DELIVERY_CHECK');
@@ -131,6 +142,22 @@ export function DeliveryCheck({ subdomain, productSlug }: { subdomain: string; p
         labelClassName="m-0 mb-1.5 flex items-center gap-1.5 text-[13px] font-semibold text-ink"
         controlClassName="w-full rounded-md border border-line-strong bg-surface px-3 py-2 text-[13px] outline-none focus:border-ink"
       />
+      {!district.trim() && allCharges && (
+        <p className="m-0 mt-2 flex items-start gap-1.5 text-muted">
+          <Truck size={14} className="mt-0.5 shrink-0" aria-hidden />
+          <span>
+            {zoneName('DHAKA')}: <strong className="text-ink">{formatPrice(allCharges.DHAKA)}</strong>
+            {allCharges.AROUND_DHAKA !== null && (
+              <>
+                {' · '}
+                {zoneName('AROUND_DHAKA')}: <strong className="text-ink">{formatPrice(allCharges.AROUND_DHAKA)}</strong>
+              </>
+            )}
+            {' · '}
+            {zoneName('OUTSIDE_DHAKA')}: <strong className="text-ink">{formatPrice(allCharges.OUTSIDE_DHAKA)}</strong>
+          </span>
+        </p>
+      )}
       {failed && <p className="m-0 mt-2 text-muted">{bn ? 'এখন দেখানো যাচ্ছে না। চেকআউটে দেখুন।' : 'Could not check right now. You will see it at checkout.'}</p>}
       {quote && quote.refusal && <p className="m-0 mt-2 font-semibold text-accent">{quote.refusal}</p>}
       {quote && !quote.refusal && (

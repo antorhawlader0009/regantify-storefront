@@ -433,6 +433,10 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
   // Thumbnails beside the photo instead of under it (StorePal's Gallery
   // Style). Only when there's more than one photo to pick from.
   const sideGallery = !pm && !!display && display.galleryStyle !== 'BOTTOM' && allPhotos.length > 1;
+  // SKU code under the stock line (2026-11-14, the owner's request): the picked variant's own, else the product's.
+  // A resold copy's internal code (RS-...) means nothing to a shopper, so it is not shown.
+  const skuCode = (matchedVariant?.sku || product.sku || '').trim();
+  const skuShown = skuCode && !skuCode.startsWith('RS-') ? skuCode : '';
   const inStockText = (stock: number | undefined) =>
     display ? display.inStock(stock) : stock === undefined ? t('In stock') : `${stock} ${t('units in stock')}`;
 
@@ -658,6 +662,11 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
               {outOfStock || (availableStock !== undefined && availableStock <= 0)
                 ? `${display?.outOfStock ?? t('Out of stock')}${product.restockDate ? ` · ${t('Back')} ${preOrderDateText(product.restockDate, display?.language)}` : ''}`
                 : inStockText(availableStock)}
+            </p>
+          )}
+          {skuShown && (
+            <p data-rg="product-sku" className={pm ? 'mt-1 text-[11px] text-muted' : 'mt-1.5 text-[12.5px] text-muted'}>
+              {t('SKU code')}: <span className="font-medium text-ink">{skuShown}</span>
             </p>
           )}
         </div>

@@ -430,6 +430,8 @@ export interface StorefrontVariant {
   stock: number;
   listPrice?: string | null;
   discountPrice?: string | null;
+  /** The variant's own SKU (shown on the product page when it is picked). */
+  sku?: string | null;
 }
 
 // Per-value photo set for ONE variation option (e.g. every "Color" value
@@ -474,6 +476,8 @@ export interface StorefrontProductVideo {
 
 export interface StorefrontProduct {
   id: string;
+  /** The product's SKU code, shown on the product page (a picked variant's own SKU wins). */
+  sku?: string | null;
   /** Average stars from approved reviews, only from 3 reviews and while the store shows ratings; null/missing = none. */
   rating?: { average: number; count: number } | null;
   /** The store's own badge ("New", "Hot"); already empty once its end time has passed. StorePal shows it. */

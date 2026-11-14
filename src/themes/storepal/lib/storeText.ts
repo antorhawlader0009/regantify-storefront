@@ -156,6 +156,7 @@ const BN: Record<string, string> = {
   'Out of stock': 'স্টক নেই',
   'In stock': 'স্টকে আছে',
   'units in stock': 'টি স্টকে আছে',
+  'SKU code': 'SKU কোড',
   'Available for pre-order': 'প্রি-অর্ডার করা যাবে',
   'No image': 'ছবি নেই',
   'Select an option first.': 'আগে একটি অপশন বেছে নিন।',
