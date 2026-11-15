@@ -1,0 +1,6 @@
+  {
+    id: 'ESTATEPRO',
+    name: 'Estatepro',
+    description:
+      'A luxury black-and-gold look for property listings: a black header over a full-screen hero photo, gold pill buttons, image category cards, a dark trust block with glass cards, white listing cards with a gold View Details button and a black footer on a cream page. Every StorePal feature works the same.',
+  },
