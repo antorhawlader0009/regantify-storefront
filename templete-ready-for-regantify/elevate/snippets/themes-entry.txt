@@ -1,0 +1,6 @@
+  {
+    id: 'ELEVATE',
+    name: 'Elevate',
+    description:
+      'A quiet, modern menswear look: ink and sand, tracked uppercase labels, serif headings, square product cards and a near-black footer. Every StorePal feature works the same.',
+  },

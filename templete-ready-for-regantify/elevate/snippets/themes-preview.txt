@@ -1,0 +1,19 @@
+  if (id === 'ELEVATE') {
+    return (
+      <div className="w-full h-full bg-white flex flex-col">
+        <div className="h-3.5 flex items-center justify-center px-2 border-b border-black/10">
+          <div className="w-10 h-1 bg-[#1C1B19]" />
+        </div>
+        <div className="h-9 bg-[#F6F3EE] flex flex-col justify-center px-2 gap-0.5">
+          <div className="w-12 h-1.5 bg-[#1C1B19]" />
+          <div className="w-7 h-1 bg-[#6F6A5C]" />
+        </div>
+        <div className="p-2 grid grid-cols-4 gap-1.5 flex-1">
+          {[0, 1, 2, 3].map((n) => (
+            <div key={n} className="bg-[#EFECE7]" />
+          ))}
+        </div>
+        <div className="h-3 bg-[#141413]" />
+      </div>
+    );
+  }
