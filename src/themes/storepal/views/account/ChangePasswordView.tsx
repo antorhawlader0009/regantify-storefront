@@ -205,6 +205,7 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
             <label className="block text-[13px] font-medium text-ink mb-1.5">{t('Current Password')}</label>
             <input
               type="password"
+              autoComplete="current-password"
               value={currentPassword}
               onChange={(e) => setCurrentPassword(e.target.value.slice(0, 72))}
               maxLength={72}
@@ -215,6 +216,7 @@ export function ChangePasswordView({ subdomain }: { subdomain: string }) {
             <label className="block text-[13px] font-medium text-ink mb-1.5">{t('New Password')}</label>
             <input
               type="password"
+              autoComplete="new-password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value.slice(0, 72))}
               maxLength={72}

@@ -77,7 +77,7 @@ export function ReportStoreView({ subdomain, storeName, categories }: { subdomai
             </label>
             <label className="block text-[13px] font-semibold">
               {t('Your phone number (optional, so we can call you back)')}
-              <input value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} inputMode="tel" maxLength={16} placeholder="01XXXXXXXXX" className="mt-1.5 w-full rounded-lg border border-line px-3 py-2 text-[14px] font-normal focus:border-accent focus:outline-none" />
+              <input value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} type="tel" inputMode="tel" autoComplete="tel" maxLength={16} placeholder="01XXXXXXXXX" className="mt-1.5 w-full rounded-lg border border-line px-3 py-2 text-[14px] font-normal focus:border-accent focus:outline-none" />
             </label>
             {error && <p className="text-[13px] text-red-600">{error}</p>}
             <button type="submit" disabled={busy} className="w-full rounded-lg bg-ink py-3 text-[14px] font-semibold text-white disabled:opacity-60">

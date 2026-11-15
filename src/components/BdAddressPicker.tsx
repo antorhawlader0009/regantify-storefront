@@ -352,7 +352,8 @@ export function BdAddressPicker({
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
+                    // Not while a Bangla (or any IME) keyboard is still composing a word: that Enter picks the word.
+                    if (e.key === 'Enter' && !e.nativeEvent.isComposing && e.keyCode !== 229) {
                       e.preventDefault();
                       if (rows[0]) choose(rows[0].key);
                     }

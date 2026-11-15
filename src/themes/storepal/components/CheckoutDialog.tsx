@@ -662,6 +662,7 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.name}</label>
                 <input
+                  autoComplete="name"
                   value={form.fullName}
                   onChange={(e) => updateField('fullName', e.target.value)}
                   maxLength={100}
@@ -679,6 +680,7 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
                     +88
                   </span>
                   <input
+                    type="tel" inputMode="tel" autoComplete="tel"
                     value={form.phone}
                     onChange={(e) => updateField('phone', phoneInput(e.target.value))}
                     placeholder="01XXXXXXXXX"
@@ -698,6 +700,7 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
                     {t.altPhone} {design.checkoutAltPhone === 'OPTIONAL' && <span className="font-normal text-muted">{t.optional}</span>}
                   </label>
                   <input
+                    type="tel" inputMode="tel"
                     value={form.altPhone}
                     onChange={(e) => updateField('altPhone', phoneInput(e.target.value))}
                     placeholder="01XXXXXXXXX"
@@ -714,6 +717,7 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
                   </label>
                   <input
                     type="email"
+                    autoComplete="email"
                     value={form.email}
                     onChange={(e) => updateField('email', e.target.value)}
                     maxLength={150}
@@ -747,6 +751,7 @@ export function CheckoutDialogBody({ subdomain, onClose, lang }: { subdomain: st
               <div>
                 <label className="block text-[13.5px] font-medium text-ink mb-1.5">{t.address}</label>
                 <textarea
+                  autoComplete="street-address"
                   value={form.address}
                   onChange={(e) => updateField('address', e.target.value)}
                   onBlur={() => setAddressLeft(true)}

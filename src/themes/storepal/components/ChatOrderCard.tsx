@@ -32,6 +32,7 @@ export function ChatOrderCard({
       <input
         value={details[key]}
         placeholder={placeholder}
+        autoComplete="tel"
         onChange={(e) => onDetails({ ...details, [key]: key === 'phone' ? phoneInput(e.target.value) : e.target.value })}
         className={`mt-0.5 w-full rounded-md border px-2 py-1.5 text-[12.5px] text-ink bg-surface outline-none focus:border-accent ${
           key === 'phone' && details.phone && !phoneOk ? 'border-red-400' : 'border-line-strong'

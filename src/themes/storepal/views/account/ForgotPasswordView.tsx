@@ -125,6 +125,8 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
               <input
                 value={code}
                 onChange={(e) => setCode(e.target.value.slice(0, 6))}
+                inputMode="numeric"
+                autoComplete="one-time-code"
                 placeholder="6-digit code"
                 autoFocus
                 maxLength={6}
@@ -147,6 +149,7 @@ export function ForgotPasswordView({ subdomain }: { subdomain: string }) {
                 <label className="block text-[13px] font-medium text-ink mb-1.5">{t('New Password')}</label>
                 <input
                   type="password"
+                  autoComplete="new-password"
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value.slice(0, 72))}
                   autoFocus

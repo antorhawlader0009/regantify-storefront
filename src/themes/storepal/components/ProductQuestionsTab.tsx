@@ -133,6 +133,7 @@ export function ProductQuestionsTab({
             <div>
               <input
                 value={phone}
+                autoComplete="tel"
                 onChange={(e) => setPhone(phoneInput(e.target.value).slice(0, 14))}
                 inputMode="tel"
                 placeholder={t('Your mobile number')}

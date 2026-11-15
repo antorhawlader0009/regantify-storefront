@@ -246,7 +246,7 @@ export function ChangeAddressView({ subdomain }: { subdomain: string }) {
             </div>
             <div>
               <label className={labelClass}>{t('Phone')}</label>
-              <input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: phoneInput(e.target.value).slice(0, 20) })} placeholder="01XXXXXXXXX" maxLength={20} className={inputClass} />
+              <input value={draft.phone} onChange={(e) => setDraft({ ...draft, phone: phoneInput(e.target.value).slice(0, 20) })} type="tel" inputMode="tel" autoComplete="tel" placeholder="01XXXXXXXXX" maxLength={20} className={inputClass} />
             </div>
             <div>
               <label className={labelClass}>{t('Full address')}</label>

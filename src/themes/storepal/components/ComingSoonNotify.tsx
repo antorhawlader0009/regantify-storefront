@@ -59,7 +59,7 @@ export function ComingSoonNotify({
       ) : (
         <form onSubmit={submit} className="mt-2 space-y-2">
           <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder={t('Your name (optional)')} className="h-10 w-full rounded-md border border-line bg-surface px-3 text-[13px] text-ink" />
-          <input value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} inputMode="tel" required placeholder="01XXXXXXXXX" className="h-10 w-full rounded-md border border-line bg-surface px-3 text-[13px] text-ink" />
+          <input value={phone} onChange={(e) => setPhone(phoneInput(e.target.value))} type="tel" inputMode="tel" autoComplete="tel" required placeholder="01XXXXXXXXX" className="h-10 w-full rounded-md border border-line bg-surface px-3 text-[13px] text-ink" />
           {error && <p className="m-0 text-[12px] text-accent-dark">{error}</p>}
           <button type="submit" disabled={busy} className="flex h-11 w-full items-center justify-center rounded-md bg-accent text-[14px] font-bold text-white hover:bg-accent-dark disabled:opacity-60">
             {restock ? t('Tell me when it is back') : t('Notify me')}
