@@ -1,0 +1,6 @@
+  {
+    id: 'BELORA',
+    name: 'Belora',
+    description:
+      'A soft skincare and beauty look: white with violet accents, serif headings, a lavender hero with a rounded picture, round category icons, pale violet panels and a white footer. Every StorePal feature works the same.',
+  },
