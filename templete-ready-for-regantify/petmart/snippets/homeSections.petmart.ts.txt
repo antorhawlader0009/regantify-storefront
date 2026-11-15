@@ -1,0 +1,14 @@
+// Petmart's own order, as the template's home page: the peach hero card, the category row, products, the two offer tiles, then the features strip.
+export const PETMART_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'CAMPAIGNS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];

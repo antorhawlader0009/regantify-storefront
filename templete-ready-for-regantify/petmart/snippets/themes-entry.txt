@@ -1,0 +1,6 @@
+  {
+    id: 'PETMART',
+    name: 'Petmart',
+    description:
+      'A friendly pet-store look: a white page with a pine green top bar and footer, a peach hero card with a big pet photo, tinted round category photos, white cards with a round green cart button, ember orange buttons and peach and sky offer tiles. Every StorePal feature works the same.',
+  },
