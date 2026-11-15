@@ -1,0 +1,6 @@
+  {
+    id: 'FURNILUX',
+    name: 'Furnilux',
+    description:
+      'A clean furniture-store look: white with forest green buttons, extra-bold Plus Jakarta Sans headings, a rounded cream hero card, big room cards, bordered product cards and a near-black footer. Every StorePal feature works the same.',
+  },
