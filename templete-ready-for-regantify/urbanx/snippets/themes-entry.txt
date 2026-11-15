@@ -1,0 +1,6 @@
+  {
+    id: 'URBANX',
+    name: 'Urbanx',
+    description:
+      'A bold streetwear look: black and volt green, big condensed capitals, a graffiti wordmark, a full-picture hero, grayscale category tiles and flat grey product cards. Every StorePal feature works the same.',
+  },
