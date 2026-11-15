@@ -1,0 +1,14 @@
+// Elevate's own order, as the template's home page: hero, shop by category, new arrivals, the seasonal banner, then the rest.
+export const ELEVATE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
