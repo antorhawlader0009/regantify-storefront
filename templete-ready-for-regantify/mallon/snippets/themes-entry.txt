@@ -1,0 +1,6 @@
+  {
+    id: 'MALLON',
+    name: 'Mallon',
+    description:
+      'A compact healthcare-store look: white with coral buttons and teal prices, a two-row header with a wide search bar and a coral "All Categories" block, a big blue banner, gradient promo tiles and a sand footer. Every StorePal feature works the same.',
+  },
