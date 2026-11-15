@@ -1,0 +1,14 @@
+// Novatrend's own order, as the template's home page: hero, the feature strip, shop by categories, new arrivals, best sellers, then the promo tiles.
+export const NOVATREND_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'CAMPAIGNS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
