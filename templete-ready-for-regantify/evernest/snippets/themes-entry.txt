@@ -1,0 +1,6 @@
+  {
+    id: 'EVERNEST',
+    name: 'Evernest',
+    description:
+      'A calm eco-living look for property listings: a cream page with a sunlit full-width hero photo, forest green pill buttons, image category cards, a soft welcome panel with a bordered photo, rounded listing cards, a dark forest trust block and a deep green footer. Every StorePal feature works the same.',
+  },
