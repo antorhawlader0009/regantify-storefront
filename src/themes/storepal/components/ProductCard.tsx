@@ -21,6 +21,7 @@ import { TechzoneCardView } from '../../techzone/TechzoneCard';
 import { StrideCardView } from '../../stride/StrideCard';
 import { VaeloraCardView } from '../../vaelora/VaeloraCard';
 import { ChicwoveCardView } from '../../chicwove/ChicwoveCard';
+import { ElevateCardView } from '../../elevate/ElevateCard';
 import { useWishlist } from '../lib/wishlist';
 import { FlashSaleTimer } from './FlashSaleTimer';
 import { useCartDrawer } from '../lib/cartDrawer';
@@ -278,8 +279,8 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
 
   // PlayMate (lib/theme.ts storeSkin): the same card behaviour drawn as PlayMate's card. It has no option pickers on
   // the card, so a product with sizes or colours always opens the quick add sheet.
-  if (skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') {
-    const TemplateCardView = skin === 'stride' ? StrideCardView : skin === 'vaelora' ? VaeloraCardView : skin === 'techzone' ? TechzoneCardView : skin === 'mahabesh' ? MahabeshCardView : skin === 'chronics' ? ChronicsCardView : skin === 'chicwove' ? ChicwoveCardView : skin === 'solevo' ? SolevoCardView : PlaymateCardView;
+  if (skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') {
+    const TemplateCardView = skin === 'stride' ? StrideCardView : skin === 'vaelora' ? VaeloraCardView : skin === 'techzone' ? TechzoneCardView : skin === 'mahabesh' ? MahabeshCardView : skin === 'chronics' ? ChronicsCardView : skin === 'elevate' ? ElevateCardView : skin === 'chicwove' ? ChicwoveCardView : skin === 'solevo' ? SolevoCardView : PlaymateCardView;
     const sheetReady = fullData && !outOfStock && hasVariations;
     const pmPurchase = (kind: 'add' | 'buy') => {
       if (sheetReady) {

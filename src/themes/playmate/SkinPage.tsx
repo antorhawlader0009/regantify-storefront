@@ -11,6 +11,7 @@ import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
+import { ElevatePageHeader } from '../elevate/ElevateBreadcrumb';
 
 /**
  * The body of a simple store page (FAQ, contact, locations, CMS pages, magazine, report, gift card...). StorePal keeps its
@@ -93,6 +94,16 @@ export function SkinPage({
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
         <div className="cw-wrap py-8 sm:py-10">
           <div className="cw-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'elevate') {
+    return (
+      <main className="w-full flex-1">
+        <ElevatePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="el-wrap py-8 sm:py-10">
+          <div className="el-page">{children}</div>
         </div>
       </main>
     );

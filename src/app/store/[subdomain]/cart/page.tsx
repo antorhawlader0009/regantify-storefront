@@ -10,6 +10,7 @@ import { TechzoneCartPage } from '@/themes/techzone/TechzoneCartPage';
 import { StrideCartPage } from '@/themes/stride/StrideCartPage';
 import { VaeloraCartPage } from '@/themes/vaelora/VaeloraCartPage';
 import { ChicwoveCartPage } from '@/themes/chicwove/ChicwoveCartPage';
+import { ElevateCartPage } from '@/themes/elevate/ElevateCartPage';
 import { CartView as MediumCartView } from '@/themes/medium/views/CartView';
 import { CartView as MinimalCartView } from '@/themes/minimal/views/CartView';
 import { CartView as StorepalCartView } from '@/themes/storepal/views/CartView';
@@ -49,6 +50,7 @@ export default async function CartPage({ params }: PageProps) {
   if (storeSkin(store.theme) === 'mahabesh') return <MahabeshCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'chronics') return <ChronicsCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'chicwove') return <ChicwoveCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
+  if (storeSkin(store.theme) === 'elevate') return <ElevateCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'solevo') return <SolevoCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
   if (storeSkin(store.theme) === 'playmate') return <PlaymateCartPage {...viewProps} products={products} logoUrl={store.logoUrl} />;
 

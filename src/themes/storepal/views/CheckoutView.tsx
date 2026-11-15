@@ -16,6 +16,7 @@ import { TechzoneCheckoutPage } from '../../techzone/TechzoneCheckoutPage';
 import { StrideCheckoutPage } from '../../stride/StrideCheckoutPage';
 import { VaeloraCheckoutPage } from '../../vaelora/VaeloraCheckoutPage';
 import { ChicwoveCheckoutPage } from '../../chicwove/ChicwoveCheckoutPage';
+import { ElevateCheckoutPage } from '../../elevate/ElevateCheckoutPage';
 
 /**
  * StorePal's checkout is a dialog (components/CheckoutDialog.tsx, mounted by
@@ -70,6 +71,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   if (skin === 'mahabesh') return <MahabeshCheckoutPage subdomain={subdomain} />;
   if (skin === 'chronics') return <ChronicsCheckoutPage subdomain={subdomain} />;
   if (skin === 'chicwove') return <ChicwoveCheckoutPage subdomain={subdomain} />;
+  if (skin === 'elevate') return <ElevateCheckoutPage subdomain={subdomain} />;
   if (skin === 'solevo') return <SolevoCheckoutPage subdomain={subdomain} />;
   return skin === 'playmate' ? <PlaymateCheckoutPage subdomain={subdomain} /> : <StorePalCheckoutView subdomain={subdomain} />;
 }
