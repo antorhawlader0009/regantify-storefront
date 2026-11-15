@@ -1,0 +1,224 @@
+/* ---------------------------------------------------------------------------------------------------------------------
+   Mallon: the Mallon healthcare-store template (templete/others-templetes/Beauty and Health/mallon-store) on StorePal's features. The
+   store layout (and lib/portalRoot.ts for dialogs) adds data-skin="mallon" next to data-theme="storepal". White page with a sand
+   (#f5f5ef) footer and bands, coral (#d9534f) as the accent and the fill of buttons, teal (#1fb89a) for prices and the "New" tag,
+   Poppins everywhere, small compact text, a two-row header (logo, wide search, icons; then a coral "All Categories" block and the
+   menu), flat product cards, blue, teal and lilac banners. Store > Branding's own colour and fonts still win. Shared StorePal parts
+   that Solevo also draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='mallon'] {
+  --color-ink: #222222;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #d9534f;
+  --color-accent-dark: #c9443f;
+  --color-accent-light: #f5f5ef;
+  --color-muted: #6b7280;
+  --color-line: #e9e9e0;
+  --color-line-strong: rgba(0, 0, 0, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #d9534f;
+  --ml-brand: #d9534f;
+  --ml-brand-dark: #c9443f;
+  --ml-latte: #e9e9e0;
+  --ml-mocha: #d9534f;
+  --ml-taupe: #1fb89a;
+  --ml-stone: #6b7280;
+  --ml-soft: #f5f5ef;
+  --ml-cream: #ffffff;
+  --ml-sand: #f5f5ef;
+  --ml-peach: #f5f5ef;
+  --ml-card: #f5f5ef;
+  --ml-panel: #f5f5ef;
+  --ml-tan: #e9e9e0;
+  --ml-blush: #f5f5ef;
+  --ml-footer: #f5f5ef;
+  --ml-ink: #222222;
+  --ml-teal: #1fb89a;
+  --ml-teal-dark: #0f9d82;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #d9534f;
+  --sv-gold-dark: #c9443f;
+  --sv-sand: #f5f5ef;
+  --sv-card: #f5f5ef;
+  --sv-panel: #f5f5ef;
+  --pm-card: #f5f5ef;
+  --pm-soft: #f5f5ef;
+  --pm-yellow: #d9534f;
+  --pm-yellow-strong: #c9443f;
+  --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.05);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='mallon'] .ml-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1180px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  [data-skin='mallon'] .ml-wrap {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='mallon'] .ml-wrap {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+}
+/* The template's buttons: a coral filled one and a coral outline one. */
+[data-skin='mallon'] .ml-btn-dark,
+[data-skin='mallon'] .ml-btn-outline,
+[data-skin='mallon'] .sv-btn-dark,
+[data-skin='mallon'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.25rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 12px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='mallon'] .ml-btn-dark,
+[data-skin='mallon'] .sv-btn-dark {
+  background: #d9534f;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+[data-skin='mallon'] .ml-btn-dark:hover,
+[data-skin='mallon'] .sv-btn-dark:hover {
+  background: #c9443f;
+}
+[data-skin='mallon'] .ml-btn-outline,
+[data-skin='mallon'] .sv-btn-outline {
+  border: 1px solid #d9534f;
+  background: transparent;
+  color: #d9534f;
+}
+[data-skin='mallon'] .ml-btn-outline:hover,
+[data-skin='mallon'] .sv-btn-outline:hover {
+  background: #f5f5ef;
+}
+[data-skin='mallon'] .sv-btn-outline.\!border-ink {
+  border-color: #d9534f !important;
+}
+[data-skin='mallon'] .ml-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='mallon'] .ml-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='mallon'] .ml-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='mallon'] .ml-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes ml-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ml-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.ml-fade-up {
+  animation: ml-fade-up 0.5s ease both;
+}
+.ml-fade-in {
+  animation: ml-fade-in 0.4s ease both;
+}
+@keyframes ml-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='mallon'] .ml-marquee-track {
+  animation: ml-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='mallon'] .ml-marquee:hover .ml-marquee-track,
+[data-skin='mallon'] .ml-marquee:focus-within .ml-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='mallon'] .ml-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='mallon'] .ml-marquee {
+    overflow-x: auto;
+  }
+  .ml-fade-up,
+  .ml-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='mallon'] .ml-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='mallon'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='mallon'] .sv-auth input:focus {
+  border-color: #d9534f;
+  box-shadow: none;
+}
+[data-skin='mallon'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #d9534f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='mallon'] .sv-auth button[type='submit']:hover {
+  background: #c9443f;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='mallon'] [data-rg='product-tabs'] .border-accent {
+  border-color: #d9534f;
+}
+[data-skin='mallon'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #d9534f;
+}
+/* Mallon's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='mallon'] .ml-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(217, 83, 79, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}

@@ -1,0 +1,14 @@
+// Mallon's own order, as the template's home page: hero, a plain feature strip, shop by category, the promo tiles, then the popular products.
+export const MALLON_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
