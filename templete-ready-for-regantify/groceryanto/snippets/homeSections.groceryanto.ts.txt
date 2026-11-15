@@ -1,0 +1,14 @@
+// Groceryanto's own order, as the template's home page: the wide banner, a plain category row, the vegetable products, the promo banner, the sale grid, then the benefits row.
+export const GROCERYANTO_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];

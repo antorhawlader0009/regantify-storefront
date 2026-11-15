@@ -1,0 +1,6 @@
+  {
+    id: 'GROCERYANTO',
+    name: 'Groceryanto',
+    description:
+      'A plain, clean grocery shop: white, vivid green buttons, a wide search bar with a black Search button, a green All Categories button, one wide banner, white cards with a pale green border and a green Add to cart button, and a light grey footer. Every StorePal feature works the same.',
+  },
