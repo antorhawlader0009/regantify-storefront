@@ -1,0 +1,29 @@
+  if (id === 'NOVELLA') {
+    return (
+      <div className="w-full h-full bg-[#FAF8F5] flex flex-col">
+                <div className="h-3.5 flex items-center px-2 gap-1.5 border-b border-neutral-100">
+          <div className="w-8 h-1.5 bg-[#111111]" />
+          <div className="flex-1 flex justify-center gap-1">
+            <div className="w-3 h-0.5 bg-[#C0714E]" />
+            <div className="w-3 h-0.5 bg-black/30" />
+            <div className="w-3 h-0.5 bg-black/30" />
+          </div>
+        </div>
+        <div className="h-9 bg-[#0A0A0A] flex flex-col justify-center px-2 gap-0.5">
+          <div className="w-12 h-1.5 bg-white" />
+          <div className="w-8 h-1.5 bg-[#C0714E]" />
+        </div>
+        <div className="p-2 flex justify-center gap-1.5">
+          {[0, 1, 2, 3].map((n) => (
+            <div key={n} className="w-3 h-3 rounded-full bg-[#F4EFE9] border border-[#C0714E]/40" />
+          ))}
+        </div>
+        <div className="flex-1 px-2 grid grid-cols-3 gap-1">
+          {[0, 1, 2].map((n) => (
+            <div key={n} className="rounded-sm bg-[#F3DFD6]" />
+          ))}
+        </div>
+        <div className="h-3 bg-[#141414]" />
+      </div>
+    );
+  }

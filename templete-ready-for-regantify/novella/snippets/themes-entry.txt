@@ -1,0 +1,6 @@
+  {
+    id: 'NOVELLA',
+    name: 'Novella',
+    description:
+      'A warm all-in-one marketplace look: a cream page and header with a wide search bar and a menu row, a full-screen black hero, round category pictures, pale terracotta promo tiles, white bordered product cards and a black footer. Every StorePal feature works the same.',
+  },

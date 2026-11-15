@@ -1,0 +1,14 @@
+// Novella's own order, as the template's home page: hero, shop by category (round pictures), the three promo tiles, trending products, more products, then the feature strip.
+export const NOVELLA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
