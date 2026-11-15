@@ -1,0 +1,6 @@
+  {
+    id: 'DRIVECRAFT',
+    name: 'Drivecraft',
+    description:
+      'An auto and riding gear look: near-black header and footer, racing red buttons, bold italic condensed capitals, square white product cards and an ink-to-red page band. Every StorePal feature works the same.',
+  },
