@@ -1,0 +1,6 @@
+  {
+    id: 'PAPERNEST',
+    name: 'Papernest',
+    description:
+      'A bright, playful stationery look: a violet top bar, a search bar and menu row under a white header, a pastel sky-to-pink hero with a rainbow headline, a row of pastel category circles, mint and pink promo tiles, white rounded cards with a violet cart button and a navy footer. Every StorePal feature works the same.',
+  },

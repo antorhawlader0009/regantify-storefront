@@ -1,0 +1,14 @@
+// Papernest's own order, as the template's home page: the pastel hero, the round category row, the two promo tiles, new arrivals, then best sellers and the rest.
+export const PAPERNEST_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
