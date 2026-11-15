@@ -1,0 +1,6 @@
+  {
+    id: 'TASTEHOUSE',
+    name: 'Tastehouse',
+    description:
+      'A warm food-delivery look: a cream page, a peach hero card with a big dish photo, tinted cuisine cards with round photos, soft dish cards with a small orange add button, green and peach offer tiles and a light footer. Every StorePal feature works the same.',
+  },
