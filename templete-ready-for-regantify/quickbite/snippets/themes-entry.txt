@@ -1,0 +1,6 @@
+  {
+    id: 'QUICKBITE',
+    name: 'Quickbite',
+    description:
+      'A warm food-delivery look: a peach and amber gradient behind frosted glass panels, a big serif headline with a blob-shaped dish photo, round category pictures, glass dish cards with an amber Add pill and a dark brown footer. Every StorePal feature works the same.',
+  },
