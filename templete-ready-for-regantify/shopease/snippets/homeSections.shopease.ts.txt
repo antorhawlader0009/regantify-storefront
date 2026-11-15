@@ -1,0 +1,14 @@
+// Shopease's own order, as the template's home page: dark photo hero, shop by category (tall cards), the peach deal panel, new arrivals, then the feature strip.
+export const SHOPEASE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];

@@ -1,0 +1,6 @@
+  {
+    id: 'SHOPEASE',
+    name: 'Shopease',
+    description:
+      'A bright general-store look: white with vivid orange buttons, a forest green top bar, a dark full-width photo hero, tall category cards, a peach deal panel, white rounded product cards and a warm sand footer. Every StorePal feature works the same.',
+  },
