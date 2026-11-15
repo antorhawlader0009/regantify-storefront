@@ -1,0 +1,6 @@
+  {
+    id: 'GREENMART',
+    name: 'Greenmart',
+    description:
+      'A fresh grocery look: a white page, a full-width pale green hero with a big photo, a round-photo category panel floating over its edge, white cards with a square green cart button, pale green offer panels and a deep green footer. Every StorePal feature works the same.',
+  },
