@@ -1,0 +1,14 @@
+// Greenmart's own order, as the template's home page: the full-width hero, the floating category panel, the pale green offer panels, new arrivals, then popular products and the feature row.
+export const GREENMART_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];

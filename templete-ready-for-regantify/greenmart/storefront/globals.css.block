@@ -1,0 +1,237 @@
+/* ---------------------------------------------------------------------------------------------------------------------
+   Greenmart: the GreenMart grocery template (templete/others-templetes/Grocery and Food/Grocery/greenmart) on StorePal's features.
+   The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="greenmart" next to data-theme="storepal". White page, a
+   leaf green (#1c6b22, hover #165619, mid #2f8a35) for buttons, tags and links, pale green (#f1f6e8, #e4edd3) panels, cream
+   (#f8f5ef), ink #1d2a1f, a full-width pale green hero with the photo fading in from the right, a category panel floating over
+   its lower edge, rounded white cards with a soft green shadow, a deep green footer (#10301a), Inter everywhere. Store >
+   Branding's own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes and --sv-*
+   variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='greenmart'] {
+  --color-ink: #1d2a1f;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #1c6b22;
+  --color-accent-dark: #165619;
+  --color-accent-light: #f1f6e8;
+  --color-muted: #525252;
+  --color-line: #e5e7e0;
+  --color-line-strong: rgba(29, 42, 31, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #1c6b22;
+  --gm-brand: #1c6b22;
+  --gm-brand-dark: #165619;
+  --gm-latte: #f1f6e8;
+  --gm-mocha: #1c6b22;
+  --gm-taupe: #1c6b22;
+  --gm-stone: #525252;
+  --gm-soft: #f1f6e8;
+  --gm-cream: #ffffff;
+  --gm-sand: #f1f6e8;
+  --gm-peach: #f1f6e8;
+  --gm-card: #ffffff;
+  --gm-panel: #f1f6e8;
+  --gm-tan: #f1f6e8;
+  --gm-blush: #f1f6e8;
+  --gm-footer: #10301a;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #1c6b22;
+  --sv-gold-dark: #165619;
+  --sv-sand: #f1f6e8;
+  --sv-card: #f1f6e8;
+  --sv-panel: #f1f6e8;
+  --pm-card: #f1f6e8;
+  --pm-soft: #f1f6e8;
+  --pm-yellow: #1c6b22;
+  --pm-yellow-strong: #165619;
+  --font-display: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 10px 40px -12px rgba(30, 60, 30, 0.18);
+  --shadow-card-hover: 0 10px 40px -12px rgba(30, 60, 30, 0.28);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='greenmart'] .gm-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  [data-skin='greenmart'] .gm-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='greenmart'] .gm-wrap {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+/* The template's buttons: an ink filled one and a white outline one. */
+[data-skin='greenmart'] .gm-btn-dark,
+[data-skin='greenmart'] .gm-btn-outline,
+[data-skin='greenmart'] .sv-btn-dark,
+[data-skin='greenmart'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='greenmart'] .gm-btn-dark,
+[data-skin='greenmart'] .sv-btn-dark {
+  background: #1c6b22;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(29, 42, 31, 0.1);
+}
+[data-skin='greenmart'] .gm-btn-dark:hover,
+[data-skin='greenmart'] .sv-btn-dark:hover {
+  background: #165619;
+}
+[data-skin='greenmart'] .gm-btn-outline,
+[data-skin='greenmart'] .sv-btn-outline {
+  border: 1px solid #1c6b22;
+  background: transparent;
+  color: #165619;
+}
+[data-skin='greenmart'] .gm-btn-outline:hover,
+[data-skin='greenmart'] .sv-btn-outline:hover {
+  background: #f1f6e8;
+}
+[data-skin='greenmart'] .sv-btn-outline.\!border-ink {
+  border-color: #1c6b22 !important;
+}
+[data-skin='greenmart'] .gm-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='greenmart'] .gm-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='greenmart'] .gm-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='greenmart'] .gm-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes gm-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes gm-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.gm-fade-up {
+  animation: gm-fade-up 0.5s ease both;
+}
+.gm-fade-in {
+  animation: gm-fade-in 0.4s ease both;
+}
+@keyframes gm-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='greenmart'] .gm-marquee-track {
+  animation: gm-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='greenmart'] .gm-marquee:hover .gm-marquee-track,
+[data-skin='greenmart'] .gm-marquee:focus-within .gm-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='greenmart'] .gm-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='greenmart'] .gm-marquee {
+    overflow-x: auto;
+  }
+  .gm-fade-up,
+  .gm-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='greenmart'] .gm-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='greenmart'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='greenmart'] .sv-auth input:focus {
+  border-color: #1c6b22;
+  box-shadow: none;
+}
+[data-skin='greenmart'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #1c6b22;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='greenmart'] .sv-auth button[type='submit']:hover {
+  background: #165619;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='greenmart'] [data-rg='product-tabs'] .border-accent {
+  border-color: #1c6b22;
+}
+[data-skin='greenmart'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #1c6b22;
+}
+/* Greenmart's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='greenmart'] .gm-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(30, 60, 30, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+/* Greenmart's footer is deep brown (StorePal's is navy), so StorePal's navy footer rule is undone here for the parts
+   Greenmart's footer reuses. */
+[data-theme='storepal'][data-skin='greenmart'] footer[data-rg='footer'] {
+  background-color: var(--gm-footer);
+  color: rgba(255, 255, 255, 0.8);
+  --color-ink: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.7);
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #10301a;
+  --color-accent: #1c6b22;
+  --color-accent-dark: #cddfb2;
+}
+
