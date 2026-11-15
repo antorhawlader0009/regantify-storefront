@@ -1,0 +1,6 @@
+  {
+    id: 'SPORTEQ',
+    name: 'Sporteq',
+    description:
+      'A bold sports-equipment look: a charcoal header, a full-picture black hero with big capitals, lime green buttons, a round-photo category row, light grey product cards and a clean white footer, with an Orbitron wordmark. Every StorePal feature works the same.',
+  },
