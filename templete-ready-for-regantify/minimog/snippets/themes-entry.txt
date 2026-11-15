@@ -1,0 +1,6 @@
+  {
+    id: 'MINIMOG',
+    name: 'Minimog',
+    description:
+      'A clean lifestyle-store look: white with forest green buttons, bold Inter headings, a deep green top bar, a warm hero with the picture blended in, small category tiles, a sage sale banner and compact product cards. Every StorePal feature works the same.',
+  },

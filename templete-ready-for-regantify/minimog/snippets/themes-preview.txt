@@ -1,0 +1,28 @@
+  if (id === 'MINIMOG') {
+    return (
+      <div className="w-full h-full bg-white flex flex-col">
+        <div className="h-1.5 bg-[#12301A]" />
+        <div className="h-3.5 flex items-center px-2 gap-1.5 border-b border-neutral-200">
+          <div className="w-2 h-2 rounded-sm bg-[#22632F]" />
+          <div className="w-6 h-1.5 bg-[#111]" />
+          <div className="flex-1 flex justify-center gap-1">
+            <div className="w-3 h-0.5 bg-black/30" />
+            <div className="w-3 h-0.5 bg-[#22632F]" />
+            <div className="w-3 h-0.5 bg-black/30" />
+          </div>
+        </div>
+        <div className="h-9 bg-gradient-to-r from-[#FBF8F3] to-[#E9DCCB] flex flex-col justify-center px-2 gap-0.5">
+          <div className="w-14 h-1.5 bg-[#111]" />
+          <div className="w-8 h-1.5 bg-[#22632F]" />
+        </div>
+        <div className="p-2 grid grid-cols-5 gap-1.5 flex-1">
+          {[0, 1, 2, 3, 4].map((n) => (
+            <div key={n} className="rounded-sm border border-neutral-100 p-0.5 shadow-sm">
+              <div className="h-full rounded-sm bg-neutral-100" />
+            </div>
+          ))}
+        </div>
+        <div className="h-3 bg-neutral-50 border-t border-neutral-200" />
+      </div>
+    );
+  }
