@@ -1,0 +1,6 @@
+  {
+    id: 'VIVA',
+    name: 'Viva',
+    description:
+      'A fresh marketplace look: a cream page with white rounded panels, a deep forest green top bar, big search pill and footer, a soft sage hero card with a serif headline, round category pictures, pastel promo tiles and white rounded product cards with coral discount tags. Every StorePal feature works the same.',
+  },
