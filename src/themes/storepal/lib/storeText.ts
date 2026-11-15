@@ -292,6 +292,8 @@ const BN: Record<string, string> = {
   FAQ: 'সাধারণ প্রশ্ন',
   'All questions': 'সব প্রশ্ন',
   'View all': 'সব দেখুন',
+  'More products': 'আরও পণ্য',
+  'Show more': 'আরও দেখুন',
   'Results for "{q}"': '"{q}"-এর ফলাফল',
   '{n} products': '{n}টি পণ্য',
   'Sort products': 'পণ্য সাজান',

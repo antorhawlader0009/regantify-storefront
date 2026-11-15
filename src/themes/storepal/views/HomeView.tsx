@@ -50,7 +50,8 @@ import { ChicwoveProductsView } from '../../chicwove/ChicwoveProductsView';
 import { ElevateProductsView } from '../../elevate/ElevateProductsView';
 import { ProductFilters, type ProductFilterState } from '../components/ProductFilters';
 import { Stars } from '../../medium/components/Stars';
-import { SlidersHorizontal, X, Tag, ChevronRight } from 'lucide-react';
+import { SlidersHorizontal, X, Tag, ChevronRight, ChevronDown } from 'lucide-react';
+import { isPageSkin } from '@/lib/theme';
 import { bnDigits, useStoreText } from '../lib/storeText';
 import { RecentlyViewed } from '../components/RecentlyViewed';
 import { ComebackNudge } from '../components/ComebackNudge';
@@ -60,14 +61,28 @@ import { searchProducts } from '../lib/searchMatch';
 import { AskAssistantButton } from '../components/AskAssistantButton';
 import { CoverFloating } from '@/lib/floatingCover';
 
+// Products with no category are never dropped from the home page: they go into one
+// last "More products" section (other: true). It starts with OTHER_SECTION_STEP cards so a big
+// store's home stays light: StorePal shows more with "Show more", a template skin links to its own
+// "All products" page (/products).
+const OTHER_SECTION_STEP = 12;
 function groupByCategory(products: StorefrontProduct[]) {
   const groups = new Map<string, StorefrontProduct[]>();
+  const other: StorefrontProduct[] = [];
   for (const p of products) {
-    if (!p.category) continue;
-    if (!groups.has(p.category)) groups.set(p.category, []);
-    groups.get(p.category)!.push(p);
+    const name = p.category?.trim();
+    if (!name) {
+      other.push(p);
+      continue;
+    }
+    if (!groups.has(name)) groups.set(name, []);
+    groups.get(name)!.push(p);
   }
-  return Array.from(groups.entries()).map(([name, items]) => ({ name, items }));
+  const sections: { name: string; items: StorefrontProduct[]; other: boolean }[] = Array.from(groups.entries()).map(
+    ([name, items]) => ({ name, items, other: false }),
+  );
+  if (other.length > 0) sections.push({ name: '__other__', items: other, other: true });
+  return sections;
 }
 
 interface HomeViewProps {
@@ -342,6 +357,16 @@ export function HomeView({
     </>
   );
   const grouped = useMemo(() => (!isFiltered ? groupByCategory(products) : null), [isFiltered, products]);
+  // The no-category section: "All products" when the store has no category at all, else "More products" at the end.
+  const sectionTitle = (s: { name: string; other: boolean }) =>
+    !s.other ? s.name : (grouped?.length ?? 0) > 1 ? t('More products') : t('All products');
+  const sectionHref = (s: { name: string; other: boolean }) =>
+    s.other
+      ? isPageSkin(skin) ? `/store/${subdomain}/products` : undefined
+      : `/store/${subdomain}?category=${encodeURIComponent(s.name)}`;
+  const sectionItems = (s: { items: StorefrontProduct[]; other: boolean }, n: number) =>
+    s.items.slice(0, s.other ? OTHER_SECTION_STEP : n);
+  const [otherShown, setOtherShown] = useState(OTHER_SECTION_STEP);
 
   // The store's own order (pinned products first, then newest first).
   // "Top Selling" (TellMe idea 63): when the store counts sales, the 4 with the most buyers (from 5 up); else the first 4.
@@ -454,8 +479,8 @@ export function HomeView({
         return (
           <>
             {grouped?.map((section) => (
-              <PmProductRow key={section.name} title={section.name} viewAllLabel={t('View all')} viewAllHref={categoryHref(section.name)}>
-                {section.items.slice(0, 12).map(card)}
+              <PmProductRow key={section.name} title={sectionTitle(section)} viewAllLabel={t('View all')} viewAllHref={sectionHref(section)}>
+                {sectionItems(section, 12).map(card)}
               </PmProductRow>
             ))}
             <PmBrands
@@ -617,8 +642,8 @@ export function HomeView({
         return (
           <>
             {grouped?.map((section) => (
-              <P.ProductGrid key={section.name} title={section.name} viewAllLabel={t('View all')} viewAllHref={categoryHref(section.name)}>
-                {section.items.slice(0, 10).map(card)}
+              <P.ProductGrid key={section.name} title={sectionTitle(section)} viewAllLabel={t('View all')} viewAllHref={sectionHref(section)}>
+                {sectionItems(section, 10).map(card)}
               </P.ProductGrid>
             ))}
             <P.Brands
@@ -1011,20 +1036,34 @@ export function HomeView({
                       <section key={section.name}>
                         <div className="flex items-center justify-between mb-4">
                           {/* The category name as the seller wrote it (no forced capitals, which were hard to read). */}
-                          <h2 className="text-[17px] font-bold text-ink">{section.name}</h2>
-                          <Link
-                            href={`/store/${subdomain}?category=${encodeURIComponent(section.name)}`}
-                            className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-accent hover:text-accent-dark"
-                          >
-                            {t('View all')}
-                            <ChevronRight size={15} aria-hidden />
-                          </Link>
+                          <h2 className="text-[17px] font-bold text-ink">{sectionTitle(section)}</h2>
+                          {!section.other && (
+                            <Link
+                              href={`/store/${subdomain}?category=${encodeURIComponent(section.name)}`}
+                              className="inline-flex shrink-0 items-center gap-0.5 text-[13px] font-medium text-accent hover:text-accent-dark"
+                            >
+                              {t('View all')}
+                              <ChevronRight size={15} aria-hidden />
+                            </Link>
+                          )}
                         </div>
                         <div className="grid gap-2 sm:gap-4 grid-cols-2 sm:[grid-template-columns:repeat(auto-fill,minmax(200px,1fr))]">
-                          {section.items.slice(0, 8).map((product) => (
+                          {section.items.slice(0, section.other ? otherShown : 8).map((product) => (
                             <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />
                           ))}
                         </div>
+                        {section.other && section.items.length > otherShown && (
+                          <div className="mt-5 flex justify-center">
+                            <button
+                              type="button"
+                              onClick={() => setOtherShown((n) => n + OTHER_SECTION_STEP)}
+                              className="inline-flex items-center gap-1 rounded-md border border-line bg-white px-5 py-2.5 text-[13.5px] font-medium text-ink hover:border-accent hover:text-accent"
+                            >
+                              {t('Show more')} ({section.items.length - otherShown})
+                              <ChevronDown size={15} aria-hidden />
+                            </button>
+                          </div>
+                        )}
                       </section>
                     ))}
                   </div>
