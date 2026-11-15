@@ -1,0 +1,14 @@
+// Tastehouse's own order, as the template's home page: the hero card, the four soft feature cards, cuisines, popular dishes, the two offer tiles.
+export const TASTEHOUSE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
