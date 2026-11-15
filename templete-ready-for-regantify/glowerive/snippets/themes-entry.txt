@@ -1,0 +1,6 @@
+  {
+    id: 'GLOWERIVE',
+    name: 'Glowerive',
+    description:
+      'A fresh natural-skincare look: a teal header and full-height teal hero, a pale mist page, serif headings, pill buttons, round category photos and a teal offer band over a deep teal footer. Every StorePal feature works the same.',
+  },
