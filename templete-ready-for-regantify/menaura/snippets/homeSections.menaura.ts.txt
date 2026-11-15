@@ -1,0 +1,14 @@
+// Menaura's own order, as the template's home page: hero, essentials (categories), the offer banner, then trending products.
+export const MENAURA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];

@@ -1,0 +1,6 @@
+  {
+    id: 'MENAURA',
+    name: 'Menaura',
+    description:
+      'A warm menswear look: cream and latte with mocha accents, serif headings, rounded white product cards, an ink offer banner and a deep brown footer. Every StorePal feature works the same.',
+  },
