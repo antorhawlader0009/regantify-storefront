@@ -1,0 +1,14 @@
+// Quickbite's own order, as the template's home page: the hero, the round category row, popular dishes, today's deals, the banner, then the feature strip.
+export const QUICKBITE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'CAMPAIGNS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
