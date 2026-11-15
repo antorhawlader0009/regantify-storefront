@@ -1,0 +1,6 @@
+  {
+    id: 'NOVATREND',
+    name: 'Novatrend',
+    description:
+      'A bold general-store look: a white header under a black announcement bar, a full-height black hero with an orange glow, vivid orange buttons, light grey rounded product cards and orange and black promo tiles over a black footer. Every StorePal feature works the same.',
+  },
