@@ -1,0 +1,515 @@
+/* ---------------------------------------------------------------------------------------------------------------------
+   Technova: the TechNova gadget template (templete/others-templetes/Technology & Gadget/technova) on StorePal's features. The
+   store layout (and lib/portalRoot.ts for dialogs) adds data-skin="technova" next to data-theme="storepal". A white page with a
+   deep navy header (#0b1226) and a dark navy-to-indigo hero gradient with a blue-to-violet headline word, electric blue (#2f6bff,
+   hover #1f54e0, soft #eaf1ff) for buttons and links, white rounded-xl cards with a soft shadow and a soft-blue Add to Cart
+   button, pastel round category pictures, a violet flash-offer tile, a white footer, Inter everywhere. Store > Branding's own
+   colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes and --sv-* variables,
+   re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='technova'] {
+  --color-ink: #0b1226;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #2f6bff;
+  --color-accent-dark: #1f54e0;
+  --color-accent-light: #eaf1ff;
+  --color-muted: #6b6b6b;
+  --color-line: #e5e5e5;
+  --color-line-strong: #cfcfcf;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --tn-navy: #0b1226;
+  --tn-navy-800: #101c44;
+  --tn-hero: #f1f0ec;
+  --tn-brand: #0b1226;
+  --tn-brand-dark: #101c44;
+  --tn-soft: #eaf1ff;
+  --tn-well: #f6f6f6;
+  --tn-line: #e5e5e5;
+  --tn-card: #f6f6f6;
+  --tn-panel: #f7f7f7;
+  --tn-peach: #f6f6f6;
+  --tn-signal: #2f6bff;
+  --tn-footer: #ffffff;
+  --tn-lime: #2f6bff;
+  --tn-cream: #ffffff;
+  --tn-ink: #0b1226;
+  --tn-volt-dark: #1f54e0;
+  --tn-smoke: #f6f6f6;
+  --tn-mint: #eaf1ff;
+  --tn-photo: #ececec;
+  --tn-hero-bg: #f1f0ec;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #0b1226;
+  --sv-gold-dark: #101c44;
+  --sv-sand: #f6f6f6;
+  --sv-card: #f6f6f6;
+  --sv-panel: #f7f7f7;
+  --pm-card: #f6f6f6;
+  --pm-soft: #eaf1ff;
+  --pm-yellow: #0b1226;
+  --pm-yellow-strong: #101c44;
+  --font-display: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-popover: 0 24px 48px -24px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy navy. */
+[data-skin='technova'] :is(h1, h2, h3) {
+  color: var(--tn-navy);
+  letter-spacing: -0.01em;
+}
+/* The template's container (max-w-page 1200px, 16px side padding). */
+[data-skin='technova'] .tn-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1280px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* The template's buttons: a rounded-lg blue one (bg-brand, brand-dark on hover); --line is the outlined one, --sm the small
+   one. .tn-btn-dark is the navy one the cards use for Add to Cart (brand on hover). The display sits in the components layer
+   so Tailwind's hidden / lg:hidden on the same element still win. */
+@layer components {
+  [data-skin='technova'] :is(.tn-btn, .tn-btn-dark, .sv-btn-dark, .tn-btn-line, .tn-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+}
+[data-skin='technova'] .tn-btn,
+[data-skin='technova'] .tn-btn-dark,
+[data-skin='technova'] .sv-btn-dark {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #0b1226;
+  border-radius: 0;
+  background: #0b1226;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='technova'] .tn-btn:hover,
+[data-skin='technova'] .sv-btn-dark:hover {
+  background: #101c44;
+  border-color: #101c44;
+  color: #fff;
+}
+[data-skin='technova'] .tn-btn-dark {
+  background: #0b1226;
+  border-color: #0b1226;
+}
+[data-skin='technova'] .tn-btn-dark:hover {
+  background: #0b1226;
+  border-color: #0b1226;
+  color: #fff;
+}
+[data-skin='technova'] .tn-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='technova'] .tn-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='technova'] .tn-btn-line,
+[data-skin='technova'] .tn-btn-outline,
+[data-skin='technova'] .sv-btn-outline {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff;
+  color: #0b1226;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='technova'] .tn-btn.tn-btn-line {
+  background: #fff;
+  color: #0b1226;
+  border-color: #cfcfcf;
+}
+[data-skin='technova'] .tn-btn-line:hover,
+[data-skin='technova'] .tn-btn.tn-btn-line:hover,
+[data-skin='technova'] .tn-btn-outline:hover,
+[data-skin='technova'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #0b1226;
+  color: #0b1226;
+}
+[data-skin='technova'] .sv-btn-outline.\!border-ink {
+  border-color: #cfcfcf !important;
+}
+[data-skin='technova'] .tn-btn-sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12.5px;
+}
+/* Small round-cornered icon button (close buttons and the like). */
+[data-skin='technova'] .tn-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  color: #0b1226;
+  transition: background 0.15s, color 0.15s;
+}
+[data-skin='technova'] .tn-icon-btn:hover {
+  background: var(--tn-soft);
+  color: #0b1226;
+}
+/* A discount tag on the photo's top left (the template's small blue badge). */
+[data-skin='technova'] .tn-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 0;
+  background: #0b1226;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+/* The heart on the photo's top right (plain, navy; red when on). */
+[data-skin='technova'] .tn-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #0b1226;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='technova'] .tn-wish:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+[data-skin='technova'] .tn-wish.is-on {
+  color: #ef4444;
+}
+[data-skin='technova'] .tn-soldout .tn-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='technova'] .tn-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='technova'] .tn-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The brand strip: the template's marquee, moving left to right, paused on hover. */
+@keyframes tn-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='technova'] .tn-marquee-track {
+  animation: tn-marquee-right 28s linear infinite;
+}
+[data-skin='technova'] .tn-marquee:hover .tn-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes tn-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.tn-fade-up {
+  animation: tn-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='technova'] .tn-marquee-track {
+    animation: none;
+  }
+  .tn-fade-up {
+    animation: none;
+  }
+}
+/* The hero fills the visible screen below the sticky header (the template's .hero-fill: 65px on a computer, 117px on a
+   phone with its search row), plus the top bar when the store has one. */
+[data-skin='technova'] .tn-hero-fill {
+  min-height: max(460px, calc(100svh - 160px));
+}
+@media (min-width: 768px) {
+  [data-skin='technova'] .tn-hero-fill {
+    min-height: max(480px, calc(100svh - 110px));
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='technova'] .tn-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's blue main button. */
+[data-skin='technova'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  height: 44px;
+}
+[data-skin='technova'] .sv-auth input:focus {
+  border-color: #0b1226;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(11, 18, 38, 0.15);
+}
+[data-skin='technova'] .sv-auth button[type='submit'] {
+  border-radius: 0;
+  background: #0b1226;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-skin='technova'] .sv-auth button[type='submit']:hover {
+  background: #101c44;
+}
+[data-skin='technova'] [data-rg='product-tabs'] .border-accent {
+  border-color: #0b1226;
+}
+[data-skin='technova'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #0b1226;
+}
+/* The template's select (white, slate border, rounded-md, a small chevron on the right). */
+[data-skin='technova'] .tn-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23334155' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  outline: 0;
+}
+[data-skin='technova'] .tn-select:focus {
+  border-color: #0b1226;
+}
+/* Technova's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='technova'] .tn-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+/* Technova's footer is black: its colour variables are re-pointed for the parts the footer reuses (lime on hover). */
+[data-theme='storepal'][data-skin='technova'] footer[data-rg='footer'] {
+  background-color: #ffffff;
+  color: #444444;
+  border-top: 1px solid #e5e5e5;
+}
+[data-skin='technova'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
+  color: #0b1226;
+}
+/* Technova page titles and buttons: normal case, extra-bold titles, blue tags (the rules at the end of this block win). */
+[data-skin='technova'] :is(h1) {
+  font-family: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-weight: 800;
+}
+[data-skin='technova'] :is(.tn-btn, .tn-btn-dark, .sv-btn-dark, .tn-btn-line, .tn-btn-outline, .sv-btn-outline) {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 700;
+}
+[data-skin='technova'] .tn-btn,
+[data-skin='technova'] .tn-btn-dark,
+[data-skin='technova'] .sv-btn-dark {
+  border-color: #0b1226;
+  background: #0b1226;
+}
+[data-skin='technova'] .tn-btn:hover,
+[data-skin='technova'] .tn-btn-dark:hover,
+[data-skin='technova'] .sv-btn-dark:hover {
+  background: #101c44;
+  border-color: #101c44;
+}
+[data-skin='technova'] .tn-btn-line,
+[data-skin='technova'] .tn-btn.tn-btn-line,
+[data-skin='technova'] .tn-btn-outline,
+[data-skin='technova'] .sv-btn-outline {
+  border-color: #0b1226;
+  background: #fff;
+  color: #0b1226;
+}
+[data-skin='technova'] .tn-btn-line:hover,
+[data-skin='technova'] .tn-btn.tn-btn-line:hover,
+[data-skin='technova'] .tn-btn-outline:hover,
+[data-skin='technova'] .sv-btn-outline:hover {
+  background: #0b1226;
+  border-color: #0b1226;
+  color: #fff;
+}
+[data-skin='technova'] .sv-btn-outline.\!border-ink {
+  border-color: #0b1226 !important;
+}
+[data-skin='technova'] .tn-tag {
+  background: #0b1226;
+  color: #2f6bff;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+[data-skin='technova'] .tn-tag.tn-tag-sale {
+  background: #dc2626;
+  color: #fff;
+}
+[data-skin='technova'] .tn-hero-fill {
+  min-height: 520px;
+}
+@media (min-width: 1024px) {
+  [data-skin='technova'] .tn-hero-fill {
+    min-height: 600px;
+  }
+}
+[data-skin='technova'] .tn-btn-dark.is-done,
+[data-skin='technova'] .tn-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+/* Technova: primary buttons are volt with ink text; the card's Add to cart bar is ink and turns volt on hover; the hero's ghost button
+   is white on the dark picture. */
+[data-skin='technova'] .tn-btn,
+[data-skin='technova'] .sv-btn-dark {
+  background: #2f6bff;
+  border-color: #2f6bff;
+  color: #0b1226;
+}
+[data-skin='technova'] .tn-btn:hover,
+[data-skin='technova'] .sv-btn-dark:hover {
+  background: #1f54e0;
+  border-color: #1f54e0;
+  color: #0b1226;
+}
+[data-skin='technova'] .tn-btn-dark {
+  background: #0b1226;
+  border-color: #0b1226;
+  color: #fff;
+}
+[data-skin='technova'] .tn-btn-dark:hover {
+  background: #2f6bff;
+  border-color: #2f6bff;
+  color: #0b1226;
+}
+[data-skin='technova'] .tn-btn.tn-btn-ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+}
+[data-skin='technova'] .tn-btn.tn-btn-ghost:hover {
+  background: #fff;
+  border-color: #fff;
+  color: #0b1226;
+}
+[data-skin='technova'] .tn-btn.is-done,
+[data-skin='technova'] .tn-btn-dark.is-done {
+  background: #157347;
+  border-color: #157347;
+  color: #fff;
+}
+[data-skin='technova'] .tn-tag {
+  background: #0b1226;
+  color: #fff;
+}
+[data-skin='technova'] .tn-tag.tn-tag-new {
+  background: #2f6bff;
+  color: #0b1226;
+}
+[data-skin='technova'] .sv-auth button[type='submit'] {
+  background: #2f6bff;
+  color: #0b1226;
+}
+[data-skin='technova'] .sv-auth button[type='submit']:hover {
+  background: #1f54e0;
+}
+/* The wordmark (the template's Logo.tsx): Inter, bold. */
+[data-skin='technova'] .tn-logo {
+  font-family: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), sans-serif;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  text-transform: none;
+}
+
+/* Technova's buttons: rounded-lg, a blue one (brand-dark on hover), an outlined one and the soft-blue Add to Cart one that turns
+   blue on hover; labels in normal case. These come after the older rules above, so they win. */
+[data-skin='technova'] :is(.tn-btn, .tn-btn-dark, .sv-btn-dark, .tn-btn-line, .tn-btn-outline, .sv-btn-outline) {
+  text-transform: none;
+  letter-spacing: 0;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 8px;
+}
+[data-skin='technova'] .tn-btn,
+[data-skin='technova'] .sv-btn-dark {
+  background: #2f6bff;
+  border-color: #2f6bff;
+  color: #fff;
+}
+[data-skin='technova'] .tn-btn:hover,
+[data-skin='technova'] .sv-btn-dark:hover {
+  background: #1f54e0;
+  border-color: #1f54e0;
+  color: #fff;
+}
+[data-skin='technova'] .tn-btn-dark {
+  height: 36px;
+  background: #eaf1ff;
+  border-color: #eaf1ff;
+  color: #2f6bff;
+  font-size: 12px;
+}
+[data-skin='technova'] .tn-btn-dark:hover {
+  background: #2f6bff;
+  border-color: #2f6bff;
+  color: #fff;
+}
+[data-skin='technova'] .tn-btn-line,
+[data-skin='technova'] .tn-btn.tn-btn-line,
+[data-skin='technova'] .tn-btn-outline,
+[data-skin='technova'] .sv-btn-outline {
+  background: #fff;
+  border-color: #cbd5e1;
+  color: #0b1226;
+}
+[data-skin='technova'] .tn-btn-line:hover,
+[data-skin='technova'] .tn-btn.tn-btn-line:hover,
+[data-skin='technova'] .tn-btn-outline:hover,
+[data-skin='technova'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #2f6bff;
+  color: #2f6bff;
+}
+[data-skin='technova'] .tn-tag {
+  background: #2f6bff;
+  color: #fff;
+  border-radius: 4px;
+}
+[data-skin='technova'] :is(h1) {
+  text-transform: none;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}

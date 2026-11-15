@@ -1,0 +1,6 @@
+  {
+    id: 'TECHNOVA',
+    name: 'Technova',
+    description:
+      'A modern gadget-shop look: a deep navy header with a blue-lined menu, a dark navy-to-indigo hero with a blue-violet headline, pastel round category pictures, white rounded product cards with a soft blue Add to Cart button, a violet flash-offer tile and a clean white footer. Every StorePal feature works the same.',
+  },

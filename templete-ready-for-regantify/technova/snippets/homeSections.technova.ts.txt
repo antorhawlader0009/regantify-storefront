@@ -1,0 +1,14 @@
+// Technova's own order, as the template's home page: the navy hero, the round category row, trending products, the two promo tiles, recommended products, then the benefits strip and the rest.
+export const TECHNOVA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
