@@ -124,6 +124,9 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
   const [added, setAdded] = useState(false);
   const [variantWarning, setVariantWarning] = useState(false);
   const [hovering, setHovering] = useState(false);
+  // A shimmering skeleton sits under the photo until it has loaded. The photo itself is never hidden (opacity 0 would
+  // keep it invisible until the page's script runs and hurt the store's LCP); it simply paints over the shimmer.
+  const [photoLoaded, setPhotoLoaded] = useState(false);
   // Colour circles (shared CardSwatches): the photo of the colour pointed at replaces the card's picture.
   const [swatchPhoto, setSwatchPhoto] = useState<string | null>(null);
   // Quick add (shared QuickAddSheet): sizes and colours picked on the card instead of the product page.
@@ -377,13 +380,18 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
       >
         <Link href={href} className="absolute inset-0 block">
           {product.photoUrls[0] ? (
-            <Image
-              src={swatchPhoto ?? product.photoUrls[0]}
-              alt={product.name}
-              fill
-              sizes="(max-width: 640px) 50vw, 260px"
-              className="object-cover"
-            />
+            <>
+              {!photoLoaded && <span className="rg-skel absolute inset-0 !rounded-none" aria-hidden />}
+              <Image
+                src={swatchPhoto ?? product.photoUrls[0]}
+                alt={product.name}
+                fill
+                sizes="(max-width: 640px) 50vw, 260px"
+                onLoad={() => setPhotoLoaded(true)}
+                onError={() => setPhotoLoaded(true)}
+                className="object-cover"
+              />
+            </>
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <span className="text-muted text-[13px]">{t('No image')}</span>
