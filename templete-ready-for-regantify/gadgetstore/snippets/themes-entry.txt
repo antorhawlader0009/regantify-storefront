@@ -1,0 +1,6 @@
+  {
+    id: 'GADGETSTORE',
+    name: 'Gadgetstore',
+    description:
+      'A clean tech-shop look: a black top bar over a white header with a spaced uppercase wordmark, a light grey hero with the product blended in, round grey category pictures, flat product pictures with a black Add to Cart bar, black and light promo tiles with lime buttons and a white footer. Every StorePal feature works the same.',
+  },
