@@ -1,0 +1,489 @@
+/* ---------------------------------------------------------------------------------------------------------------------
+   Glowerive: the Glowerive natural-skincare template (templete/others-templetes/Beauty and Health/glowerive) on StorePal's features. The
+   store layout (and lib/portalRoot.ts for dialogs) adds data-skin="glowerive" next to data-theme="storepal". Teal (#1c6f65) header and
+   hero, a pale mist page (#f4f9f8), deep teal (#0f4a42) footer and dark text (#0b3a34), Cormorant Garamond headings over Inter, pill
+   buttons, round category photos with a pale ring, white cards with a thin teal line. --color-accent is teal. Store > Branding's
+   own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes and --sv-* variables,
+   re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='glowerive'] {
+  --color-ink: #0b3a34;
+  --color-canvas: #f4f9f8;
+  --color-surface: #ffffff;
+  --color-accent: #1c6f65;
+  --color-accent-dark: #14594f;
+  --color-accent-light: #e6f0ee;
+  --color-muted: #4f7a73;
+  --color-line: #dbe9e6;
+  --color-line-strong: #bcd5d0;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --gw-navy: #0b3a34;
+  --gw-navy-800: #0f4a42;
+  --gw-hero: #e6f0ee;
+  --gw-brand: #1c6f65;
+  --gw-brand-dark: #14594f;
+  --gw-soft: #e6f0ee;
+  --gw-well: #e6f0ee;
+  --gw-line: #dbe9e6;
+  --gw-card: #e6f0ee;
+  --gw-panel: #f4f9f8;
+  --gw-peach: #e6f0ee;
+  --gw-signal: #1c6f65;
+  --gw-footer: #0f4a42;
+  --gw-brand2: #1c6f65;
+  --gw-cream: #ffffff;
+  --gw-deep: #0f4a42;
+  --gw-ink-soft: #0f4a42;
+  --gw-ink: #1c6f65;
+  --gw-volt-dark: #14594f;
+  --gw-smoke: #e6f0ee;
+  --gw-mint: #e6f0ee;
+  --gw-photo: #e6f0ee;
+  --gw-hero-bg: #e6f0ee;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #1c6f65;
+  --sv-gold-dark: #14594f;
+  --sv-sand: #e6f0ee;
+  --sv-card: #e6f0ee;
+  --sv-panel: #f4f9f8;
+  --pm-card: #e6f0ee;
+  --pm-soft: #e6f0ee;
+  --pm-yellow: #1c6f65;
+  --pm-yellow-strong: #14594f;
+  --font-display: var(--font-cormorant), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-popover: 0 24px 48px -24px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy navy. */
+[data-skin='glowerive'] :is(h1, h2, h3) {
+  color: var(--gw-navy);
+  letter-spacing: -0.01em;
+}
+/* The template's container (max-w-page 1200px, 16px side padding). */
+[data-skin='glowerive'] .gw-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1280px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* The template's buttons: a rounded-lg blue one (bg-brand, brand-dark on hover); --line is the outlined one, --sm the small
+   one. .gw-btn-dark is the navy one the cards use for Add to Cart (brand on hover). The display sits in the components layer
+   so Tailwind's hidden / lg:hidden on the same element still win. */
+@layer components {
+  [data-skin='glowerive'] :is(.gw-btn, .gw-btn-dark, .sv-btn-dark, .gw-btn-line, .gw-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+}
+[data-skin='glowerive'] .gw-btn,
+[data-skin='glowerive'] .gw-btn-dark,
+[data-skin='glowerive'] .sv-btn-dark {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #0b3a34;
+  border-radius: 0;
+  background: #0b3a34;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='glowerive'] .gw-btn:hover,
+[data-skin='glowerive'] .sv-btn-dark:hover {
+  background: #2a2a2a;
+  border-color: #2a2a2a;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-btn-dark {
+  background: #1c6f65;
+  border-color: #1c6f65;
+}
+[data-skin='glowerive'] .gw-btn-dark:hover {
+  background: #0b3a34;
+  border-color: #0b3a34;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='glowerive'] .gw-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='glowerive'] .gw-btn-line,
+[data-skin='glowerive'] .gw-btn-outline,
+[data-skin='glowerive'] .sv-btn-outline {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #bcd5d0;
+  border-radius: 0;
+  background: #fff;
+  color: #0b3a34;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='glowerive'] .gw-btn.gw-btn-line {
+  background: #fff;
+  color: #0b3a34;
+  border-color: #bcd5d0;
+}
+[data-skin='glowerive'] .gw-btn-line:hover,
+[data-skin='glowerive'] .gw-btn.gw-btn-line:hover,
+[data-skin='glowerive'] .gw-btn-outline:hover,
+[data-skin='glowerive'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #0b3a34;
+  color: #0b3a34;
+}
+[data-skin='glowerive'] .sv-btn-outline.\!border-ink {
+  border-color: #bcd5d0 !important;
+}
+[data-skin='glowerive'] .gw-btn-sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12.5px;
+}
+/* Small round-cornered icon button (close buttons and the like). */
+[data-skin='glowerive'] .gw-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  color: #0b3a34;
+  transition: background 0.15s, color 0.15s;
+}
+[data-skin='glowerive'] .gw-icon-btn:hover {
+  background: var(--gw-soft);
+  color: #0b3a34;
+}
+/* A discount tag on the photo's top left (the template's small blue badge). */
+[data-skin='glowerive'] .gw-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 0;
+  background: #0b3a34;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+/* The heart on the photo's top right (plain, navy; red when on). */
+[data-skin='glowerive'] .gw-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #0b3a34;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='glowerive'] .gw-wish:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+[data-skin='glowerive'] .gw-wish.is-on {
+  color: #ef4444;
+}
+[data-skin='glowerive'] .gw-soldout .gw-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='glowerive'] .gw-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='glowerive'] .gw-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The brand strip: the template's marquee, moving left to right, paused on hover. */
+@keyframes gw-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='glowerive'] .gw-marquee-track {
+  animation: gw-marquee-right 28s linear infinite;
+}
+[data-skin='glowerive'] .gw-marquee:hover .gw-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes gw-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.gw-fade-up {
+  animation: gw-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='glowerive'] .gw-marquee-track {
+    animation: none;
+  }
+  .gw-fade-up {
+    animation: none;
+  }
+}
+/* The hero fills the visible screen below the sticky header (the template's .hero-fill: 65px on a computer, 117px on a
+   phone with its search row), plus the top bar when the store has one. */
+[data-skin='glowerive'] .gw-hero-fill {
+  min-height: max(460px, calc(100svh - 160px));
+}
+@media (min-width: 768px) {
+  [data-skin='glowerive'] .gw-hero-fill {
+    min-height: max(480px, calc(100svh - 110px));
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='glowerive'] .gw-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's blue main button. */
+[data-skin='glowerive'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1px solid #bcd5d0;
+  border-radius: 0;
+  height: 44px;
+}
+[data-skin='glowerive'] .sv-auth input:focus {
+  border-color: #0b3a34;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(5, 5, 5, 0.15);
+}
+[data-skin='glowerive'] .sv-auth button[type='submit'] {
+  border-radius: 0;
+  background: #0b3a34;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-skin='glowerive'] .sv-auth button[type='submit']:hover {
+  background: #2a2a2a;
+}
+[data-skin='glowerive'] [data-rg='product-tabs'] .border-accent {
+  border-color: #0b3a34;
+}
+[data-skin='glowerive'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #0b3a34;
+}
+/* The template's select (white, slate border, rounded-md, a small chevron on the right). */
+[data-skin='glowerive'] .gw-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #bcd5d0;
+  border-radius: 0;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23334155' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  outline: 0;
+}
+[data-skin='glowerive'] .gw-select:focus {
+  border-color: #0b3a34;
+}
+/* Glowerive's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='glowerive'] .gw-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #dbe9e6;
+  border-radius: 12px;
+}
+/* Glowerive's footer is black: its colour variables are re-pointed for the parts the footer reuses (lime on hover). */
+[data-theme='storepal'][data-skin='glowerive'] footer[data-rg='footer'] {
+  background-color: var(--gw-footer);
+  color: #d4d4d4;
+  --color-ink: #ffffff;
+  --color-muted: #d4d4d4;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #0b3a34;
+  --color-accent: #9fc9c2;
+  --color-accent-dark: #cfe3df;
+}
+[data-skin='glowerive'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
+  color: #fff;
+}
+/* Glowerive's own touches: heavy condensed capitals for page titles and the hero, spaced capitals on buttons, lime tags. */
+[data-skin='glowerive'] :is(h1) {
+  font-family: var(--font-cormorant), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  text-transform: none;
+  font-style: normal;
+  letter-spacing: 0;
+}
+[data-skin='glowerive'] :is(.gw-btn, .gw-btn-dark, .sv-btn-dark, .gw-btn-line, .gw-btn-outline, .sv-btn-outline) {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 700;
+}
+[data-skin='glowerive'] .gw-btn,
+[data-skin='glowerive'] .gw-btn-dark,
+[data-skin='glowerive'] .sv-btn-dark {
+  border-color: #0b3a34;
+  background: #0b3a34;
+}
+[data-skin='glowerive'] .gw-btn:hover,
+[data-skin='glowerive'] .gw-btn-dark:hover,
+[data-skin='glowerive'] .sv-btn-dark:hover {
+  background: #2a2a2a;
+  border-color: #2a2a2a;
+}
+[data-skin='glowerive'] .gw-btn-line,
+[data-skin='glowerive'] .gw-btn.gw-btn-line,
+[data-skin='glowerive'] .gw-btn-outline,
+[data-skin='glowerive'] .sv-btn-outline {
+  border-color: #0b3a34;
+  background: #fff;
+  color: #0b3a34;
+}
+[data-skin='glowerive'] .gw-btn-line:hover,
+[data-skin='glowerive'] .gw-btn.gw-btn-line:hover,
+[data-skin='glowerive'] .gw-btn-outline:hover,
+[data-skin='glowerive'] .sv-btn-outline:hover {
+  background: #0b3a34;
+  border-color: #0b3a34;
+  color: #fff;
+}
+[data-skin='glowerive'] .sv-btn-outline.\!border-ink {
+  border-color: #0b3a34 !important;
+}
+[data-skin='glowerive'] .gw-tag {
+  background: #0b3a34;
+  color: #1c6f65;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+[data-skin='glowerive'] .gw-tag.gw-tag-sale {
+  background: #dc2626;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-hero-fill {
+  min-height: 520px;
+}
+@media (min-width: 1024px) {
+  [data-skin='glowerive'] .gw-hero-fill {
+    min-height: 600px;
+  }
+}
+[data-skin='glowerive'] .gw-btn-dark.is-done,
+[data-skin='glowerive'] .gw-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+/* Glowerive: primary buttons are teal with white text; the card's Add to Cart pill is teal and goes deeper on hover; the hero's ghost
+   button is white on the dark picture. */
+[data-skin='glowerive'] .gw-btn,
+[data-skin='glowerive'] .sv-btn-dark {
+  background: #1c6f65;
+  border-color: #1c6f65;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-btn:hover,
+[data-skin='glowerive'] .sv-btn-dark:hover {
+  background: #14594f;
+  border-color: #14594f;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-btn-dark {
+  background: #1c6f65;
+  border-color: #1c6f65;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-btn-dark:hover {
+  background: #0b3a34;
+  border-color: #0b3a34;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-btn.gw-btn-ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-btn.gw-btn-ghost:hover {
+  background: #fff;
+  border-color: #fff;
+  color: #0b3a34;
+}
+[data-skin='glowerive'] .gw-btn.is-done,
+[data-skin='glowerive'] .gw-btn-dark.is-done {
+  background: #157347;
+  border-color: #157347;
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-tag,
+[data-skin='glowerive'] .gw-tag.gw-tag-new {
+  background: #1c6f65;
+  color: #fff;
+}
+[data-skin='glowerive'] .sv-auth button[type='submit'] {
+  background: #1c6f65;
+  color: #fff;
+}
+[data-skin='glowerive'] .sv-auth button[type='submit']:hover {
+  background: #14594f;
+}
+/* The wordmark (the template's Logo.tsx): Roboto Condensed bold italic capitals. */
+[data-skin='glowerive'] .gw-logo {
+  font-family: var(--font-cormorant), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  font-weight: 500;
+  font-style: normal;
+  letter-spacing: 0;
+  text-transform: none;
+}
+/* The template's page band: ink to deep red, white words. */
+[data-skin='glowerive'] .gw-band {
+  background: linear-gradient(to right, #0f4a42, #1c6f65);
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-band :is(h1, h2) {
+  color: #fff;
+}
+[data-skin='glowerive'] .gw-card-shadow {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 18px rgba(0, 0, 0, 0.06);
+}
+/* Glowerive: pill buttons with spaced capitals, rounded inputs, round heart buttons. */
+[data-skin='glowerive'] :is(.gw-btn, .gw-btn-dark, .sv-btn-dark, .gw-btn-line, .gw-btn-outline, .sv-btn-outline, .gw-btn-ghost) {
+  border-radius: 9999px;
+  letter-spacing: 0.12em;
+  font-weight: 600;
+}
+[data-skin='glowerive'] .sv-auth button[type='submit'] {
+  border-radius: 9999px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+[data-skin='glowerive'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.5rem;
+}
+[data-skin='glowerive'] .gw-card-shadow {
+  box-shadow: 0 1px 2px rgba(11, 58, 52, 0.06), 0 6px 18px rgba(11, 58, 52, 0.06);
+}
