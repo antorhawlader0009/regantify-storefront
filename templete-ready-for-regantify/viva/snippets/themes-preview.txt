@@ -1,0 +1,23 @@
+  if (id === 'VIVA') {
+    return (
+      <div className="w-full h-full bg-[#FAF8F4] flex flex-col">
+        <div className="h-1.5 bg-[#0D3B2E]" />
+        <div className="h-4 flex items-center px-2 gap-1.5">
+          <div className="w-6 h-1.5 bg-[#0D3B2E]" />
+          <div className="flex-1 h-2 rounded-full border border-[#B9CFA6] bg-white" />
+        </div>
+        <div className="mx-2 h-9 rounded-lg bg-gradient-to-r from-[#ECE6D3] to-[#D6DCC4] flex flex-col justify-center px-2 gap-0.5">
+          <div className="w-14 h-1.5 bg-[#082A20]" />
+          <div className="w-8 h-1.5 bg-[#0D3B2E]" />
+        </div>
+        <div className="p-2 grid grid-cols-4 gap-1.5 flex-1">
+          {[0, 1, 2, 3].map((n) => (
+            <div key={n} className="rounded bg-white p-0.5 shadow-sm">
+              <div className="h-full rounded-sm bg-[#EFEDEA]" />
+            </div>
+          ))}
+        </div>
+        <div className="h-3 bg-[#082A20]" />
+      </div>
+    );
+  }

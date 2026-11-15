@@ -1,0 +1,14 @@
+// Viva's own order, as the template's home page: the hero card, the round category row, top picks, the three promo tiles, more products, then the feature strip.
+export const VIVA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
