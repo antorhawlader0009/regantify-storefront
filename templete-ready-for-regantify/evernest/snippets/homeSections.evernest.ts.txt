@@ -1,0 +1,14 @@
+// Evernest's own order, as the template's home page: the full-width hero, the soft welcome panel, the image category cards, the listings, the dark trust block.
+export const EVERNEST_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CAMPAIGNS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
