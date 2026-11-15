@@ -1,0 +1,229 @@
+/* ---------------------------------------------------------------------------------------------------------------------
+   Groceryanto: the Groceryanto grocery template (templete/others-templetes/Grocery and Food/Grocery/groceryanto) on StorePal's
+   features. The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="groceryanto" next to data-theme="storepal".
+   A plain white WooCommerce-style shop: vivid green (#1cb63b, deeper #008000) for buttons and links, ink #111, body text #444,
+   thin #ebebeb lines, a light grey footer (#f7f8f9), white product cards with a pale green border (#b3dcbc), centred names
+   and prices, Jost headings over Instrument Sans with a little letter spacing. Store > Branding's own colour and fonts still
+   win. Shared StorePal parts that Solevo also draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='groceryanto'] {
+  --color-ink: #111111;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #1cb63b;
+  --color-accent-dark: #008000;
+  --color-accent-light: #e8f8ec;
+  --color-muted: #767676;
+  --color-line: #ebebeb;
+  --color-line-strong: rgba(17, 17, 17, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #1cb63b;
+  --ga-brand: #1cb63b;
+  --ga-brand-dark: #008000;
+  --ga-latte: #e8f8ec;
+  --ga-mocha: #1cb63b;
+  --ga-taupe: #1cb63b;
+  --ga-stone: #525252;
+  --ga-soft: #e8f8ec;
+  --ga-cream: #ffffff;
+  --ga-sand: #e8f8ec;
+  --ga-peach: #e8f8ec;
+  --ga-card: #ffffff;
+  --ga-panel: #e8f8ec;
+  --ga-tan: #e8f8ec;
+  --ga-blush: #e8f8ec;
+  --ga-footer: #f7f8f9;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #1cb63b;
+  --sv-gold-dark: #008000;
+  --sv-sand: #e8f8ec;
+  --sv-card: #e8f8ec;
+  --sv-panel: #e8f8ec;
+  --pm-card: #e8f8ec;
+  --pm-soft: #e8f8ec;
+  --pm-yellow: #1cb63b;
+  --pm-yellow-strong: #008000;
+  --font-display: var(--font-jost), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-instrument), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 2px 10px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 20px rgba(0, 0, 0, 0.1);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  letter-spacing: 0.01em;
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='groceryanto'] .ga-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  [data-skin='groceryanto'] .ga-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='groceryanto'] .ga-wrap {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+/* The template's buttons: an ink filled one and a white outline one. */
+[data-skin='groceryanto'] .ga-btn-dark,
+[data-skin='groceryanto'] .ga-btn-outline,
+[data-skin='groceryanto'] .sv-btn-dark,
+[data-skin='groceryanto'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='groceryanto'] .ga-btn-dark,
+[data-skin='groceryanto'] .sv-btn-dark {
+  background: #1cb63b;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(17, 17, 17, 0.1);
+}
+[data-skin='groceryanto'] .ga-btn-dark:hover,
+[data-skin='groceryanto'] .sv-btn-dark:hover {
+  background: #008000;
+}
+[data-skin='groceryanto'] .ga-btn-outline,
+[data-skin='groceryanto'] .sv-btn-outline {
+  border: 1px solid #1cb63b;
+  background: transparent;
+  color: #008000;
+}
+[data-skin='groceryanto'] .ga-btn-outline:hover,
+[data-skin='groceryanto'] .sv-btn-outline:hover {
+  background: #e8f8ec;
+}
+[data-skin='groceryanto'] .sv-btn-outline.\!border-ink {
+  border-color: #1cb63b !important;
+}
+[data-skin='groceryanto'] .ga-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='groceryanto'] .ga-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='groceryanto'] .ga-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='groceryanto'] .ga-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes ga-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ga-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.ga-fade-up {
+  animation: ga-fade-up 0.5s ease both;
+}
+.ga-fade-in {
+  animation: ga-fade-in 0.4s ease both;
+}
+@keyframes ga-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='groceryanto'] .ga-marquee-track {
+  animation: ga-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='groceryanto'] .ga-marquee:hover .ga-marquee-track,
+[data-skin='groceryanto'] .ga-marquee:focus-within .ga-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='groceryanto'] .ga-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='groceryanto'] .ga-marquee {
+    overflow-x: auto;
+  }
+  .ga-fade-up,
+  .ga-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='groceryanto'] .ga-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='groceryanto'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='groceryanto'] .sv-auth input:focus {
+  border-color: #1cb63b;
+  box-shadow: none;
+}
+[data-skin='groceryanto'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #1cb63b;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='groceryanto'] .sv-auth button[type='submit']:hover {
+  background: #008000;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='groceryanto'] [data-rg='product-tabs'] .border-accent {
+  border-color: #1cb63b;
+}
+[data-skin='groceryanto'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #1cb63b;
+}
+/* Groceryanto's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='groceryanto'] .ga-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(0, 0, 0, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+/* Groceryanto's footer is deep brown (StorePal's is navy), so StorePal's navy footer rule is undone here for the parts
+   Groceryanto's footer reuses. */
+[data-theme='storepal'][data-skin='groceryanto'] footer[data-rg='footer'] {
+  background-color: var(--ga-footer);
+  color: #444444;
+}
+
