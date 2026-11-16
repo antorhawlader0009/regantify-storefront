@@ -95,7 +95,7 @@ export function NovellaCardView({
           <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
             <span
               className="rounded px-2 py-0.5 text-[10px] font-semibold leading-none text-white"
-              style={{ backgroundColor: badge.color || ('#c0714e') }}
+              style={{ backgroundColor: badge.color || ('#a85d3c') }}
             >
               {badge.text}
             </span>

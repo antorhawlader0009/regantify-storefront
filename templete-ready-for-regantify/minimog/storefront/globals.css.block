@@ -236,3 +236,6 @@
   --color-surface: #ffffff;
   --color-canvas: #fafafa;
 }
+[data-theme='storepal'][data-skin='minimog'] footer[data-rg='footer'] .text-accent {
+  color: #22632f;
+}
