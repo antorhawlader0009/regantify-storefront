@@ -225,5 +225,15 @@
 [data-theme='storepal'][data-skin='groceryanto'] footer[data-rg='footer'] {
   background-color: var(--ga-footer);
   color: #444444;
+  /* StorePal's base footer rule makes ink/muted white for a dark footer; this one is light grey, so they go back to dark. */
+  --color-ink: #111111;
+  --color-muted: #767676;
+  --color-line: #ebebeb;
+  --color-line-strong: #d6d6d6;
+  --color-surface: #ffffff;
+  --color-canvas: #f7f8f9;
+}
+[data-theme='storepal'][data-skin='groceryanto'] footer[data-rg='footer'] .text-accent {
+  color: #008000;
 }
 

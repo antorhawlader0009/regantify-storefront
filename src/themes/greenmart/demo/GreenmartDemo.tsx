@@ -22,7 +22,7 @@ function DemoCard({ p }: { p: DemoProduct }) {
       plainImage
       price={taka(p.price)}
       oldPrice={p.oldPrice ? taka(p.oldPrice) : null}
-      badge={off > 0 ? { text: `-${off}%` } : p.isNew ? { text: 'New', color: '#fbbf24' } : null}
+      badge={off > 0 ? { text: `-${off}%` } : p.isNew ? { text: 'New', color: '#b45309' } : null}
       rating={{ average: p.rating, count: p.reviews }}
       wished={wished}
       onWish={() => setWished((v) => !v)}

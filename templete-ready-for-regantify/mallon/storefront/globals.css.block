@@ -37,6 +37,7 @@
   --ml-ink: #222222;
   --ml-teal: #1fb89a;
   --ml-teal-dark: #0f9d82;
+  --ml-teal-text: #0b7c68;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
   --sv-gold: #d9534f;
   --sv-gold-dark: #c9443f;
@@ -221,4 +222,22 @@
   border-color: rgba(217, 83, 79, 0.15);
   border-radius: 0.75rem;
   box-shadow: var(--shadow-card);
+}
+
+
+/* Mallon's footer is the template's sand colour with dark text: StorePal's base rule paints every footer navy with white text, so it is
+   undone here (the call bar inside keeps its own fixed colours). */
+[data-theme='storepal'][data-skin='mallon'] footer[data-rg='footer'] {
+  background-color: var(--ml-footer);
+  border-top-color: #e9e9e0;
+  color: #6b7280;
+  --color-ink: #222222;
+  --color-muted: #6b7280;
+  --color-line: #e9e9e0;
+  --color-line-strong: #d6d6cc;
+  --color-surface: #ffffff;
+  --color-canvas: #f5f5ef;
+}
+[data-theme='storepal'][data-skin='mallon'] footer[data-rg='footer'] .text-accent {
+  color: #c9443f;
 }

@@ -140,11 +140,11 @@ export function MallonCardView({
         </h3>
         {subtitle && <p className="mt-0.5 truncate text-[11px] text-neutral-500">{subtitle}</p>}
         {priceText ? (
-          <p className="mt-1 text-[13px] font-semibold text-[var(--ml-teal)]">{priceText}</p>
+          <p className="mt-1 text-[13px] font-semibold text-[var(--ml-teal-text)]">{priceText}</p>
         ) : (
           price && (
             <p className="mt-1 flex flex-wrap items-baseline gap-x-2" data-rg="product-card-price">
-              <span className="text-[13px] font-semibold text-[var(--ml-teal)]">{price}</span>
+              <span className="text-[13px] font-semibold text-[var(--ml-teal-text)]">{price}</span>
               {oldPrice && <span className="text-xs font-normal text-gray-300 line-through">{oldPrice}</span>}
             </p>
           )

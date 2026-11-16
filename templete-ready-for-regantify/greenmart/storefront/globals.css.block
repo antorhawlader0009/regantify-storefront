@@ -234,4 +234,8 @@
   --color-accent: #1c6b22;
   --color-accent-dark: #cddfb2;
 }
+/* Links in the deep green footer that read the accent (the credit, the app links) need a light green, not the dark leaf green. */
+[data-theme='storepal'][data-skin='greenmart'] footer[data-rg='footer'] .text-accent {
+  color: #cddfb2;
+}
 
