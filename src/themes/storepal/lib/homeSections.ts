@@ -168,6 +168,21 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Glowerive's own order, as the template's home page: hero, the pale feature panel (it overlaps the hero), shop by category, featured products, the offer band.
+export const GLOWERIVE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Gadgetstore's own order, as the template's home page: the light hero, the benefits strip, the round category row, best sellers, the two promo tiles, then the rest.
 export const GADGETSTORE_ORDER: HomeSectionId[] = [
   'HERO',

@@ -156,6 +156,29 @@ export function ChicwoveLanguageSwitch({ className = '' }: { className?: string 
   );
 }
 
+/** Glowerive's switch, in its teal header: small white capitals like its menu links, the chosen language underlined. */
+export function GloweriveLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[12px] font-medium uppercase tracking-wider ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-white/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-semibold text-white underline underline-offset-4' : 'text-white/70 hover:text-white'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** Gadgetstore's switch, in its header's style: small text like its menu links, the chosen language in black with an underline. */
 export function GadgetstoreLanguageSwitch({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useStoreLanguageSwitch();
