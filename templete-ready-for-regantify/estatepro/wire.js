@@ -118,6 +118,10 @@ function footerBlockFix(block) {
   out = rep(out, 'text-sm font-semibold', 'text-[11px] font-semibold');
   out = rep(out, 'text-sm font-medium', 'text-[11px] font-semibold');
   out = rep(out, 'font-bold sm:text-2xl', 'font-extrabold sm:text-2xl');
+  // the gold band fades to near cream, so the band text and the WhatsApp button must be dark (white was unreadable)
+  out = rep(out, 'p-6 text-white sm:p-8', 'p-6 text-[#141414] sm:p-8');
+  out = rep(out, 'text-white/90', 'text-[#141414]/80');
+  out = rep(out, 'border border-white/80 px-6 py-3 text-[11px] font-semibold text-white transition hover:bg-white hover:text-[#141414]', 'border border-[#141414]/70 px-6 py-3 text-[11px] font-semibold text-[#141414] transition hover:bg-[#141414] hover:text-white');
   return out;
 }
 

@@ -859,14 +859,14 @@ export function FooterCallBar({
     return (
       <section style={barStyle} aria-label={heading}>
         <div className="ep-wrap pb-2 pt-10">
-          <div className={`flex flex-col gap-5 rounded-2xl bg-gradient-to-r from-[#F2C468] to-[#F8DC9B] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+          <div className={`flex flex-col gap-5 rounded-2xl bg-gradient-to-r from-[#F2C468] to-[#F8DC9B] p-6 text-[#141414] sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
             <div className="flex items-center gap-4">
               <MessageCircle size={32} className="shrink-0" aria-hidden />
               <div className="min-w-0">
                 <p className="font-display text-xl font-extrabold sm:text-2xl" style={textStyle}>
                   {heading}
                 </p>
-                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                <p className="mt-1 text-sm text-[#141414]/80" style={lineStyle}>
                   {line}
                 </p>
               </div>
@@ -887,7 +887,7 @@ export function FooterCallBar({
                   href={waHref}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded border border-white/80 px-6 py-3 text-[11px] font-semibold text-white transition hover:bg-white hover:text-[#141414] sm:flex-none"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded border border-[#141414]/70 px-6 py-3 text-[11px] font-semibold text-[#141414] transition hover:bg-[#141414] hover:text-white sm:flex-none"
                   style={waStyle}
                 >
                   <MessageCircle size={15} aria-hidden />

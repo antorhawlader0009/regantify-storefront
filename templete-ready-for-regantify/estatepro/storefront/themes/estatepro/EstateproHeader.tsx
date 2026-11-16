@@ -326,7 +326,7 @@ export function EstateproHeader({
       <EstateproTopBar subdomain={subdomain} />
       <header data-rg="header" className="sticky top-0 z-40 bg-black/90">
         <div className="ep-wrap flex h-[64px] items-center justify-between gap-3 sm:h-[72px]">
-          <button type="button" className="-ml-1 p-1 lg:hidden" aria-label={t('Menu')} onClick={() => setMenuOpen(true)}>
+          <button type="button" className="-ml-1 p-1 text-white lg:hidden" aria-label={t('Menu')} onClick={() => setMenuOpen(true)}>
             <MenuIcon className="h-6 w-6" />
           </button>
 

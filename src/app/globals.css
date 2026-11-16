@@ -3625,6 +3625,15 @@ body {
 [data-skin='estatepro'] .sv-btn-outline:hover {
   background: #FDF8EE;
 }
+/* Outline buttons (Buy Now, View Full Cart): deep gold text on white is only about 2.6:1, so the label is ink. */
+[data-skin='estatepro'] .ep-btn-outline,
+[data-skin='estatepro'] .sv-btn-outline {
+  color: #141414;
+}
+[data-skin='estatepro'] .ep-btn-outline:hover,
+[data-skin='estatepro'] .sv-btn-outline:hover {
+  background: #F2C468;
+}
 [data-skin='estatepro'] .sv-btn-outline.\!border-ink {
   border-color: #F2C468 !important;
 }
