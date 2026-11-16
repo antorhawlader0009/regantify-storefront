@@ -127,7 +127,7 @@ export function NvHero({
               
               <div className="nv-wrap relative flex h-full min-h-[520px] items-center py-16 lg:min-h-[640px]">
                 <div className="max-w-xl">
-                  {s.eyebrow && <p className="text-xs font-bold uppercase tracking-[0.25em] text-[var(--nv-brand)]">{s.eyebrow}</p>}
+                  {s.eyebrow && <p className="text-xs font-bold uppercase tracking-[0.25em] text-[#dba083]">{s.eyebrow}</p>}
                   <h2 className="mt-4 text-[clamp(2.25rem,5.2vw,4.75rem)] font-extrabold leading-[1.05] tracking-tight !text-white">
                     {s.title.map((line, li) => (
                       <span key={line + li} className="block">
