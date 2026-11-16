@@ -13,6 +13,7 @@ import { TechzoneProductsView } from '@/themes/techzone/TechzoneProductsView';
 import { StrideProductsView } from '@/themes/stride/StrideProductsView';
 import { VaeloraProductsView } from '@/themes/vaelora/VaeloraProductsView';
 import { ChicwoveProductsView } from '@/themes/chicwove/ChicwoveProductsView';
+import { FurniluxProductsView } from '@/themes/furnilux/FurniluxProductsView';
 import { EstateproProductsView } from '@/themes/estatepro/EstateproProductsView';
 import { DrivecraftProductsView } from '@/themes/drivecraft/DrivecraftProductsView';
 import { BeloraProductsView } from '@/themes/belora/BeloraProductsView';
@@ -48,7 +49,7 @@ export default async function ProductsPage({ params }: PageProps) {
   const { store, products, categories, categoryDetails } = data;
   const skin = storeSkin(store.theme);
   if (!isPageSkin(skin)) notFound();
-  const ProductsView = skin === 'stride' ? StrideProductsView : skin === 'vaelora' ? VaeloraProductsView : skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'elevate' ? ElevateProductsView : skin === 'belora' ? BeloraProductsView : skin === 'drivecraft' ? DrivecraftProductsView : skin === 'estatepro' ? EstateproProductsView : skin === 'chicwove' ? ChicwoveProductsView : skin === 'solevo' ? SolevoProductsView : PlaymateProductsView;
+  const ProductsView = skin === 'stride' ? StrideProductsView : skin === 'vaelora' ? VaeloraProductsView : skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'elevate' ? ElevateProductsView : skin === 'belora' ? BeloraProductsView : skin === 'drivecraft' ? DrivecraftProductsView : skin === 'estatepro' ? EstateproProductsView : skin === 'furnilux' ? FurniluxProductsView : skin === 'chicwove' ? ChicwoveProductsView : skin === 'solevo' ? SolevoProductsView : PlaymateProductsView;
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
       <StoreHeader subdomain={subdomain} storeName={store.storeName} categories={categories} categoryDetails={categoryDetails} logoUrl={store.logoUrl} />

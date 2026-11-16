@@ -19,6 +19,7 @@ import { TechzoneFooter } from '../../techzone/TechzoneFooter';
 import { StrideFooter } from '../../stride/StrideFooter';
 import { VaeloraFooter } from '../../vaelora/VaeloraFooter';
 import { ChicwoveFooter } from '../../chicwove/ChicwoveFooter';
+import { FurniluxFooter } from '../../furnilux/FurniluxFooter';
 import { EstateproFooter } from '../../estatepro/EstateproFooter';
 import { DrivecraftFooter } from '../../drivecraft/DrivecraftFooter';
 import { BeloraFooter } from '../../belora/BeloraFooter';
@@ -134,6 +135,7 @@ export function StoreFooter(props: StoreFooterProps) {
   if (skin === 'mahabesh') return <MahabeshFooter {...props} />;
   if (skin === 'chronics') return <ChronicsFooter {...props} />;
   if (skin === 'chicwove') return <ChicwoveFooter {...props} />;
+  if (skin === 'furnilux') return <FurniluxFooter {...props} />;
   if (skin === 'estatepro') return <EstateproFooter {...props} />;
   if (skin === 'drivecraft') return <DrivecraftFooter {...props} />;
   if (skin === 'belora') return <BeloraFooter {...props} />;
@@ -577,7 +579,7 @@ export function FooterCallBar({
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
   /** PlayMate draws it as the template's light band, Solevo as its dark newsletter band. */
-  look?: 'playmate' | 'solevo' | 'chicwove' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
   /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
   design?: CallBarStyle | null;
 }) {
@@ -843,6 +845,51 @@ export function FooterCallBar({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/80 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'furnilux') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="fu-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-2xl bg-gradient-to-r from-[#2f5016] to-[#3f6b1f] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-extrabold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white px-6 py-3 text-xs font-bold uppercase tracking-wide text-[#2f5016] transition hover:bg-[#e9f0e1] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded border border-white/80 px-6 py-3 text-xs font-bold uppercase tracking-wide text-white transition hover:bg-white hover:text-[#2f5016] sm:flex-none"
                   style={waStyle}
                 >
                   <MessageCircle size={15} aria-hidden />

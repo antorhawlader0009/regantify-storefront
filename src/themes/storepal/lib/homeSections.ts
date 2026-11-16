@@ -168,6 +168,21 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Furnilux's own order, as the template's home page: hero, shop by room, featured products, brands, then the offer banner.
+export const FURNILUX_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Estatepro's own order, as the template's home page: the full-screen hero, the image category cards, the dark trust block, the listings, the dark contact bar.
 export const ESTATEPRO_ORDER: HomeSectionId[] = [
   'HERO',
