@@ -4,7 +4,8 @@ module.exports = function patchFonts(file) {
   let s = fs.readFileSync(file, 'utf8');
   if (s.includes('--font-jost')) return false;
   const nl = s.includes('\r\n') ? '\r\n' : '\n';
-  s = s.replace('Cormorant_Garamond }', 'Cormorant_Garamond, Jost }');
+  // add it after whichever font was imported last (other kits add theirs at the end, so no fixed name here)
+  s = s.replace(/ \} from 'next\/font\/google'/, ", Jost } from 'next/font/google'");
   const decl = "const jost = Jost({ subsets: ['latin'], weight: ['300', '400', '500'], variable: '--font-jost', display: 'swap', preload: false });";
   s = s.replace(/export const fontVariables/, decl + nl + nl + 'export const fontVariables');
   s = s.replace('${cormorant.variable}', '${cormorant.variable} ${jost.variable}');

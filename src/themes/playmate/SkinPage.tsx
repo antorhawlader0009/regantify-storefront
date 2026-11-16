@@ -11,6 +11,10 @@ import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
+import { NovellaPageHeader } from '../novella/NovellaBreadcrumb';
+import { NovatrendPageHeader } from '../novatrend/NovatrendBreadcrumb';
+import { MinimogPageHeader } from '../minimog/MinimogBreadcrumb';
+import { MenauraPageHeader } from '../menaura/MenauraBreadcrumb';
 import { MallonPageHeader } from '../mallon/MallonBreadcrumb';
 import { GroceryantoPageHeader } from '../groceryanto/GroceryantoBreadcrumb';
 import { GreenmartPageHeader } from '../greenmart/GreenmartBreadcrumb';
@@ -103,6 +107,46 @@ export function SkinPage({
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
         <div className="cw-wrap py-8 sm:py-10">
           <div className="cw-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'novella') {
+    return (
+      <main className="w-full flex-1">
+        <NovellaPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="nv-wrap py-8 sm:py-10">
+          <div className="nv-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'novatrend') {
+    return (
+      <main className="w-full flex-1">
+        <NovatrendPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="nt-wrap py-8 sm:py-10">
+          <div className="nt-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'minimog') {
+    return (
+      <main className="w-full flex-1">
+        <MinimogPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="mg-wrap py-8 sm:py-10">
+          <div className="mg-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'menaura') {
+    return (
+      <main className="w-full flex-1">
+        <MenauraPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="mn-wrap py-8 sm:py-10">
+          <div className="mn-page">{children}</div>
         </div>
       </main>
     );

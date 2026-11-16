@@ -168,6 +168,66 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Novella's own order, as the template's home page: hero, shop by category (round pictures), the three promo tiles, trending products, more products, then the feature strip.
+export const NOVELLA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Novatrend's own order, as the template's home page: hero, the feature strip, shop by categories, new arrivals, best sellers, then the promo tiles.
+export const NOVATREND_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'CAMPAIGNS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Minimog's own order, as the template's home page: hero, a light feature strip, shop by category, the sale banner, then trending products.
+export const MINIMOG_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Menaura's own order, as the template's home page: hero, essentials (categories), the offer banner, then trending products.
+export const MENAURA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Mallon's own order, as the template's home page: hero, a plain feature strip, shop by category, the promo tiles, then the popular products.
 export const MALLON_ORDER: HomeSectionId[] = [
   'HERO',

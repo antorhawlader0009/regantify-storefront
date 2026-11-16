@@ -5459,3 +5459,949 @@ body {
 [data-theme='storepal'][data-skin='mallon'] footer[data-rg='footer'] .text-accent {
   color: #c9443f;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Menaura (2026-11-09): the Menaura menswear template (templete/others-templetes/Fashion/Clothing/menaura) on
+   StorePal's features. The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="menaura" next to
+   data-theme="storepal". Ink (#2b2420) is the shared accent and button colour, mocha (#7a5c40) the highlight, the page is warm cream, headings are Cormorant Garamond, body is Jost.
+   Store > Branding's own colour and fonts still win (inline on the same wrapper).
+   Shared StorePal parts that Solevo also draws (product panel, account panel, product sections) read the sv-* classes and
+   --sv-* variables, so those are re-pointed to Menaura's look below instead of copying the markup.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='menaura'] {
+  --color-ink: #2b2420;
+  --color-canvas: #faf6f2;
+  --color-surface: #ffffff;
+  --color-accent: #2b2420;
+  --color-accent-dark: #000000;
+  --color-accent-light: #f0e8e0;
+  --color-muted: #6a5d54;
+  --color-line: rgba(122, 92, 64, 0.15);
+  --color-line-strong: rgba(43, 36, 32, 0.2);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #7a5c40;
+  --mn-brand: #7a5c40;
+  --mn-brand-dark: #5f4630;
+  --mn-latte: #e9dacb;
+  --mn-mocha: #7a5c40;
+  --mn-taupe: #9c7a58;
+  --mn-stone: #6a5d54;
+  --mn-soft: #f0e8e0;
+  --mn-cream: #faf6f2;
+  --mn-sand: #f0e8e0;
+  --mn-peach: #f0e8e0;
+  --mn-card: #f0e8e0;
+  --mn-panel: #f5efe8;
+  --mn-tan: #e9dacb;
+  --mn-blush: #f0e8e0;
+  --mn-footer: #2b2420;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #7a5c40;
+  --sv-gold-dark: #5f4630;
+  --sv-sand: #f0e8e0;
+  --sv-card: #f0e8e0;
+  --sv-panel: #f5efe8;
+  --pm-card: #f0e8e0;
+  --pm-soft: #f0e8e0;
+  --pm-yellow: #7a5c40;
+  --pm-yellow-strong: #5f4630;
+  --font-display: var(--font-cormorant), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-jost), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 6px 20px rgba(43, 36, 32, 0.1);
+  --shadow-card-hover: 0 12px 28px rgba(43, 36, 32, 0.14);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='menaura'] .mn-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 80rem;
+  padding-left: 1.25rem;
+  padding-right: 1.25rem;
+}
+@media (min-width: 640px) {
+  [data-skin='menaura'] .mn-wrap {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='menaura'] .mn-wrap {
+    padding-left: 2.5rem;
+    padding-right: 2.5rem;
+  }
+}
+/* The template's buttons: an ink filled one and a white outline one. */
+[data-skin='menaura'] .mn-btn-dark,
+[data-skin='menaura'] .mn-btn-outline,
+[data-skin='menaura'] .sv-btn-dark,
+[data-skin='menaura'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='menaura'] .mn-btn-dark,
+[data-skin='menaura'] .sv-btn-dark {
+  background: #2b2420;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(43, 36, 32, 0.1);
+}
+[data-skin='menaura'] .mn-btn-dark:hover,
+[data-skin='menaura'] .sv-btn-dark:hover {
+  background: #000000;
+}
+[data-skin='menaura'] .mn-btn-outline,
+[data-skin='menaura'] .sv-btn-outline {
+  border: 1px solid rgba(43, 36, 32, 0.3);
+  background: #ffffff;
+  color: #2b2420;
+}
+[data-skin='menaura'] .mn-btn-outline:hover,
+[data-skin='menaura'] .sv-btn-outline:hover {
+  background: #f0e8e0;
+}
+[data-skin='menaura'] .sv-btn-outline.\!border-ink {
+  border-color: #2b2420 !important;
+}
+[data-skin='menaura'] .mn-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='menaura'] .mn-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='menaura'] .mn-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='menaura'] .mn-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes mn-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mn-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.mn-fade-up {
+  animation: mn-fade-up 0.5s ease both;
+}
+.mn-fade-in {
+  animation: mn-fade-in 0.4s ease both;
+}
+@keyframes mn-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='menaura'] .mn-marquee-track {
+  animation: mn-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='menaura'] .mn-marquee:hover .mn-marquee-track,
+[data-skin='menaura'] .mn-marquee:focus-within .mn-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='menaura'] .mn-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='menaura'] .mn-marquee {
+    overflow-x: auto;
+  }
+  .mn-fade-up,
+  .mn-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='menaura'] .mn-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='menaura'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='menaura'] .sv-auth input:focus {
+  border-color: #7a5c40;
+  box-shadow: none;
+}
+[data-skin='menaura'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #2b2420;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='menaura'] .sv-auth button[type='submit']:hover {
+  background: #000000;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='menaura'] [data-rg='product-tabs'] .border-accent {
+  border-color: #7a5c40;
+}
+[data-skin='menaura'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #7a5c40;
+}
+/* Menaura's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='menaura'] .mn-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(122, 92, 64, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+/* Menaura's footer is deep brown (StorePal's is navy), so StorePal's navy footer rule is undone here for the parts
+   Menaura's footer reuses. */
+[data-theme='storepal'][data-skin='menaura'] footer[data-rg='footer'] {
+  background-color: var(--mn-footer);
+  color: rgba(255, 255, 255, 0.8);
+  --color-ink: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.7);
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #2b2420;
+  --color-accent: #e9dacb;
+  --color-accent-dark: #ffffff;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Minimog: the Minimog lifestyle-store template (templete/others-templetes/General/minimog) on StorePal's features. The store layout
+   (and lib/portalRoot.ts for dialogs) adds data-skin="minimog" next to data-theme="storepal". White page, forest green (#22632f,
+   deeper #184a22 and #12301a for the top bar) as the accent and the fill of buttons, soft sage (#eef0e8) panels, near-black ink
+   (#111), Inter everywhere with bold headings, compact text, a white header with underlined links, light neutral panels and a light
+   footer. Store > Branding's own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes
+   and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='minimog'] {
+  --color-ink: #111111;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #22632f;
+  --color-accent-dark: #184a22;
+  --color-accent-light: #f7f7f5;
+  --color-muted: #525252;
+  --color-line: #e5e5e5;
+  --color-line-strong: rgba(0, 0, 0, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #22632f;
+  --mg-brand: #22632f;
+  --mg-brand-dark: #184a22;
+  --mg-latte: #e5e5e5;
+  --mg-mocha: #22632f;
+  --mg-taupe: #22632f;
+  --mg-stone: #525252;
+  --mg-soft: #eef0e8;
+  --mg-cream: #ffffff;
+  --mg-sand: #f7f7f5;
+  --mg-peach: #f7f7f5;
+  --mg-card: #f7f7f5;
+  --mg-panel: #f7f7f5;
+  --mg-tan: #e5e5e5;
+  --mg-blush: #f7f7f5;
+  --mg-footer: #fafafa;
+  --mg-ink: #111111;
+  --mg-deeper: #12301a;
+  --mg-sage: #eef0e8;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #22632f;
+  --sv-gold-dark: #184a22;
+  --sv-sand: #f7f7f5;
+  --sv-card: #f7f7f5;
+  --sv-panel: #f7f7f5;
+  --pm-card: #f7f7f5;
+  --pm-soft: #f7f7f5;
+  --pm-yellow: #22632f;
+  --pm-yellow-strong: #184a22;
+  --font-display: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 1px 6px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='minimog'] .mg-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+@media (min-width: 640px) {
+  [data-skin='minimog'] .mg-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='minimog'] .mg-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+/* The template's buttons: a green filled one and a green outline one. */
+[data-skin='minimog'] .mg-btn-dark,
+[data-skin='minimog'] .mg-btn-outline,
+[data-skin='minimog'] .sv-btn-dark,
+[data-skin='minimog'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='minimog'] .mg-btn-dark,
+[data-skin='minimog'] .sv-btn-dark {
+  background: #22632f;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+[data-skin='minimog'] .mg-btn-dark:hover,
+[data-skin='minimog'] .sv-btn-dark:hover {
+  background: #184a22;
+}
+[data-skin='minimog'] .mg-btn-outline,
+[data-skin='minimog'] .sv-btn-outline {
+  border: 1px solid #22632f;
+  background: transparent;
+  color: #22632f;
+}
+[data-skin='minimog'] .mg-btn-outline:hover,
+[data-skin='minimog'] .sv-btn-outline:hover {
+  background: #f7f7f5;
+}
+[data-skin='minimog'] .sv-btn-outline.\!border-ink {
+  border-color: #22632f !important;
+}
+[data-skin='minimog'] .mg-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='minimog'] .mg-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='minimog'] .mg-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='minimog'] .mg-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes mg-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes mg-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.mg-fade-up {
+  animation: mg-fade-up 0.5s ease both;
+}
+.mg-fade-in {
+  animation: mg-fade-in 0.4s ease both;
+}
+@keyframes mg-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='minimog'] .mg-marquee-track {
+  animation: mg-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='minimog'] .mg-marquee:hover .mg-marquee-track,
+[data-skin='minimog'] .mg-marquee:focus-within .mg-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='minimog'] .mg-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='minimog'] .mg-marquee {
+    overflow-x: auto;
+  }
+  .mg-fade-up,
+  .mg-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='minimog'] .mg-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='minimog'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='minimog'] .sv-auth input:focus {
+  border-color: #22632f;
+  box-shadow: none;
+}
+[data-skin='minimog'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #22632f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='minimog'] .sv-auth button[type='submit']:hover {
+  background: #184a22;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='minimog'] [data-rg='product-tabs'] .border-accent {
+  border-color: #22632f;
+}
+[data-skin='minimog'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #22632f;
+}
+/* Minimog's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='minimog'] .mg-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(34, 99, 47, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Novatrend: the NovaTrend general-store template (templete/others-templetes/General/novatrend) on StorePal's features. The store
+   layout (and lib/portalRoot.ts for dialogs) adds data-skin="novatrend" next to data-theme="storepal". White page and header,
+   vivid orange (#ff4b0f, deeper #e63e05, pale #fff1eb) as the accent and the fill of buttons, near-black (#0b0b0b) announcement
+   bar, hero and footer, light grey (#f6f6f6) rounded product cards, Inter everywhere with extra-bold headings. Store > Branding's
+   own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes and --sv-* variables,
+   re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='novatrend'] {
+  --color-ink: #0b0b0b;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #ff4b0f;
+  --color-accent-dark: #e63e05;
+  --color-accent-light: #f6f6f6;
+  --color-muted: #525252;
+  --color-line: #e7e5e4;
+  --color-line-strong: rgba(11, 11, 11, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #ff4b0f;
+  --nt-brand: #ff4b0f;
+  --nt-brand-dark: #e63e05;
+  --nt-latte: #fff1eb;
+  --nt-mocha: #ff4b0f;
+  --nt-taupe: #ff4b0f;
+  --nt-stone: #525252;
+  --nt-soft: #f6f6f6;
+  --nt-cream: #ffffff;
+  --nt-sand: #f6f6f6;
+  --nt-peach: #f6f6f6;
+  --nt-card: #f6f6f6;
+  --nt-panel: #f6f6f6;
+  --nt-tan: #fff1eb;
+  --nt-blush: #f6f6f6;
+  --nt-footer: #0b0b0b;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #ff4b0f;
+  --sv-gold-dark: #e63e05;
+  --sv-sand: #f6f6f6;
+  --sv-card: #f6f6f6;
+  --sv-panel: #f6f6f6;
+  --pm-card: #f6f6f6;
+  --pm-soft: #f6f6f6;
+  --pm-yellow: #ff4b0f;
+  --pm-yellow-strong: #e63e05;
+  --font-display: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --shadow-card-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='novatrend'] .nt-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  [data-skin='novatrend'] .nt-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='novatrend'] .nt-wrap {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+/* The template's buttons: an ink filled one and a white outline one. */
+[data-skin='novatrend'] .nt-btn-dark,
+[data-skin='novatrend'] .nt-btn-outline,
+[data-skin='novatrend'] .sv-btn-dark,
+[data-skin='novatrend'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='novatrend'] .nt-btn-dark,
+[data-skin='novatrend'] .sv-btn-dark {
+  background: #ff4b0f;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(11, 11, 11, 0.1);
+}
+[data-skin='novatrend'] .nt-btn-dark:hover,
+[data-skin='novatrend'] .sv-btn-dark:hover {
+  background: #e63e05;
+}
+[data-skin='novatrend'] .nt-btn-outline,
+[data-skin='novatrend'] .sv-btn-outline {
+  border: 1px solid #ff4b0f;
+  background: transparent;
+  color: #e63e05;
+}
+[data-skin='novatrend'] .nt-btn-outline:hover,
+[data-skin='novatrend'] .sv-btn-outline:hover {
+  background: #f6f6f6;
+}
+[data-skin='novatrend'] .sv-btn-outline.\!border-ink {
+  border-color: #ff4b0f !important;
+}
+[data-skin='novatrend'] .nt-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='novatrend'] .nt-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='novatrend'] .nt-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='novatrend'] .nt-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes nt-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nt-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.nt-fade-up {
+  animation: nt-fade-up 0.5s ease both;
+}
+.nt-fade-in {
+  animation: nt-fade-in 0.4s ease both;
+}
+@keyframes nt-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='novatrend'] .nt-marquee-track {
+  animation: nt-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='novatrend'] .nt-marquee:hover .nt-marquee-track,
+[data-skin='novatrend'] .nt-marquee:focus-within .nt-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='novatrend'] .nt-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='novatrend'] .nt-marquee {
+    overflow-x: auto;
+  }
+  .nt-fade-up,
+  .nt-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='novatrend'] .nt-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='novatrend'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='novatrend'] .sv-auth input:focus {
+  border-color: #ff4b0f;
+  box-shadow: none;
+}
+[data-skin='novatrend'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #ff4b0f;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='novatrend'] .sv-auth button[type='submit']:hover {
+  background: #e63e05;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='novatrend'] [data-rg='product-tabs'] .border-accent {
+  border-color: #ff4b0f;
+}
+[data-skin='novatrend'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #ff4b0f;
+}
+/* Novatrend's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='novatrend'] .nt-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(255, 75, 15, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+/* Novatrend's footer is deep brown (StorePal's is navy), so StorePal's navy footer rule is undone here for the parts
+   Novatrend's footer reuses. */
+[data-theme='storepal'][data-skin='novatrend'] footer[data-rg='footer'] {
+  background-color: var(--nt-footer);
+  color: rgba(255, 255, 255, 0.8);
+  --color-ink: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.7);
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #0b0b0b;
+  --color-accent: #ff4b0f;
+  --color-accent-dark: #ff7a4d;
+}
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Novella: the Novella marketplace template (templete/others-templetes/General/novella-store) on StorePal's features. The store
+   layout (and lib/portalRoot.ts for dialogs) adds data-skin="novella" next to data-theme="storepal". Warm cream page and header
+   (#faf8f5), terracotta (#c0714e, deeper #a85d3c) as the accent, sand (#f4efe9) panels, near-black (#111) buttons, hero and
+   footer (#141414), white bordered product cards, Manrope everywhere with extra-bold headings. Store > Branding's own colour
+   and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes and --sv-* variables, re-pointed to
+   this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='novella'] {
+  --color-ink: #111111;
+  --color-canvas: #faf8f5;
+  --color-surface: #ffffff;
+  --color-accent: #c0714e;
+  --color-accent-dark: #a85d3c;
+  --color-accent-light: #f4efe9;
+  --color-muted: #525252;
+  --color-line: #e7e5e4;
+  --color-line-strong: rgba(17, 17, 17, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #c0714e;
+  --nv-brand: #c0714e;
+  --nv-brand-dark: #a85d3c;
+  --nv-latte: #f4efe9;
+  --nv-mocha: #c0714e;
+  --nv-taupe: #c0714e;
+  --nv-stone: #525252;
+  --nv-soft: #f4efe9;
+  --nv-cream: #faf8f5;
+  --nv-sand: #f4efe9;
+  --nv-peach: #f4efe9;
+  --nv-card: #ffffff;
+  --nv-panel: #f4efe9;
+  --nv-tan: #f4efe9;
+  --nv-blush: #f4efe9;
+  --nv-footer: #141414;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #c0714e;
+  --sv-gold-dark: #a85d3c;
+  --sv-sand: #f4efe9;
+  --sv-card: #f4efe9;
+  --sv-panel: #f4efe9;
+  --pm-card: #f4efe9;
+  --pm-soft: #f4efe9;
+  --pm-yellow: #c0714e;
+  --pm-yellow-strong: #a85d3c;
+  --font-display: var(--font-manrope), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-manrope), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 10px 30px rgba(17, 17, 17, 0.08);
+  --shadow-card-hover: 0 12px 32px rgba(17, 17, 17, 0.12);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='novella'] .nv-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  [data-skin='novella'] .nv-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='novella'] .nv-wrap {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+/* The template's buttons: an ink filled one and a white outline one. */
+[data-skin='novella'] .nv-btn-dark,
+[data-skin='novella'] .nv-btn-outline,
+[data-skin='novella'] .sv-btn-dark,
+[data-skin='novella'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.75rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='novella'] .nv-btn-dark,
+[data-skin='novella'] .sv-btn-dark {
+  background: #c0714e;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(17, 17, 17, 0.1);
+}
+[data-skin='novella'] .nv-btn-dark:hover,
+[data-skin='novella'] .sv-btn-dark:hover {
+  background: #a85d3c;
+}
+[data-skin='novella'] .nv-btn-outline,
+[data-skin='novella'] .sv-btn-outline {
+  border: 1px solid #c0714e;
+  background: transparent;
+  color: #a85d3c;
+}
+[data-skin='novella'] .nv-btn-outline:hover,
+[data-skin='novella'] .sv-btn-outline:hover {
+  background: #f4efe9;
+}
+[data-skin='novella'] .sv-btn-outline.\!border-ink {
+  border-color: #c0714e !important;
+}
+[data-skin='novella'] .nv-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='novella'] .nv-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='novella'] .nv-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='novella'] .nv-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes nv-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes nv-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.nv-fade-up {
+  animation: nv-fade-up 0.5s ease both;
+}
+.nv-fade-in {
+  animation: nv-fade-in 0.4s ease both;
+}
+@keyframes nv-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='novella'] .nv-marquee-track {
+  animation: nv-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='novella'] .nv-marquee:hover .nv-marquee-track,
+[data-skin='novella'] .nv-marquee:focus-within .nv-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='novella'] .nv-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='novella'] .nv-marquee {
+    overflow-x: auto;
+  }
+  .nv-fade-up,
+  .nv-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='novella'] .nv-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='novella'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='novella'] .sv-auth input:focus {
+  border-color: #c0714e;
+  box-shadow: none;
+}
+[data-skin='novella'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #c0714e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='novella'] .sv-auth button[type='submit']:hover {
+  background: #a85d3c;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='novella'] [data-rg='product-tabs'] .border-accent {
+  border-color: #c0714e;
+}
+[data-skin='novella'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #c0714e;
+}
+/* Novella's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='novella'] .nv-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(192, 113, 78, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+/* Novella's footer is deep brown (StorePal's is navy), so StorePal's navy footer rule is undone here for the parts
+   Novella's footer reuses. */
+[data-theme='storepal'][data-skin='novella'] footer[data-rg='footer'] {
+  background-color: var(--nv-footer);
+  color: rgba(255, 255, 255, 0.8);
+  --color-ink: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.7);
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #141414;
+  --color-accent: #c0714e;
+  --color-accent-dark: #dba083;
+}
+
+
+/* Minimog's footer is light (#fafafa) with dark text: StorePal's base rule paints every footer navy with white text, so it is undone here. */
+[data-theme='storepal'][data-skin='minimog'] footer[data-rg='footer'] {
+  background-color: var(--mg-footer);
+  border-top-color: #e5e5e5;
+  color: #525252;
+  --color-ink: #111111;
+  --color-muted: #6b7280;
+  --color-line: #e5e5e5;
+  --color-line-strong: #d4d4d4;
+  --color-surface: #ffffff;
+  --color-canvas: #fafafa;
+}

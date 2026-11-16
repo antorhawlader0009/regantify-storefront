@@ -222,3 +222,17 @@
   border-radius: 0.75rem;
   box-shadow: var(--shadow-card);
 }
+
+
+/* Minimog's footer is light (#fafafa) with dark text: StorePal's base rule paints every footer navy with white text, so it is undone here. */
+[data-theme='storepal'][data-skin='minimog'] footer[data-rg='footer'] {
+  background-color: var(--mg-footer);
+  border-top-color: #e5e5e5;
+  color: #525252;
+  --color-ink: #111111;
+  --color-muted: #6b7280;
+  --color-line: #e5e5e5;
+  --color-line-strong: #d4d4d4;
+  --color-surface: #ffffff;
+  --color-canvas: #fafafa;
+}

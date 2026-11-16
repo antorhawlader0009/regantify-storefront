@@ -16,6 +16,10 @@ import { TechzoneProductView } from '@/themes/techzone/TechzoneProductView';
 import { StrideProductView } from '@/themes/stride/StrideProductView';
 import { VaeloraProductView } from '@/themes/vaelora/VaeloraProductView';
 import { ChicwoveProductView } from '@/themes/chicwove/ChicwoveProductView';
+import { NovellaProductView } from '@/themes/novella/NovellaProductView';
+import { NovatrendProductView } from '@/themes/novatrend/NovatrendProductView';
+import { MinimogProductView } from '@/themes/minimog/MinimogProductView';
+import { MenauraProductView } from '@/themes/menaura/MenauraProductView';
 import { MallonProductView } from '@/themes/mallon/MallonProductView';
 import { GroceryantoProductView } from '@/themes/groceryanto/GroceryantoProductView';
 import { GreenmartProductView } from '@/themes/greenmart/GreenmartProductView';
@@ -262,6 +266,42 @@ export default async function ProductPage({ params }: PageProps) {
         />
       ) : storeSkin(store.theme) === 'chicwove' ? (
         <ChicwoveProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'novella' ? (
+        <NovellaProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'novatrend' ? (
+        <NovatrendProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'minimog' ? (
+        <MinimogProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'menaura' ? (
+        <MenauraProductView
           {...viewProps}
           categoryDetails={categoryDetails}
           logoUrl={store.logoUrl}

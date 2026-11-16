@@ -16,6 +16,10 @@ import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
+import { NovellaPageHeader } from '../../novella/NovellaBreadcrumb';
+import { NovatrendPageHeader } from '../../novatrend/NovatrendBreadcrumb';
+import { MinimogPageHeader } from '../../minimog/MinimogBreadcrumb';
+import { MenauraPageHeader } from '../../menaura/MenauraBreadcrumb';
 import { MallonPageHeader } from '../../mallon/MallonBreadcrumb';
 import { GroceryantoPageHeader } from '../../groceryanto/GroceryantoBreadcrumb';
 import { GreenmartPageHeader } from '../../greenmart/GreenmartBreadcrumb';
@@ -118,6 +122,50 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
       <>
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
         <main className="cw-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'novella') {
+    return (
+      <>
+        <NovellaPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="nv-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'novatrend') {
+    return (
+      <>
+        <NovatrendPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="nt-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'minimog') {
+    return (
+      <>
+        <MinimogPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="mg-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'menaura') {
+    return (
+      <>
+        <MenauraPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="mn-wrap w-full py-8 sm:py-10">
           <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
         </main>
         <StoreFooter subdomain={subdomain} storeName={storeName} />

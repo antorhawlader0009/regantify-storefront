@@ -19,6 +19,10 @@ import { TechzoneFooter } from '../../techzone/TechzoneFooter';
 import { StrideFooter } from '../../stride/StrideFooter';
 import { VaeloraFooter } from '../../vaelora/VaeloraFooter';
 import { ChicwoveFooter } from '../../chicwove/ChicwoveFooter';
+import { NovellaFooter } from '../../novella/NovellaFooter';
+import { NovatrendFooter } from '../../novatrend/NovatrendFooter';
+import { MinimogFooter } from '../../minimog/MinimogFooter';
+import { MenauraFooter } from '../../menaura/MenauraFooter';
 import { MallonFooter } from '../../mallon/MallonFooter';
 import { GroceryantoFooter } from '../../groceryanto/GroceryantoFooter';
 import { GreenmartFooter } from '../../greenmart/GreenmartFooter';
@@ -140,6 +144,10 @@ export function StoreFooter(props: StoreFooterProps) {
   if (skin === 'mahabesh') return <MahabeshFooter {...props} />;
   if (skin === 'chronics') return <ChronicsFooter {...props} />;
   if (skin === 'chicwove') return <ChicwoveFooter {...props} />;
+  if (skin === 'novella') return <NovellaFooter {...props} />;
+  if (skin === 'novatrend') return <NovatrendFooter {...props} />;
+  if (skin === 'minimog') return <MinimogFooter {...props} />;
+  if (skin === 'menaura') return <MenauraFooter {...props} />;
   if (skin === 'mallon') return <MallonFooter {...props} />;
   if (skin === 'groceryanto') return <GroceryantoFooter {...props} />;
   if (skin === 'greenmart') return <GreenmartFooter {...props} />;
@@ -589,7 +597,7 @@ export function FooterCallBar({
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
   /** PlayMate draws it as the template's light band, Solevo as its dark newsletter band. */
-  look?: 'playmate' | 'solevo' | 'chicwove' | 'mallon' | 'groceryanto' | 'greenmart' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'novella' | 'novatrend' | 'minimog' | 'menaura' | 'mallon' | 'groceryanto' | 'greenmart' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
   /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
   design?: CallBarStyle | null;
 }) {
@@ -855,6 +863,186 @@ export function FooterCallBar({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/80 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'novella') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="nv-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-xl bg-gradient-to-r from-[#c0714e] to-[#a85d3c] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-extrabold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white px-6 py-3 text-[11px] font-semibold text-[#111111] transition hover:bg-[#111111] hover:text-white sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded border border-white/80 px-6 py-3 text-[11px] font-semibold text-white transition hover:bg-white hover:text-[#111111] sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'novatrend') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="nt-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-2xl bg-gradient-to-br from-[#ff5a2a] to-[#ff8a5c] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-extrabold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white px-6 py-3 text-[11px] font-semibold text-[#0b0b0b] transition hover:bg-black hover:text-white sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded border border-white/80 px-6 py-3 text-[11px] font-semibold text-white transition hover:bg-white hover:text-[#0b0b0b] sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'minimog') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="mg-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-xl bg-gradient-to-r from-[#12301a] to-[#22632f] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-bold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-white px-6 py-3 text-[13px] font-semibold text-ink transition hover:bg-[#eef0e8] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-white/80 px-6 py-3 text-[13px] font-semibold text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'menaura') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="mn-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-2xl bg-[#3a312b] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-medium sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-md bg-white px-6 py-3 text-sm font-medium text-[#2b2420] transition hover:bg-[var(--mn-cream)] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-md border border-white/80 px-6 py-3 text-sm font-medium text-white transition hover:bg-white hover:text-[#2b2420] sm:flex-none"
                   style={waStyle}
                 >
                   <MessageCircle size={15} aria-hidden />

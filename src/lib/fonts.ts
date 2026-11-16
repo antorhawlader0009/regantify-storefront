@@ -1,4 +1,4 @@
-import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins, DM_Sans, Pacifico, Inter, Playfair_Display, Oswald, Barlow_Condensed, Cormorant_Garamond, Roboto_Condensed, Plus_Jakarta_Sans, Instrument_Sans, Jost } from 'next/font/google';
+import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins, DM_Sans, Pacifico, Inter, Playfair_Display, Oswald, Barlow_Condensed, Cormorant_Garamond, Roboto_Condensed, Plus_Jakarta_Sans, Instrument_Sans, Jost, Manrope } from 'next/font/google';
 
 // Five font families, self-hosted at build time (next/font) - no
 // runtime request to Google Fonts from a visitor's browser, no layout
@@ -154,6 +154,8 @@ const robotoCondensed = Roboto_Condensed({ subsets: ['latin'], weight: ['400', '
 const plusJakarta = Plus_Jakarta_Sans({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-jakarta', display: 'swap', preload: false });
 
 const instrumentSans = Instrument_Sans({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-instrument', display: 'swap', preload: false });
-const jost = Jost({ subsets: ['latin'], weight: ['400', '500', '600'], variable: '--font-jost', display: 'swap', preload: false });
+const jost = Jost({ subsets: ['latin'], weight: ['300', '400', '500', '600'], variable: '--font-jost', display: 'swap', preload: false });
 
-export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${archivoMahabesh.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${oswald.variable} ${barlowCondensed.variable} ${cormorant.variable} ${instrumentSans.variable} ${jost.variable} ${plusJakarta.variable} ${robotoCondensed.variable} ${hindSiliguri.variable}`;
+const manrope = Manrope({ subsets: ['latin'], weight: ['400', '500', '600', '700', '800'], variable: '--font-manrope', display: 'swap', preload: false });
+
+export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${archivoMahabesh.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${oswald.variable} ${barlowCondensed.variable} ${cormorant.variable} ${manrope.variable} ${instrumentSans.variable} ${jost.variable} ${plusJakarta.variable} ${robotoCondensed.variable} ${hindSiliguri.variable}`;

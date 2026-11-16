@@ -43,7 +43,7 @@ interface Props {
 
 const chipCls = (on: boolean) =>
   `shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${on ? 'border-[var(--mg-brand)] bg-[var(--mg-brand)] text-white' : 'border-black/15 hover:border-[var(--mg-brand)]'}`;
-const selectCls = 'border border-black/15 bg-white px-3 py-2 text-xs font-medium normal-case tracking-normal outline-none focus:border-[var(--mg-brand)]';
+const selectCls = 'border border-black/15 bg-white px-3 py-2 text-ink text-xs font-medium normal-case tracking-normal outline-none focus:border-[var(--mg-brand)]';
 
 /**
  * Minimog's product list, the template's ProductsBrowser (templete/minimog ProductsBrowser.tsx) on the store's real products:

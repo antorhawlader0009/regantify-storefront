@@ -31,11 +31,15 @@ import { highlightIcon } from '../lib/highlightIcons';
 import { PmBrands, PmCategories, PmFeatures, PmHero, PmProductRow, PmPromoBanners, PmReviews, SectionTitle, type PmHeroSlide } from '../../playmate/PlaymateHome';
 import { PlaymateProductsView } from '../../playmate/PlaymateProductsView';
 
-import { CHICWOVE_ORDER, MALLON_ORDER, GROCERYANTO_ORDER, GREENMART_ORDER, GLOWERIVE_ORDER, GADGETSTORE_ORDER, FURNILUX_ORDER, ESTATEPRO_ORDER, DRIVECRAFT_ORDER, BELORA_ORDER, ELEVATE_ORDER, CHRONICS_ORDER, MAHABESH_ORDER, PLAYMATE_ORDER, SOLEVO_ORDER, TECHZONE_ORDER, STRIDE_ORDER, VAELORA_ORDER, resolveHomeSections } from '../lib/homeSections';
+import { CHICWOVE_ORDER, NOVELLA_ORDER, NOVATREND_ORDER, MINIMOG_ORDER, MENAURA_ORDER, MALLON_ORDER, GROCERYANTO_ORDER, GREENMART_ORDER, GLOWERIVE_ORDER, GADGETSTORE_ORDER, FURNILUX_ORDER, ESTATEPRO_ORDER, DRIVECRAFT_ORDER, BELORA_ORDER, ELEVATE_ORDER, CHRONICS_ORDER, MAHABESH_ORDER, PLAYMATE_ORDER, SOLEVO_ORDER, TECHZONE_ORDER, STRIDE_ORDER, VAELORA_ORDER, resolveHomeSections } from '../lib/homeSections';
 import { SvBrands, SvCategories, SvFeatures, SvHero, SvProductGrid, SvPromoBanners, SvReviews, SvSectionTitle, type SvHeroSlide } from '../../solevo/SolevoHome';
 import { SolevoProductsView } from '../../solevo/SolevoProductsView';
 import { CrBrands, CrCategories, CrFeatures, CrHero, CrProductGrid, CrPromoBanners, CrReviews, CrSectionTitle } from '../../chronics/ChronicsHome';
 import { CwBrands, CwCategories, CwFeatures, CwHero, CwProductGrid, CwPromoBanners, CwReviews, CwSectionTitle } from '../../chicwove/ChicwoveHome';
+import { NvBrands, NvCategories, NvFeatures, NvHero, NvProductGrid, NvPromoBanners, NvReviews, NvSectionTitle } from '../../novella/NovellaHome';
+import { NtBrands, NtCategories, NtFeatures, NtHero, NtProductGrid, NtPromoBanners, NtReviews, NtSectionTitle } from '../../novatrend/NovatrendHome';
+import { MgBrands, MgCategories, MgFeatures, MgHero, MgProductGrid, MgPromoBanners, MgReviews, MgSectionTitle } from '../../minimog/MinimogHome';
+import { MnBrands, MnCategories, MnFeatures, MnHero, MnProductGrid, MnPromoBanners, MnReviews, MnSectionTitle } from '../../menaura/MenauraHome';
 import { MlBrands, MlCategories, MlFeatures, MlHero, MlProductGrid, MlPromoBanners, MlReviews, MlSectionTitle } from '../../mallon/MallonHome';
 import { GaBrands, GaCategories, GaFeatures, GaHero, GaProductGrid, GaPromoBanners, GaReviews, GaSectionTitle } from '../../groceryanto/GroceryantoHome';
 import { GmBrands, GmCategories, GmFeatures, GmHero, GmProductGrid, GmPromoBanners, GmReviews, GmSectionTitle } from '../../greenmart/GreenmartHome';
@@ -56,6 +60,10 @@ import { StrideProductsView } from '../../stride/StrideProductsView';
 import { VaBrands, VaCategories, VaFeatures, VaHero, VaProductGrid, VaPromoBanners, VaReviews, VaSectionTitle } from '../../vaelora/VaeloraHome';
 import { VaeloraProductsView } from '../../vaelora/VaeloraProductsView';
 import { ChicwoveProductsView } from '../../chicwove/ChicwoveProductsView';
+import { NovellaProductsView } from '../../novella/NovellaProductsView';
+import { NovatrendProductsView } from '../../novatrend/NovatrendProductsView';
+import { MinimogProductsView } from '../../minimog/MinimogProductsView';
+import { MenauraProductsView } from '../../menaura/MenauraProductsView';
 import { MallonProductsView } from '../../mallon/MallonProductsView';
 import { GroceryantoProductsView } from '../../groceryanto/GroceryantoProductsView';
 import { GreenmartProductsView } from '../../greenmart/GreenmartProductsView';
@@ -190,7 +198,7 @@ export function HomeView({
   // Card numbers on the voice call's picks: Bangla digits on a Bangla store.
   const formatNumber = (n: number) => (design.storeLanguage === 'bn' ? bnDigits(n) : String(n));
   // A store that never arranged its home page gets its template's own order (PlayMate's differs from StorePal's).
-  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : skin === 'solevo' ? SOLEVO_ORDER : skin === 'elevate' ? ELEVATE_ORDER : skin === 'belora' ? BELORA_ORDER : skin === 'drivecraft' ? DRIVECRAFT_ORDER : skin === 'estatepro' ? ESTATEPRO_ORDER : skin === 'furnilux' ? FURNILUX_ORDER : skin === 'gadgetstore' ? GADGETSTORE_ORDER : skin === 'glowerive' ? GLOWERIVE_ORDER : skin === 'greenmart' ? GREENMART_ORDER : skin === 'groceryanto' ? GROCERYANTO_ORDER : skin === 'mallon' ? MALLON_ORDER : skin === 'chicwove' ? CHICWOVE_ORDER : skin === 'chronics' ? CHRONICS_ORDER : skin === 'mahabesh' ? MAHABESH_ORDER : skin === 'techzone' ? TECHZONE_ORDER : skin === 'stride' ? STRIDE_ORDER : skin === 'vaelora' ? VAELORA_ORDER : undefined);
+  const homeSections = resolveHomeSections(design.homeSections, skin === 'playmate' ? PLAYMATE_ORDER : skin === 'solevo' ? SOLEVO_ORDER : skin === 'elevate' ? ELEVATE_ORDER : skin === 'belora' ? BELORA_ORDER : skin === 'drivecraft' ? DRIVECRAFT_ORDER : skin === 'estatepro' ? ESTATEPRO_ORDER : skin === 'furnilux' ? FURNILUX_ORDER : skin === 'gadgetstore' ? GADGETSTORE_ORDER : skin === 'glowerive' ? GLOWERIVE_ORDER : skin === 'greenmart' ? GREENMART_ORDER : skin === 'groceryanto' ? GROCERYANTO_ORDER : skin === 'mallon' ? MALLON_ORDER : skin === 'menaura' ? MENAURA_ORDER : skin === 'minimog' ? MINIMOG_ORDER : skin === 'novatrend' ? NOVATREND_ORDER : skin === 'novella' ? NOVELLA_ORDER : skin === 'chicwove' ? CHICWOVE_ORDER : skin === 'chronics' ? CHRONICS_ORDER : skin === 'mahabesh' ? MAHABESH_ORDER : skin === 'techzone' ? TECHZONE_ORDER : skin === 'stride' ? STRIDE_ORDER : skin === 'vaelora' ? VAELORA_ORDER : undefined);
 
   // "Create custom link for this coupon" - resolve the shared link to a
   // real coupon code once, stash it for checkout to pick up (see
@@ -585,6 +593,14 @@ export function HomeView({
       ? { Hero: CrHero, Features: CrFeatures, Categories: CrCategories, ProductGrid: CrProductGrid, PromoBanners: CrPromoBanners, Brands: CrBrands, Reviews: CrReviews, SectionTitle: CrSectionTitle }
       : skin === 'chicwove'
       ? { Hero: CwHero, Features: CwFeatures, Categories: CwCategories, ProductGrid: CwProductGrid, PromoBanners: CwPromoBanners, Brands: CwBrands, Reviews: CwReviews, SectionTitle: CwSectionTitle }
+      : skin === 'novella'
+      ? { Hero: NvHero, Features: NvFeatures, Categories: NvCategories, ProductGrid: NvProductGrid, PromoBanners: NvPromoBanners, Brands: NvBrands, Reviews: NvReviews, SectionTitle: NvSectionTitle }
+      : skin === 'novatrend'
+      ? { Hero: NtHero, Features: NtFeatures, Categories: NtCategories, ProductGrid: NtProductGrid, PromoBanners: NtPromoBanners, Brands: NtBrands, Reviews: NtReviews, SectionTitle: NtSectionTitle }
+      : skin === 'minimog'
+      ? { Hero: MgHero, Features: MgFeatures, Categories: MgCategories, ProductGrid: MgProductGrid, PromoBanners: MgPromoBanners, Brands: MgBrands, Reviews: MgReviews, SectionTitle: MgSectionTitle }
+      : skin === 'menaura'
+      ? { Hero: MnHero, Features: MnFeatures, Categories: MnCategories, ProductGrid: MnProductGrid, PromoBanners: MnPromoBanners, Brands: MnBrands, Reviews: MnReviews, SectionTitle: MnSectionTitle }
       : skin === 'mallon'
       ? { Hero: MlHero, Features: MlFeatures, Categories: MlCategories, ProductGrid: MlProductGrid, PromoBanners: MlPromoBanners, Brands: MlBrands, Reviews: MlReviews, SectionTitle: MlSectionTitle }
       : skin === 'groceryanto'
@@ -606,7 +622,7 @@ export function HomeView({
       : skin === 'elevate'
       ? { Hero: ElHero, Features: ElFeatures, Categories: ElCategories, ProductGrid: ElProductGrid, PromoBanners: ElPromoBanners, Brands: ElBrands, Reviews: ElReviews, SectionTitle: ElSectionTitle }
       : { Hero: SvHero, Features: SvFeatures, Categories: SvCategories, ProductGrid: SvProductGrid, PromoBanners: SvPromoBanners, Brands: SvBrands, Reviews: SvReviews, SectionTitle: SvSectionTitle };
-    const wrapCls = skin === 'stride' ? 'st-wrap' : skin === 'vaelora' ? 'va-wrap' : skin === 'techzone' ? 'tz-wrap' : skin === 'mahabesh' ? 'mh-wrap' : skin === 'chronics' ? 'cr-wrap' : skin === 'elevate' ? 'el-wrap' : skin === 'belora' ? 'be-wrap' : skin === 'drivecraft' ? 'dc-wrap' : skin === 'estatepro' ? 'ep-wrap' : skin === 'furnilux' ? 'fu-wrap' : skin === 'gadgetstore' ? 'gs-wrap' : skin === 'glowerive' ? 'gw-wrap' : skin === 'greenmart' ? 'gm-wrap' : skin === 'groceryanto' ? 'ga-wrap' : skin === 'mallon' ? 'ml-wrap' : skin === 'chicwove' ? 'cw-wrap' : 'sv-wrap';
+    const wrapCls = skin === 'stride' ? 'st-wrap' : skin === 'vaelora' ? 'va-wrap' : skin === 'techzone' ? 'tz-wrap' : skin === 'mahabesh' ? 'mh-wrap' : skin === 'chronics' ? 'cr-wrap' : skin === 'elevate' ? 'el-wrap' : skin === 'belora' ? 'be-wrap' : skin === 'drivecraft' ? 'dc-wrap' : skin === 'estatepro' ? 'ep-wrap' : skin === 'furnilux' ? 'fu-wrap' : skin === 'gadgetstore' ? 'gs-wrap' : skin === 'glowerive' ? 'gw-wrap' : skin === 'greenmart' ? 'gm-wrap' : skin === 'groceryanto' ? 'ga-wrap' : skin === 'mallon' ? 'ml-wrap' : skin === 'menaura' ? 'mn-wrap' : skin === 'minimog' ? 'mg-wrap' : skin === 'novatrend' ? 'nt-wrap' : skin === 'novella' ? 'nv-wrap' : skin === 'chicwove' ? 'cw-wrap' : 'sv-wrap';
     const categoryHref = (name: string) => `/store/${subdomain}?category=${encodeURIComponent(name)}`;
     const card = (product: StorefrontProduct) => <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />;
     switch (id) {
@@ -652,10 +668,10 @@ export function HomeView({
       case 'TOP_SELLING': {
         const best = topSelling.length >= 4 ? products.filter((p) => (p.soldRecent ?? 0) >= 5).slice(0, 10) : [];
         // Chicwove's template shows "New Arrivals" (the newest eight); Solevo shows featured products.
-        const row = skin === 'chicwove' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora' ? products.slice(0, 10) : best.length >= 4 ? best : products.slice(0, 10);
+        const row = skin === 'chicwove' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora' ? products.slice(0, 10) : best.length >= 4 ? best : products.slice(0, 10);
         return (
           <div id="products">
-            <P.ProductGrid title={skin === 'elevate' ? t('New Arrivals') : skin === 'belora' ? t('Best Sellers') : skin === 'drivecraft' ? t('Featured Products') : skin === 'estatepro' ? t('New Arrivals') : skin === 'furnilux' ? t('Featured Products') : skin === 'gadgetstore' ? t('Trending Products') : skin === 'glowerive' ? t('Featured Products') : skin === 'greenmart' ? t('Trending Products') : skin === 'groceryanto' ? t('Trending Products') : skin === 'mallon' ? t('Best Sellers') : skin === 'chicwove' ? t('New Arrivals') : skin === 'chronics' ? t('Trending Products') : skin === 'mahabesh' ? t('New Arrivals') : skin === 'techzone' ? t('Best Sellers') : skin === 'stride' ? t('Best Sellers') : skin === 'vaelora' ? t('Signature Pieces') : t('Featured Products')} viewAllLabel={t('View All Products')} viewAllHref={`/store/${subdomain}/products`}>
+            <P.ProductGrid title={skin === 'elevate' ? t('New Arrivals') : skin === 'belora' ? t('Best Sellers') : skin === 'drivecraft' ? t('Featured Products') : skin === 'estatepro' ? t('New Arrivals') : skin === 'furnilux' ? t('Featured Products') : skin === 'gadgetstore' ? t('Trending Products') : skin === 'glowerive' ? t('Featured Products') : skin === 'greenmart' ? t('Trending Products') : skin === 'groceryanto' ? t('Trending Products') : skin === 'mallon' ? t('Best Sellers') : skin === 'menaura' ? t('New Arrivals') : skin === 'minimog' ? t('Trending Products') : skin === 'novatrend' ? t('New Arrivals') : skin === 'novella' ? t('Trending Products') : skin === 'chicwove' ? t('New Arrivals') : skin === 'chronics' ? t('Trending Products') : skin === 'mahabesh' ? t('New Arrivals') : skin === 'techzone' ? t('Best Sellers') : skin === 'stride' ? t('Best Sellers') : skin === 'vaelora' ? t('Signature Pieces') : t('Featured Products')} viewAllLabel={t('View All Products')} viewAllHref={`/store/${subdomain}/products`}>
               {row.map(card)}
             </P.ProductGrid>
           </div>
@@ -754,8 +770,8 @@ export function HomeView({
   };
 
   // Solevo's category / brand / search / picks list is the template's own product list page.
-  if ((skin === 'solevo' || skin === 'chicwove' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') && isFiltered) {
-    const ListView = skin === 'stride' ? StrideProductsView : skin === 'vaelora' ? VaeloraProductsView : skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'elevate' ? ElevateProductsView : skin === 'belora' ? BeloraProductsView : skin === 'drivecraft' ? DrivecraftProductsView : skin === 'estatepro' ? EstateproProductsView : skin === 'furnilux' ? FurniluxProductsView : skin === 'gadgetstore' ? GadgetstoreProductsView : skin === 'glowerive' ? GloweriveProductsView : skin === 'greenmart' ? GreenmartProductsView : skin === 'groceryanto' ? GroceryantoProductsView : skin === 'mallon' ? MallonProductsView : skin === 'chicwove' ? ChicwoveProductsView : SolevoProductsView;
+  if ((skin === 'solevo' || skin === 'chicwove' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') && isFiltered) {
+    const ListView = skin === 'stride' ? StrideProductsView : skin === 'vaelora' ? VaeloraProductsView : skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'elevate' ? ElevateProductsView : skin === 'belora' ? BeloraProductsView : skin === 'drivecraft' ? DrivecraftProductsView : skin === 'estatepro' ? EstateproProductsView : skin === 'furnilux' ? FurniluxProductsView : skin === 'gadgetstore' ? GadgetstoreProductsView : skin === 'glowerive' ? GloweriveProductsView : skin === 'greenmart' ? GreenmartProductsView : skin === 'groceryanto' ? GroceryantoProductsView : skin === 'mallon' ? MallonProductsView : skin === 'menaura' ? MenauraProductsView : skin === 'minimog' ? MinimogProductsView : skin === 'novatrend' ? NovatrendProductsView : skin === 'novella' ? NovellaProductsView : skin === 'chicwove' ? ChicwoveProductsView : SolevoProductsView;
     return (
       <div className="flex min-h-screen flex-col bg-white text-ink">
         <StoreHeader
@@ -997,7 +1013,7 @@ export function HomeView({
               const section = playmateSection(id);
               if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
             }
-            if ((skin === 'solevo' || skin === 'chicwove' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') && !(showPreview && id === 'HERO')) {
+            if ((skin === 'solevo' || skin === 'chicwove' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') && !(showPreview && id === 'HERO')) {
               const section = bandSection(id);
               if (section !== undefined) return <Fragment key={id}>{section}</Fragment>;
             }

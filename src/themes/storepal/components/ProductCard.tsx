@@ -21,6 +21,10 @@ import { TechzoneCardView } from '../../techzone/TechzoneCard';
 import { StrideCardView } from '../../stride/StrideCard';
 import { VaeloraCardView } from '../../vaelora/VaeloraCard';
 import { ChicwoveCardView } from '../../chicwove/ChicwoveCard';
+import { NovellaCardView } from '../../novella/NovellaCard';
+import { NovatrendCardView } from '../../novatrend/NovatrendCard';
+import { MinimogCardView } from '../../minimog/MinimogCard';
+import { MenauraCardView } from '../../menaura/MenauraCard';
 import { MallonCardView } from '../../mallon/MallonCard';
 import { GroceryantoCardView } from '../../groceryanto/GroceryantoCard';
 import { GreenmartCardView } from '../../greenmart/GreenmartCard';
@@ -291,8 +295,8 @@ export const ProductCard = memo(function ProductCard({ product, subdomain, store
 
   // PlayMate (lib/theme.ts storeSkin): the same card behaviour drawn as PlayMate's card. It has no option pickers on
   // the card, so a product with sizes or colours always opens the quick add sheet.
-  if (skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') {
-    const TemplateCardView = skin === 'stride' ? StrideCardView : skin === 'vaelora' ? VaeloraCardView : skin === 'techzone' ? TechzoneCardView : skin === 'mahabesh' ? MahabeshCardView : skin === 'chronics' ? ChronicsCardView : skin === 'elevate' ? ElevateCardView : skin === 'belora' ? BeloraCardView : skin === 'drivecraft' ? DrivecraftCardView : skin === 'estatepro' ? EstateproCardView : skin === 'furnilux' ? FurniluxCardView : skin === 'gadgetstore' ? GadgetstoreCardView : skin === 'glowerive' ? GloweriveCardView : skin === 'greenmart' ? GreenmartCardView : skin === 'groceryanto' ? GroceryantoCardView : skin === 'mallon' ? MallonCardView : skin === 'chicwove' ? ChicwoveCardView : skin === 'solevo' ? SolevoCardView : PlaymateCardView;
+  if (skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora') {
+    const TemplateCardView = skin === 'stride' ? StrideCardView : skin === 'vaelora' ? VaeloraCardView : skin === 'techzone' ? TechzoneCardView : skin === 'mahabesh' ? MahabeshCardView : skin === 'chronics' ? ChronicsCardView : skin === 'elevate' ? ElevateCardView : skin === 'belora' ? BeloraCardView : skin === 'drivecraft' ? DrivecraftCardView : skin === 'estatepro' ? EstateproCardView : skin === 'furnilux' ? FurniluxCardView : skin === 'gadgetstore' ? GadgetstoreCardView : skin === 'glowerive' ? GloweriveCardView : skin === 'greenmart' ? GreenmartCardView : skin === 'groceryanto' ? GroceryantoCardView : skin === 'mallon' ? MallonCardView : skin === 'menaura' ? MenauraCardView : skin === 'minimog' ? MinimogCardView : skin === 'novatrend' ? NovatrendCardView : skin === 'novella' ? NovellaCardView : skin === 'chicwove' ? ChicwoveCardView : skin === 'solevo' ? SolevoCardView : PlaymateCardView;
     const sheetReady = fullData && !outOfStock && hasVariations;
     const pmPurchase = (kind: 'add' | 'buy') => {
       if (sheetReady) {

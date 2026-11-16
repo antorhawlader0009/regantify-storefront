@@ -43,7 +43,7 @@ interface Props {
 
 const chipCls = (on: boolean) =>
   `shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${on ? 'border-[var(--nv-brand)] bg-[var(--nv-brand)] text-white' : 'border-black/15 hover:border-[var(--nv-brand)]'}`;
-const selectCls = 'border border-black/15 bg-white px-3 py-2 text-xs font-medium normal-case tracking-normal outline-none focus:border-[var(--nv-brand)]';
+const selectCls = 'border border-black/15 bg-white px-3 py-2 text-ink text-xs font-medium normal-case tracking-normal outline-none focus:border-[var(--nv-brand)]';
 
 /**
  * Novella's product list, the template's ProductsBrowser (templete/novella ProductsBrowser.tsx) on the store's real products:
