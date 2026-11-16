@@ -156,6 +156,75 @@ export function ChicwoveLanguageSwitch({ className = '' }: { className?: string 
   );
 }
 
+/** Mallon's switch, in its header's style: small text like its menu links, the chosen language in coral. */
+export function MallonLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-medium ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-medium text-[var(--ml-brand)] underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Groceryanto's switch, in its header's style: small text like its menu links, the chosen language in green with an underline. */
+export function GroceryantoLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-bold text-[var(--ga-brand)] underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Greenmart's switch, in its header's style: small text like its menu links, the chosen language in green with an underline. */
+export function GreenmartLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-bold text-[var(--gm-brand)] underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** Glowerive's switch, in its teal header: small white capitals like its menu links, the chosen language underlined. */
 export function GloweriveLanguageSwitch({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useStoreLanguageSwitch();

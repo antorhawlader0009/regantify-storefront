@@ -16,6 +16,9 @@ import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
+import { MallonPageHeader } from '../../mallon/MallonBreadcrumb';
+import { GroceryantoPageHeader } from '../../groceryanto/GroceryantoBreadcrumb';
+import { GreenmartPageHeader } from '../../greenmart/GreenmartBreadcrumb';
 import { GlowerivePageHeader } from '../../glowerive/GloweriveBreadcrumb';
 import { GadgetstorePageHeader } from '../../gadgetstore/GadgetstoreBreadcrumb';
 import { FurniluxPageHeader } from '../../furnilux/FurniluxBreadcrumb';
@@ -115,6 +118,39 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
       <>
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
         <main className="cw-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'mallon') {
+    return (
+      <>
+        <MallonPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="ml-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'groceryanto') {
+    return (
+      <>
+        <GroceryantoPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="ga-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'greenmart') {
+    return (
+      <>
+        <GreenmartPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="gm-wrap w-full py-8 sm:py-10">
           <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
         </main>
         <StoreFooter subdomain={subdomain} storeName={storeName} />

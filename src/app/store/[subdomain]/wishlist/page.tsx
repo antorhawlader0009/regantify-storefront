@@ -10,6 +10,9 @@ import { TechzoneWishlistPage } from '@/themes/techzone/TechzoneWishlistPage';
 import { StrideWishlistPage } from '@/themes/stride/StrideWishlistPage';
 import { VaeloraWishlistPage } from '@/themes/vaelora/VaeloraWishlistPage';
 import { ChicwoveWishlistPage } from '@/themes/chicwove/ChicwoveWishlistPage';
+import { MallonWishlistPage } from '@/themes/mallon/MallonWishlistPage';
+import { GroceryantoWishlistPage } from '@/themes/groceryanto/GroceryantoWishlistPage';
+import { GreenmartWishlistPage } from '@/themes/greenmart/GreenmartWishlistPage';
 import { GloweriveWishlistPage } from '@/themes/glowerive/GloweriveWishlistPage';
 import { GadgetstoreWishlistPage } from '@/themes/gadgetstore/GadgetstoreWishlistPage';
 import { FurniluxWishlistPage } from '@/themes/furnilux/FurniluxWishlistPage';
@@ -47,6 +50,6 @@ export default async function WishlistPage({ params }: PageProps) {
   const { store, products, categories } = data;
   const skin = storeSkin(store.theme);
   if (!isPageSkin(skin)) redirect(`/store/${subdomain}/account/wishlist`);
-  const WishlistPage = skin === 'stride' ? StrideWishlistPage : skin === 'vaelora' ? VaeloraWishlistPage : skin === 'techzone' ? TechzoneWishlistPage : skin === 'mahabesh' ? MahabeshWishlistPage : skin === 'chronics' ? ChronicsWishlistPage : skin === 'elevate' ? ElevateWishlistPage : skin === 'belora' ? BeloraWishlistPage : skin === 'drivecraft' ? DrivecraftWishlistPage : skin === 'estatepro' ? EstateproWishlistPage : skin === 'furnilux' ? FurniluxWishlistPage : skin === 'gadgetstore' ? GadgetstoreWishlistPage : skin === 'glowerive' ? GloweriveWishlistPage : skin === 'chicwove' ? ChicwoveWishlistPage : skin === 'solevo' ? SolevoWishlistPage : PlaymateWishlistPage;
+  const WishlistPage = skin === 'stride' ? StrideWishlistPage : skin === 'vaelora' ? VaeloraWishlistPage : skin === 'techzone' ? TechzoneWishlistPage : skin === 'mahabesh' ? MahabeshWishlistPage : skin === 'chronics' ? ChronicsWishlistPage : skin === 'elevate' ? ElevateWishlistPage : skin === 'belora' ? BeloraWishlistPage : skin === 'drivecraft' ? DrivecraftWishlistPage : skin === 'estatepro' ? EstateproWishlistPage : skin === 'furnilux' ? FurniluxWishlistPage : skin === 'gadgetstore' ? GadgetstoreWishlistPage : skin === 'glowerive' ? GloweriveWishlistPage : skin === 'greenmart' ? GreenmartWishlistPage : skin === 'groceryanto' ? GroceryantoWishlistPage : skin === 'mallon' ? MallonWishlistPage : skin === 'chicwove' ? ChicwoveWishlistPage : skin === 'solevo' ? SolevoWishlistPage : PlaymateWishlistPage;
   return <WishlistPage subdomain={subdomain} storeName={store.storeName} categories={categories} products={products} logoUrl={store.logoUrl} />;
 }

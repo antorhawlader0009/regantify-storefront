@@ -11,6 +11,9 @@ import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
+import { MallonPageHeader } from '../mallon/MallonBreadcrumb';
+import { GroceryantoPageHeader } from '../groceryanto/GroceryantoBreadcrumb';
+import { GreenmartPageHeader } from '../greenmart/GreenmartBreadcrumb';
 import { GlowerivePageHeader } from '../glowerive/GloweriveBreadcrumb';
 import { GadgetstorePageHeader } from '../gadgetstore/GadgetstoreBreadcrumb';
 import { FurniluxPageHeader } from '../furnilux/FurniluxBreadcrumb';
@@ -100,6 +103,36 @@ export function SkinPage({
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
         <div className="cw-wrap py-8 sm:py-10">
           <div className="cw-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'mallon') {
+    return (
+      <main className="w-full flex-1">
+        <MallonPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="ml-wrap py-8 sm:py-10">
+          <div className="ml-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'groceryanto') {
+    return (
+      <main className="w-full flex-1">
+        <GroceryantoPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="ga-wrap py-8 sm:py-10">
+          <div className="ga-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'greenmart') {
+    return (
+      <main className="w-full flex-1">
+        <GreenmartPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="gm-wrap py-8 sm:py-10">
+          <div className="gm-page">{children}</div>
         </div>
       </main>
     );

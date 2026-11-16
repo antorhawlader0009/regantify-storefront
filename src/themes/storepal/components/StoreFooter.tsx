@@ -19,6 +19,9 @@ import { TechzoneFooter } from '../../techzone/TechzoneFooter';
 import { StrideFooter } from '../../stride/StrideFooter';
 import { VaeloraFooter } from '../../vaelora/VaeloraFooter';
 import { ChicwoveFooter } from '../../chicwove/ChicwoveFooter';
+import { MallonFooter } from '../../mallon/MallonFooter';
+import { GroceryantoFooter } from '../../groceryanto/GroceryantoFooter';
+import { GreenmartFooter } from '../../greenmart/GreenmartFooter';
 import { GloweriveFooter } from '../../glowerive/GloweriveFooter';
 import { GadgetstoreFooter } from '../../gadgetstore/GadgetstoreFooter';
 import { FurniluxFooter } from '../../furnilux/FurniluxFooter';
@@ -137,6 +140,9 @@ export function StoreFooter(props: StoreFooterProps) {
   if (skin === 'mahabesh') return <MahabeshFooter {...props} />;
   if (skin === 'chronics') return <ChronicsFooter {...props} />;
   if (skin === 'chicwove') return <ChicwoveFooter {...props} />;
+  if (skin === 'mallon') return <MallonFooter {...props} />;
+  if (skin === 'groceryanto') return <GroceryantoFooter {...props} />;
+  if (skin === 'greenmart') return <GreenmartFooter {...props} />;
   if (skin === 'glowerive') return <GloweriveFooter {...props} />;
   if (skin === 'gadgetstore') return <GadgetstoreFooter {...props} />;
   if (skin === 'furnilux') return <FurniluxFooter {...props} />;
@@ -583,7 +589,7 @@ export function FooterCallBar({
   whatsapp?: string | null;
   fallbackWhatsapp?: string | null;
   /** PlayMate draws it as the template's light band, Solevo as its dark newsletter band. */
-  look?: 'playmate' | 'solevo' | 'chicwove' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'mallon' | 'groceryanto' | 'greenmart' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
   /** The store's own design (Store > Footer > "Got a question?" bar > Design); a missing key keeps the template's look. */
   design?: CallBarStyle | null;
 }) {
@@ -849,6 +855,141 @@ export function FooterCallBar({
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg border border-white/80 px-6 py-3 text-sm font-semibold text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'mallon') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="ml-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 bg-gradient-to-br from-[#12a58a] to-[#35c9ae] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-semibold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm bg-white px-6 py-3 text-[12px] font-medium text-ink transition hover:bg-[#f5f5ef] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-sm border border-white/80 px-6 py-3 text-[12px] font-medium text-white transition hover:bg-white hover:text-ink sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'groceryanto') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="ga-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded bg-[#1cb63b] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-extrabold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white px-6 py-3 text-[11px] font-semibold text-[#008000] transition hover:bg-[#e8f8ec] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded border border-white/80 px-6 py-3 text-[11px] font-semibold text-white transition hover:bg-white hover:text-[#008000] sm:flex-none"
+                  style={waStyle}
+                >
+                  <MessageCircle size={15} aria-hidden />
+                  {waLabel}
+                </a>
+              )}
+            </div>
+          </div>
+        </div>
+      </section>
+    );
+  }
+  if (look === 'greenmart') {
+    return (
+      <section style={barStyle} aria-label={heading}>
+        <div className="gm-wrap pb-2 pt-10">
+          <div className={`flex flex-col gap-5 rounded-2xl bg-[#1c6b22] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+            <div className="flex items-center gap-4">
+              <MessageCircle size={32} className="shrink-0" aria-hidden />
+              <div className="min-w-0">
+                <p className="font-display text-xl font-extrabold sm:text-2xl" style={textStyle}>
+                  {heading}
+                </p>
+                <p className="mt-1 text-sm text-white/90" style={lineStyle}>
+                  {line}
+                </p>
+              </div>
+            </div>
+            <div className={`flex w-full flex-wrap gap-2 sm:w-auto ${center ? 'justify-center' : ''}`}>
+              {showCall && (
+                <a
+                  href={phoneHref}
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded bg-white px-6 py-3 text-[11px] font-semibold text-[#10301a] transition hover:bg-[#f1f6e8] hover:text-[#10301a] sm:flex-none"
+                  style={callStyle}
+                >
+                  <PhoneCall size={15} aria-hidden />
+                  {callLabel}
+                </a>
+              )}
+              {showWa && (
+                <a
+                  href={waHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded border border-white/80 px-6 py-3 text-[11px] font-semibold text-white transition hover:bg-white hover:text-[#10301a] sm:flex-none"
                   style={waStyle}
                 >
                   <MessageCircle size={15} aria-hidden />

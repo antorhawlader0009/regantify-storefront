@@ -168,6 +168,51 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Mallon's own order, as the template's home page: hero, a plain feature strip, shop by category, the promo tiles, then the popular products.
+export const MALLON_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Groceryanto's own order, as the template's home page: the wide banner, a plain category row, the vegetable products, the promo banner, the sale grid, then the benefits row.
+export const GROCERYANTO_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Greenmart's own order, as the template's home page: the full-width hero, the floating category panel, the pale green offer panels, new arrivals, then popular products and the feature row.
+export const GREENMART_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Glowerive's own order, as the template's home page: hero, the pale feature panel (it overlaps the hero), shop by category, featured products, the offer band.
 export const GLOWERIVE_ORDER: HomeSectionId[] = [
   'HERO',

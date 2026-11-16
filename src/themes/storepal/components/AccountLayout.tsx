@@ -19,6 +19,9 @@ import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
+import { MallonPageHeader } from '../../mallon/MallonBreadcrumb';
+import { GroceryantoPageHeader } from '../../groceryanto/GroceryantoBreadcrumb';
+import { GreenmartPageHeader } from '../../greenmart/GreenmartBreadcrumb';
 import { GlowerivePageHeader } from '../../glowerive/GloweriveBreadcrumb';
 import { GadgetstorePageHeader } from '../../gadgetstore/GadgetstoreBreadcrumb';
 import { FurniluxPageHeader } from '../../furnilux/FurniluxBreadcrumb';
@@ -307,6 +310,120 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
           </div>
         </ChicwovePageHeader>
         <main className="cw-wrap w-full flex-1 py-8 sm:py-10">
+          <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white shadow-card sm:flex-row sm:gap-0">
+            <AccountSidebar subdomain={subdomain} />
+            <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</div>
+          </div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </div>
+    );
+  }
+  if (skin === 'mallon') {
+    return (
+      <div className="flex min-h-screen flex-col bg-[var(--ml-cream)] text-ink">
+        <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+        <LogoutConfirm
+          open={askLogout}
+          onCancel={cancelLogout}
+          onConfirm={() => {
+            setAskLogout(false);
+            logout();
+          }}
+        />
+        <MallonPageHeader
+          subdomain={subdomain}
+          homeLabel={t('Home')}
+          crumbs={[{ label: t('My account') }]}
+          title={t('My account')}
+          subtitle={firstName ? t('Hi, {name}').replace('{name}', firstName) : null}
+        >
+          <div className="flex items-center gap-2">
+            <GoogleConnectBadge />
+            {signedIn && (
+              <button type="button" onClick={() => setAskLogout(true)} className="ml-btn-outline sm:hidden">
+                {t('Log Out')}
+              </button>
+            )}
+          </div>
+        </MallonPageHeader>
+        <main className="ml-wrap w-full flex-1 py-8 sm:py-10">
+          <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white shadow-card sm:flex-row sm:gap-0">
+            <AccountSidebar subdomain={subdomain} />
+            <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</div>
+          </div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </div>
+    );
+  }
+  if (skin === 'groceryanto') {
+    return (
+      <div className="flex min-h-screen flex-col bg-[var(--ga-cream)] text-ink">
+        <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+        <LogoutConfirm
+          open={askLogout}
+          onCancel={cancelLogout}
+          onConfirm={() => {
+            setAskLogout(false);
+            logout();
+          }}
+        />
+        <GroceryantoPageHeader
+          subdomain={subdomain}
+          homeLabel={t('Home')}
+          crumbs={[{ label: t('My account') }]}
+          title={t('My account')}
+          subtitle={firstName ? t('Hi, {name}').replace('{name}', firstName) : null}
+        >
+          <div className="flex items-center gap-2">
+            <GoogleConnectBadge />
+            {signedIn && (
+              <button type="button" onClick={() => setAskLogout(true)} className="ga-btn-outline sm:hidden">
+                {t('Log Out')}
+              </button>
+            )}
+          </div>
+        </GroceryantoPageHeader>
+        <main className="ga-wrap w-full flex-1 py-8 sm:py-10">
+          <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white shadow-card sm:flex-row sm:gap-0">
+            <AccountSidebar subdomain={subdomain} />
+            <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</div>
+          </div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </div>
+    );
+  }
+  if (skin === 'greenmart') {
+    return (
+      <div className="flex min-h-screen flex-col bg-[var(--gm-cream)] text-ink">
+        <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+        <LogoutConfirm
+          open={askLogout}
+          onCancel={cancelLogout}
+          onConfirm={() => {
+            setAskLogout(false);
+            logout();
+          }}
+        />
+        <GreenmartPageHeader
+          subdomain={subdomain}
+          homeLabel={t('Home')}
+          crumbs={[{ label: t('My account') }]}
+          title={t('My account')}
+          subtitle={firstName ? t('Hi, {name}').replace('{name}', firstName) : null}
+        >
+          <div className="flex items-center gap-2">
+            <GoogleConnectBadge />
+            {signedIn && (
+              <button type="button" onClick={() => setAskLogout(true)} className="gm-btn-outline sm:hidden">
+                {t('Log Out')}
+              </button>
+            )}
+          </div>
+        </GreenmartPageHeader>
+        <main className="gm-wrap w-full flex-1 py-8 sm:py-10">
           <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white shadow-card sm:flex-row sm:gap-0">
             <AccountSidebar subdomain={subdomain} />
             <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</div>
