@@ -16,6 +16,7 @@ import { TechzoneProductView } from '@/themes/techzone/TechzoneProductView';
 import { StrideProductView } from '@/themes/stride/StrideProductView';
 import { VaeloraProductView } from '@/themes/vaelora/VaeloraProductView';
 import { ChicwoveProductView } from '@/themes/chicwove/ChicwoveProductView';
+import { GadgetstoreProductView } from '@/themes/gadgetstore/GadgetstoreProductView';
 import { FurniluxProductView } from '@/themes/furnilux/FurniluxProductView';
 import { EstateproProductView } from '@/themes/estatepro/EstateproProductView';
 import { DrivecraftProductView } from '@/themes/drivecraft/DrivecraftProductView';
@@ -257,6 +258,15 @@ export default async function ProductPage({ params }: PageProps) {
         />
       ) : storeSkin(store.theme) === 'chicwove' ? (
         <ChicwoveProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'gadgetstore' ? (
+        <GadgetstoreProductView
           {...viewProps}
           categoryDetails={categoryDetails}
           logoUrl={store.logoUrl}

@@ -42,7 +42,7 @@ interface Props {
 }
 
 const chipCls = (on: boolean) =>
-  `shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${on ? 'border-[var(--gs-brand)] bg-[var(--gs-brand)] text-white' : 'border-black/15 hover:border-[var(--gs-brand)]'}`;
+  `shrink-0 whitespace-nowrap rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${on ? 'border-[var(--gs-brand)] bg-[var(--gs-brand)] text-ink' : 'border-black/15 hover:border-[var(--gs-brand)]'}`;
 const selectCls = 'border border-black/15 bg-white px-3 py-2 text-xs font-medium normal-case tracking-normal outline-none focus:border-[var(--gs-brand)]';
 
 /**

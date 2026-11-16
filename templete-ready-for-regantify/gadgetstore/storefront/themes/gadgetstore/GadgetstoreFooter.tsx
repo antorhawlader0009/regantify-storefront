@@ -168,7 +168,7 @@ export function GadgetstoreFooter({ subdomain, storeName, aboutBlurb, logoUrl: l
             <ul className="mt-4 space-y-1.5">
               {contactLines.map(({ icon: Icon, text, href }) => (
                 <li key={text} className="flex items-start gap-2 text-[11px]">
-                  <Icon size={14} className="mt-0.5 shrink-0 text-[var(--gs-brand)]" aria-hidden />
+                  <Icon size={14} className="mt-0.5 shrink-0 text-[var(--gs-lime-text)]" aria-hidden />
                   {href ? (
                     <a href={href} className="hover:text-[var(--gs-brand)]">
                       {text}
@@ -183,7 +183,7 @@ export function GadgetstoreFooter({ subdomain, storeName, aboutBlurb, logoUrl: l
           {platforms.length > 0 && (
             <div className="mt-5 flex gap-3">
               {platforms.map(({ key, label, Icon }) => (
-                <a key={key} href={socialLinks[key]!} target="_blank" rel="noopener noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center text-[var(--gs-brand)] transition hover:text-[var(--gs-brand-dark)]">
+                <a key={key} href={socialLinks[key]!} target="_blank" rel="noopener noreferrer" aria-label={label} className="flex h-9 w-9 items-center justify-center text-[var(--gs-lime-text)] transition hover:text-ink">
                   <Icon className="h-4 w-4" />
                 </a>
               ))}
@@ -215,7 +215,7 @@ export function GadgetstoreFooter({ subdomain, storeName, aboutBlurb, logoUrl: l
               const Icon = highlightIcon(perk.icon);
               return (
                 <li key={perk.id} className="flex items-center gap-3">
-                  <Icon className="h-7 w-7 shrink-0 text-[var(--gs-brand)]" strokeWidth={1.5} aria-hidden />
+                  <Icon className="h-7 w-7 shrink-0 text-[var(--gs-lime-text)]" strokeWidth={1.5} aria-hidden />
                   <div>
                     <p className="text-[13px] font-semibold text-ink">{t(perk.title)}</p>
                     {perk.text && <p className="text-xs text-neutral-600">{t(perk.text)}</p>}
@@ -241,8 +241,8 @@ export function GadgetstoreFooter({ subdomain, storeName, aboutBlurb, logoUrl: l
             <Link href={`${base}/report`} className="underline underline-offset-2 hover:text-[var(--gs-brand)]">
               {t('Report this store')}
             </Link>
-            <GetAppLink subdomain={subdomain} label={t('Get the Regantify app')} className="font-medium text-[var(--gs-brand)] hover:text-[var(--gs-brand)]" />
-            <AboutAppLink label={t('About this app')} className="font-medium text-[var(--gs-brand)] hover:text-[var(--gs-brand)]" />
+            <GetAppLink subdomain={subdomain} label={t('Get the Regantify app')} className="font-medium text-[var(--gs-lime-text)] hover:text-ink" />
+            <AboutAppLink label={t('About this app')} className="font-medium text-[var(--gs-lime-text)] hover:text-ink" />
             {config?.showCredit !== false && <DeveloperCredit />}
           </div>
         </div>

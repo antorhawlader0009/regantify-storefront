@@ -168,6 +168,21 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Gadgetstore's own order, as the template's home page: the light hero, the benefits strip, the round category row, best sellers, the two promo tiles, then the rest.
+export const GADGETSTORE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Furnilux's own order, as the template's home page: hero, shop by room, featured products, brands, then the offer banner.
 export const FURNILUX_ORDER: HomeSectionId[] = [
   'HERO',

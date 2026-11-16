@@ -238,7 +238,7 @@ export function GadgetstoreCartPage({ subdomain, storeName, categories, products
                       <div className="flex min-w-0 flex-1 flex-col">
                         <div className="flex items-start justify-between gap-2">
                           <div className="min-w-0">
-                            {line.isPreOrder && <p className="text-xs font-medium text-[var(--gs-brand)]">{t('Pre-order')}</p>}
+                            {line.isPreOrder && <p className="text-xs font-medium text-[var(--gs-lime-text)]">{t('Pre-order')}</p>}
                             <h2 className="text-sm font-medium leading-snug">
                               <Link href={href} className="hover:text-[var(--gs-brand)]">
                                 {line.name}

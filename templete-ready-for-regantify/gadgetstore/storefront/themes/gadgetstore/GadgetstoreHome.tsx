@@ -117,7 +117,7 @@ export function GsHero({
           >
             <div className="gs-wrap relative min-h-[420px] items-center sm:min-h-[480px] lg:flex lg:min-h-[560px]">
               <div className="relative z-10 py-10 lg:w-1/2 lg:py-14">
-                {s.eyebrow && <span className="inline-flex items-center text-[11px] font-medium uppercase tracking-wider text-[var(--gs-brand-dark)]">{s.eyebrow}</span>}
+                {s.eyebrow && <span className="inline-flex items-center text-[11px] font-medium uppercase tracking-wider text-[var(--gs-lime-text)]">{s.eyebrow}</span>}
                 <h2 className="mt-5 text-[34px] font-medium leading-[1.1] tracking-tight sm:text-[52px] lg:text-[58px]">
                   {s.title.map((line, li) => (
                     <span key={line + li} className="block">
@@ -363,7 +363,7 @@ export function GsReviews({ title, reviews, verifiedLabel }: { title: string; ve
           <div key={r.id} className="rounded-2xl bg-white p-5 shadow-[var(--shadow-card)]">
             <div className="flex items-center justify-between gap-2">
               <span className="flex items-center gap-2 text-sm font-medium">
-                <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--gs-soft)] text-xs font-medium text-[var(--gs-brand)]">{r.name.slice(0, 1).toUpperCase()}</span>
+                <span className="grid h-9 w-9 place-items-center rounded-full bg-[var(--gs-soft)] text-xs font-medium text-[var(--gs-lime-text)]">{r.name.slice(0, 1).toUpperCase()}</span>
                 {r.name}
               </span>
               <GadgetstoreStars value={r.rating} className="h-3.5 w-3.5" />

@@ -60,7 +60,7 @@ export function GadgetstoreLogo({ logoUrl, storeName, light = false, small = fal
       )}
       {showName && (
         <span
-          className={`truncate font-bold uppercase tracking-[0.08em] ${small ? 'text-[22px]' : 'text-[28px]'} ${light ? 'text-white' : 'text-ink'}`}
+          className={`truncate font-bold uppercase tracking-[0.08em] ${small ? 'text-[20px]' : 'text-[24px]'} ${light ? 'text-white' : 'text-ink'}`}
         >
           {storeName}
         </span>
@@ -339,11 +339,11 @@ export function GadgetstoreHeader({
             <MenuIcon className="h-6 w-6" />
           </button>
 
-          <Link href={`/store/${subdomain}`} className="min-w-0" onClick={closeAll}>
+          <Link href={`/store/${subdomain}`} className="shrink-0" onClick={closeAll}>
             <GadgetstoreLogo logoUrl={logoUrl} storeName={storeName} />
           </Link>
 
-          <nav data-rg="menu" className="hidden items-center gap-6 lg:flex xl:gap-9" aria-label="Main">
+          <nav data-rg="menu" className="hidden min-w-0 items-center gap-5 lg:flex xl:gap-6" aria-label="Main">
             {menuItems.slice(0, 6).map((item, i) => (
               <MenuLink key={`${item.label}-${i}`} item={item} subdomain={subdomain} loggedIn={loggedIn} className={navCls} />
             ))}
@@ -512,7 +512,7 @@ export function GadgetstoreHeader({
               {(matchedCategories.length > 0 || (!q && categories.length > 0)) && (
                 <div className="flex flex-wrap gap-2 px-4 pt-4 sm:px-5">
                   {(q ? matchedCategories : categories.slice(0, 8)).map((name) => (
-                    <Link key={name} href={categoryHref(name)} onClick={closeAll} className="rounded-full bg-[var(--gs-soft)] px-3 py-1 text-xs font-medium text-[var(--gs-brand)] hover:bg-[var(--gs-sand)]">
+                    <Link key={name} href={categoryHref(name)} onClick={closeAll} className="rounded-full bg-[var(--gs-soft)] px-3 py-1 text-xs font-medium text-[var(--gs-lime-text)] hover:bg-[var(--gs-sand)]">
                       {name}
                     </Link>
                   ))}

@@ -16,6 +16,7 @@ import { TechzoneCheckoutPage } from '../../techzone/TechzoneCheckoutPage';
 import { StrideCheckoutPage } from '../../stride/StrideCheckoutPage';
 import { VaeloraCheckoutPage } from '../../vaelora/VaeloraCheckoutPage';
 import { ChicwoveCheckoutPage } from '../../chicwove/ChicwoveCheckoutPage';
+import { GadgetstoreCheckoutPage } from '../../gadgetstore/GadgetstoreCheckoutPage';
 import { FurniluxCheckoutPage } from '../../furnilux/FurniluxCheckoutPage';
 import { EstateproCheckoutPage } from '../../estatepro/EstateproCheckoutPage';
 import { DrivecraftCheckoutPage } from '../../drivecraft/DrivecraftCheckoutPage';
@@ -75,6 +76,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   if (skin === 'mahabesh') return <MahabeshCheckoutPage subdomain={subdomain} />;
   if (skin === 'chronics') return <ChronicsCheckoutPage subdomain={subdomain} />;
   if (skin === 'chicwove') return <ChicwoveCheckoutPage subdomain={subdomain} />;
+  if (skin === 'gadgetstore') return <GadgetstoreCheckoutPage subdomain={subdomain} />;
   if (skin === 'furnilux') return <FurniluxCheckoutPage subdomain={subdomain} />;
   if (skin === 'estatepro') return <EstateproCheckoutPage subdomain={subdomain} />;
   if (skin === 'drivecraft') return <DrivecraftCheckoutPage subdomain={subdomain} />;
