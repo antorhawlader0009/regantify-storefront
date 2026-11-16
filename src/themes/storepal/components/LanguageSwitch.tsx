@@ -156,6 +156,29 @@ export function ChicwoveLanguageSwitch({ className = '' }: { className?: string 
   );
 }
 
+/** Drivecraft's switch, in its black header: small white capitals like its menu links, the chosen language in red. */
+export function DrivecraftLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-white/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'text-[var(--dc-red)]' : 'text-white/70 hover:text-white'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** Belora's switch, in its header's style: small text like its menu links, the chosen language in violet with an underline. */
 export function BeloraLanguageSwitch({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useStoreLanguageSwitch();

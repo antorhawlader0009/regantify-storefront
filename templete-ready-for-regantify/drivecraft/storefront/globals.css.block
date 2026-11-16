@@ -297,6 +297,8 @@
 }
 /* The template's select (white, slate border, rounded-md, a small chevron on the right). */
 [data-skin='drivecraft'] .dc-select {
+  /* the select sits inside the white-text page band, so it must not inherit white */
+  color: #0c0c0d;
   appearance: none;
   -webkit-appearance: none;
   border: 1px solid #cfcfcf;

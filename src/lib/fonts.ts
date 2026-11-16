@@ -1,4 +1,4 @@
-import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins, DM_Sans, Pacifico, Inter, Playfair_Display, Oswald, Barlow_Condensed, Cormorant_Garamond } from 'next/font/google';
+import { Fraunces, Hanken_Grotesk, Hind_Siliguri, Archivo, Newsreader, Poppins, DM_Sans, Pacifico, Inter, Playfair_Display, Oswald, Barlow_Condensed, Cormorant_Garamond, Roboto_Condensed } from 'next/font/google';
 
 // Five font families, self-hosted at build time (next/font) - no
 // runtime request to Google Fonts from a visitor's browser, no layout
@@ -149,4 +149,6 @@ const playfair = Playfair_Display({
 // values) and its [data-theme="minimal"]/[data-theme="storepal"] blocks
 // (each theme's own override values), both of which reference these
 // same CSS variables.
-export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${archivoMahabesh.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${oswald.variable} ${barlowCondensed.variable} ${cormorant.variable} ${hindSiliguri.variable}`;
+const robotoCondensed = Roboto_Condensed({ subsets: ['latin'], weight: ['400', '700'], style: ['normal', 'italic'], variable: '--font-roboto-cond', display: 'swap', preload: false });
+
+export const fontVariables = `${fraunces.variable} ${hankenGrotesk.variable} ${newsreader.variable} ${archivo.variable} ${archivoMahabesh.variable} ${poppins.variable} ${dmSans.variable} ${pacifico.variable} ${inter.variable} ${playfair.variable} ${oswald.variable} ${barlowCondensed.variable} ${cormorant.variable} ${robotoCondensed.variable} ${hindSiliguri.variable}`;

@@ -3038,3 +3038,478 @@ body {
   --color-accent: #6b3fa0;
   --color-accent-dark: #5b2d91;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Drivecraft: the DRIVECRAFT auto-accessories template (templete/others-templetes/AutoMobile/drivecraft) on StorePal's features. The store
+   layout (and lib/portalRoot.ts for dialogs) adds data-skin="drivecraft" next to data-theme="storepal". Near-black ink (#0c0c0d) header
+   and footer, a light grey page (#f3f3f3), racing red (#d3161d) as the fill of primary buttons and tags (white text), Roboto
+   Condensed bold italic capitals for headings and Inter for the rest, square corners, white cards with a soft shadow, a gradient
+   page band in ink to deep red. --color-accent is red. Store > Branding's own colour and fonts still win. Shared StorePal parts that
+   Solevo also draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='drivecraft'] {
+  --color-ink: #0c0c0d;
+  --color-canvas: #f3f3f3;
+  --color-surface: #ffffff;
+  --color-accent: #d3161d;
+  --color-accent-dark: #a80f15;
+  --color-accent-light: #fbe6e7;
+  --color-muted: #6b6b6b;
+  --color-line: #e5e5e5;
+  --color-line-strong: #cfcfcf;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --dc-navy: #0c0c0d;
+  --dc-navy-800: #161617;
+  --dc-hero: #f1f0ec;
+  --dc-brand: #d3161d;
+  --dc-brand-dark: #a80f15;
+  --dc-soft: #fbe6e7;
+  --dc-well: #f4f4f4;
+  --dc-line: #e5e5e5;
+  --dc-card: #f4f4f4;
+  --dc-panel: #f7f7f7;
+  --dc-peach: #f4f4f4;
+  --dc-signal: #d3161d;
+  --dc-footer: #0c0c0d;
+  --dc-red: #d3161d;
+  --dc-cream: #ffffff;
+  --dc-deep: #5a0a0d;
+  --dc-ink-soft: #161617;
+  --dc-ink: #0c0c0d;
+  --dc-volt-dark: #a80f15;
+  --dc-smoke: #f4f4f4;
+  --dc-mint: #fbe6e7;
+  --dc-photo: #ececec;
+  --dc-hero-bg: #f1f0ec;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #d3161d;
+  --sv-gold-dark: #a80f15;
+  --sv-sand: #f4f4f4;
+  --sv-card: #f4f4f4;
+  --sv-panel: #f7f7f7;
+  --pm-card: #f4f4f4;
+  --pm-soft: #fbe6e7;
+  --pm-yellow: #d3161d;
+  --pm-yellow-strong: #a80f15;
+  --font-display: var(--font-roboto-cond), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-popover: 0 24px 48px -24px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy navy. */
+[data-skin='drivecraft'] :is(h1, h2, h3) {
+  color: var(--dc-navy);
+  letter-spacing: -0.01em;
+}
+/* The template's container (max-w-page 1200px, 16px side padding). */
+[data-skin='drivecraft'] .dc-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1280px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* The template's buttons: a rounded-lg blue one (bg-brand, brand-dark on hover); --line is the outlined one, --sm the small
+   one. .dc-btn-dark is the navy one the cards use for Add to Cart (brand on hover). The display sits in the components layer
+   so Tailwind's hidden / lg:hidden on the same element still win. */
+@layer components {
+  [data-skin='drivecraft'] :is(.dc-btn, .dc-btn-dark, .sv-btn-dark, .dc-btn-line, .dc-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+}
+[data-skin='drivecraft'] .dc-btn,
+[data-skin='drivecraft'] .dc-btn-dark,
+[data-skin='drivecraft'] .sv-btn-dark {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #0c0c0d;
+  border-radius: 0;
+  background: #0c0c0d;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='drivecraft'] .dc-btn:hover,
+[data-skin='drivecraft'] .sv-btn-dark:hover {
+  background: #2a2a2a;
+  border-color: #2a2a2a;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-btn-dark {
+  background: #0c0c0d;
+  border-color: #0c0c0d;
+}
+[data-skin='drivecraft'] .dc-btn-dark:hover {
+  background: #0c0c0d;
+  border-color: #0c0c0d;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='drivecraft'] .dc-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='drivecraft'] .dc-btn-line,
+[data-skin='drivecraft'] .dc-btn-outline,
+[data-skin='drivecraft'] .sv-btn-outline {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff;
+  color: #0c0c0d;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='drivecraft'] .dc-btn.dc-btn-line {
+  background: #fff;
+  color: #0c0c0d;
+  border-color: #cfcfcf;
+}
+[data-skin='drivecraft'] .dc-btn-line:hover,
+[data-skin='drivecraft'] .dc-btn.dc-btn-line:hover,
+[data-skin='drivecraft'] .dc-btn-outline:hover,
+[data-skin='drivecraft'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #0c0c0d;
+  color: #0c0c0d;
+}
+[data-skin='drivecraft'] .sv-btn-outline.\!border-ink {
+  border-color: #cfcfcf !important;
+}
+[data-skin='drivecraft'] .dc-btn-sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12.5px;
+}
+/* Small round-cornered icon button (close buttons and the like). */
+[data-skin='drivecraft'] .dc-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  color: #0c0c0d;
+  transition: background 0.15s, color 0.15s;
+}
+[data-skin='drivecraft'] .dc-icon-btn:hover {
+  background: var(--dc-soft);
+  color: #0c0c0d;
+}
+/* A discount tag on the photo's top left (the template's small blue badge). */
+[data-skin='drivecraft'] .dc-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 0;
+  background: #0c0c0d;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+/* The heart on the photo's top right (plain, navy; red when on). */
+[data-skin='drivecraft'] .dc-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #0c0c0d;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='drivecraft'] .dc-wish:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+[data-skin='drivecraft'] .dc-wish.is-on {
+  color: #ef4444;
+}
+[data-skin='drivecraft'] .dc-soldout .dc-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='drivecraft'] .dc-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='drivecraft'] .dc-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The brand strip: the template's marquee, moving left to right, paused on hover. */
+@keyframes dc-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='drivecraft'] .dc-marquee-track {
+  animation: dc-marquee-right 28s linear infinite;
+}
+[data-skin='drivecraft'] .dc-marquee:hover .dc-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes dc-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.dc-fade-up {
+  animation: dc-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='drivecraft'] .dc-marquee-track {
+    animation: none;
+  }
+  .dc-fade-up {
+    animation: none;
+  }
+}
+/* The hero fills the visible screen below the sticky header (the template's .hero-fill: 65px on a computer, 117px on a
+   phone with its search row), plus the top bar when the store has one. */
+[data-skin='drivecraft'] .dc-hero-fill {
+  min-height: max(460px, calc(100svh - 160px));
+}
+@media (min-width: 768px) {
+  [data-skin='drivecraft'] .dc-hero-fill {
+    min-height: max(480px, calc(100svh - 110px));
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='drivecraft'] .dc-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's blue main button. */
+[data-skin='drivecraft'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  height: 44px;
+}
+[data-skin='drivecraft'] .sv-auth input:focus {
+  border-color: #0c0c0d;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(5, 5, 5, 0.15);
+}
+[data-skin='drivecraft'] .sv-auth button[type='submit'] {
+  border-radius: 0;
+  background: #0c0c0d;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-skin='drivecraft'] .sv-auth button[type='submit']:hover {
+  background: #2a2a2a;
+}
+[data-skin='drivecraft'] [data-rg='product-tabs'] .border-accent {
+  border-color: #0c0c0d;
+}
+[data-skin='drivecraft'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #0c0c0d;
+}
+/* The template's select (white, slate border, rounded-md, a small chevron on the right). */
+[data-skin='drivecraft'] .dc-select {
+  /* the select sits inside the white-text page band, so it must not inherit white */
+  color: #0c0c0d;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23334155' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  outline: 0;
+}
+[data-skin='drivecraft'] .dc-select:focus {
+  border-color: #0c0c0d;
+}
+/* Drivecraft's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='drivecraft'] .dc-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+/* Drivecraft's footer is black: its colour variables are re-pointed for the parts the footer reuses (lime on hover). */
+[data-theme='storepal'][data-skin='drivecraft'] footer[data-rg='footer'] {
+  background-color: var(--dc-footer);
+  color: #d4d4d4;
+  --color-ink: #ffffff;
+  --color-muted: #d4d4d4;
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #0c0c0d;
+  --color-accent: #ff5a60;
+  --color-accent-dark: #ff8a8f;
+}
+[data-skin='drivecraft'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
+  color: #fff;
+}
+/* Drivecraft's own touches: heavy condensed capitals for page titles and the hero, spaced capitals on buttons, lime tags. */
+[data-skin='drivecraft'] :is(h1) {
+  font-family: var(--font-roboto-cond), var(--font-bangla-store, var(--font-bangla)), Impact, sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-style: italic;
+}
+[data-skin='drivecraft'] :is(.dc-btn, .dc-btn-dark, .sv-btn-dark, .dc-btn-line, .dc-btn-outline, .sv-btn-outline) {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 700;
+}
+[data-skin='drivecraft'] .dc-btn,
+[data-skin='drivecraft'] .dc-btn-dark,
+[data-skin='drivecraft'] .sv-btn-dark {
+  border-color: #0c0c0d;
+  background: #0c0c0d;
+}
+[data-skin='drivecraft'] .dc-btn:hover,
+[data-skin='drivecraft'] .dc-btn-dark:hover,
+[data-skin='drivecraft'] .sv-btn-dark:hover {
+  background: #2a2a2a;
+  border-color: #2a2a2a;
+}
+[data-skin='drivecraft'] .dc-btn-line,
+[data-skin='drivecraft'] .dc-btn.dc-btn-line,
+[data-skin='drivecraft'] .dc-btn-outline,
+[data-skin='drivecraft'] .sv-btn-outline {
+  border-color: #0c0c0d;
+  background: #fff;
+  color: #0c0c0d;
+}
+[data-skin='drivecraft'] .dc-btn-line:hover,
+[data-skin='drivecraft'] .dc-btn.dc-btn-line:hover,
+[data-skin='drivecraft'] .dc-btn-outline:hover,
+[data-skin='drivecraft'] .sv-btn-outline:hover {
+  background: #0c0c0d;
+  border-color: #0c0c0d;
+  color: #fff;
+}
+[data-skin='drivecraft'] .sv-btn-outline.\!border-ink {
+  border-color: #0c0c0d !important;
+}
+[data-skin='drivecraft'] .dc-tag {
+  background: #0c0c0d;
+  color: #d3161d;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+[data-skin='drivecraft'] .dc-tag.dc-tag-sale {
+  background: #dc2626;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-hero-fill {
+  min-height: 520px;
+}
+@media (min-width: 1024px) {
+  [data-skin='drivecraft'] .dc-hero-fill {
+    min-height: 600px;
+  }
+}
+[data-skin='drivecraft'] .dc-btn-dark.is-done,
+[data-skin='drivecraft'] .dc-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+/* Drivecraft: primary buttons are red with white text; the card's Add to Cart bar is ink and turns red on hover; the hero's ghost
+   button is white on the dark picture. */
+[data-skin='drivecraft'] .dc-btn,
+[data-skin='drivecraft'] .sv-btn-dark {
+  background: #d3161d;
+  border-color: #d3161d;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-btn:hover,
+[data-skin='drivecraft'] .sv-btn-dark:hover {
+  background: #a80f15;
+  border-color: #a80f15;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-btn-dark {
+  background: #0c0c0d;
+  border-color: #0c0c0d;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-btn-dark:hover {
+  background: #d3161d;
+  border-color: #d3161d;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-btn.dc-btn-ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-btn.dc-btn-ghost:hover {
+  background: #fff;
+  border-color: #fff;
+  color: #0c0c0d;
+}
+[data-skin='drivecraft'] .dc-btn.is-done,
+[data-skin='drivecraft'] .dc-btn-dark.is-done {
+  background: #157347;
+  border-color: #157347;
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-tag,
+[data-skin='drivecraft'] .dc-tag.dc-tag-new {
+  background: #d3161d;
+  color: #fff;
+}
+[data-skin='drivecraft'] .sv-auth button[type='submit'] {
+  background: #d3161d;
+  color: #fff;
+}
+[data-skin='drivecraft'] .sv-auth button[type='submit']:hover {
+  background: #a80f15;
+}
+/* The wordmark (the template's Logo.tsx): Roboto Condensed bold italic capitals. */
+[data-skin='drivecraft'] .dc-logo {
+  font-family: var(--font-roboto-cond), var(--font-bangla-store, var(--font-bangla)), Impact, sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+/* The template's page band: ink to deep red, white words. */
+[data-skin='drivecraft'] .dc-band {
+  background: linear-gradient(to right, #0c0c0d, #161617, #5a0a0d);
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-band :is(h1, h2) {
+  color: #fff;
+}
+[data-skin='drivecraft'] .dc-card-shadow {
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 18px rgba(0, 0, 0, 0.06);
+}

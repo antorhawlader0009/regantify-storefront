@@ -168,6 +168,21 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Drivecraft's own order, as the template's home page: hero, shop by category, featured products, the promo banners, then the rest.
+export const DRIVECRAFT_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Belora's own order, as the template's home page: hero, the pale feature panel, shop by category, the "self care" split band, then best sellers.
 export const BELORA_ORDER: HomeSectionId[] = [
   'HERO',
