@@ -219,3 +219,19 @@
   border-radius: 0.75rem;
   box-shadow: var(--shadow-card);
 }
+
+/* Belora's footer is WHITE with ink text: StorePal's base rule paints every footer navy with white text, so re-point it back
+   (without this the links are dark-on-navy and the call bar's white buttons lose their text). */
+[data-theme='storepal'][data-skin='belora'] footer[data-rg='footer'] {
+  background-color: var(--be-footer);
+  border-top-color: var(--be-soft);
+  color: #3f3a4c;
+  --color-ink: #1e1b26;
+  --color-muted: #5b5668;
+  --color-line: #e8dcf4;
+  --color-line-strong: #d9c8ee;
+  --color-surface: #f5f0fa;
+  --color-canvas: #ffffff;
+  --color-accent: #6b3fa0;
+  --color-accent-dark: #5b2d91;
+}

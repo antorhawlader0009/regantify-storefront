@@ -21,6 +21,7 @@ import { TechzoneHeader } from '../../techzone/TechzoneHeader';
 import { StrideHeader } from '../../stride/StrideHeader';
 import { VaeloraHeader } from '../../vaelora/VaeloraHeader';
 import { ChicwoveHeader } from '../../chicwove/ChicwoveHeader';
+import { BeloraHeader } from '../../belora/BeloraHeader';
 import { ElevateHeader } from '../../elevate/ElevateHeader';
 import { useStoreSkin } from '../lib/designSettings';
 import { formatPrice as plainPrice } from '../lib/formatPrice';
@@ -170,6 +171,7 @@ export function StoreHeader(props: StoreHeaderProps) {
   if (skin === 'mahabesh') return <MahabeshHeader {...props} />;
   if (skin === 'chronics') return <ChronicsHeader {...props} />;
   if (skin === 'chicwove') return <ChicwoveHeader {...props} />;
+  if (skin === 'belora') return <BeloraHeader {...props} />;
   if (skin === 'elevate') return <ElevateHeader {...props} />;
   if (skin === 'solevo') return <SolevoHeader {...props} />;
   return skin === 'playmate' ? <PlaymateHeader {...props} /> : <StorePalHeader {...props} />;

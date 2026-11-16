@@ -168,6 +168,21 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Belora's own order, as the template's home page: hero, the pale feature panel, shop by category, the "self care" split band, then best sellers.
+export const BELORA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Elevate's own order, as the template's home page: hero, shop by category, new arrivals, the seasonal banner, then the rest.
 export const ELEVATE_ORDER: HomeSectionId[] = [
   'HERO',
