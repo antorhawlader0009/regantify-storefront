@@ -16,6 +16,7 @@ import { TechzoneCheckoutPage } from '../../techzone/TechzoneCheckoutPage';
 import { StrideCheckoutPage } from '../../stride/StrideCheckoutPage';
 import { VaeloraCheckoutPage } from '../../vaelora/VaeloraCheckoutPage';
 import { ChicwoveCheckoutPage } from '../../chicwove/ChicwoveCheckoutPage';
+import { EstateproCheckoutPage } from '../../estatepro/EstateproCheckoutPage';
 import { DrivecraftCheckoutPage } from '../../drivecraft/DrivecraftCheckoutPage';
 import { BeloraCheckoutPage } from '../../belora/BeloraCheckoutPage';
 import { ElevateCheckoutPage } from '../../elevate/ElevateCheckoutPage';
@@ -73,6 +74,7 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   if (skin === 'mahabesh') return <MahabeshCheckoutPage subdomain={subdomain} />;
   if (skin === 'chronics') return <ChronicsCheckoutPage subdomain={subdomain} />;
   if (skin === 'chicwove') return <ChicwoveCheckoutPage subdomain={subdomain} />;
+  if (skin === 'estatepro') return <EstateproCheckoutPage subdomain={subdomain} />;
   if (skin === 'drivecraft') return <DrivecraftCheckoutPage subdomain={subdomain} />;
   if (skin === 'belora') return <BeloraCheckoutPage subdomain={subdomain} />;
   if (skin === 'elevate') return <ElevateCheckoutPage subdomain={subdomain} />;

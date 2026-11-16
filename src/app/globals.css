@@ -3513,3 +3513,245 @@ body {
 [data-skin='drivecraft'] .dc-card-shadow {
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06), 0 6px 18px rgba(0, 0, 0, 0.06);
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Estatepro: the EstatePro real-estate template (templete/others-templetes/Properties/estatepro) on StorePal's features. The store
+   layout (and lib/portalRoot.ts for dialogs) adds data-skin="estatepro" next to data-theme="storepal". A luxury dark-and-gold
+   look: a cream page (#FDF8EE), a black header, hero and footer, gold (#F2C468, deeper #C9973A, light #F8DC9B) for buttons with
+   dark text, and for tags and links in their deeper tone, white cards with a deep soft shadow, rounded-2xl corners, Poppins
+   everywhere. Store > Branding's own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-*
+   classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='estatepro'] {
+  --color-ink: #141414;
+  --color-canvas: #FDF8EE;
+  --color-surface: #ffffff;
+  --color-accent: #C9973A;
+  --color-accent-dark: #A87B24;
+  --color-accent-light: #FDF8EE;
+  --color-muted: #525252;
+  --color-line: #e7e5e4;
+  --color-line-strong: rgba(20, 20, 20, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #C9973A;
+  --ep-brand: #F2C468;
+  --ep-brand-dark: #C9973A;
+  --ep-latte: #FDF1D6;
+  --ep-mocha: #F2C468;
+  --ep-taupe: #F2C468;
+  --ep-stone: #525252;
+  --ep-soft: #FDF8EE;
+  --ep-cream: #ffffff;
+  --ep-sand: #FDF8EE;
+  --ep-peach: #FDF8EE;
+  --ep-card: #FDF8EE;
+  --ep-panel: #FDF8EE;
+  --ep-tan: #FDF1D6;
+  --ep-blush: #FDF8EE;
+  --ep-footer: #111111;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #F2C468;
+  --sv-gold-dark: #C9973A;
+  --sv-sand: #FDF8EE;
+  --sv-card: #FDF8EE;
+  --sv-panel: #FDF8EE;
+  --pm-card: #FDF8EE;
+  --pm-soft: #FDF8EE;
+  --pm-yellow: #F2C468;
+  --pm-yellow-strong: #C9973A;
+  --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.18);
+  --shadow-card-hover: 0 14px 36px -10px rgba(0, 0, 0, 0.28);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='estatepro'] .ep-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1240px;
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+@media (min-width: 640px) {
+  [data-skin='estatepro'] .ep-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='estatepro'] .ep-wrap {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+}
+/* The template's buttons: an ink filled one and a white outline one. */
+[data-skin='estatepro'] .ep-btn-dark,
+[data-skin='estatepro'] .ep-btn-outline,
+[data-skin='estatepro'] .sv-btn-dark,
+[data-skin='estatepro'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 9999px;
+  padding: 0.75rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='estatepro'] .ep-btn-dark,
+[data-skin='estatepro'] .sv-btn-dark {
+  background: #F2C468;
+  color: #141414;
+  box-shadow: 0 6px 20px rgba(20, 20, 20, 0.1);
+}
+[data-skin='estatepro'] .ep-btn-dark:hover,
+[data-skin='estatepro'] .sv-btn-dark:hover {
+  background: #C9973A;
+}
+[data-skin='estatepro'] .ep-btn-outline,
+[data-skin='estatepro'] .sv-btn-outline {
+  border: 1px solid #F2C468;
+  background: transparent;
+  color: #C9973A;
+}
+[data-skin='estatepro'] .ep-btn-outline:hover,
+[data-skin='estatepro'] .sv-btn-outline:hover {
+  background: #FDF8EE;
+}
+[data-skin='estatepro'] .sv-btn-outline.\!border-ink {
+  border-color: #F2C468 !important;
+}
+[data-skin='estatepro'] .ep-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='estatepro'] .ep-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='estatepro'] .ep-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='estatepro'] .ep-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes ep-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes ep-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.ep-fade-up {
+  animation: ep-fade-up 0.5s ease both;
+}
+.ep-fade-in {
+  animation: ep-fade-in 0.4s ease both;
+}
+@keyframes ep-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='estatepro'] .ep-marquee-track {
+  animation: ep-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='estatepro'] .ep-marquee:hover .ep-marquee-track,
+[data-skin='estatepro'] .ep-marquee:focus-within .ep-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='estatepro'] .ep-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='estatepro'] .ep-marquee {
+    overflow-x: auto;
+  }
+  .ep-fade-up,
+  .ep-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='estatepro'] .ep-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='estatepro'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='estatepro'] .sv-auth input:focus {
+  border-color: #F2C468;
+  box-shadow: none;
+}
+[data-skin='estatepro'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #F2C468;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='estatepro'] .sv-auth button[type='submit']:hover {
+  background: #C9973A;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='estatepro'] [data-rg='product-tabs'] .border-accent {
+  border-color: #F2C468;
+}
+[data-skin='estatepro'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #F2C468;
+}
+/* Estatepro's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='estatepro'] .ep-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(242, 196, 104, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+/* Estatepro's footer is deep brown (StorePal's is navy), so StorePal's navy footer rule is undone here for the parts
+   Estatepro's footer reuses. */
+[data-theme='storepal'][data-skin='estatepro'] footer[data-rg='footer'] {
+  background-color: var(--ep-footer);
+  color: rgba(255, 255, 255, 0.8);
+  --color-ink: #ffffff;
+  --color-muted: rgba(255, 255, 255, 0.7);
+  --color-line: rgba(255, 255, 255, 0.1);
+  --color-line-strong: rgba(255, 255, 255, 0.2);
+  --color-surface: rgba(255, 255, 255, 0.06);
+  --color-canvas: #111111;
+  --color-accent: #F2C468;
+  --color-accent-dark: #F8DC9B;
+}
+
+
+/* Gold buttons carry dark text: the shared "accent fill, white text" buttons turn dark on the deeper gold. */
+[data-theme='storepal'][data-skin='estatepro'] .bg-accent.text-white {
+  color: #141414;
+}
