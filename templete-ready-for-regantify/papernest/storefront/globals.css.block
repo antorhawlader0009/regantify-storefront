@@ -233,4 +233,7 @@
   --color-accent: #5B2E9E;
   --color-accent-dark: #d9c7f0;
 }
+[data-theme='storepal'][data-skin='papernest'] footer[data-rg='footer'] .text-accent {
+  color: #d9c7f0;
+}
 

@@ -7,7 +7,7 @@ product, cart, checkout, wishlist, sign-in, search, Bangla, Contact, FAQ, `/temp
 
 ## 1. Checked only by computed styles and a contrast scan (screenshots stalled on the PC then), layout never seen
 
-Greenmart, Groceryanto, Mallon (2026-11-16, already live). Look at: Greenmart home (floating category panel over the hero, deep green footer), Groceryanto (wide 550px search bar, the "All Categories" button row, light grey footer), Mallon (the two header rows, coral "All Categories" block, sand footer, gradient promo tiles on the demo page).
+Petmart (2026-11-16, found by the contrast scan, page widths and structure checks only: screenshots of its pages hung, so its hero card, category panel, round cart buttons and footer were never seen), Greenmart, Groceryanto, Mallon (2026-11-16, already live). Look at: Greenmart home (floating category panel over the hero, deep green footer), Groceryanto (wide 550px search bar, the "All Categories" button row, light grey footer), Mallon (the two header rows, coral "All Categories" block, sand footer, gradient promo tiles on the demo page).
 
 ## 2. Earlier notes that said "not looked at in a browser"
 
@@ -20,11 +20,12 @@ Greenmart, Groceryanto, Mallon (2026-11-16, already live). Look at: Greenmart ho
 - Novella: the two-row header at 1024 to 1280 px (the window was one size only), Bangla view.
 - Novatrend: the white "WhatsApp" outline button on the orange call bar looks faint (white on orange is 3.4:1, the template's own palette).
 - Minimog: the hero with a store's own photo (the demo shows the template's backpack photo).
+- Papernest, Petmart, Quickbite, Shopease: no Bangla view checked except Shopease; Papernest hero rainbow text line and Quickbite glass blur on a low-end phone were not looked at; phone width was checked by page width only (no sideways scroll), not by pictures.
 
 ## 4. Kits in this folder that are not installed (not asked for yet)
 
-evernest, papernest, petmart, quickbite, shopease, sporteq, tastehouse, technova, urbanx, viva.
+evernest, sporteq, tastehouse, technova, urbanx, viva.
 
 ## Checked in a browser (with pictures)
 
-Elevate, Estatepro, Furnilux, Gadgetstore, Glowerive, Drivecraft, Menaura, Minimog, Novatrend, Novella (2026-11-16, on shopnet, bugs fixed and kits synced).
+Elevate, Estatepro, Furnilux, Gadgetstore, Glowerive, Drivecraft, Menaura, Minimog, Novatrend, Novella, Papernest, Quickbite, Shopease (2026-11-16, on shopnet, bugs fixed and kits synced).

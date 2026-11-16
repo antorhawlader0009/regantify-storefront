@@ -154,7 +154,7 @@ function MenuLink({ item, subdomain, loggedIn, className, onClick }: { item: Sto
 function CountBadge({ n, always = false }: { n: number; always?: boolean }) {
   if (!always && n === 0) return null;
   return (
-    <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--qb-brand)] px-1 text-[10px] font-medium text-white">{n}</span>
+    <span className="absolute -right-0.5 -top-0.5 flex h-[18px] min-w-[18px] items-center justify-center rounded-full bg-[var(--qb-brand)] px-1 text-[10px] font-medium text-[#2A211A]">{n}</span>
   );
 }
 
@@ -369,7 +369,7 @@ export function QuickbiteHeader({
               title={loggedIn ? customer!.fullName : undefined}
             >
               {loggedIn ? (
-                <span className="grid h-[26px] w-[26px] place-items-center rounded-full bg-[var(--qb-brand)] text-[12px] font-medium uppercase text-white">
+                <span className="grid h-[26px] w-[26px] place-items-center rounded-full bg-[var(--qb-brand)] text-[12px] font-medium uppercase text-[#2A211A]">
                   {customer!.fullName.trim().charAt(0) || '?'}
                 </span>
               ) : (

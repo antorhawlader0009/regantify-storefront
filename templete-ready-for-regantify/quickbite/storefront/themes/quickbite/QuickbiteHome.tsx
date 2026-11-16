@@ -128,7 +128,7 @@ export function QbHero({
                 </h2>
                 {s.text && <p className="mt-6 max-w-sm text-base text-ink/75">{s.text}</p>}
                 <div className="mt-8 flex flex-wrap gap-3">
-                  <Link href={s.href} className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--qb-brand)] px-7 py-3.5 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--qb-brand-dark)] active:scale-[.98]">
+                  <Link href={s.href} className="inline-flex items-center justify-center gap-2 rounded-full bg-[var(--qb-brand)] px-7 py-3.5 text-sm font-semibold text-[#2A211A] shadow-sm transition hover:bg-[var(--qb-brand-dark)] active:scale-[.98]">
                     {shopLabel} <ArrowRight className="h-4 w-4" />
                   </Link>
                   {exploreLabel && exploreHref && (
@@ -287,7 +287,7 @@ export function QbPromoBanners({ banners, plainImage }: { banners: QbPromo[]; pl
           <div className="qb-glass relative z-10 w-full max-w-md rounded-3xl p-7 sm:p-9">
             {b.kicker && <span className="mb-4 inline-flex items-center rounded-full border border-white/60 bg-white/40 px-3 py-1 text-xs font-medium">{b.kicker}</span>}
             <h3 className="whitespace-pre-line font-display text-4xl font-bold leading-tight tracking-tight sm:text-5xl">{b.title}</h3>
-            <Link href={b.href} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[var(--qb-brand)] px-6 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-[var(--qb-brand-dark)] active:scale-[.98]">
+            <Link href={b.href} className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-[var(--qb-brand)] px-6 py-3 text-sm font-semibold text-[#2A211A] shadow-sm transition hover:bg-[var(--qb-brand-dark)] active:scale-[.98]">
               {b.cta} <ArrowRight className="h-4 w-4" />
             </Link>
           </div>

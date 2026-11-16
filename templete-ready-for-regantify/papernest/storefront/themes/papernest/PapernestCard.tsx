@@ -96,7 +96,7 @@ export function PapernestCardView({
           <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
             <span
               className="rounded-md px-2 py-0.5 text-[10px] font-bold leading-none text-white"
-              style={{ backgroundColor: badge.color || ('#FF5C7A') }}
+              style={{ backgroundColor: badge.color || ('#D92D52') }}
             >
               {badge.text}
             </span>

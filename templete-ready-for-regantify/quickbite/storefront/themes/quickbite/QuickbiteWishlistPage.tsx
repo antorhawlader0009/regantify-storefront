@@ -177,7 +177,7 @@ export function QuickbiteWishlistPage({ subdomain, storeName, categories, produc
                 href={`https://wa.me/?text=${encodeURIComponent(`${t('My wishlist')}: ${typeof window === 'undefined' ? '' : shareLink()}`)}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-lg bg-[var(--qb-brand)] px-4 py-2.5 text-xs font-medium text-white transition hover:bg-[var(--qb-brand-dark)]"
+                className="rounded-lg bg-[var(--qb-brand)] px-4 py-2.5 text-xs font-medium text-[#2A211A] transition hover:bg-[var(--qb-brand-dark)]"
               >
                 WhatsApp
               </a>
@@ -231,7 +231,7 @@ export function QuickbiteWishlistPage({ subdomain, storeName, categories, produc
                     onClick={() => void toggleNotify(p.slug)}
                     aria-pressed={!!notify[p.slug]}
                     className={`mt-2 w-full border px-2 py-2 text-xs font-medium transition-colors ${
-                      notify[p.slug] ? 'border-[var(--qb-brand)] bg-[var(--qb-brand)] text-white' : 'border-black/15 text-ink hover:border-[var(--qb-brand)]'
+                      notify[p.slug] ? 'border-[var(--qb-brand)] bg-[var(--qb-brand)] text-[#2A211A]' : 'border-black/15 text-ink hover:border-[var(--qb-brand)]'
                     }`}
                   >
                     {notify[p.slug]

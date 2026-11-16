@@ -325,7 +325,7 @@ export function QuickbiteCartPage({ subdomain, storeName, categories, products, 
                   <button
                     type="submit"
                     disabled={checking}
-                    className="rounded-lg bg-[var(--qb-brand)] px-4 text-xs font-medium text-white transition hover:bg-[var(--qb-brand-dark)] disabled:opacity-60"
+                    className="rounded-lg bg-[var(--qb-brand)] px-4 text-xs font-medium text-[#2A211A] transition hover:bg-[var(--qb-brand-dark)] disabled:opacity-60"
                   >
                     {checking ? '...' : t('Apply')}
                   </button>

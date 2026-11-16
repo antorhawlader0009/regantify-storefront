@@ -94,7 +94,7 @@
 [data-skin='quickbite'] .qb-btn-dark,
 [data-skin='quickbite'] .sv-btn-dark {
   background: #E9A23B;
-  color: #fff;
+  color: #2A211A;
   box-shadow: 0 6px 20px rgba(43, 33, 24, 0.1);
 }
 [data-skin='quickbite'] .qb-btn-dark:hover,
@@ -200,7 +200,7 @@
 [data-skin='quickbite'] .sv-auth button[type='submit'] {
   border-radius: 0.375rem;
   background: #E9A23B;
-  color: #fff;
+  color: #2A211A;
   font-size: 14px;
   font-weight: 500;
 }

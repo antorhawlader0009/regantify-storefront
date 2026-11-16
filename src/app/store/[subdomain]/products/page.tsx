@@ -13,6 +13,10 @@ import { TechzoneProductsView } from '@/themes/techzone/TechzoneProductsView';
 import { StrideProductsView } from '@/themes/stride/StrideProductsView';
 import { VaeloraProductsView } from '@/themes/vaelora/VaeloraProductsView';
 import { ChicwoveProductsView } from '@/themes/chicwove/ChicwoveProductsView';
+import { ShopeaseProductsView } from '@/themes/shopease/ShopeaseProductsView';
+import { QuickbiteProductsView } from '@/themes/quickbite/QuickbiteProductsView';
+import { PetmartProductsView } from '@/themes/petmart/PetmartProductsView';
+import { PapernestProductsView } from '@/themes/papernest/PapernestProductsView';
 import { NovellaProductsView } from '@/themes/novella/NovellaProductsView';
 import { NovatrendProductsView } from '@/themes/novatrend/NovatrendProductsView';
 import { MinimogProductsView } from '@/themes/minimog/MinimogProductsView';
@@ -58,7 +62,7 @@ export default async function ProductsPage({ params }: PageProps) {
   const { store, products, categories, categoryDetails } = data;
   const skin = storeSkin(store.theme);
   if (!isPageSkin(skin)) notFound();
-  const ProductsView = skin === 'stride' ? StrideProductsView : skin === 'vaelora' ? VaeloraProductsView : skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'elevate' ? ElevateProductsView : skin === 'belora' ? BeloraProductsView : skin === 'drivecraft' ? DrivecraftProductsView : skin === 'estatepro' ? EstateproProductsView : skin === 'furnilux' ? FurniluxProductsView : skin === 'gadgetstore' ? GadgetstoreProductsView : skin === 'glowerive' ? GloweriveProductsView : skin === 'greenmart' ? GreenmartProductsView : skin === 'groceryanto' ? GroceryantoProductsView : skin === 'mallon' ? MallonProductsView : skin === 'menaura' ? MenauraProductsView : skin === 'minimog' ? MinimogProductsView : skin === 'novatrend' ? NovatrendProductsView : skin === 'novella' ? NovellaProductsView : skin === 'chicwove' ? ChicwoveProductsView : skin === 'solevo' ? SolevoProductsView : PlaymateProductsView;
+  const ProductsView = skin === 'stride' ? StrideProductsView : skin === 'vaelora' ? VaeloraProductsView : skin === 'techzone' ? TechzoneProductsView : skin === 'mahabesh' ? MahabeshProductsView : skin === 'chronics' ? ChronicsProductsView : skin === 'elevate' ? ElevateProductsView : skin === 'belora' ? BeloraProductsView : skin === 'drivecraft' ? DrivecraftProductsView : skin === 'estatepro' ? EstateproProductsView : skin === 'furnilux' ? FurniluxProductsView : skin === 'gadgetstore' ? GadgetstoreProductsView : skin === 'glowerive' ? GloweriveProductsView : skin === 'greenmart' ? GreenmartProductsView : skin === 'groceryanto' ? GroceryantoProductsView : skin === 'mallon' ? MallonProductsView : skin === 'menaura' ? MenauraProductsView : skin === 'minimog' ? MinimogProductsView : skin === 'novatrend' ? NovatrendProductsView : skin === 'novella' ? NovellaProductsView : skin === 'papernest' ? PapernestProductsView : skin === 'petmart' ? PetmartProductsView : skin === 'quickbite' ? QuickbiteProductsView : skin === 'shopease' ? ShopeaseProductsView : skin === 'chicwove' ? ChicwoveProductsView : skin === 'solevo' ? SolevoProductsView : PlaymateProductsView;
   return (
     <div className="flex min-h-screen flex-col bg-white text-ink">
       <StoreHeader subdomain={subdomain} storeName={store.storeName} categories={categories} categoryDetails={categoryDetails} logoUrl={store.logoUrl} />

@@ -107,7 +107,7 @@ export function QuickbiteProductView({ subdomain, storeName, product, categories
       <main className="qb-wrap w-full flex-1 py-6 sm:py-8">
         <QuickbiteBreadcrumb subdomain={subdomain} homeLabel={<StoreLabel text="Home" />} items={crumbs} />
         {product.badgeText && (
-          <span className="mt-3 inline-block bg-[var(--qb-brand)] px-2 py-1 text-xs font-medium leading-none tracking-wide text-white">{product.badgeText}</span>
+          <span className="mt-3 inline-block bg-[var(--qb-brand)] px-2 py-1 text-xs font-medium leading-none tracking-wide text-[#2A211A]">{product.badgeText}</span>
         )}
         <div className="mt-3 flex items-start justify-between gap-3">
           <h1 data-rg="product-title" className="font-display text-3xl font-medium sm:text-4xl">

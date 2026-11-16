@@ -10,20 +10,20 @@
   --color-ink: #1c2b26;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #e8622a;
-  --color-accent-dark: #cf5120;
+  --color-accent: #cf5120;
+  --color-accent-dark: #b5441a;
   --color-accent-light: #e4efe9;
   --color-muted: #525252;
   --color-line: #f1f5f9;
   --color-line-strong: rgba(28, 43, 38, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #e8622a;
-  --pk-brand: #e8622a;
-  --pk-brand-dark: #cf5120;
+  --color-save: #cf5120;
+  --pk-brand: #cf5120;
+  --pk-brand-dark: #b5441a;
   --pk-latte: #e4efe9;
-  --pk-mocha: #e8622a;
-  --pk-taupe: #e8622a;
+  --pk-mocha: #cf5120;
+  --pk-taupe: #cf5120;
   --pk-stone: #525252;
   --pk-soft: #e4efe9;
   --pk-cream: #ffffff;
@@ -35,15 +35,15 @@
   --pk-blush: #e4efe9;
   --pk-footer: #1d4a3c;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
-  --sv-gold: #e8622a;
-  --sv-gold-dark: #cf5120;
+  --sv-gold: #cf5120;
+  --sv-gold-dark: #b5441a;
   --sv-sand: #e4efe9;
   --sv-card: #e4efe9;
   --sv-panel: #e4efe9;
   --pm-card: #e4efe9;
   --pm-soft: #e4efe9;
-  --pm-yellow: #e8622a;
-  --pm-yellow-strong: #cf5120;
+  --pm-yellow: #cf5120;
+  --pm-yellow-strong: #b5441a;
   --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 1px 3px rgba(20, 40, 30, 0.08), 0 6px 18px rgba(20, 40, 30, 0.05);
@@ -232,5 +232,8 @@
   --color-canvas: #1d4a3c;
   --color-accent: #e8622a;
   --color-accent-dark: #fdddc9;
+}
+[data-theme='storepal'][data-skin='petmart'] footer[data-rg='footer'] .text-accent {
+  color: #fdddc9;
 }
 

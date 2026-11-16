@@ -118,6 +118,11 @@ function footerBlockFix(block) {
   out = rep(out, 'text-sm font-semibold', 'text-[11px] font-semibold');
   out = rep(out, 'text-sm font-medium', 'text-[11px] font-semibold');
   out = rep(out, 'font-bold sm:text-2xl', 'font-extrabold sm:text-2xl');
+  // amber band: dark brown text and an outlined WhatsApp button in brown (white on amber is only about 2:1)
+  out = rep(out, 'p-6 text-white sm:p-8', 'p-6 text-[#2A211A] sm:p-8');
+  out = rep(out, 'mt-1 text-sm text-white/90', 'mt-1 text-sm text-[#2A211A]');
+  out = rep(out, 'border border-white/80', 'border border-[#2A211A]/70');
+  out = rep(out, 'font-semibold text-white transition hover:bg-white', 'font-semibold text-[#2A211A] transition hover:bg-white');
   return out;
 }
 

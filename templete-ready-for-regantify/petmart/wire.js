@@ -110,7 +110,8 @@ function footerBlockFix(block) {
   // the footer is dark pine green and re-points colour variables, so the call bar uses fixed colours: an ember orange band with white buttons
   const rep = (str, from, to) => str.split(from).join(to);
   let out = block;
-  out = rep(out, 'rounded-3xl bg-gradient-to-r from-[#EE5A52] to-[#F27A6F]', 'rounded-2xl bg-[#e8622a]');
+  out = rep(out, 'rounded-3xl bg-gradient-to-r from-[#EE5A52] to-[#F27A6F]', 'rounded-2xl bg-[#cf5120]');
+  out = rep(out, 'mt-1 text-sm text-white/90', 'mt-1 text-sm text-white');
   out = rep(out, 'hover:bg-[var(--pk-cream)]', 'hover:bg-[#fff3ea] hover:text-[#1d4a3c]');
   out = rep(out, 'hover:text-ink', 'hover:text-[#1d4a3c]');
   out = rep(out, 'text-ink', 'text-[#1d4a3c]');

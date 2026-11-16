@@ -11,7 +11,7 @@ export function QuickbiteLanguageSwitch({ className = '' }: { className?: string
             onClick={() => setLanguage(l)}
             aria-pressed={language === l}
             lang={l}
-            className={`transition-colors ${language === l ? 'font-bold text-[var(--qb-brand)] underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+            className={`transition-colors ${language === l ? 'font-bold text-ink underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
           >
             {l === 'bn' ? 'বাং' : 'EN'}
           </button>

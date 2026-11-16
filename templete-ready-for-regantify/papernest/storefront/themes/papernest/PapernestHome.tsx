@@ -273,7 +273,7 @@ export function PnPromoBanners({ banners, plainImage }: { banners: PnPromo[]; pl
   const list = banners.slice(0, 2);
   const TONES = [
     { bg: 'from-emerald-200 to-teal-100', btn: 'bg-[#FFD54F] text-[#1B2A4A] hover:bg-[#F5C02E]' },
-    { bg: 'from-pink-200 to-rose-100', btn: 'bg-teal-500 text-white hover:bg-teal-600' },
+    { bg: 'from-pink-200 to-rose-100', btn: 'bg-teal-700 text-white hover:bg-teal-800' },
   ];
   return (
     <section id="sale" className={`pn-wrap grid scroll-mt-24 gap-4 pt-8 ${list.length > 1 ? 'md:grid-cols-2' : ''}`} aria-label="Offers">

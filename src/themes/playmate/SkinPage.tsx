@@ -11,6 +11,10 @@ import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
+import { ShopeasePageHeader } from '../shopease/ShopeaseBreadcrumb';
+import { QuickbitePageHeader } from '../quickbite/QuickbiteBreadcrumb';
+import { PetmartPageHeader } from '../petmart/PetmartBreadcrumb';
+import { PapernestPageHeader } from '../papernest/PapernestBreadcrumb';
 import { NovellaPageHeader } from '../novella/NovellaBreadcrumb';
 import { NovatrendPageHeader } from '../novatrend/NovatrendBreadcrumb';
 import { MinimogPageHeader } from '../minimog/MinimogBreadcrumb';
@@ -107,6 +111,46 @@ export function SkinPage({
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
         <div className="cw-wrap py-8 sm:py-10">
           <div className="cw-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'shopease') {
+    return (
+      <main className="w-full flex-1">
+        <ShopeasePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="se-wrap py-8 sm:py-10">
+          <div className="se-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'quickbite') {
+    return (
+      <main className="w-full flex-1">
+        <QuickbitePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="qb-wrap py-8 sm:py-10">
+          <div className="qb-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'petmart') {
+    return (
+      <main className="w-full flex-1">
+        <PetmartPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="pk-wrap py-8 sm:py-10">
+          <div className="pk-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'papernest') {
+    return (
+      <main className="w-full flex-1">
+        <PapernestPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="pn-wrap py-8 sm:py-10">
+          <div className="pn-page">{children}</div>
         </div>
       </main>
     );

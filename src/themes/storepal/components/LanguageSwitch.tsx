@@ -156,6 +156,98 @@ export function ChicwoveLanguageSwitch({ className = '' }: { className?: string 
   );
 }
 
+/** Shopease's switch, in its header's style: small text like its menu links, the chosen language in orange with an underline. */
+export function ShopeaseLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[13px] font-medium ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-medium text-[var(--se-brand)] underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Quickbite's switch, in its header's style: small text like its menu links, the chosen language in amber with an underline. */
+export function QuickbiteLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-bold text-ink underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Petmart's switch, in its header's style: small text like its menu links, the chosen language in orange with an underline. */
+export function PetmartLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-bold text-ink underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
+/** Papernest's switch, in its header's style: small text like its menu links, the chosen language in violet with an underline. */
+export function PapernestLanguageSwitch({ className = '' }: { className?: string }) {
+  const { language, setLanguage } = useStoreLanguageSwitch();
+  return (
+    <div role="group" aria-label="Language / ভাষা" data-rg="language-switch" className={`flex items-center gap-1.5 text-[11px] font-semibold uppercase ${className}`}>
+      {(['bn', 'en'] as const).map((l, i) => (
+        <span key={l} className="flex items-center gap-1.5">
+          {i > 0 && <span className="text-ink/30" aria-hidden>/</span>}
+          <button
+            type="button"
+            onClick={() => setLanguage(l)}
+            aria-pressed={language === l}
+            lang={l}
+            className={`transition-colors ${language === l ? 'font-bold text-[var(--pn-brand)] underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+          >
+            {l === 'bn' ? 'বাং' : 'EN'}
+          </button>
+        </span>
+      ))}
+    </div>
+  );
+}
+
 /** Novella's switch, in its header's style: small text like its menu links, the chosen language in orange with an underline. */
 export function NovellaLanguageSwitch({ className = '' }: { className?: string }) {
   const { language, setLanguage } = useStoreLanguageSwitch();

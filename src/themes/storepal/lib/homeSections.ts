@@ -168,6 +168,66 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Shopease's own order, as the template's home page: dark photo hero, shop by category (tall cards), the peach deal panel, new arrivals, then the feature strip.
+export const SHOPEASE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Quickbite's own order, as the template's home page: the hero, the round category row, popular dishes, today's deals, the banner, then the feature strip.
+export const QUICKBITE_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'CAMPAIGNS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Petmart's own order, as the template's home page: the peach hero card, the category row, products, the two offer tiles, then the features strip.
+export const PETMART_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'CAMPAIGNS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Papernest's own order, as the template's home page: the pastel hero, the round category row, the two promo tiles, new arrivals, then best sellers and the rest.
+export const PAPERNEST_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'CAMPAIGNS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Novella's own order, as the template's home page: hero, shop by category (round pictures), the three promo tiles, trending products, more products, then the feature strip.
 export const NOVELLA_ORDER: HomeSectionId[] = [
   'HERO',

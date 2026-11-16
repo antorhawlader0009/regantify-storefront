@@ -16,6 +16,10 @@ import { TechzoneProductView } from '@/themes/techzone/TechzoneProductView';
 import { StrideProductView } from '@/themes/stride/StrideProductView';
 import { VaeloraProductView } from '@/themes/vaelora/VaeloraProductView';
 import { ChicwoveProductView } from '@/themes/chicwove/ChicwoveProductView';
+import { ShopeaseProductView } from '@/themes/shopease/ShopeaseProductView';
+import { QuickbiteProductView } from '@/themes/quickbite/QuickbiteProductView';
+import { PetmartProductView } from '@/themes/petmart/PetmartProductView';
+import { PapernestProductView } from '@/themes/papernest/PapernestProductView';
 import { NovellaProductView } from '@/themes/novella/NovellaProductView';
 import { NovatrendProductView } from '@/themes/novatrend/NovatrendProductView';
 import { MinimogProductView } from '@/themes/minimog/MinimogProductView';
@@ -266,6 +270,42 @@ export default async function ProductPage({ params }: PageProps) {
         />
       ) : storeSkin(store.theme) === 'chicwove' ? (
         <ChicwoveProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'shopease' ? (
+        <ShopeaseProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'quickbite' ? (
+        <QuickbiteProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'petmart' ? (
+        <PetmartProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'papernest' ? (
+        <PapernestProductView
           {...viewProps}
           categoryDetails={categoryDetails}
           logoUrl={store.logoUrl}

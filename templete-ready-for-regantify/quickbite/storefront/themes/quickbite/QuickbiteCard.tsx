@@ -94,7 +94,7 @@ export function QuickbiteCardView({
         {badge && (
           <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
             <span
-              className="rounded-md px-2 py-0.5 text-[10px] font-bold leading-none text-white"
+              className="rounded-md px-2 py-0.5 text-[10px] font-bold leading-none text-[#2A211A]"
               style={{ backgroundColor: badge.color || ('#E9A23B') }}
             >
               {badge.text}
@@ -138,7 +138,7 @@ export function QuickbiteCardView({
             {name}
           </Link>
         </h3>
-        {subtitle && <p className="mt-0.5 truncate text-xs text-ink/55">{subtitle}</p>}
+        {subtitle && <p className="mt-0.5 truncate text-xs text-ink/70">{subtitle}</p>}
         {priceText ? (
           <p className="mt-1 text-lg font-bold text-ink">{priceText}</p>
         ) : (
@@ -161,7 +161,7 @@ export function QuickbiteCardView({
           <div className="mt-auto space-y-2 pt-3">
             {action &&
               (action.href ? (
-                <Link href={action.href} className={`${buttonCls} bg-[var(--qb-brand)] text-white hover:bg-[var(--qb-brand-dark)]`}>
+                <Link href={action.href} className={`${buttonCls} bg-[var(--qb-brand)] text-[#2A211A] hover:bg-[var(--qb-brand-dark)]`}>
                   {action.label}
                 </Link>
               ) : (
@@ -169,7 +169,7 @@ export function QuickbiteCardView({
                   type="button"
                   onClick={action.onClick}
                   data-rg="product-card-add-to-cart"
-                  className={`${buttonCls} ${action.done ? 'bg-ink text-white' : 'bg-[var(--qb-brand)] text-white hover:bg-[var(--qb-brand-dark)]'}`}
+                  className={`${buttonCls} ${action.done ? 'bg-ink text-white' : 'bg-[var(--qb-brand)] text-[#2A211A] hover:bg-[var(--qb-brand-dark)]'}`}
                 >
                   <BagIcon className="h-4 w-4" />
                   {action.done ? action.doneLabel ?? action.label : action.label}
