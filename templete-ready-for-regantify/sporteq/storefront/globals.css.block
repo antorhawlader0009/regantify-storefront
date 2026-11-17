@@ -311,11 +311,21 @@
   border-color: #e5e5e5;
   border-radius: 12px;
 }
-/* Sporteq's footer is black: its colour variables are re-pointed for the parts the footer reuses (lime on hover). */
+/* Sporteq's footer is white: StorePal's footer colours are for its navy footer, so they are put back to dark-on-white here
+   (without this the "Find us" title, the address and the credit link are white on white). Lime is never text on white. */
 [data-theme='storepal'][data-skin='sporteq'] footer[data-rg='footer'] {
   background-color: #ffffff;
   color: #444444;
   border-top: 1px solid #e5e5e5;
+  --color-ink: #0e0e0e;
+  --color-muted: #5f5f5f;
+  --color-line: #e5e5e5;
+  --color-line-strong: #d4d4d4;
+  --color-surface: #ffffff;
+  --color-canvas: #f6f6f6;
+}
+[data-theme='storepal'][data-skin='sporteq'] footer[data-rg='footer'] .text-accent {
+  color: #3f6b00;
 }
 [data-skin='sporteq'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
   color: #0e0e0e;

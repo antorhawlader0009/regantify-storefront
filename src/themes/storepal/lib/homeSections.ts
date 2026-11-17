@@ -168,6 +168,21 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Sporteq's own order, as the template's home page: the full-picture hero, the benefits strip, the round category row, best sellers, the two promo banners, then the rest.
+export const SPORTEQ_ORDER: HomeSectionId[] = [
+  'HERO',
+  'HIGHLIGHTS',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'CAMPAIGNS',
+  'FLASH_SALE',
+  'CATEGORY_SECTIONS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Shopease's own order, as the template's home page: dark photo hero, shop by category (tall cards), the peach deal panel, new arrivals, then the feature strip.
 export const SHOPEASE_ORDER: HomeSectionId[] = [
   'HERO',

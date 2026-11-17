@@ -1,4 +1,4 @@
-# Sporteq: install into Regantify (not installed yet, kit only)
+# Sporteq: install into Regantify (installed 2026-11-17, browser-checked on shopnet)
 
 Template: `templete/others-templetes/Sports/sporteq/sporteq` (SPORTEQ, sports equipment, "Equip Your Best").
 Design (colours exact, from the template's `tailwind.config.ts`): a white page, a charcoal header `#1b1b1b` (top bar `#1a1a1a`), a black full-picture hero, lime green `#7dc400` (deeper `#69a600`, light `#9be21a`) for the main buttons **with dark text**, tags and the active tones, ink `#0e0e0e`, light grey `#f6f6f6` product cards with a small radius and a white photo, uppercase spaced button labels, a clean white footer with a thin line, **DM Sans** everywhere (exists) and an **Orbitron** wordmark (new, added by `fonts-patch.js`). A charcoal header (the Orbitron "SPORT/EQ" wordmark, uppercase menu with a lime "Deals", search, account, wishlist and a cart with a lime count), a full-picture hero (a small spaced lime eyebrow, a huge extra-bold white capitals title with a lime second line, a lime "Shop Now" and a white-outline "Explore Collection"), a light benefits strip, a centred "Shop by Category" title over a row of eight round pictures with a lime ring on hover, six-across grey cards, two promo banners (a black one with a lime button, a light grey one), a white footer.
@@ -27,3 +27,6 @@ Hero (a store's cover photo behind a strong black fade on the left; the title is
 
 ## Folder
 `storefront/themes/sporteq/*` (+ `demo/`), `storefront/globals.css.block`, `storefront/route-template-demo-sporteq/page.tsx`, `server/migration.sql`, `snippets/*`, `fonts-patch.js`, `wire.js`.
+
+## Installed 2026-11-17
+Installed with `wire.js`; local migration applied (production not yet). Browser check on shopnet (home, list with `?show=sale`, product, cart drawer, cart page, checkout, sign-in with the Google button, wishlist, contact, FAQ, track order, search, Bangla, demo, 390 px phone with no sideways scroll). Fixed here and in the repo: `fonts-patch.js` (fixed import name), header wordmark over the menu (computer) and over the search icon (phone), white footer colour variables (white-on-white "Find us", address and credit link).

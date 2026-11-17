@@ -16,6 +16,7 @@ import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
+import { SporteqPageHeader } from '../../sporteq/SporteqBreadcrumb';
 import { ShopeasePageHeader } from '../../shopease/ShopeaseBreadcrumb';
 import { QuickbitePageHeader } from '../../quickbite/QuickbiteBreadcrumb';
 import { PetmartPageHeader } from '../../petmart/PetmartBreadcrumb';
@@ -126,6 +127,17 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
       <>
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
         <main className="cw-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'sporteq') {
+    return (
+      <>
+        <SporteqPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="eq-wrap w-full py-8 sm:py-10">
           <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
         </main>
         <StoreFooter subdomain={subdomain} storeName={storeName} />

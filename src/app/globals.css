@@ -7383,3 +7383,468 @@ body {
 [data-theme='storepal'][data-skin='shopease'] footer[data-rg='footer'] .text-accent {
   color: #b83800;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Sporteq: the SportEQ sports-equipment template (templete/others-templetes/Sports/sporteq) on StorePal's features. The store layout
+   (and lib/portalRoot.ts for dialogs) adds data-skin="sporteq" next to data-theme="storepal". A white page, a charcoal header
+   (#1b1b1b), a black full-picture hero, lime green (#7dc400, deeper #69a600, light #9be21a) for the main buttons (dark text),
+   tags and the active tones, light grey (#f6f6f6) product cards with a small radius, uppercase spaced button labels, a white
+   footer with a thin line, DM Sans everywhere with an Orbitron wordmark. Store > Branding's own colour and fonts still win. Shared
+   StorePal parts that Solevo also draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='sporteq'] {
+  --color-ink: #0e0e0e;
+  --color-canvas: #ffffff;
+  --color-surface: #ffffff;
+  --color-accent: #0e0e0e;
+  --color-accent-dark: #1a1a1a;
+  --color-accent-light: #eef7d6;
+  --color-muted: #6b6b6b;
+  --color-line: #e5e5e5;
+  --color-line-strong: #cfcfcf;
+  --color-success: #157347;
+  --color-success-bg: #e3f5ea;
+  --color-save: #157347;
+  --eq-navy: #0e0e0e;
+  --eq-navy-800: #1a1a1a;
+  --eq-hero: #f1f0ec;
+  --eq-brand: #0e0e0e;
+  --eq-brand-dark: #1a1a1a;
+  --eq-soft: #eef7d6;
+  --eq-well: #f6f6f6;
+  --eq-line: #e5e5e5;
+  --eq-card: #f6f6f6;
+  --eq-panel: #f7f7f7;
+  --eq-peach: #f6f6f6;
+  --eq-signal: #7dc400;
+  --eq-footer: #ffffff;
+  --eq-lime: #7dc400;
+  --eq-cream: #ffffff;
+  --eq-ink: #1b1b1b;
+  --eq-volt-dark: #69a600;
+  --eq-smoke: #f6f6f6;
+  --eq-mint: #eef7d6;
+  --eq-photo: #ececec;
+  --eq-hero-bg: #f1f0ec;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
+  --sv-gold: #0e0e0e;
+  --sv-gold-dark: #1a1a1a;
+  --sv-sand: #f6f6f6;
+  --sv-card: #f6f6f6;
+  --sv-panel: #f7f7f7;
+  --pm-card: #f6f6f6;
+  --pm-soft: #eef7d6;
+  --pm-yellow: #0e0e0e;
+  --pm-yellow-strong: #1a1a1a;
+  --font-display: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 16px rgba(0, 0, 0, 0.06);
+  --shadow-card-hover: 0 10px 30px rgba(0, 0, 0, 0.14);
+  --shadow-popover: 0 24px 48px -24px rgba(0, 0, 0, 0.3);
+  font-family: var(--font-sans);
+  font-size: 15px;
+}
+/* The template's headings: heavy navy. */
+[data-skin='sporteq'] :is(h1, h2, h3) {
+  color: var(--eq-navy);
+  letter-spacing: -0.01em;
+}
+/* The template's container (max-w-page 1200px, 16px side padding). */
+[data-skin='sporteq'] .eq-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1280px;
+  padding-left: 16px;
+  padding-right: 16px;
+}
+/* The template's buttons: a rounded-lg blue one (bg-brand, brand-dark on hover); --line is the outlined one, --sm the small
+   one. .eq-btn-dark is the navy one the cards use for Add to Cart (brand on hover). The display sits in the components layer
+   so Tailwind's hidden / lg:hidden on the same element still win. */
+@layer components {
+  [data-skin='sporteq'] :is(.eq-btn, .eq-btn-dark, .sv-btn-dark, .eq-btn-line, .eq-btn-outline, .sv-btn-outline) {
+    display: inline-flex;
+  }
+}
+[data-skin='sporteq'] .eq-btn,
+[data-skin='sporteq'] .eq-btn-dark,
+[data-skin='sporteq'] .sv-btn-dark {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #0e0e0e;
+  border-radius: 0;
+  background: #0e0e0e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s, transform 0.12s;
+}
+[data-skin='sporteq'] .eq-btn:hover,
+[data-skin='sporteq'] .sv-btn-dark:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+  color: #fff;
+}
+[data-skin='sporteq'] .eq-btn-dark {
+  background: #0e0e0e;
+  border-color: #0e0e0e;
+}
+[data-skin='sporteq'] .eq-btn-dark:hover {
+  background: #0e0e0e;
+  border-color: #0e0e0e;
+  color: #fff;
+}
+[data-skin='sporteq'] .eq-btn:active {
+  transform: scale(0.98);
+}
+[data-skin='sporteq'] .eq-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+[data-skin='sporteq'] .eq-btn-line,
+[data-skin='sporteq'] .eq-btn-outline,
+[data-skin='sporteq'] .sv-btn-outline {
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 44px;
+  padding: 0 24px;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff;
+  color: #0e0e0e;
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.18s, color 0.18s, border-color 0.18s;
+}
+[data-skin='sporteq'] .eq-btn.eq-btn-line {
+  background: #fff;
+  color: #0e0e0e;
+  border-color: #cfcfcf;
+}
+[data-skin='sporteq'] .eq-btn-line:hover,
+[data-skin='sporteq'] .eq-btn.eq-btn-line:hover,
+[data-skin='sporteq'] .eq-btn-outline:hover,
+[data-skin='sporteq'] .sv-btn-outline:hover {
+  background: #fff;
+  border-color: #0e0e0e;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .sv-btn-outline.\!border-ink {
+  border-color: #cfcfcf !important;
+}
+[data-skin='sporteq'] .eq-btn-sm {
+  height: 36px;
+  padding: 0 16px;
+  font-size: 12.5px;
+}
+/* Small round-cornered icon button (close buttons and the like). */
+[data-skin='sporteq'] .eq-icon-btn {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 0;
+  color: #0e0e0e;
+  transition: background 0.15s, color 0.15s;
+}
+[data-skin='sporteq'] .eq-icon-btn:hover {
+  background: var(--eq-soft);
+  color: #0e0e0e;
+}
+/* A discount tag on the photo's top left (the template's small blue badge). */
+[data-skin='sporteq'] .eq-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 2;
+  padding: 2px 6px;
+  border-radius: 0;
+  background: #0e0e0e;
+  color: #fff;
+  font-size: 10px;
+  font-weight: 600;
+}
+/* The heart on the photo's top right (plain, navy; red when on). */
+[data-skin='sporteq'] .eq-wish {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 3;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  color: #0e0e0e;
+  transition: transform 0.15s, color 0.15s;
+}
+[data-skin='sporteq'] .eq-wish:hover {
+  transform: scale(1.1);
+  color: #ef4444;
+}
+[data-skin='sporteq'] .eq-wish.is-on {
+  color: #ef4444;
+}
+[data-skin='sporteq'] .eq-soldout .eq-card-img {
+  filter: grayscale(0.6);
+  opacity: 0.7;
+}
+[data-skin='sporteq'] .eq-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='sporteq'] .eq-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* The brand strip: the template's marquee, moving left to right, paused on hover. */
+@keyframes eq-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='sporteq'] .eq-marquee-track {
+  animation: eq-marquee-right 28s linear infinite;
+}
+[data-skin='sporteq'] .eq-marquee:hover .eq-marquee-track {
+  animation-play-state: paused;
+}
+@keyframes eq-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.eq-fade-up {
+  animation: eq-fade-up 0.5s ease both;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='sporteq'] .eq-marquee-track {
+    animation: none;
+  }
+  .eq-fade-up {
+    animation: none;
+  }
+}
+/* The hero fills the visible screen below the sticky header (the template's .hero-fill: 65px on a computer, 117px on a
+   phone with its search row), plus the top bar when the store has one. */
+[data-skin='sporteq'] .eq-hero-fill {
+  min-height: max(460px, calc(100svh - 160px));
+}
+@media (min-width: 768px) {
+  [data-skin='sporteq'] .eq-hero-fill {
+    min-height: max(480px, calc(100svh - 110px));
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='sporteq'] .eq-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's blue main button. */
+[data-skin='sporteq'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  height: 44px;
+}
+[data-skin='sporteq'] .sv-auth input:focus {
+  border-color: #0e0e0e;
+  outline: 0;
+  box-shadow: 0 0 0 2px rgba(14, 14, 14, 0.15);
+}
+[data-skin='sporteq'] .sv-auth button[type='submit'] {
+  border-radius: 0;
+  background: #0e0e0e;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+}
+[data-skin='sporteq'] .sv-auth button[type='submit']:hover {
+  background: #1a1a1a;
+}
+[data-skin='sporteq'] [data-rg='product-tabs'] .border-accent {
+  border-color: #0e0e0e;
+}
+[data-skin='sporteq'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #0e0e0e;
+}
+/* The template's select (white, slate border, rounded-md, a small chevron on the right). */
+[data-skin='sporteq'] .eq-select {
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid #cfcfcf;
+  border-radius: 0;
+  background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='none' stroke='%23334155' stroke-width='1.6' d='M2.5 4.5 6 8l3.5-3.5'/%3E%3C/svg%3E") no-repeat right 10px center;
+  outline: 0;
+}
+[data-skin='sporteq'] .eq-select:focus {
+  border-color: #0e0e0e;
+}
+/* Sporteq's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
+[data-skin='sporteq'] .eq-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: #e5e5e5;
+  border-radius: 12px;
+}
+/* Sporteq's footer is white: StorePal's footer colours are for its navy footer, so they are put back to dark-on-white here
+   (without this the "Find us" title, the address and the credit link are white on white). Lime is never text on white. */
+[data-theme='storepal'][data-skin='sporteq'] footer[data-rg='footer'] {
+  background-color: #ffffff;
+  color: #444444;
+  border-top: 1px solid #e5e5e5;
+  --color-ink: #0e0e0e;
+  --color-muted: #5f5f5f;
+  --color-line: #e5e5e5;
+  --color-line-strong: #d4d4d4;
+  --color-surface: #ffffff;
+  --color-canvas: #f6f6f6;
+}
+[data-theme='storepal'][data-skin='sporteq'] footer[data-rg='footer'] .text-accent {
+  color: #3f6b00;
+}
+[data-skin='sporteq'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
+  color: #0e0e0e;
+}
+/* Sporteq's own touches: heavy condensed capitals for page titles and the hero, spaced capitals on buttons, lime tags. */
+[data-skin='sporteq'] :is(h1) {
+  font-family: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), sans-serif;
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
+  font-weight: 800;
+}
+[data-skin='sporteq'] :is(.eq-btn, .eq-btn-dark, .sv-btn-dark, .eq-btn-line, .eq-btn-outline, .sv-btn-outline) {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 12px;
+  font-weight: 700;
+}
+[data-skin='sporteq'] .eq-btn,
+[data-skin='sporteq'] .eq-btn-dark,
+[data-skin='sporteq'] .sv-btn-dark {
+  border-color: #0e0e0e;
+  background: #0e0e0e;
+}
+[data-skin='sporteq'] .eq-btn:hover,
+[data-skin='sporteq'] .eq-btn-dark:hover,
+[data-skin='sporteq'] .sv-btn-dark:hover {
+  background: #1a1a1a;
+  border-color: #1a1a1a;
+}
+[data-skin='sporteq'] .eq-btn-line,
+[data-skin='sporteq'] .eq-btn.eq-btn-line,
+[data-skin='sporteq'] .eq-btn-outline,
+[data-skin='sporteq'] .sv-btn-outline {
+  border-color: #0e0e0e;
+  background: #fff;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .eq-btn-line:hover,
+[data-skin='sporteq'] .eq-btn.eq-btn-line:hover,
+[data-skin='sporteq'] .eq-btn-outline:hover,
+[data-skin='sporteq'] .sv-btn-outline:hover {
+  background: #0e0e0e;
+  border-color: #0e0e0e;
+  color: #fff;
+}
+[data-skin='sporteq'] .sv-btn-outline.\!border-ink {
+  border-color: #0e0e0e !important;
+}
+[data-skin='sporteq'] .eq-tag {
+  background: #0e0e0e;
+  color: #7dc400;
+  border-radius: 0;
+  padding: 2px 8px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+[data-skin='sporteq'] .eq-tag.eq-tag-sale {
+  background: #dc2626;
+  color: #fff;
+}
+[data-skin='sporteq'] .eq-hero-fill {
+  min-height: 520px;
+}
+@media (min-width: 1024px) {
+  [data-skin='sporteq'] .eq-hero-fill {
+    min-height: 600px;
+  }
+}
+[data-skin='sporteq'] .eq-btn-dark.is-done,
+[data-skin='sporteq'] .eq-btn.is-done {
+  background: #157347;
+  border-color: #157347;
+}
+/* Sporteq: primary buttons are volt with ink text; the card's Add to cart bar is ink and turns volt on hover; the hero's ghost button
+   is white on the dark picture. */
+[data-skin='sporteq'] .eq-btn,
+[data-skin='sporteq'] .sv-btn-dark {
+  background: #7dc400;
+  border-color: #7dc400;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .eq-btn:hover,
+[data-skin='sporteq'] .sv-btn-dark:hover {
+  background: #69a600;
+  border-color: #69a600;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .eq-btn-dark {
+  background: #0e0e0e;
+  border-color: #0e0e0e;
+  color: #fff;
+}
+[data-skin='sporteq'] .eq-btn-dark:hover {
+  background: #7dc400;
+  border-color: #7dc400;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .eq-btn.eq-btn-ghost {
+  background: transparent;
+  border-color: rgba(255, 255, 255, 0.7);
+  color: #fff;
+}
+[data-skin='sporteq'] .eq-btn.eq-btn-ghost:hover {
+  background: #fff;
+  border-color: #fff;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .eq-btn.is-done,
+[data-skin='sporteq'] .eq-btn-dark.is-done {
+  background: #157347;
+  border-color: #157347;
+  color: #fff;
+}
+[data-skin='sporteq'] .eq-tag {
+  background: #0e0e0e;
+  color: #fff;
+}
+[data-skin='sporteq'] .eq-tag.eq-tag-new {
+  background: #7dc400;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .sv-auth button[type='submit'] {
+  background: #7dc400;
+  color: #0e0e0e;
+}
+[data-skin='sporteq'] .sv-auth button[type='submit']:hover {
+  background: #69a600;
+}
+/* The wordmark (the template's Logo.tsx): Orbitron, black weight, in capitals. */
+[data-skin='sporteq'] .eq-logo {
+  font-family: var(--font-orbitron), var(--font-bangla-store, var(--font-bangla)), sans-serif;
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+}

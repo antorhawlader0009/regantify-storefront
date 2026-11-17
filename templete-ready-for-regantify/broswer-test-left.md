@@ -24,8 +24,8 @@ Petmart (2026-11-16, found by the contrast scan, page widths and structure check
 
 ## 4. Kits in this folder that are not installed (not asked for yet)
 
-evernest, sporteq, tastehouse, technova, urbanx, viva.
+evernest, tastehouse, technova, urbanx, viva.
 
 ## Checked in a browser (with pictures)
 
-Elevate, Estatepro, Furnilux, Gadgetstore, Glowerive, Drivecraft, Menaura, Minimog, Novatrend, Novella, Papernest, Quickbite, Shopease (2026-11-16, on shopnet, bugs fixed and kits synced).
+Sporteq (2026-11-17, installed and checked the same day), Elevate, Estatepro, Furnilux, Gadgetstore, Glowerive, Drivecraft, Menaura, Minimog, Novatrend, Novella, Papernest, Quickbite, Shopease (2026-11-16, on shopnet, bugs fixed and kits synced).
