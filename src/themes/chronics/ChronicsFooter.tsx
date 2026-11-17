@@ -160,7 +160,7 @@ export function ChronicsFooter({ subdomain, storeName, aboutBlurb, logoUrl: logo
       <ReputationStrip />
       <div className={`cr-wrap grid grid-cols-2 gap-x-6 gap-y-9 py-10 sm:grid-cols-3 lg:gap-x-10 ${perks.length > 0 ? 'lg:grid-cols-[1.3fr_1fr_1.3fr_1fr_1.2fr]' : 'lg:grid-cols-[1.4fr_1fr_1.3fr_1fr]'}`}>
         <div className="col-span-2 sm:col-span-3 lg:col-span-1">
-          <span className="inline-block rounded-xl bg-white p-3 text-ink">
+          <span className="inline-block rounded-xl bg-white p-3 text-ink [--color-ink:#1b1442]">
             <ChronicsLogo logoUrl={logoUrl} storeName={storeName} />
           </span>
           {about && <div className="mt-4 max-w-xs text-[13px] leading-relaxed text-white/70 [&_p]:m-0" dangerouslySetInnerHTML={{ __html: about }} />}

@@ -333,7 +333,8 @@ export function PmPromoBanners({ banners, plainImage }: { banners: PmPromo[]; pl
 /** The endless brand strip (the demo's Top Brands). Brands are shown as text pills, linking to the store's brand view. */
 export function PmBrands({ title, brands }: { title: string; brands: { name: string; href: string }[] }) {
   if (brands.length === 0) return null;
-  const colors = ['#e3000b', '#6c4fc4', '#f58220', '#1b4f9c', '#e9399c', '#1a7a4c', '#d62b2b', '#2f80ed'];
+  // Each colour carries white text at 4.5:1 or more (the template's orange, pink and blue were 2.6 to 3.9:1).
+  const colors = ['#e3000b', '#6c4fc4', '#b05e17', '#1b4f9c', '#cd3289', '#1a7a4c', '#d62b2b', '#2a73d5'];
   const list = (hidden: boolean) => (
     <ul className="flex shrink-0 items-center gap-10 pr-10 sm:gap-14 sm:pr-14" aria-hidden={hidden || undefined}>
       {[...brands, ...brands].map((b, idx) => (

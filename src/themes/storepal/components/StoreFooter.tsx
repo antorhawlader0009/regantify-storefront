@@ -821,7 +821,7 @@ export function FooterCallBar({
               {showCall && (
                 <a
                   href={phoneHref}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-[var(--cr-cream)] sm:flex-none"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-[#1b1442] transition hover:bg-[var(--cr-cream)] sm:flex-none"
                   style={callStyle}
                 >
                   <PhoneCall size={15} aria-hidden />
@@ -852,7 +852,7 @@ export function FooterCallBar({
     return (
       <section style={barStyle} aria-label={heading}>
         <div className="cw-wrap pb-2 pt-10">
-          <div className={`flex flex-col gap-5 rounded-3xl bg-gradient-to-r from-[#EE5A52] to-[#F27A6F] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+          <div className={`flex flex-col gap-5 rounded-3xl bg-gradient-to-r from-[#c93e3a] to-[#c94843] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
             <div className="flex items-center gap-4">
               <MessageCircle size={32} className="shrink-0" aria-hidden />
               <div className="min-w-0">
@@ -868,7 +868,7 @@ export function FooterCallBar({
               {showCall && (
                 <a
                   href={phoneHref}
-                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-ink transition hover:bg-[var(--cw-cream)] sm:flex-none"
+                  className="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-white px-6 py-3 text-sm font-semibold text-[#2a1b19] transition hover:bg-[var(--cw-cream)] sm:flex-none"
                   style={callStyle}
                 >
                   <PhoneCall size={15} aria-hidden />
@@ -1212,7 +1212,7 @@ export function FooterCallBar({
     return (
       <section style={barStyle} aria-label={heading}>
         <div className="pk-wrap pb-2 pt-10">
-          <div className={`flex flex-col gap-5 rounded-2xl bg-[#cf5120] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+          <div className={`flex flex-col gap-5 rounded-2xl bg-[#c74d1e] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
             <div className="flex items-center gap-4">
               <MessageCircle size={32} className="shrink-0" aria-hidden />
               <div className="min-w-0">
@@ -1527,7 +1527,7 @@ export function FooterCallBar({
     return (
       <section style={barStyle} aria-label={heading}>
         <div className="ga-wrap pb-2 pt-10">
-          <div className={`flex flex-col gap-5 rounded bg-[#1cb63b] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
+          <div className={`flex flex-col gap-5 rounded bg-[#128629] p-6 text-white sm:p-8 ${center ? 'items-center text-center' : 'md:flex-row md:items-center md:justify-between'}`}>
             <div className="flex items-center gap-4">
               <MessageCircle size={32} className="shrink-0" aria-hidden />
               <div className="min-w-0">

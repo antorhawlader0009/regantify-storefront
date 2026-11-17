@@ -295,7 +295,7 @@ export function DrivecraftProductsView({ subdomain, products, storeName, categor
         <aside
           id="tzFilters"
           aria-label={t('Filters')}
-          className={`fixed inset-y-0 right-0 z-[90] flex w-[min(88vw,360px)] flex-col overflow-hidden bg-white transition-transform duration-300 lg:sticky lg:top-[140px] lg:z-auto lg:block lg:max-h-[calc(100vh-160px)] lg:w-auto lg:tranneutral-x-0 lg:overflow-y-auto lg:bg-transparent ${filtersOpen ? 'tranneutral-x-0 shadow-[-24px_0_48px_-24px_rgba(0,0,0,0.35)]' : 'tranneutral-x-[102%]'}`}
+          className={`fixed inset-y-0 right-0 z-[90] flex w-[min(88vw,360px)] flex-col overflow-hidden bg-white transition-transform duration-300 lg:sticky lg:top-[140px] lg:z-auto lg:block lg:max-h-[calc(100vh-160px)] lg:w-auto lg:translate-x-0 lg:overflow-y-auto lg:bg-transparent ${filtersOpen ? 'translate-x-0 shadow-[-24px_0_48px_-24px_rgba(0,0,0,0.35)]' : 'translate-x-[102%]'}`}
         >
           <div className="flex items-center justify-between border-b border-[var(--dc-line)] px-4 py-3.5 lg:hidden">
             <strong className="text-[17px]">{t('Filters')}</strong>

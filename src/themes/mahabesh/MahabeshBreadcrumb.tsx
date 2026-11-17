@@ -16,7 +16,7 @@ export function MahabeshBreadcrumb({ subdomain, homeLabel, items }: { subdomain:
         </li>
         {items.map((it) => (
           <li key={it.label} className="flex items-center gap-1.5">
-            <ChevronRight className="h-[9px] w-[9px] text-[#9a9ca3]" aria-hidden="true" />
+            <ChevronRight className="h-[9px] w-[9px] text-[#6b6d72]" aria-hidden="true" />
             {it.href ? (
               <Link href={it.href} className="hover:text-black">
                 {it.label}

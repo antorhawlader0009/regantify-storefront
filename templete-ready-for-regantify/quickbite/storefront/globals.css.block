@@ -2,7 +2,7 @@
    Quickbite: the QuickBite food-delivery template (templete/others-templetes/Grocery and Food/Food/quickbite) on StorePal's
    features. The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="quickbite" next to data-theme="storepal". A warm
    peach-to-amber gradient behind everything, frosted-glass panels (white at 40% with a thin white line and a warm shadow),
-   amber (#E9A23B, deeper #C9831F, pale #FCEFD2) pill buttons with white text, brown ink (#2B2118), a dark brown footer (#2A211A),
+   amber (#E9A23B, deeper #a16817, pale #FCEFD2) pill buttons with white text, brown ink (#2B2118), a dark brown footer (#2A211A),
    Playfair Display bold headings over Inter. Store > Branding's own colour and fonts still win. Shared StorePal parts that Solevo
    also draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
    --------------------------------------------------------------------------------------------------------------------- */
@@ -13,7 +13,7 @@
   --color-canvas: #FFEFD6;
   --color-surface: #FFF9EE;
   --color-accent: #E9A23B;
-  --color-accent-dark: #C9831F;
+  --color-accent-dark: #a16817;
   --color-accent-light: #FBF5E8;
   --color-muted: #525252;
   --color-line: rgba(43, 33, 24, 0.12);
@@ -22,7 +22,7 @@
   --color-success-bg: #e8f6ee;
   --color-save: #E9A23B;
   --qb-brand: #E9A23B;
-  --qb-brand-dark: #C9831F;
+  --qb-brand-dark: #a16817;
   --qb-latte: #FCEFD2;
   --qb-mocha: #E9A23B;
   --qb-taupe: #E9A23B;
@@ -38,14 +38,14 @@
   --qb-footer: #2A211A;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
   --sv-gold: #E9A23B;
-  --sv-gold-dark: #C9831F;
+  --sv-gold-dark: #a16817;
   --sv-sand: #FBF5E8;
   --sv-card: #FBF5E8;
   --sv-panel: #FBF5E8;
   --pm-card: #FBF5E8;
   --pm-soft: #FBF5E8;
   --pm-yellow: #E9A23B;
-  --pm-yellow-strong: #C9831F;
+  --pm-yellow-strong: #a16817;
   --font-display: var(--font-playfair), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 8px 32px rgba(120, 70, 10, 0.12);
@@ -99,13 +99,13 @@
 }
 [data-skin='quickbite'] .qb-btn-dark:hover,
 [data-skin='quickbite'] .sv-btn-dark:hover {
-  background: #C9831F;
+  background: #a16817;
 }
 [data-skin='quickbite'] .qb-btn-outline,
 [data-skin='quickbite'] .sv-btn-outline {
   border: 1px solid #E9A23B;
   background: transparent;
-  color: #C9831F;
+  color: #a16817;
 }
 [data-skin='quickbite'] .qb-btn-outline:hover,
 [data-skin='quickbite'] .sv-btn-outline:hover {
@@ -205,7 +205,7 @@
   font-weight: 500;
 }
 [data-skin='quickbite'] .sv-auth button[type='submit']:hover {
-  background: #C9831F;
+  background: #a16817;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='quickbite'] [data-rg='product-tabs'] .border-accent {

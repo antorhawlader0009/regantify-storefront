@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------------------------------------------------
    Estatepro: the EstatePro real-estate template (templete/others-templetes/Properties/estatepro) on StorePal's features. The store
    layout (and lib/portalRoot.ts for dialogs) adds data-skin="estatepro" next to data-theme="storepal". A luxury dark-and-gold
-   look: a cream page (#FDF8EE), a black header, hero and footer, gold (#F2C468, deeper #C9973A, light #F8DC9B) for buttons with
+   look: a cream page (#FDF8EE), a black header, hero and footer, gold (#F2C468, deeper #926d28, light #F8DC9B) for buttons with
    dark text, and for tags and links in their deeper tone, white cards with a deep soft shadow, rounded-2xl corners, Poppins
    everywhere. Store > Branding's own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-*
    classes and --sv-* variables, re-pointed to this look below.
@@ -10,7 +10,7 @@
   --color-ink: #141414;
   --color-canvas: #FDF8EE;
   --color-surface: #ffffff;
-  --color-accent: #C9973A;
+  --color-accent: #926d28;
   --color-accent-dark: #A87B24;
   --color-accent-light: #FDF8EE;
   --color-muted: #525252;
@@ -18,9 +18,9 @@
   --color-line-strong: rgba(20, 20, 20, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #C9973A;
+  --color-save: #926d28;
   --ep-brand: #F2C468;
-  --ep-brand-dark: #C9973A;
+  --ep-brand-dark: #926d28;
   --ep-latte: #FDF1D6;
   --ep-mocha: #F2C468;
   --ep-taupe: #F2C468;
@@ -36,14 +36,14 @@
   --ep-footer: #111111;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
   --sv-gold: #F2C468;
-  --sv-gold-dark: #C9973A;
+  --sv-gold-dark: #926d28;
   --sv-sand: #FDF8EE;
   --sv-card: #FDF8EE;
   --sv-panel: #FDF8EE;
   --pm-card: #FDF8EE;
   --pm-soft: #FDF8EE;
   --pm-yellow: #F2C468;
-  --pm-yellow-strong: #C9973A;
+  --pm-yellow-strong: #926d28;
   --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.18);
@@ -97,13 +97,13 @@
 }
 [data-skin='estatepro'] .ep-btn-dark:hover,
 [data-skin='estatepro'] .sv-btn-dark:hover {
-  background: #C9973A;
+  background: #926d28;
 }
 [data-skin='estatepro'] .ep-btn-outline,
 [data-skin='estatepro'] .sv-btn-outline {
   border: 1px solid #F2C468;
   background: transparent;
-  color: #C9973A;
+  color: #926d28;
 }
 [data-skin='estatepro'] .ep-btn-outline:hover,
 [data-skin='estatepro'] .sv-btn-outline:hover {
@@ -212,7 +212,7 @@
   font-weight: 500;
 }
 [data-skin='estatepro'] .sv-auth button[type='submit']:hover {
-  background: #C9973A;
+  background: #926d28;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='estatepro'] [data-rg='product-tabs'] .border-accent {

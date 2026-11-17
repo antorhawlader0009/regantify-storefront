@@ -136,7 +136,7 @@ export function PkHero({
                 </h2>
                 {s.text && <p className="mt-5 max-w-[340px] text-[14px] leading-relaxed text-ink/80">{s.text}</p>}
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Link href={s.href} className="inline-flex h-12 items-center gap-2 rounded-full bg-[var(--pk-brand)] px-7 text-sm font-semibold text-white shadow-lg shadow-[#cf5120]/30 transition hover:bg-[var(--pk-brand-dark)]">
+                  <Link href={s.href} className="inline-flex h-12 items-center gap-2 rounded-full bg-[var(--pk-brand)] px-7 text-sm font-semibold text-white shadow-lg shadow-[#c74d1e]/30 transition hover:bg-[var(--pk-brand-dark)]">
                     {shopLabel} <ArrowRight className="h-4 w-4" />
                   </Link>
                   {exploreLabel && exploreHref && (

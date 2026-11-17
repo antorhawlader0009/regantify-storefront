@@ -161,13 +161,13 @@ export function VaHero({
 
       {n > 1 && (
         <>
-          <button type="button" onClick={() => go(-1)} className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -tranneutral-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/30 lg:grid" aria-label="Previous slide">
+          <button type="button" onClick={() => go(-1)} className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/30 lg:grid" aria-label="Previous slide">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <button type="button" onClick={() => go(1)} className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -tranneutral-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/30 lg:grid" aria-label="Next slide">
+          <button type="button" onClick={() => go(1)} className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/15 text-white backdrop-blur transition hover:bg-white/30 lg:grid" aria-label="Next slide">
             <ChevronRight className="h-5 w-5" />
           </button>
-          <div className="absolute bottom-6 left-1/2 z-20 flex -tranneutral-x-1/2 gap-2">
+          <div className="absolute bottom-6 left-1/2 z-20 flex -translate-x-1/2 gap-2">
             {slides.map((sl, idx) => (
               <button key={sl.key} type="button" aria-label={`Slide ${idx + 1}`} aria-current={idx === i} onClick={() => setI(idx)} className={`h-1.5 rounded-full transition-all ${idx === i ? 'w-6 bg-[var(--va-brand)]' : 'w-1.5 bg-white/50 hover:bg-white'}`} />
             ))}

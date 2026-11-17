@@ -30,3 +30,16 @@ evernest.
 ## Checked in a browser (with pictures)
 
 Sporteq, Tastehouse, Technova, Urbanx, Viva (2026-11-17, installed and checked the same day), Elevate, Estatepro, Furnilux, Gadgetstore, Glowerive, Drivecraft, Menaura, Minimog, Novatrend, Novella, Papernest, Quickbite, Shopease (2026-11-16, on shopnet, bugs fixed and kits synced).
+
+## Audit of all templates (2026-11-17, done)
+
+All 32 skins were checked by a headless-Chrome script on shopnet (shopnet's own Branding colour and fonts cleared for the run, then put back): contrast (4.5:1, 3:1 for large text), header menu links cut in half, logo overlap, sideways scroll, broken pictures, at 1280 px (home, sale list, product, cart, checkout, FAQ, contact), 768 px (home, product) and 390 px (home, product, list). After the fixes every skin passes (StorePal's /products is a 404 on purpose). Not checked by it: hover and focus states, dialogs, the checkout once filled, the account pages, pictures of real store photos.
+Fixed:
+- `tranneutral` typo (a slate-to-neutral replace broke `translate`) in Drivecraft, Glowerive, Sporteq, Stride, Technova, Urbanx, Vaelora: the phone filter sheet stayed on screen when closed, slider arrows and dropdowns sat off-centre.
+- Header menu cut its last link in half and the logo ran over the menu / phone icons: Drivecraft, Glowerive, Stride, Tastehouse (Sporteq, Technova, Urbanx earlier).
+- A keyboard focus ring for every skin's header search and `outline-none` buttons (globals.css, "Template skins: keyboard focus").
+- Store name invisible in the footer of Chicwove, Chronics, Mahabesh (white logo inside a white tile, because the dark footer re-points `--color-ink`); the tile now sets its own ink.
+- Call bar phone button white on white (Chicwove, Chronics).
+- Brand colours that carried white text below 4.5:1 darkened (oklab, mixed with black): StorePal, PlayMate brand pills, Solevo copper, Chicwove coral, Chronics pink, Mallon coral, Novatrend orange, Groceryanto green, Petmart orange, Vaelora brass, Estatepro gold text, Quickbite amber text, Mahabesh grey, Glowerive teal; TechZone muted.
+- Light fills (Estatepro gold, Gadgetstore lime, Quickbite amber) carry dark text; accent links on dark footers use a light tint (TechZone, Chicwove, Chronics, Novatrend, Quickbite); Drivecraft/Glowerive red or teal labels on dark are white.
+- Shared: the "You save" chip text is the save colour mixed with 35% black; the review summary's grey text is mixed toward ink; light footer greys darkened (Groceryanto, Mallon, Shopease).

@@ -728,7 +728,7 @@ function PlaymateProductSections({
               <span className="text-5xl font-extrabold">{total ? avg.toFixed(1) : '0.0'}</span>
               <div>
                 <Stars count={Math.round(avg)} />
-                <p className="mt-1 text-[11px] text-muted">{t('Based on {n} reviews').replace('{n}', String(total))}</p>
+                <p className="mt-1 text-[11px] text-[color-mix(in_oklab,var(--color-muted),var(--color-ink)_40%)]">{t('Based on {n} reviews').replace('{n}', String(total))}</p>
               </div>
             </div>
             <ul className="mt-5 space-y-2">
@@ -740,7 +740,7 @@ function PlaymateProductSections({
                   <span className="h-2 flex-1 overflow-hidden rounded-full bg-line">
                     <span className="block h-full rounded-full bg-accent" style={{ width: `${total ? (c / total) * 100 : 0}%` }} />
                   </span>
-                  <span className="w-8 shrink-0 text-right text-muted">{c}</span>
+                  <span className="w-8 shrink-0 text-right text-[color-mix(in_oklab,var(--color-muted),var(--color-ink)_40%)]">{c}</span>
                 </li>
               ))}
             </ul>

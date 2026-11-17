@@ -341,7 +341,7 @@ export function VaeloraHeader({
                   {t('Collections')}
                   <ChevronDown size={12} />
                 </Link>
-                <div className="invisible absolute left-1/2 top-full z-50 max-h-[70vh] w-56 -tranneutral-x-1/2 overflow-y-auto border border-neutral-200 bg-white py-2 opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100">
+                <div className="invisible absolute left-1/2 top-full z-50 max-h-[70vh] w-56 -translate-x-1/2 overflow-y-auto border border-neutral-200 bg-white py-2 opacity-0 shadow-xl transition group-hover:visible group-hover:opacity-100">
                   {categories.map((name) => (
                     <Link key={name} href={categoryHref(name)} onClick={closeAll} className="block px-5 py-2 text-xs tracking-wide hover:bg-neutral-100 hover:text-[var(--va-brand)]">
                       {name}

@@ -129,7 +129,7 @@ export function MahabeshCardView({
       )}
 
       <div className="flex flex-1 flex-col gap-1 pt-3">
-        {subtitle && <p className="truncate text-[12px] text-[#9a9ca3]">{subtitle}</p>}
+        {subtitle && <p className="truncate text-[12px] text-[#6b6d72]">{subtitle}</p>}
         <h3 className="line-clamp-2 min-h-[2.7em] text-[14.5px] font-medium leading-[1.35] text-[#1d1d1f]" data-rg="product-card-title">
           <Link href={href} className="hover:text-[var(--mh-brand)]">
             {name}
@@ -141,7 +141,7 @@ export function MahabeshCardView({
           price && (
             <p className="flex flex-wrap items-baseline gap-x-2 gap-y-1 tabular-nums" data-rg="product-card-price">
               <span className="text-[16px] font-extrabold tracking-[-0.01em] text-black">{price}</span>
-              {oldPrice && <span className="text-[13.5px] text-[#9a9ca3] line-through">{oldPrice}</span>}
+              {oldPrice && <span className="text-[13.5px] text-[#6b6d72] line-through">{oldPrice}</span>}
             </p>
           )
         )}

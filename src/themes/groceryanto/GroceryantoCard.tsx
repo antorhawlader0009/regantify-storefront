@@ -96,7 +96,7 @@ export function GroceryantoCardView({
           <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
             <span
               className="rounded px-2.5 py-1 text-[13px] font-medium leading-none text-white"
-              style={{ backgroundColor: badge.color || ('#1cb63b') }}
+              style={{ backgroundColor: badge.color || ('#128629') }}
             >
               {badge.text}
             </span>

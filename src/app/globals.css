@@ -92,10 +92,12 @@
   --color-ink: #1a2b3c;
   --color-canvas: #eef2f7;
   --color-surface: #ffffff;
-  --color-accent: #e91e63;
+  /* Accent and muted are a shade deeper than the first StorePal palette (#e91e63, #6b7684) so white on the accent and muted
+     text on the canvas both reach 4.5:1 (WCAG 1.4.3). */
+  --color-accent: #cc1a5c;
   --color-accent-dark: #c2185b;
   --color-accent-light: #fce4ec;
-  --color-muted: #6b7684;
+  --color-muted: #5f6b79;
   --color-line: #e2e8f0;
   --color-line-strong: #cbd5e1;
   --color-success: #1a7a4c;
@@ -318,7 +320,7 @@
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
   --color-save: #b87333;
-  --sv-gold: #b87333;
+  --sv-gold: #9a5f29; /* deeper than the template copper #b87333 so white text on it reads at 4.5:1 */
   --sv-gold-dark: #a0622a;
   --sv-sand: #f6f1eb;
   --sv-blush: #f1ddd7;
@@ -507,7 +509,7 @@
   --color-ink: #1b1b1b;
   --color-canvas: #fdf7f0;
   --color-surface: #ffffff;
-  --color-accent: #ee4b46;
+  --color-accent: #c93e3a;
   --color-accent-dark: #d93a35;
   --color-accent-light: #fdecea;
   --color-muted: #6b6b6b;
@@ -515,8 +517,8 @@
   --color-line-strong: rgba(27, 27, 27, 0.2);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #ee4b46;
-  --cw-brand: #ee4b46;
+  --color-save: #c93e3a;
+  --cw-brand: #c93e3a;
   --cw-brand-dark: #d93a35;
   --cw-soft: #fdecea;
   --cw-cream: #fdf7f0;
@@ -528,14 +530,14 @@
   --cw-blush: #fdecea;
   --cw-footer: #2a1b19;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
-  --sv-gold: #ee4b46;
+  --sv-gold: #c93e3a;
   --sv-gold-dark: #d93a35;
   --sv-sand: #f7efe6;
   --sv-card: #f9e4de;
   --sv-panel: #fbf1ea;
   --pm-card: #f9e4de;
   --pm-soft: #fdecea;
-  --pm-yellow: #ee4b46;
+  --pm-yellow: #c93e3a;
   --pm-yellow-strong: #d93a35;
   --font-display: var(--font-playfair), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
@@ -583,7 +585,7 @@
 }
 [data-skin='chicwove'] .cw-btn-dark,
 [data-skin='chicwove'] .sv-btn-dark {
-  background: #ee4b46;
+  background: #c93e3a;
   color: #fff;
   box-shadow: 0 8px 18px rgba(238, 75, 70, 0.28);
 }
@@ -593,16 +595,16 @@
 }
 [data-skin='chicwove'] .cw-btn-outline,
 [data-skin='chicwove'] .sv-btn-outline {
-  border: 1px solid #ee4b46;
+  border: 1px solid #c93e3a;
   background: transparent;
-  color: #ee4b46;
+  color: #c93e3a;
 }
 [data-skin='chicwove'] .cw-btn-outline:hover,
 [data-skin='chicwove'] .sv-btn-outline:hover {
   background: #fdecea;
 }
 [data-skin='chicwove'] .sv-btn-outline.\!border-ink {
-  border-color: #ee4b46 !important;
+  border-color: #c93e3a !important;
 }
 [data-skin='chicwove'] .cw-no-scrollbar {
   scrollbar-width: none;
@@ -684,12 +686,12 @@
   border-radius: 0.5rem;
 }
 [data-skin='chicwove'] .sv-auth input:focus {
-  border-color: #ee4b46;
+  border-color: #c93e3a;
   box-shadow: none;
 }
 [data-skin='chicwove'] .sv-auth button[type='submit'] {
   border-radius: 0.5rem;
-  background: #ee4b46;
+  background: #c93e3a;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -699,10 +701,10 @@
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='chicwove'] [data-rg='product-tabs'] .border-accent {
-  border-color: #ee4b46;
+  border-color: #c93e3a;
 }
 [data-skin='chicwove'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #ee4b46;
+  background-color: #c93e3a;
 }
 /* Chicwove's checkout page: StorePal's form cards become the template's white rounded boxes with the coral-tinted shadow. */
 [data-skin='chicwove'] .cw-checkout div.bg-surface.border-line.rounded-lg {
@@ -722,7 +724,7 @@
   --color-line-strong: rgba(255, 255, 255, 0.2);
   --color-surface: rgba(255, 255, 255, 0.06);
   --color-canvas: #2a1b19;
-  --color-accent: #ee4b46;
+  --color-accent: #c93e3a;
   --color-accent-dark: #d93a35;
 }
 
@@ -738,7 +740,7 @@
   --color-ink: #1b1442;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #f23d7f;
+  --color-accent: #d2346e;
   --color-accent-dark: #d92d6d;
   --color-accent-light: #ffe3ee;
   --color-muted: #6b6785;
@@ -746,8 +748,8 @@
   --color-line-strong: rgba(27, 20, 66, 0.2);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #f23d7f;
-  --cr-brand: #f23d7f;
+  --color-save: #d2346e;
+  --cr-brand: #d2346e;
   --cr-brand-dark: #d92d6d;
   --cr-soft: #ffe3ee;
   --cr-cream: #ffffff;
@@ -760,14 +762,14 @@
   --cr-violet: #6a4dbf;
   --cr-footer: #1b1442;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
-  --sv-gold: #f23d7f;
+  --sv-gold: #d2346e;
   --sv-gold-dark: #d92d6d;
   --sv-sand: #f6f2ff;
   --sv-card: #f7f4fd;
   --sv-panel: #f8f5fd;
   --pm-card: #f7f4fd;
   --pm-soft: #ffe3ee;
-  --pm-yellow: #f23d7f;
+  --pm-yellow: #d2346e;
   --pm-yellow-strong: #d92d6d;
   --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
@@ -803,7 +805,7 @@
 }
 [data-skin='chronics'] .cr-btn-dark,
 [data-skin='chronics'] .sv-btn-dark {
-  background: #f23d7f;
+  background: #d2346e;
   color: #fff;
   box-shadow: 0 8px 18px rgba(242, 61, 127, 0.25);
 }
@@ -813,16 +815,16 @@
 }
 [data-skin='chronics'] .cr-btn-outline,
 [data-skin='chronics'] .sv-btn-outline {
-  border: 1px solid #f23d7f;
+  border: 1px solid #d2346e;
   background: transparent;
-  color: #f23d7f;
+  color: #d2346e;
 }
 [data-skin='chronics'] .cr-btn-outline:hover,
 [data-skin='chronics'] .sv-btn-outline:hover {
   background: #ffe3ee;
 }
 [data-skin='chronics'] .sv-btn-outline.\!border-ink {
-  border-color: #f23d7f !important;
+  border-color: #d2346e !important;
 }
 [data-skin='chronics'] .cr-no-scrollbar {
   scrollbar-width: none;
@@ -900,12 +902,12 @@
   border-radius: 0.5rem;
 }
 [data-skin='chronics'] .sv-auth input:focus {
-  border-color: #f23d7f;
+  border-color: #d2346e;
   box-shadow: 0 0 0 2px rgba(242, 61, 127, 0.2);
 }
 [data-skin='chronics'] .sv-auth button[type='submit'] {
   border-radius: 0.375rem;
-  background: #f23d7f;
+  background: #d2346e;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -914,10 +916,10 @@
   background: #d92d6d;
 }
 [data-skin='chronics'] [data-rg='product-tabs'] .border-accent {
-  border-color: #f23d7f;
+  border-color: #d2346e;
 }
 [data-skin='chronics'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #f23d7f;
+  background-color: #d2346e;
 }
 /* Chronics' checkout page: StorePal's form cards become the template's white boxes with a hairline border and soft shadow. */
 [data-skin='chronics'] .cr-checkout div.bg-surface.border-line.rounded-lg {
@@ -937,7 +939,7 @@
   --color-line-strong: rgba(255, 255, 255, 0.2);
   --color-surface: rgba(255, 255, 255, 0.06);
   --color-canvas: #1b1442;
-  --color-accent: #f23d7f;
+  --color-accent: #d2346e;
   --color-accent-dark: #d92d6d;
 }
 
@@ -1292,7 +1294,7 @@
   --color-accent: #2f6bff;
   --color-accent-dark: #1f55e0;
   --color-accent-light: #eef5fc;
-  --color-muted: #64748b;
+  --color-muted: #556274; /* slate #64748b was 4.3:1 on the grey panels */
   --color-line: #e2e8f0;
   --color-line-strong: #cbd5e1;
   --color-success: #157347;
@@ -1596,8 +1598,9 @@
   --color-line-strong: rgba(255, 255, 255, 0.2);
   --color-surface: rgba(255, 255, 255, 0.06);
   --color-canvas: #0a1c3a;
-  --color-accent: #2f6bff;
-  --color-accent-dark: #1f55e0;
+  /* Light blue: the brand blue #2f6bff is only 3.8:1 on the navy footer (credit link and other accent text). */
+  --color-accent: #7da2ff;
+  --color-accent-dark: #a9c1ff;
 }
 [data-skin='techzone'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
   color: #fff;
@@ -2011,7 +2014,7 @@
   --color-ink: #0a0a0a;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #b8935a;
+  --color-accent: #8c7043;
   --color-accent-dark: #9c7a46;
   --color-accent-light: #f4efe7;
   --color-muted: #737373;
@@ -2023,7 +2026,7 @@
   --va-navy: #0a0a0a;
   --va-navy-800: #1a1a1a;
   --va-hero: #000000;
-  --va-brand: #b8935a;
+  --va-brand: #8c7043;
   --va-brand-dark: #9c7a46;
   --va-soft: #f4efe7;
   --va-well: #f5f5f5;
@@ -2036,14 +2039,14 @@
   --va-gold-light: #d3b07a;
   --va-cream: #f4efe7;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, highlights). */
-  --sv-gold: #b8935a;
+  --sv-gold: #8c7043;
   --sv-gold-dark: #9c7a46;
   --sv-sand: #f5f5f5;
   --sv-card: #f5f5f5;
   --sv-panel: #fafafa;
   --pm-card: #f5f5f5;
   --pm-soft: #f4efe7;
-  --pm-yellow: #b8935a;
+  --pm-yellow: #8c7043;
   --pm-yellow-strong: #9c7a46;
   --font-display: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --font-sans: var(--font-dm-sans), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
@@ -2083,9 +2086,9 @@
   gap: 8px;
   height: 44px;
   padding: 0 24px;
-  border: 1px solid #b8935a;
+  border: 1px solid #8c7043;
   border-radius: 0;
-  background: #b8935a;
+  background: #8c7043;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -2103,8 +2106,8 @@
   border-color: #0a0a0a;
 }
 [data-skin='vaelora'] .va-btn-dark:hover {
-  background: #b8935a;
-  border-color: #b8935a;
+  background: #8c7043;
+  border-color: #8c7043;
   color: #fff;
 }
 [data-skin='vaelora'] .va-btn:active {
@@ -2141,8 +2144,8 @@
 [data-skin='vaelora'] .va-btn-outline:hover,
 [data-skin='vaelora'] .sv-btn-outline:hover {
   background: #fff;
-  border-color: #b8935a;
-  color: #b8935a;
+  border-color: #8c7043;
+  color: #8c7043;
 }
 [data-skin='vaelora'] .sv-btn-outline.\!border-ink {
   border-color: #d4d4d4 !important;
@@ -2165,7 +2168,7 @@
 }
 [data-skin='vaelora'] .va-icon-btn:hover {
   background: var(--va-soft);
-  color: #b8935a;
+  color: #8c7043;
 }
 /* A discount tag on the photo's top left (the template's small blue badge). */
 [data-skin='vaelora'] .va-tag {
@@ -2175,7 +2178,7 @@
   z-index: 2;
   padding: 2px 6px;
   border-radius: 0;
-  background: #b8935a;
+  background: #8c7043;
   color: #fff;
   font-size: 10px;
   font-weight: 600;
@@ -2268,13 +2271,13 @@
   height: 44px;
 }
 [data-skin='vaelora'] .sv-auth input:focus {
-  border-color: #b8935a;
+  border-color: #8c7043;
   outline: 0;
   box-shadow: 0 0 0 2px rgba(184, 147, 90, 0.25);
 }
 [data-skin='vaelora'] .sv-auth button[type='submit'] {
   border-radius: 0;
-  background: #b8935a;
+  background: #8c7043;
   color: #fff;
   font-size: 14px;
   font-weight: 600;
@@ -2283,10 +2286,10 @@
   background: #9c7a46;
 }
 [data-skin='vaelora'] [data-rg='product-tabs'] .border-accent {
-  border-color: #b8935a;
+  border-color: #8c7043;
 }
 [data-skin='vaelora'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #b8935a;
+  background-color: #8c7043;
 }
 /* The template's select (white, slate border, rounded-md, a small chevron on the right). */
 [data-skin='vaelora'] .va-select {
@@ -2298,7 +2301,7 @@
   outline: 0;
 }
 [data-skin='vaelora'] .va-select:focus {
-  border-color: #b8935a;
+  border-color: #8c7043;
 }
 /* Vaelora's checkout page: StorePal's form cards become the template's rounded, bordered boxes. */
 [data-skin='vaelora'] .va-checkout div.bg-surface.border-line.rounded-lg {
@@ -2317,7 +2320,7 @@
   --color-surface: rgba(255, 255, 255, 0.06);
   --color-canvas: #000000;
   --color-accent: #d3b07a;
-  --color-accent-dark: #b8935a;
+  --color-accent-dark: #8c7043;
 }
 [data-skin='vaelora'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
   color: #fff;
@@ -2343,8 +2346,8 @@
 [data-skin='vaelora'] .va-btn:hover,
 [data-skin='vaelora'] .va-btn-dark:hover,
 [data-skin='vaelora'] .sv-btn-dark:hover {
-  background: #b8935a;
-  border-color: #b8935a;
+  background: #8c7043;
+  border-color: #8c7043;
 }
 [data-skin='vaelora'] .va-btn-line,
 [data-skin='vaelora'] .va-btn.va-btn-line,
@@ -2366,7 +2369,7 @@
   border-color: #0a0a0a !important;
 }
 [data-skin='vaelora'] .va-tag {
-  background: #b8935a;
+  background: #8c7043;
   color: #fff;
   border-radius: 0;
   padding: 2px 8px;
@@ -3526,7 +3529,7 @@ body {
   --color-ink: #141414;
   --color-canvas: #FDF8EE;
   --color-surface: #ffffff;
-  --color-accent: #C9973A;
+  --color-accent: #926d28;
   --color-accent-dark: #A87B24;
   --color-accent-light: #FDF8EE;
   --color-muted: #525252;
@@ -3534,9 +3537,9 @@ body {
   --color-line-strong: rgba(20, 20, 20, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #C9973A;
+  --color-save: #926d28;
   --ep-brand: #F2C468;
-  --ep-brand-dark: #C9973A;
+  --ep-brand-dark: #926d28;
   --ep-latte: #FDF1D6;
   --ep-mocha: #F2C468;
   --ep-taupe: #F2C468;
@@ -3552,14 +3555,14 @@ body {
   --ep-footer: #111111;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
   --sv-gold: #F2C468;
-  --sv-gold-dark: #C9973A;
+  --sv-gold-dark: #926d28;
   --sv-sand: #FDF8EE;
   --sv-card: #FDF8EE;
   --sv-panel: #FDF8EE;
   --pm-card: #FDF8EE;
   --pm-soft: #FDF8EE;
   --pm-yellow: #F2C468;
-  --pm-yellow-strong: #C9973A;
+  --pm-yellow-strong: #926d28;
   --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 10px 30px -10px rgba(0, 0, 0, 0.18);
@@ -3613,13 +3616,13 @@ body {
 }
 [data-skin='estatepro'] .ep-btn-dark:hover,
 [data-skin='estatepro'] .sv-btn-dark:hover {
-  background: #C9973A;
+  background: #926d28;
 }
 [data-skin='estatepro'] .ep-btn-outline,
 [data-skin='estatepro'] .sv-btn-outline {
   border: 1px solid #F2C468;
   background: transparent;
-  color: #C9973A;
+  color: #926d28;
 }
 [data-skin='estatepro'] .ep-btn-outline:hover,
 [data-skin='estatepro'] .sv-btn-outline:hover {
@@ -3728,7 +3731,7 @@ body {
   font-weight: 500;
 }
 [data-skin='estatepro'] .sv-auth button[type='submit']:hover {
-  background: #C9973A;
+  background: #926d28;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='estatepro'] [data-rg='product-tabs'] .border-accent {
@@ -4989,7 +4992,7 @@ body {
   --color-ink: #111111;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #1cb63b;
+  --color-accent: #128629;
   --color-accent-dark: #008000;
   --color-accent-light: #e8f8ec;
   --color-muted: #767676;
@@ -4997,12 +5000,12 @@ body {
   --color-line-strong: rgba(17, 17, 17, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #1cb63b;
-  --ga-brand: #1cb63b;
+  --color-save: #128629;
+  --ga-brand: #128629;
   --ga-brand-dark: #008000;
   --ga-latte: #e8f8ec;
-  --ga-mocha: #1cb63b;
-  --ga-taupe: #1cb63b;
+  --ga-mocha: #128629;
+  --ga-taupe: #128629;
   --ga-stone: #525252;
   --ga-soft: #e8f8ec;
   --ga-cream: #ffffff;
@@ -5014,14 +5017,14 @@ body {
   --ga-blush: #e8f8ec;
   --ga-footer: #f7f8f9;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
-  --sv-gold: #1cb63b;
+  --sv-gold: #128629;
   --sv-gold-dark: #008000;
   --sv-sand: #e8f8ec;
   --sv-card: #e8f8ec;
   --sv-panel: #e8f8ec;
   --pm-card: #e8f8ec;
   --pm-soft: #e8f8ec;
-  --pm-yellow: #1cb63b;
+  --pm-yellow: #128629;
   --pm-yellow-strong: #008000;
   --font-display: var(--font-jost), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-instrument), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
@@ -5071,7 +5074,7 @@ body {
 }
 [data-skin='groceryanto'] .ga-btn-dark,
 [data-skin='groceryanto'] .sv-btn-dark {
-  background: #1cb63b;
+  background: #128629;
   color: #fff;
   box-shadow: 0 6px 20px rgba(17, 17, 17, 0.1);
 }
@@ -5081,7 +5084,7 @@ body {
 }
 [data-skin='groceryanto'] .ga-btn-outline,
 [data-skin='groceryanto'] .sv-btn-outline {
-  border: 1px solid #1cb63b;
+  border: 1px solid #128629;
   background: transparent;
   color: #008000;
 }
@@ -5090,7 +5093,7 @@ body {
   background: #e8f8ec;
 }
 [data-skin='groceryanto'] .sv-btn-outline.\!border-ink {
-  border-color: #1cb63b !important;
+  border-color: #128629 !important;
 }
 [data-skin='groceryanto'] .ga-no-scrollbar {
   scrollbar-width: none;
@@ -5172,12 +5175,12 @@ body {
   border-radius: 0.375rem;
 }
 [data-skin='groceryanto'] .sv-auth input:focus {
-  border-color: #1cb63b;
+  border-color: #128629;
   box-shadow: none;
 }
 [data-skin='groceryanto'] .sv-auth button[type='submit'] {
   border-radius: 0.375rem;
-  background: #1cb63b;
+  background: #128629;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
@@ -5187,10 +5190,10 @@ body {
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='groceryanto'] [data-rg='product-tabs'] .border-accent {
-  border-color: #1cb63b;
+  border-color: #128629;
 }
 [data-skin='groceryanto'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #1cb63b;
+  background-color: #128629;
 }
 /* Groceryanto's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
 [data-skin='groceryanto'] .ga-checkout div.bg-surface.border-line.rounded-lg {
@@ -5206,7 +5209,7 @@ body {
   color: #444444;
   /* StorePal's base footer rule makes ink/muted white for a dark footer; this one is light grey, so they go back to dark. */
   --color-ink: #111111;
-  --color-muted: #767676;
+  --color-muted: #6e6e6e;
   --color-line: #ebebeb;
   --color-line-strong: #d6d6d6;
   --color-surface: #ffffff;
@@ -5228,19 +5231,19 @@ body {
   --color-ink: #222222;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #d9534f;
-  --color-accent-dark: #c9443f;
+  --color-accent: #bc4744;
+  --color-accent-dark: #bc4744;
   --color-accent-light: #f5f5ef;
   --color-muted: #6b7280;
   --color-line: #e9e9e0;
   --color-line-strong: rgba(0, 0, 0, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #d9534f;
-  --ml-brand: #d9534f;
-  --ml-brand-dark: #c9443f;
+  --color-save: #bc4744;
+  --ml-brand: #bc4744;
+  --ml-brand-dark: #bc4744;
   --ml-latte: #e9e9e0;
-  --ml-mocha: #d9534f;
+  --ml-mocha: #bc4744;
   --ml-taupe: #1fb89a;
   --ml-stone: #6b7280;
   --ml-soft: #f5f5ef;
@@ -5257,15 +5260,15 @@ body {
   --ml-teal-dark: #0f9d82;
   --ml-teal-text: #0b7c68;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
-  --sv-gold: #d9534f;
-  --sv-gold-dark: #c9443f;
+  --sv-gold: #bc4744;
+  --sv-gold-dark: #bc4744;
   --sv-sand: #f5f5ef;
   --sv-card: #f5f5ef;
   --sv-panel: #f5f5ef;
   --pm-card: #f5f5ef;
   --pm-soft: #f5f5ef;
-  --pm-yellow: #d9534f;
-  --pm-yellow-strong: #c9443f;
+  --pm-yellow: #bc4744;
+  --pm-yellow-strong: #bc4744;
   --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.05), 0 4px 14px rgba(0, 0, 0, 0.05);
@@ -5313,26 +5316,26 @@ body {
 }
 [data-skin='mallon'] .ml-btn-dark,
 [data-skin='mallon'] .sv-btn-dark {
-  background: #d9534f;
+  background: #bc4744;
   color: #fff;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 [data-skin='mallon'] .ml-btn-dark:hover,
 [data-skin='mallon'] .sv-btn-dark:hover {
-  background: #c9443f;
+  background: #bc4744;
 }
 [data-skin='mallon'] .ml-btn-outline,
 [data-skin='mallon'] .sv-btn-outline {
-  border: 1px solid #d9534f;
+  border: 1px solid #bc4744;
   background: transparent;
-  color: #d9534f;
+  color: #bc4744;
 }
 [data-skin='mallon'] .ml-btn-outline:hover,
 [data-skin='mallon'] .sv-btn-outline:hover {
   background: #f5f5ef;
 }
 [data-skin='mallon'] .sv-btn-outline.\!border-ink {
-  border-color: #d9534f !important;
+  border-color: #bc4744 !important;
 }
 [data-skin='mallon'] .ml-no-scrollbar {
   scrollbar-width: none;
@@ -5414,25 +5417,25 @@ body {
   border-radius: 0.375rem;
 }
 [data-skin='mallon'] .sv-auth input:focus {
-  border-color: #d9534f;
+  border-color: #bc4744;
   box-shadow: none;
 }
 [data-skin='mallon'] .sv-auth button[type='submit'] {
   border-radius: 0.375rem;
-  background: #d9534f;
+  background: #bc4744;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
 }
 [data-skin='mallon'] .sv-auth button[type='submit']:hover {
-  background: #c9443f;
+  background: #bc4744;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='mallon'] [data-rg='product-tabs'] .border-accent {
-  border-color: #d9534f;
+  border-color: #bc4744;
 }
 [data-skin='mallon'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #d9534f;
+  background-color: #bc4744;
 }
 /* Mallon's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
 [data-skin='mallon'] .ml-checkout div.bg-surface.border-line.rounded-lg {
@@ -5450,14 +5453,14 @@ body {
   border-top-color: #e9e9e0;
   color: #6b7280;
   --color-ink: #222222;
-  --color-muted: #6b7280;
+  --color-muted: #656c79;
   --color-line: #e9e9e0;
   --color-line-strong: #d6d6cc;
   --color-surface: #ffffff;
   --color-canvas: #f5f5ef;
 }
 [data-theme='storepal'][data-skin='mallon'] footer[data-rg='footer'] .text-accent {
-  color: #c9443f;
+  color: #bc4744;
 }
 
 /* ---------------------------------------------------------------------------------------------------------------------
@@ -5932,20 +5935,20 @@ body {
   --color-ink: #0b0b0b;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #ff4b0f;
-  --color-accent-dark: #e63e05;
+  --color-accent: #d43d0a;
+  --color-accent-dark: #d73904;
   --color-accent-light: #f6f6f6;
   --color-muted: #525252;
   --color-line: #e7e5e4;
   --color-line-strong: rgba(11, 11, 11, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #ff4b0f;
-  --nt-brand: #ff4b0f;
-  --nt-brand-dark: #e63e05;
+  --color-save: #d43d0a;
+  --nt-brand: #d43d0a;
+  --nt-brand-dark: #d73904;
   --nt-latte: #fff1eb;
-  --nt-mocha: #ff4b0f;
-  --nt-taupe: #ff4b0f;
+  --nt-mocha: #d43d0a;
+  --nt-taupe: #d43d0a;
   --nt-stone: #525252;
   --nt-soft: #f6f6f6;
   --nt-cream: #ffffff;
@@ -5957,15 +5960,15 @@ body {
   --nt-blush: #f6f6f6;
   --nt-footer: #0b0b0b;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
-  --sv-gold: #ff4b0f;
-  --sv-gold-dark: #e63e05;
+  --sv-gold: #d43d0a;
+  --sv-gold-dark: #d73904;
   --sv-sand: #f6f6f6;
   --sv-card: #f6f6f6;
   --sv-panel: #f6f6f6;
   --pm-card: #f6f6f6;
   --pm-soft: #f6f6f6;
-  --pm-yellow: #ff4b0f;
-  --pm-yellow-strong: #e63e05;
+  --pm-yellow: #d43d0a;
+  --pm-yellow-strong: #d73904;
   --font-display: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
@@ -6013,26 +6016,26 @@ body {
 }
 [data-skin='novatrend'] .nt-btn-dark,
 [data-skin='novatrend'] .sv-btn-dark {
-  background: #ff4b0f;
+  background: #d43d0a;
   color: #fff;
   box-shadow: 0 6px 20px rgba(11, 11, 11, 0.1);
 }
 [data-skin='novatrend'] .nt-btn-dark:hover,
 [data-skin='novatrend'] .sv-btn-dark:hover {
-  background: #e63e05;
+  background: #d73904;
 }
 [data-skin='novatrend'] .nt-btn-outline,
 [data-skin='novatrend'] .sv-btn-outline {
-  border: 1px solid #ff4b0f;
+  border: 1px solid #d43d0a;
   background: transparent;
-  color: #e63e05;
+  color: #d73904;
 }
 [data-skin='novatrend'] .nt-btn-outline:hover,
 [data-skin='novatrend'] .sv-btn-outline:hover {
   background: #f6f6f6;
 }
 [data-skin='novatrend'] .sv-btn-outline.\!border-ink {
-  border-color: #ff4b0f !important;
+  border-color: #d43d0a !important;
 }
 [data-skin='novatrend'] .nt-no-scrollbar {
   scrollbar-width: none;
@@ -6114,25 +6117,25 @@ body {
   border-radius: 0.375rem;
 }
 [data-skin='novatrend'] .sv-auth input:focus {
-  border-color: #ff4b0f;
+  border-color: #d43d0a;
   box-shadow: none;
 }
 [data-skin='novatrend'] .sv-auth button[type='submit'] {
   border-radius: 0.375rem;
-  background: #ff4b0f;
+  background: #d43d0a;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
 }
 [data-skin='novatrend'] .sv-auth button[type='submit']:hover {
-  background: #e63e05;
+  background: #d73904;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='novatrend'] [data-rg='product-tabs'] .border-accent {
-  border-color: #ff4b0f;
+  border-color: #d43d0a;
 }
 [data-skin='novatrend'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #ff4b0f;
+  background-color: #d43d0a;
 }
 /* Novatrend's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
 [data-skin='novatrend'] .nt-checkout div.bg-surface.border-line.rounded-lg {
@@ -6152,7 +6155,7 @@ body {
   --color-line-strong: rgba(255, 255, 255, 0.2);
   --color-surface: rgba(255, 255, 255, 0.06);
   --color-canvas: #0b0b0b;
-  --color-accent: #ff4b0f;
+  --color-accent: #d43d0a;
   --color-accent-dark: #ff7a4d;
 }
 
@@ -6660,7 +6663,7 @@ body {
   --color-ink: #1c2b26;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #cf5120;
+  --color-accent: #c74d1e;
   --color-accent-dark: #b5441a;
   --color-accent-light: #e4efe9;
   --color-muted: #525252;
@@ -6668,12 +6671,12 @@ body {
   --color-line-strong: rgba(28, 43, 38, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #cf5120;
-  --pk-brand: #cf5120;
+  --color-save: #c74d1e;
+  --pk-brand: #c74d1e;
   --pk-brand-dark: #b5441a;
   --pk-latte: #e4efe9;
-  --pk-mocha: #cf5120;
-  --pk-taupe: #cf5120;
+  --pk-mocha: #c74d1e;
+  --pk-taupe: #c74d1e;
   --pk-stone: #525252;
   --pk-soft: #e4efe9;
   --pk-cream: #ffffff;
@@ -6685,14 +6688,14 @@ body {
   --pk-blush: #e4efe9;
   --pk-footer: #1d4a3c;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
-  --sv-gold: #cf5120;
+  --sv-gold: #c74d1e;
   --sv-gold-dark: #b5441a;
   --sv-sand: #e4efe9;
   --sv-card: #e4efe9;
   --sv-panel: #e4efe9;
   --pm-card: #e4efe9;
   --pm-soft: #e4efe9;
-  --pm-yellow: #cf5120;
+  --pm-yellow: #c74d1e;
   --pm-yellow-strong: #b5441a;
   --font-display: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-poppins), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
@@ -6741,26 +6744,26 @@ body {
 }
 [data-skin='petmart'] .pk-btn-dark,
 [data-skin='petmart'] .sv-btn-dark {
-  background: #e8622a;
+  background: #c45122;
   color: #fff;
   box-shadow: 0 6px 20px rgba(28, 43, 38, 0.1);
 }
 [data-skin='petmart'] .pk-btn-dark:hover,
 [data-skin='petmart'] .sv-btn-dark:hover {
-  background: #cf5120;
+  background: #c74d1e;
 }
 [data-skin='petmart'] .pk-btn-outline,
 [data-skin='petmart'] .sv-btn-outline {
-  border: 1px solid #e8622a;
+  border: 1px solid #c45122;
   background: transparent;
-  color: #cf5120;
+  color: #c74d1e;
 }
 [data-skin='petmart'] .pk-btn-outline:hover,
 [data-skin='petmart'] .sv-btn-outline:hover {
   background: #e4efe9;
 }
 [data-skin='petmart'] .sv-btn-outline.\!border-ink {
-  border-color: #e8622a !important;
+  border-color: #c45122 !important;
 }
 [data-skin='petmart'] .pk-no-scrollbar {
   scrollbar-width: none;
@@ -6842,25 +6845,25 @@ body {
   border-radius: 0.375rem;
 }
 [data-skin='petmart'] .sv-auth input:focus {
-  border-color: #e8622a;
+  border-color: #c45122;
   box-shadow: none;
 }
 [data-skin='petmart'] .sv-auth button[type='submit'] {
   border-radius: 0.375rem;
-  background: #e8622a;
+  background: #c45122;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
 }
 [data-skin='petmart'] .sv-auth button[type='submit']:hover {
-  background: #cf5120;
+  background: #c74d1e;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='petmart'] [data-rg='product-tabs'] .border-accent {
-  border-color: #e8622a;
+  border-color: #c45122;
 }
 [data-skin='petmart'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #e8622a;
+  background-color: #c45122;
 }
 /* Petmart's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
 [data-skin='petmart'] .pk-checkout div.bg-surface.border-line.rounded-lg {
@@ -6880,7 +6883,7 @@ body {
   --color-line-strong: rgba(255, 255, 255, 0.2);
   --color-surface: rgba(255, 255, 255, 0.06);
   --color-canvas: #1d4a3c;
-  --color-accent: #e8622a;
+  --color-accent: #c45122;
   --color-accent-dark: #fdddc9;
 }
 [data-theme='storepal'][data-skin='petmart'] footer[data-rg='footer'] .text-accent {
@@ -6902,7 +6905,7 @@ body {
   --color-canvas: #FFEFD6;
   --color-surface: #FFF9EE;
   --color-accent: #E9A23B;
-  --color-accent-dark: #C9831F;
+  --color-accent-dark: #a16817;
   --color-accent-light: #FBF5E8;
   --color-muted: #525252;
   --color-line: rgba(43, 33, 24, 0.12);
@@ -6911,7 +6914,7 @@ body {
   --color-success-bg: #e8f6ee;
   --color-save: #E9A23B;
   --qb-brand: #E9A23B;
-  --qb-brand-dark: #C9831F;
+  --qb-brand-dark: #a16817;
   --qb-latte: #FCEFD2;
   --qb-mocha: #E9A23B;
   --qb-taupe: #E9A23B;
@@ -6927,14 +6930,14 @@ body {
   --qb-footer: #2A211A;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
   --sv-gold: #E9A23B;
-  --sv-gold-dark: #C9831F;
+  --sv-gold-dark: #a16817;
   --sv-sand: #FBF5E8;
   --sv-card: #FBF5E8;
   --sv-panel: #FBF5E8;
   --pm-card: #FBF5E8;
   --pm-soft: #FBF5E8;
   --pm-yellow: #E9A23B;
-  --pm-yellow-strong: #C9831F;
+  --pm-yellow-strong: #a16817;
   --font-display: var(--font-playfair), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 8px 32px rgba(120, 70, 10, 0.12);
@@ -6988,13 +6991,13 @@ body {
 }
 [data-skin='quickbite'] .qb-btn-dark:hover,
 [data-skin='quickbite'] .sv-btn-dark:hover {
-  background: #C9831F;
+  background: #a16817;
 }
 [data-skin='quickbite'] .qb-btn-outline,
 [data-skin='quickbite'] .sv-btn-outline {
   border: 1px solid #E9A23B;
   background: transparent;
-  color: #C9831F;
+  color: #a16817;
 }
 [data-skin='quickbite'] .qb-btn-outline:hover,
 [data-skin='quickbite'] .sv-btn-outline:hover {
@@ -7094,7 +7097,7 @@ body {
   font-weight: 500;
 }
 [data-skin='quickbite'] .sv-auth button[type='submit']:hover {
-  background: #C9831F;
+  background: #a16817;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='quickbite'] [data-rg='product-tabs'] .border-accent {
@@ -7374,7 +7377,7 @@ body {
   border-top-color: #e5e5e5;
   color: #525252;
   --color-ink: #111111;
-  --color-muted: #6b7280;
+  --color-muted: #656c79;
   --color-line: #e5e5e5;
   --color-line-strong: #d4d4d4;
   --color-surface: #ffffff;
@@ -9324,4 +9327,39 @@ body {
 /* The footer is dark green: links coloured with the accent (the credit link) would be dark green on dark green, so they are sage. */
 [data-theme='storepal'][data-skin='viva'] footer[data-rg='footer'] .text-accent {
   color: #d9e1b5;
+}
+
+/* Template skins: keyboard focus. Every template header's search field and some pill buttons use `outline-none`, so without
+   this a keyboard user cannot see where focus is (WCAG 2.4.7). The search form gets one ring around the whole field, buttons
+   their own ring; both use the skin's accent so the ring keeps at least 3:1 against the header. */
+[data-skin] form[role='search']:has(input:focus-visible) {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+[data-skin] :is(button, a).outline-none:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+}
+
+/* Audit 2026-11-17: a light fill (gold, lime, amber) carries dark text, and an accent link on a dark footer uses a light tint
+   of the accent, so both read at 4.5:1 or more. */
+[data-skin='estatepro'] span.absolute.top-3.left-3.text-white,
+[data-skin='gadgetstore'] span.absolute.top-3.left-3.text-white,
+[data-skin='quickbite'] span.absolute.top-3.left-3.text-white {
+  color: #1a1a1a;
+}
+[data-skin='quickbite'] .text-accent {
+  color: #8a5a12;
+}
+[data-theme='storepal'][data-skin='quickbite'] footer[data-rg='footer'] .text-accent {
+  color: #f2c27e;
+}
+[data-theme='storepal'][data-skin='chicwove'] footer[data-rg='footer'] .text-accent {
+  color: #ff9e99;
+}
+[data-theme='storepal'][data-skin='chronics'] footer[data-rg='footer'] .text-accent {
+  color: #ff94bd;
+}
+[data-theme='storepal'][data-skin='novatrend'] footer[data-rg='footer'] .text-accent {
+  color: #ff8a5c;
 }

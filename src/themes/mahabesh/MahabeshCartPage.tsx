@@ -279,9 +279,9 @@ export function MahabeshCartPage({ subdomain, storeName, categories, products, l
                           <div className="text-right">
                             <p className="text-[15px] font-extrabold tabular-nums text-black">{formatPrice(line.unitPrice * line.quantity)}</p>
                             {line.originalUnitPrice ? (
-                              <p className="text-[13px] text-[#9a9ca3] line-through">{formatPrice(line.originalUnitPrice * line.quantity)}</p>
+                              <p className="text-[13px] text-[#6b6d72] line-through">{formatPrice(line.originalUnitPrice * line.quantity)}</p>
                             ) : line.quantity > 1 ? (
-                              <p className="text-[13px] text-[#9a9ca3]">
+                              <p className="text-[13px] text-[#6b6d72]">
                                 {formatPrice(line.unitPrice)} {t('each')}
                               </p>
                             ) : null}

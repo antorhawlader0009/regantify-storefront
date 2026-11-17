@@ -163,10 +163,10 @@ export function StHero({
 
       {n > 1 && (
         <>
-          <button type="button" onClick={() => go(-1)} className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -tranneutral-y-1/2 place-items-center rounded-full bg-white/80 text-black transition hover:bg-white lg:grid" aria-label="Previous slide">
+          <button type="button" onClick={() => go(-1)} className="absolute left-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/80 text-black transition hover:bg-white lg:grid" aria-label="Previous slide">
             <ChevronLeft className="h-5 w-5" />
           </button>
-          <button type="button" onClick={() => go(1)} className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -tranneutral-y-1/2 place-items-center rounded-full bg-white/80 text-black transition hover:bg-white lg:grid" aria-label="Next slide">
+          <button type="button" onClick={() => go(1)} className="absolute right-3 top-1/2 z-20 hidden h-10 w-10 -translate-y-1/2 place-items-center rounded-full bg-white/80 text-black transition hover:bg-white lg:grid" aria-label="Next slide">
             <ChevronRight className="h-5 w-5" />
           </button>
         </>

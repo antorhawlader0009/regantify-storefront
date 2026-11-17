@@ -614,7 +614,7 @@ export function StorePalProductPanel({ subdomain, storeName, product, backorder,
               displayOriginalPrice && <span className="text-muted line-through text-[16px] tabular-nums">{formatPrice(displayOriginalPrice)}</span>
             )}
             {displayOriginalPrice && (
-              <span className="self-center rounded-full bg-success-bg px-2.5 py-1 text-[12px] font-semibold leading-none text-save">
+              <span className="self-center rounded-full bg-success-bg px-2.5 py-1 text-[12px] font-semibold leading-none text-[color-mix(in_oklab,var(--color-save),black_35%)]">
                 {t('You save')} {formatPrice(saveAmount)}
               </span>
             )}

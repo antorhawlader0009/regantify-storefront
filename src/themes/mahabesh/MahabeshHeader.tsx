@@ -304,7 +304,7 @@ export function MahabeshHeader({
             className="hidden h-[46px] w-full max-w-[620px] items-center gap-2.5 justify-self-center rounded-full border-[1.5px] border-[var(--mh-line)] bg-[var(--mh-well)] pl-[18px] pr-1.5 text-left transition hover:border-black lg:flex"
           >
             <SearchIcon className="h-4 w-4 shrink-0 text-[#62646b]" />
-            <span className="flex-1 truncate text-[15px] text-[#9a9ca3]">{t('Search products…')}</span>
+            <span className="flex-1 truncate text-[15px] text-[#6b6d72]">{t('Search products…')}</span>
             <span className="grid h-[34px] place-items-center rounded-full bg-black px-4 text-[13.5px] font-semibold text-white">{t('Search')}</span>
           </button>
 

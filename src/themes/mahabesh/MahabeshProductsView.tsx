@@ -43,7 +43,7 @@ interface Props {
 }
 
 const selectCls = 'mh-select h-10 min-w-[10rem] pl-3.5 pr-9 text-sm font-semibold';
-const inputCls = 'h-[42px] w-full rounded-[10px] border-[1.5px] border-[var(--mh-line)] bg-white px-3 text-[15px] outline-none placeholder:text-[#9a9ca3] focus:border-black';
+const inputCls = 'h-[42px] w-full rounded-[10px] border-[1.5px] border-[var(--mh-line)] bg-white px-3 text-[15px] outline-none placeholder:text-[#6b6d72] focus:border-black';
 
 /**
  * Mahabesh's product list (resources/views/shop.blade.php) on the store's real products: the breadcrumb, a heavy title with

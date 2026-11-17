@@ -221,7 +221,7 @@ export function GwCategories({
               )}
             </span>
             <span className="mt-3 block font-display text-lg font-semibold leading-tightst">{c.name}</span>
-            <span className="mt-1 block text-xs text-[#2f857a]">{exploreLabel}</span>
+            <span className="mt-1 block text-xs text-[#2b7c72]">{exploreLabel}</span>
           </Link>
         ))}
       </div>
@@ -278,7 +278,7 @@ export function GwPromoBanners({ banners, plainImage }: { banners: GwPromo[]; pl
   return (
     <section id="sale" className="gw-wrap scroll-mt-24 space-y-5 pt-12" aria-label="Offers">
       {banners.slice(0, 3).map((b) => (
-        <Link key={b.key} href={b.href} className={`group grid overflow-hidden rounded-2xl bg-gradient-to-r from-[#1c6f65] to-[#2f857a] text-white hover:text-white ${b.image ? 'lg:grid-cols-[0.8fr_1.2fr]' : ''}`}>
+        <Link key={b.key} href={b.href} className={`group grid overflow-hidden rounded-2xl bg-gradient-to-r from-[#1c6f65] to-[#2b7c72] text-white hover:text-white ${b.image ? 'lg:grid-cols-[0.8fr_1.2fr]' : ''}`}>
           {b.image && (
             <span className="relative hidden min-h-[220px] lg:block">
               <Picture src={b.image} alt="" plain={plainImage} sizes="480px" className="absolute inset-0 h-full w-full transition duration-500 group-hover:scale-105" />

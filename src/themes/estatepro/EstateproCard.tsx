@@ -94,7 +94,7 @@ export function EstateproCardView({
         {badge && (
           <div className="pointer-events-none absolute left-2 top-2 z-10 flex flex-col items-start gap-1.5">
             <span
-              className="rounded-md px-3 py-1 text-[11px] font-semibold leading-none text-white"
+              className={`rounded-md px-3 py-1 text-[11px] font-semibold leading-none ${badge.color ? 'text-white' : 'text-[#1a1a1a]'}`}
               style={{ backgroundColor: badge.color || ('#F2C468') }}
             >
               {badge.text}

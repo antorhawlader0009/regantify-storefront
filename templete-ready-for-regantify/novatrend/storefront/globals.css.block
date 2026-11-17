@@ -1,7 +1,7 @@
 /* ---------------------------------------------------------------------------------------------------------------------
    Novatrend: the NovaTrend general-store template (templete/others-templetes/General/novatrend) on StorePal's features. The store
    layout (and lib/portalRoot.ts for dialogs) adds data-skin="novatrend" next to data-theme="storepal". White page and header,
-   vivid orange (#ff4b0f, deeper #e63e05, pale #fff1eb) as the accent and the fill of buttons, near-black (#0b0b0b) announcement
+   vivid orange (#d43d0a, deeper #d73904, pale #fff1eb) as the accent and the fill of buttons, near-black (#0b0b0b) announcement
    bar, hero and footer, light grey (#f6f6f6) rounded product cards, Inter everywhere with extra-bold headings. Store > Branding's
    own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes and --sv-* variables,
    re-pointed to this look below.
@@ -10,20 +10,20 @@
   --color-ink: #0b0b0b;
   --color-canvas: #ffffff;
   --color-surface: #ffffff;
-  --color-accent: #ff4b0f;
-  --color-accent-dark: #e63e05;
+  --color-accent: #d43d0a;
+  --color-accent-dark: #d73904;
   --color-accent-light: #f6f6f6;
   --color-muted: #525252;
   --color-line: #e7e5e4;
   --color-line-strong: rgba(11, 11, 11, 0.25);
   --color-success: #15803d;
   --color-success-bg: #e8f6ee;
-  --color-save: #ff4b0f;
-  --nt-brand: #ff4b0f;
-  --nt-brand-dark: #e63e05;
+  --color-save: #d43d0a;
+  --nt-brand: #d43d0a;
+  --nt-brand-dark: #d73904;
   --nt-latte: #fff1eb;
-  --nt-mocha: #ff4b0f;
-  --nt-taupe: #ff4b0f;
+  --nt-mocha: #d43d0a;
+  --nt-taupe: #d43d0a;
   --nt-stone: #525252;
   --nt-soft: #f6f6f6;
   --nt-cream: #ffffff;
@@ -35,15 +35,15 @@
   --nt-blush: #f6f6f6;
   --nt-footer: #0b0b0b;
   /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
-  --sv-gold: #ff4b0f;
-  --sv-gold-dark: #e63e05;
+  --sv-gold: #d43d0a;
+  --sv-gold-dark: #d73904;
   --sv-sand: #f6f6f6;
   --sv-card: #f6f6f6;
   --sv-panel: #f6f6f6;
   --pm-card: #f6f6f6;
   --pm-soft: #f6f6f6;
-  --pm-yellow: #ff4b0f;
-  --pm-yellow-strong: #e63e05;
+  --pm-yellow: #d43d0a;
+  --pm-yellow-strong: #d73904;
   --font-display: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
   --font-sans: var(--font-inter), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
   --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.08);
@@ -91,26 +91,26 @@
 }
 [data-skin='novatrend'] .nt-btn-dark,
 [data-skin='novatrend'] .sv-btn-dark {
-  background: #ff4b0f;
+  background: #d43d0a;
   color: #fff;
   box-shadow: 0 6px 20px rgba(11, 11, 11, 0.1);
 }
 [data-skin='novatrend'] .nt-btn-dark:hover,
 [data-skin='novatrend'] .sv-btn-dark:hover {
-  background: #e63e05;
+  background: #d73904;
 }
 [data-skin='novatrend'] .nt-btn-outline,
 [data-skin='novatrend'] .sv-btn-outline {
-  border: 1px solid #ff4b0f;
+  border: 1px solid #d43d0a;
   background: transparent;
-  color: #e63e05;
+  color: #d73904;
 }
 [data-skin='novatrend'] .nt-btn-outline:hover,
 [data-skin='novatrend'] .sv-btn-outline:hover {
   background: #f6f6f6;
 }
 [data-skin='novatrend'] .sv-btn-outline.\!border-ink {
-  border-color: #ff4b0f !important;
+  border-color: #d43d0a !important;
 }
 [data-skin='novatrend'] .nt-no-scrollbar {
   scrollbar-width: none;
@@ -192,25 +192,25 @@
   border-radius: 0.375rem;
 }
 [data-skin='novatrend'] .sv-auth input:focus {
-  border-color: #ff4b0f;
+  border-color: #d43d0a;
   box-shadow: none;
 }
 [data-skin='novatrend'] .sv-auth button[type='submit'] {
   border-radius: 0.375rem;
-  background: #ff4b0f;
+  background: #d43d0a;
   color: #fff;
   font-size: 14px;
   font-weight: 500;
 }
 [data-skin='novatrend'] .sv-auth button[type='submit']:hover {
-  background: #e63e05;
+  background: #d73904;
 }
 /* The product panel's tabs and quantity box take the corner radius of the template's cards. */
 [data-skin='novatrend'] [data-rg='product-tabs'] .border-accent {
-  border-color: #ff4b0f;
+  border-color: #d43d0a;
 }
 [data-skin='novatrend'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
-  background-color: #ff4b0f;
+  background-color: #d43d0a;
 }
 /* Novatrend's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
 [data-skin='novatrend'] .nt-checkout div.bg-surface.border-line.rounded-lg {
@@ -230,7 +230,7 @@
   --color-line-strong: rgba(255, 255, 255, 0.2);
   --color-surface: rgba(255, 255, 255, 0.06);
   --color-canvas: #0b0b0b;
-  --color-accent: #ff4b0f;
+  --color-accent: #d43d0a;
   --color-accent-dark: #ff7a4d;
 }
 

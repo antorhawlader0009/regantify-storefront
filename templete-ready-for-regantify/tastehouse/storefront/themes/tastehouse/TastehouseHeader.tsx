@@ -339,11 +339,11 @@ export function TastehouseHeader({
             <MenuIcon className="h-6 w-6" />
           </button>
 
-          <Link href={`/store/${subdomain}`} className="min-w-0" onClick={closeAll}>
+          <Link href={`/store/${subdomain}`} className="min-w-0 lg:shrink-0" onClick={closeAll}>
             <TastehouseLogo logoUrl={logoUrl} storeName={storeName} />
           </Link>
 
-          <nav data-rg="menu" className="hidden min-w-0 flex-1 items-center justify-center gap-4 text-[13px] lg:flex min-[1140px]:gap-6 xl:gap-8 xl:text-[15px] 2xl:gap-10" aria-label="Main">
+          <nav data-rg="menu" className="hidden h-6 min-w-0 flex-1 flex-wrap items-center justify-center gap-4 gap-y-6 overflow-hidden text-[13px] lg:flex min-[1140px]:gap-6 xl:gap-8 xl:text-[15px] 2xl:gap-10" aria-label="Main">
             {menuItems.slice(0, 6).map((item, i) => (
               <MenuLink key={`${item.label}-${i}`} item={item} subdomain={subdomain} loggedIn={loggedIn} className={navCls} />
             ))}

@@ -218,7 +218,7 @@ export function GroceryantoFooter({ subdomain, storeName, aboutBlurb, logoUrl: l
                   <Icon className="h-7 w-7 shrink-0 text-[var(--ga-latte)]" strokeWidth={1.5} aria-hidden />
                   <div>
                     <p className="text-sm font-medium text-ink">{t(perk.title)}</p>
-                    {perk.text && <p className="text-xs text-[#767676]">{t(perk.text)}</p>}
+                    {perk.text && <p className="text-xs text-[#6e6e6e]">{t(perk.text)}</p>}
                   </div>
                 </li>
               );
@@ -233,7 +233,7 @@ export function GroceryantoFooter({ subdomain, storeName, aboutBlurb, logoUrl: l
       </div>
 
       <div className="border-t border-[#ebebeb]">
-        <div className="ga-wrap flex flex-col items-center justify-center gap-3 pb-24 pt-4 text-xs text-[#767676] sm:pb-4">
+        <div className="ga-wrap flex flex-col items-center justify-center gap-3 pb-24 pt-4 text-xs text-[#6e6e6e] sm:pb-4">
           <p className="text-center">
             © {new Date().getFullYear()} {storeName}. {t('All rights reserved.')}
           </p>

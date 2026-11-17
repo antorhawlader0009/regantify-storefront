@@ -64,7 +64,7 @@ export function DrivecraftCartDrawer({ subdomain }: { subdomain: string }) {
         role="dialog"
         aria-label={t('Shopping cart')}
         data-rg="cart-drawer"
-        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-[400px] flex-col bg-white shadow-2xl transition-transform duration-300 ${open ? 'tranneutral-x-0' : 'tranneutral-x-full'}`}
+        className={`absolute right-0 top-0 flex h-[100dvh] w-full max-w-[400px] flex-col bg-white shadow-2xl transition-transform duration-300 ${open ? 'translate-x-0' : 'translate-x-full'}`}
       >
         <div className="flex items-center justify-between border-b border-[var(--dc-line)] px-4 py-4 sm:px-5">
           <h2 className="text-[19px] font-extrabold tracking-[-0.015em]">

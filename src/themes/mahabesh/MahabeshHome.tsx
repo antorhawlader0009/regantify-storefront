@@ -191,12 +191,12 @@ export function MhCategories({
               {c.image ? (
                 <Picture src={c.image} alt="" plain={plainImage} sizes="220px" className="absolute inset-0 h-full w-full transition duration-[600ms] group-hover:scale-[1.04]" />
               ) : (
-                <span className="grid h-full w-full place-items-center text-3xl font-extrabold text-[#9a9ca3]">{c.name.slice(0, 1)}</span>
+                <span className="grid h-full w-full place-items-center text-3xl font-extrabold text-[#6b6d72]">{c.name.slice(0, 1)}</span>
               )}
             </span>
             <span className="mt-2.5 flex justify-between gap-2 text-[15px] font-bold tracking-[-0.01em] group-hover:underline group-hover:underline-offset-[3px]">
               <b className="min-w-0 truncate">{c.name}</b>
-              {c.count !== undefined && <span className="text-[13px] font-medium text-[#9a9ca3]">{c.count}</span>}
+              {c.count !== undefined && <span className="text-[13px] font-medium text-[#6b6d72]">{c.count}</span>}
             </span>
           </Link>
         ))}
@@ -296,7 +296,7 @@ export function MhBrands({ title, allLabel, allHref, brands, stylesLabel }: { ti
             className="flex shrink-0 items-center gap-2 rounded-full border-[1.5px] border-[var(--mh-line)] px-5 py-2.5 text-[14.5px] font-bold text-black transition hover:border-black hover:text-black"
           >
             {b.name}
-            {b.count !== undefined && stylesLabel && <span className="text-[12.5px] font-medium text-[#9a9ca3]">{stylesLabel(b.count)}</span>}
+            {b.count !== undefined && stylesLabel && <span className="text-[12.5px] font-medium text-[#6b6d72]">{stylesLabel(b.count)}</span>}
           </Link>
         ))}
       </div>
