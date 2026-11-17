@@ -192,7 +192,10 @@ export function PaymentCallbackView({ subdomain }: { subdomain: string }) {
             <XCircle className="mx-auto mb-4 text-accent" size={40} />
             <h1 className="text-[18px] font-bold text-ink mb-1">{state === 'CANCELLED' ? t('Payment cancelled') : t('Payment failed')}</h1>
             <p className="text-[13.5px] text-muted mb-6">
-              {payLinkHref ? t('Nothing was charged. You can try again with the same payment link.') : t('Nothing was charged. You can return to your cart and try again.')}
+              {/* Security review P-17: a payment can also fail AFTER the money was taken (the amount did not match), so the page never claims nothing was charged. */}
+              {payLinkHref
+                ? t('If money was taken from your account, the store will check it and refund you. You can try again with the same payment link.')
+                : t('If money was taken from your account, the store will check it and refund you. You can return to your cart and try again.')}
             </p>
             <Link href={payLinkHref ?? `/store/${subdomain}/cart`} className="text-accent text-[13.5px] font-medium hover:underline">
               {payLinkHref ? t('Try again') : t('Back to Cart')}

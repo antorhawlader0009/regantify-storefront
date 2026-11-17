@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import { connectLogin } from '@/lib/customerAuthApi';
 import { useCustomerAuthStore } from '@/providers/customer-auth-store-provider';
 import { trackLogin } from '@/lib/ecommerceEvents';
+import { LOGIN_STATE_PARAM, takeLoginState } from '@/lib/loginState';
+import { getRegantifyApp } from '@/lib/regantifyApp';
 
 // One code is swapped once per page load, even if React runs the effect twice.
 const swapped = new Set<string>();
@@ -26,11 +28,22 @@ export function RegantifyLoginCatcher() {
     done.current = true;
     const url = new URL(window.location.href);
     const code = url.searchParams.get('rgf_login');
-    if (!code) return;
+    const state = url.searchParams.get(LOGIN_STATE_PARAM);
+    url.searchParams.delete(LOGIN_STATE_PARAM);
+    if (!code) {
+      if (state) window.history.replaceState(window.history.state, '', url.toString());
+      return;
+    }
     url.searchParams.delete('rgf_login');
     window.history.replaceState(window.history.state, '', url.toString());
     if (swapped.has(code)) return;
     swapped.add(code);
+    // Security review P-29: only a sign-in this tab started (or one the Regantify app made itself) is used, so a link with someone
+    // else's code can't sign the shopper in to that person's account.
+    if (!getRegantifyApp() && !takeLoginState(state)) {
+      setError('This sign-in link was not started on this page. Please press "Login with Google by Regantify" again.');
+      return;
+    }
     connectLogin(code)
       .then((r) => {
         setSession(r.customer, r.accessToken);

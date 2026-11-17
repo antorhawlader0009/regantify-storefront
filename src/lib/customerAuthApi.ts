@@ -1,5 +1,6 @@
 import type { CourierTracking } from './courierTracking';
 import type { CartLine } from '@/stores/cart-store';
+import { withLoginState } from './loginState';
 
 // Client-side (browser) fetch helper for the storefront's customer
 // account system (signup/login/OTP/refresh/logout) - see
@@ -238,7 +239,8 @@ export function getRegantifyConnectConfig(): Promise<RegantifyConnectConfig> {
 
 /** The address of the central Regantify sign-in page for this store, coming back to `returnTo` (this page) afterwards. */
 export function regantifyConnectUrl(base: string, subdomain: string, returnTo: string, via?: 'google', fromApp = false): string {
-  const params = new URLSearchParams({ store: subdomain, return: returnTo });
+  // The return address carries this tab's sign-in state (lib/loginState.ts, security review P-29).
+  const params = new URLSearchParams({ store: subdomain, return: withLoginState(returnTo) });
   // via=google: the central page goes straight on to Google instead of showing its sign-in choices.
   if (via) params.set('via', via);
   // A store's own app opens this page in Custom Tabs: it ends with an "Open the app" button.
@@ -281,7 +283,7 @@ export function getMyProfile(accessToken: string): Promise<Customer> {
 export function startGoogleLink(accessToken: string, returnTo: string): Promise<{ url: string }> {
   return authFetch<{ url: string }>('/v1/customer-auth/me/google/link', accessToken, {
     method: 'POST',
-    body: { subdomain: storeOrThrow(), returnTo },
+    body: { subdomain: storeOrThrow(), returnTo: withLoginState(returnTo) },
   });
 }
 
@@ -355,7 +357,7 @@ export function otherStoreAddressCount(accessToken: string): Promise<{ google: b
 
 /** The central Regantify page's address where the shopper picks which addresses from other stores to bring here (never shown on this page). */
 export function copyOtherStoreAddresses(accessToken: string, returnTo: string): Promise<{ url: string }> {
-  return authFetch('/v1/customer-auth/me/other-store-addresses/copy', accessToken, { method: 'POST', body: { subdomain: storeOrThrow(), returnTo } });
+  return authFetch('/v1/customer-auth/me/other-store-addresses/copy', accessToken, { method: 'POST', body: { subdomain: storeOrThrow(), returnTo: withLoginState(returnTo) } });
 }
 
 export function listMyAddresses(accessToken: string): Promise<SavedAddressList> {

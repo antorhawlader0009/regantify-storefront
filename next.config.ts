@@ -20,6 +20,10 @@ const nextConfig: NextConfig = {
           { key: 'X-Content-Type-Options', value: 'nosniff' },
           { key: 'Referrer-Policy', value: 'strict-origin-when-cross-origin' },
           { key: 'Strict-Transport-Security', value: 'max-age=15552000' },
+          // Security review P-30: no other site may show a store, its checkout, sign-in or pay page inside a frame
+          // (clickjacking). Only the CSP form: the central sign-in page's middleware already adds its stricter
+          // X-Frame-Options DENY, and two different X-Frame-Options values would cancel each other out.
+          { key: 'Content-Security-Policy', value: "frame-ancestors 'self'" },
         ],
       },
     ];

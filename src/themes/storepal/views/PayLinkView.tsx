@@ -52,7 +52,7 @@ export function PayLinkView({
     setPaying(true);
     setPayError(null);
     try {
-      const { paymentUrl } = await initiateOrderPayment(info.orderId);
+      const { paymentUrl } = await initiateOrderPayment(info.orderId, token);
       try {
         sessionStorage.setItem(PAY_LINK_KEY, JSON.stringify({ subdomain, token }));
       } catch {

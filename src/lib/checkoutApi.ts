@@ -36,6 +36,8 @@ export interface CheckoutResponse {
   // Store > COD Guard > "Delivery charge in advance": a COD order whose delivery charge still has to be
   // paid online. The checkout then calls initiateOrderPayment for it (the server charges just this amount).
   advanceDue?: number | null;
+  // The order's private token (/t/<token>), sent back to start its online payment (security review P-6).
+  trackingToken?: string | null;
 }
 
 /**
@@ -173,10 +175,12 @@ export interface InitiateOrderPaymentResponse {
   amount: number;
 }
 
-export async function initiateOrderPayment(orderId: string): Promise<InitiateOrderPaymentResponse> {
+// `token` is the order's private tracking token (security review P-6): the server starts a payment only for whoever holds it.
+export async function initiateOrderPayment(orderId: string, token?: string | null): Promise<InitiateOrderPaymentResponse> {
   const res = await fetch(`${apiOrigin()}/v1/store-payments/orders/${orderId}/initiate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(token ? { token } : {}),
   });
 
   if (!res.ok) {
@@ -214,10 +218,11 @@ export async function getOrderPaymentStatus(invoiceNumber: string): Promise<Orde
 // (e.g. SSLCommerz) rather than "Online Payment". Same
 // response shapes, same public/no-auth trust model - see
 // StorefrontGatewayPaymentsController on the backend.
-export async function initiateGatewayOrderPayment(orderId: string): Promise<InitiateOrderPaymentResponse> {
+export async function initiateGatewayOrderPayment(orderId: string, token?: string | null): Promise<InitiateOrderPaymentResponse> {
   const res = await fetch(`${apiOrigin()}/v1/store-gateway-payments/orders/${orderId}/initiate`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(token ? { token } : {}),
   });
 
   if (!res.ok) {

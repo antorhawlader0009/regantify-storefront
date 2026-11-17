@@ -1060,7 +1060,7 @@ export function useCheckout(
       // A COD order whose delivery charge must be paid first (Store > COD Guard): the server created it
       // PAYMENT_INITIATED and charges just that amount through the same PayStation session.
       if (isCod && result.advanceDue) {
-        const payment = await initiateOrderPayment(result.orderId);
+        const payment = await initiateOrderPayment(result.orderId, result.trackingToken);
         window.location.href = payment.paymentUrl;
         return;
       }
@@ -1069,8 +1069,8 @@ export function useCheckout(
       if (selectedGateway && selectedGateway.type !== 'COD' && selectedGateway.type !== 'MANUAL_MOBILE') {
         const payment =
           selectedGateway.type === 'ONLINE_PAYMENT'
-            ? await initiateOrderPayment(result.orderId)
-            : await initiateGatewayOrderPayment(result.orderId);
+            ? await initiateOrderPayment(result.orderId, result.trackingToken)
+            : await initiateGatewayOrderPayment(result.orderId, result.trackingToken);
         window.location.href = payment.paymentUrl;
         return;
       }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { revalidateTag } from 'next/cache';
+import { createHash, timingSafeEqual } from 'crypto';
 
 /**
  * On-demand revalidation endpoint - called by the backend (see
@@ -39,7 +40,10 @@ export async function POST(request: NextRequest) {
     console.warn('[revalidate] rejected: REVALIDATE_SECRET is not set in this storefront app\'s .env.local');
     return NextResponse.json({ message: 'Revalidation is not configured on this deployment.' }, { status: 503 });
   }
-  if (body.secret !== expectedSecret) {
+  // Security review P-22: compared in constant time, on SHA-256 digests so different lengths don't leak either.
+  const sent = createHash('sha256').update(String(body.secret ?? '')).digest();
+  const want = createHash('sha256').update(expectedSecret).digest();
+  if (!timingSafeEqual(sent, want)) {
     console.warn('[revalidate] rejected: secret in request does not match this app\'s REVALIDATE_SECRET');
     return NextResponse.json({ message: 'Invalid secret.' }, { status: 401 });
   }
