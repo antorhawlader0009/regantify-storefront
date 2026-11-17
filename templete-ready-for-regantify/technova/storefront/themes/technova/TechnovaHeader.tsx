@@ -52,7 +52,7 @@ export function TechnovaLogo({ logoUrl, storeName, small = false }: { logoUrl?: 
       )}
       {showName && (
         <span
-          className={`tn-logo truncate text-white ${small ? 'text-[28px]' : 'text-[32px] sm:text-[38px]'}`}
+          className={`tn-logo truncate text-white ${small ? 'text-[28px]' : 'text-[24px] sm:text-[32px] lg:text-[38px]'}`}
         >
           {storeName}
         </span>
@@ -336,7 +336,7 @@ export function TechnovaHeader({
           <button type="button" className="lg:hidden" aria-label={t('Menu')} onClick={() => setMenuOpen(true)}>
             <MenuIcon className="h-6 w-6" />
           </button>
-          <Link href={`/store/${subdomain}`} className="min-w-0 max-lg:absolute max-lg:left-1/2 max-lg:-translate-x-1/2" onClick={closeAll}>
+          <Link href={`/store/${subdomain}`} className="min-w-0 max-lg:absolute max-lg:left-1/2 max-lg:flex max-lg:max-w-[calc(100%-8.5rem)] max-lg:-translate-x-1/2 lg:shrink-0" onClick={closeAll}>
             <TechnovaLogo logoUrl={logoUrl} storeName={storeName} />
           </Link>
 

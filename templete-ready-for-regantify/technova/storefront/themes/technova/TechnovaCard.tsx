@@ -113,7 +113,7 @@ export function TechnovaCardView({
         )}
         {soldOut ? (
           <span className="pointer-events-none absolute bottom-2 left-2 z-[2] flex flex-col items-start gap-1">
-            <span className="bg-[var(--tn-navy)] px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--tn-lime)]">{soldOut.label}</span>
+            <span className="bg-[var(--tn-navy)] px-2 py-0.5 text-[10px] font-bold uppercase text-[#8fb0ff]">{soldOut.label}</span>
             {soldOut.note && <span className="bg-white px-2 py-0.5 text-[10px] font-bold uppercase text-[var(--tn-navy)]">{soldOut.note}</span>}
           </span>
         ) : null}

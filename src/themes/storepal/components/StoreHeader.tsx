@@ -21,6 +21,7 @@ import { TechzoneHeader } from '../../techzone/TechzoneHeader';
 import { StrideHeader } from '../../stride/StrideHeader';
 import { VaeloraHeader } from '../../vaelora/VaeloraHeader';
 import { ChicwoveHeader } from '../../chicwove/ChicwoveHeader';
+import { TechnovaHeader } from '../../technova/TechnovaHeader';
 import { TastehouseHeader } from '../../tastehouse/TastehouseHeader';
 import { SporteqHeader } from '../../sporteq/SporteqHeader';
 import { ShopeaseHeader } from '../../shopease/ShopeaseHeader';
@@ -189,6 +190,7 @@ export function StoreHeader(props: StoreHeaderProps) {
   if (skin === 'mahabesh') return <MahabeshHeader {...props} />;
   if (skin === 'chronics') return <ChronicsHeader {...props} />;
   if (skin === 'chicwove') return <ChicwoveHeader {...props} />;
+  if (skin === 'technova') return <TechnovaHeader {...props} />;
   if (skin === 'tastehouse') return <TastehouseHeader {...props} />;
   if (skin === 'sporteq') return <SporteqHeader {...props} />;
   if (skin === 'shopease') return <ShopeaseHeader {...props} />;

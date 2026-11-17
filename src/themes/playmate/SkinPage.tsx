@@ -11,6 +11,7 @@ import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
+import { TechnovaPageHeader } from '../technova/TechnovaBreadcrumb';
 import { TastehousePageHeader } from '../tastehouse/TastehouseBreadcrumb';
 import { SporteqPageHeader } from '../sporteq/SporteqBreadcrumb';
 import { ShopeasePageHeader } from '../shopease/ShopeaseBreadcrumb';
@@ -113,6 +114,16 @@ export function SkinPage({
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
         <div className="cw-wrap py-8 sm:py-10">
           <div className="cw-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'technova') {
+    return (
+      <main className="w-full flex-1">
+        <TechnovaPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="tn-wrap py-8 sm:py-10">
+          <div className="tn-page">{children}</div>
         </div>
       </main>
     );

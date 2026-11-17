@@ -317,6 +317,16 @@
   background-color: #ffffff;
   color: #444444;
   border-top: 1px solid #e5e5e5;
+  /* StorePal's footer colours are for its navy footer: put them back to dark-on-white (else white-on-white text). */
+  --color-ink: #0b1226;
+  --color-muted: #5b6275;
+  --color-line: #e5e7eb;
+  --color-line-strong: #d1d5db;
+  --color-surface: #ffffff;
+  --color-canvas: #f6f8fc;
+}
+[data-theme='storepal'][data-skin='technova'] footer[data-rg='footer'] .text-accent {
+  color: #1f54e0;
 }
 [data-skin='technova'] footer[data-rg='footer'] :is(h1, h2, h3, h4) {
   color: #0b1226;
@@ -479,7 +489,7 @@
   height: 36px;
   background: #eaf1ff;
   border-color: #eaf1ff;
-  color: #2f6bff;
+  color: #1f54e0;
   font-size: 12px;
 }
 [data-skin='technova'] .tn-btn-dark:hover {
@@ -512,4 +522,10 @@
   text-transform: none;
   font-weight: 800;
   letter-spacing: -0.02em;
+}
+
+/* Blue fills carry white text (the kit came from Sporteq, whose lime fills needed dark text; navy on this blue is only 4.1:1). */
+[data-skin='technova'] :is(.tn-btn, .sv-btn-dark, .tn-btn-dark:hover, .tn-tag.tn-tag-new):not(.tn-btn-line, .tn-btn-outline, .sv-btn-outline),
+[data-skin='technova'] .sv-auth button[type='submit'] {
+  color: #ffffff;
 }

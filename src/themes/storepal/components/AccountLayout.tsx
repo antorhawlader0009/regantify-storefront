@@ -19,6 +19,7 @@ import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
+import { TechnovaPageHeader } from '../../technova/TechnovaBreadcrumb';
 import { TastehousePageHeader } from '../../tastehouse/TastehouseBreadcrumb';
 import { SporteqPageHeader } from '../../sporteq/SporteqBreadcrumb';
 import { ShopeasePageHeader } from '../../shopease/ShopeaseBreadcrumb';
@@ -320,6 +321,44 @@ export function AccountLayout({ subdomain, storeName, categories = [], children 
           </div>
         </ChicwovePageHeader>
         <main className="cw-wrap w-full flex-1 py-8 sm:py-10">
+          <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white shadow-card sm:flex-row sm:gap-0">
+            <AccountSidebar subdomain={subdomain} />
+            <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</div>
+          </div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </div>
+    );
+  }
+  if (skin === 'technova') {
+    return (
+      <div className="flex min-h-screen flex-col bg-[var(--tn-cream)] text-ink">
+        <StoreHeader subdomain={subdomain} storeName={storeName} categories={categories} />
+        <LogoutConfirm
+          open={askLogout}
+          onCancel={cancelLogout}
+          onConfirm={() => {
+            setAskLogout(false);
+            logout();
+          }}
+        />
+        <TechnovaPageHeader
+          subdomain={subdomain}
+          homeLabel={t('Home')}
+          crumbs={[{ label: t('My account') }]}
+          title={t('My account')}
+          subtitle={firstName ? t('Hi, {name}').replace('{name}', firstName) : null}
+        >
+          <div className="flex items-center gap-2">
+            <GoogleConnectBadge />
+            {signedIn && (
+              <button type="button" onClick={() => setAskLogout(true)} className="tn-btn-outline sm:hidden">
+                {t('Log Out')}
+              </button>
+            )}
+          </div>
+        </TechnovaPageHeader>
+        <main className="tn-wrap w-full flex-1 py-8 sm:py-10">
           <div className="flex flex-col gap-6 overflow-hidden rounded-2xl bg-white shadow-card sm:flex-row sm:gap-0">
             <AccountSidebar subdomain={subdomain} />
             <div className="min-w-0 flex-1 bg-white px-4 py-5 sm:px-8 sm:py-7">{children}</div>

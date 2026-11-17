@@ -1,4 +1,4 @@
-# Technova: install into Regantify (not installed yet, kit only)
+# Technova: install into Regantify (installed 2026-11-17, browser-checked on shopnet)
 
 Template: `templete/others-templetes/Technology & Gadget/technova/technova` (TECHNOVA, "TechNova: Smarter Today. Brighter Tomorrow.").
 Design (colours exact, from the template's `tailwind.config.ts` and components): white page, deep navy `#0b1226` header with a second menu row (gradient `#101c44` to `#18285c`, blue `#5b8cff` underline on the open item), electric blue `#2f6bff` (hover `#1f54e0`, soft `#eaf1ff`) for buttons and links, a dark navy-to-indigo hero gradient (`#060a18` / `#0a1230` / `#16245a`) with the photo fading in on the right and a blue-to-violet headline word, pastel round category pictures, white rounded-xl cards with a soft shadow and a soft-blue "Add to Cart" that turns blue on hover, a violet flash-offer tile and a light blue one with white / navy pill buttons, a white footer, **Inter** everywhere (exists, `--font-inter`).
@@ -28,3 +28,6 @@ Hero with a store's cover photo (a normal photo fading into navy, the template's
 
 ## Folder
 `storefront/themes/technova/*` (+ `demo/`), `storefront/globals.css.block`, `storefront/route-template-demo-technova/page.tsx`, `server/migration.sql`, `snippets/*`, `wire.js`.
+
+## Installed 2026-11-17
+Before installing, Sporteq's two fixes were put into this kit (the header logo link `lg:shrink-0` with a phone max width and a 24px phone wordmark; the white footer's colour variables). Installed with `wire.js`; local migration applied (production not yet). Browser check on shopnet (home, list with `?show=sale`, product, cart drawer, cart page, checkout, sign-in with the Google button, wishlist, contact, FAQ, track order, search, Bangla, demo, 390 px phone with no sideways scroll or header overlap). Fixed here and in the repo: navy text left on the blue fills by Sporteq's lime rules (a final rule makes them white, outline buttons excluded), the soft Add to Cart text `#1f54e0`, the Out of Stock label on navy `#8fb0ff`.
