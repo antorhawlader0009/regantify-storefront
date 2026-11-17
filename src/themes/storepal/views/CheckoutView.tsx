@@ -16,6 +16,8 @@ import { TechzoneCheckoutPage } from '../../techzone/TechzoneCheckoutPage';
 import { StrideCheckoutPage } from '../../stride/StrideCheckoutPage';
 import { VaeloraCheckoutPage } from '../../vaelora/VaeloraCheckoutPage';
 import { ChicwoveCheckoutPage } from '../../chicwove/ChicwoveCheckoutPage';
+import { VivaCheckoutPage } from '../../viva/VivaCheckoutPage';
+import { UrbanxCheckoutPage } from '../../urbanx/UrbanxCheckoutPage';
 import { TechnovaCheckoutPage } from '../../technova/TechnovaCheckoutPage';
 import { TastehouseCheckoutPage } from '../../tastehouse/TastehouseCheckoutPage';
 import { SporteqCheckoutPage } from '../../sporteq/SporteqCheckoutPage';
@@ -91,6 +93,8 @@ export function CheckoutView({ subdomain }: { subdomain: string }) {
   if (skin === 'mahabesh') return <MahabeshCheckoutPage subdomain={subdomain} />;
   if (skin === 'chronics') return <ChronicsCheckoutPage subdomain={subdomain} />;
   if (skin === 'chicwove') return <ChicwoveCheckoutPage subdomain={subdomain} />;
+  if (skin === 'viva') return <VivaCheckoutPage subdomain={subdomain} />;
+  if (skin === 'urbanx') return <UrbanxCheckoutPage subdomain={subdomain} />;
   if (skin === 'technova') return <TechnovaCheckoutPage subdomain={subdomain} />;
   if (skin === 'tastehouse') return <TastehouseCheckoutPage subdomain={subdomain} />;
   if (skin === 'sporteq') return <SporteqCheckoutPage subdomain={subdomain} />;

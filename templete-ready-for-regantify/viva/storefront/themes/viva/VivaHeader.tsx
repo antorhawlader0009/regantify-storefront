@@ -307,11 +307,11 @@ export function VivaHeader({
   const categoryHref = (name: string) => `/store/${subdomain}?category=${encodeURIComponent(name)}`;
   const menuItems = [...design.headerLeftMenu, ...design.siteMenu, ...design.headerRightMenu];
   // No menu of its own: the template's links (its nav is the shop's collections), each opening the product list with that
-  // choice made: all products, the first four categories, then Sale.
+  // choice made: the first four categories, then Sale.
   const defaultLinks =
     menuItems.length === 0
       ? [
-          { label: t('All products'), href: `/store/${subdomain}/products` },
+          // "All products" is the green button in front of this row, so it is not repeated here.
           ...categories.slice(0, 4).map((name) => ({ label: name, href: categoryHref(name) })),
           { label: t('Sale'), href: `/store/${subdomain}/products?show=sale` },
         ]

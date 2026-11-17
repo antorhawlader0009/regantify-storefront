@@ -168,6 +168,36 @@ export const CHICWOVE_ORDER: HomeSectionId[] = [
   'SOCIAL_FEED',
 ];
 
+// Viva's own order, as the template's home page: the hero card, the round category row, top picks, the three promo tiles, more products, then the feature strip.
+export const VIVA_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
+// Urbanx's own order, as the template's home page: hero, shop by category, new arrivals, the two promo banners, then the rest.
+export const URBANX_ORDER: HomeSectionId[] = [
+  'HERO',
+  'CATEGORY_SHORTCUTS',
+  'TOP_SELLING',
+  'FLASH_SALE',
+  'CAMPAIGNS',
+  'CATEGORY_SECTIONS',
+  'HIGHLIGHTS',
+  'REVIEWS',
+  'MAGAZINE',
+  'FAQ',
+  'SOCIAL_FEED',
+];
+
 // Technova's own order, as the template's home page: the navy hero, the round category row, trending products, the two promo tiles, recommended products, then the benefits strip and the rest.
 export const TECHNOVA_ORDER: HomeSectionId[] = [
   'HERO',

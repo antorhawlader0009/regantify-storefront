@@ -1,4 +1,4 @@
-# Urbanx: install into Regantify (not installed yet, kit only)
+# Urbanx: install into Regantify (installed and browser-checked 2026-11-17 on shopnet)
 
 Template: `templete/others-templetes/Fashion/Clothing/urbanx/urbanx` (URBANX streetwear).
 Design: near-black ink `#050505`, volt `#c8f02b` (primary button fill with ink text, tags, active underline, text on black), light grey cards `#f0f0f0`, Barlow Condensed capitals (`--font-barlow-cond`) + Inter, graffiti wordmark (Permanent Marker), black header and footer, full-picture dark hero, grayscale category tiles, square everything.
@@ -27,3 +27,6 @@ Hero height and text size on phones, header search pill (opens the shared search
 
 ## Folder
 `storefront/themes/urbanx/*` (+ `demo/`), `storefront/globals.css.block`, `storefront/route-template-demo-urbanx/page.tsx`, `server/migration.sql`, `snippets/*`, `fonts-patch.js`, `wire.js`.
+
+## Installed 2026-11-17
+Before installing: `fonts-patch.js` fixed (it looked for a fixed last font name and failed), and Sporteq's header fix put in (the logo link `lg:shrink-0`, a phone max width and a 24px phone wordmark; on Sporteq the wordmark ran over the menu and the phone search icon). Installed with `wire.js`; local migration applied; `tsc` clean in server, client and storefront; no `t()` key missing. Browser-checked the same day on shopnet (home, list, product, cart drawer, cart, checkout, sign-in with the Google button, wishlist, contact, FAQ, track order, Bangla, demo, 390 px phone): one bug, the header menu cut its last link in half; it now wraps at one line's height so a link that does not fit is hidden whole (same fix in Sporteq and Technova).

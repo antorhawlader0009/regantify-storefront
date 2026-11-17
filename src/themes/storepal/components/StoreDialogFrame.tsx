@@ -16,6 +16,8 @@ import { TechzonePageHeader } from '../../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../../chicwove/ChicwoveBreadcrumb';
+import { VivaPageHeader } from '../../viva/VivaBreadcrumb';
+import { UrbanxPageHeader } from '../../urbanx/UrbanxBreadcrumb';
 import { TechnovaPageHeader } from '../../technova/TechnovaBreadcrumb';
 import { TastehousePageHeader } from '../../tastehouse/TastehouseBreadcrumb';
 import { SporteqPageHeader } from '../../sporteq/SporteqBreadcrumb';
@@ -129,6 +131,28 @@ export function StoreDialogFrame({ subdomain, label, maxWidth = 'sm:max-w-3xl', 
       <>
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
         <main className="cw-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'viva') {
+    return (
+      <>
+        <VivaPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="vv-wrap w-full py-8 sm:py-10">
+          <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
+        </main>
+        <StoreFooter subdomain={subdomain} storeName={storeName} />
+      </>
+    );
+  }
+  if (skin === 'urbanx') {
+    return (
+      <>
+        <UrbanxPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[{ label }]} />
+        <main className="ux-wrap w-full py-8 sm:py-10">
           <div className={`mx-auto w-full max-w-3xl overflow-hidden rounded-2xl bg-white shadow-card ${maxWidth}`}>{children}</div>
         </main>
         <StoreFooter subdomain={subdomain} storeName={storeName} />

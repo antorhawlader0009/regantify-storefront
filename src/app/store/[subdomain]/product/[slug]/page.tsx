@@ -16,6 +16,8 @@ import { TechzoneProductView } from '@/themes/techzone/TechzoneProductView';
 import { StrideProductView } from '@/themes/stride/StrideProductView';
 import { VaeloraProductView } from '@/themes/vaelora/VaeloraProductView';
 import { ChicwoveProductView } from '@/themes/chicwove/ChicwoveProductView';
+import { VivaProductView } from '@/themes/viva/VivaProductView';
+import { UrbanxProductView } from '@/themes/urbanx/UrbanxProductView';
 import { TechnovaProductView } from '@/themes/technova/TechnovaProductView';
 import { TastehouseProductView } from '@/themes/tastehouse/TastehouseProductView';
 import { SporteqProductView } from '@/themes/sporteq/SporteqProductView';
@@ -273,6 +275,24 @@ export default async function ProductPage({ params }: PageProps) {
         />
       ) : storeSkin(store.theme) === 'chicwove' ? (
         <ChicwoveProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'viva' ? (
+        <VivaProductView
+          {...viewProps}
+          categoryDetails={categoryDetails}
+          logoUrl={store.logoUrl}
+          socialLinks={socialLinks}
+          footerConfig={store.footerConfig}
+          stockSettings={store.stockSettings}
+        />
+      ) : storeSkin(store.theme) === 'urbanx' ? (
+        <UrbanxProductView
           {...viewProps}
           categoryDetails={categoryDetails}
           logoUrl={store.logoUrl}

@@ -340,7 +340,7 @@ export function SporteqHeader({
             <SporteqLogo logoUrl={logoUrl} storeName={storeName} />
           </Link>
 
-          <nav className="hidden min-w-0 items-center gap-4 overflow-hidden lg:flex xl:gap-7" aria-label="Main" data-rg="category-strip">
+          <nav className="hidden h-6 min-w-0 flex-wrap items-center gap-x-4 gap-y-6 overflow-hidden lg:flex xl:gap-x-7" aria-label="Main" data-rg="category-strip">
             {navLinks.map((l) => (
               <Link key={l.href} href={l.href} className={navCls('active' in l ? l.active : false)}>
                 {l.label}

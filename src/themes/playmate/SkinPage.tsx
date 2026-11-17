@@ -11,6 +11,8 @@ import { TechzonePageHeader } from '../techzone/TechzoneBreadcrumb';
 import { StridePageHeader } from '../stride/StrideBreadcrumb';
 import { VaeloraPageHeader } from '../vaelora/VaeloraBreadcrumb';
 import { ChicwovePageHeader } from '../chicwove/ChicwoveBreadcrumb';
+import { VivaPageHeader } from '../viva/VivaBreadcrumb';
+import { UrbanxPageHeader } from '../urbanx/UrbanxBreadcrumb';
 import { TechnovaPageHeader } from '../technova/TechnovaBreadcrumb';
 import { TastehousePageHeader } from '../tastehouse/TastehouseBreadcrumb';
 import { SporteqPageHeader } from '../sporteq/SporteqBreadcrumb';
@@ -114,6 +116,26 @@ export function SkinPage({
         <ChicwovePageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
         <div className="cw-wrap py-8 sm:py-10">
           <div className="cw-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'viva') {
+    return (
+      <main className="w-full flex-1">
+        <VivaPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="vv-wrap py-8 sm:py-10">
+          <div className="vv-page">{children}</div>
+        </div>
+      </main>
+    );
+  }
+  if (skin === 'urbanx') {
+    return (
+      <main className="w-full flex-1">
+        <UrbanxPageHeader subdomain={subdomain} homeLabel={t('Home')} crumbs={[...crumbs, { label: t(title) }]} title={hideTitle ? undefined : t(title)} />
+        <div className="ux-wrap py-8 sm:py-10">
+          <div className="ux-page">{children}</div>
         </div>
       </main>
     );

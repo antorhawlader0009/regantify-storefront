@@ -52,7 +52,7 @@ export function UrbanxLogo({ logoUrl, storeName, small = false }: { logoUrl?: st
       )}
       {showName && (
         <span
-          className={`ux-logo truncate text-white ${small ? 'text-[28px]' : 'text-[32px] sm:text-[38px]'}`}
+          className={`ux-logo truncate text-white ${small ? 'text-[28px]' : 'text-[24px] sm:text-[32px] lg:text-[38px]'}`}
         >
           {storeName}
         </span>
@@ -336,11 +336,11 @@ export function UrbanxHeader({
           <button type="button" className="lg:hidden" aria-label={t('Menu')} onClick={() => setMenuOpen(true)}>
             <MenuIcon className="h-6 w-6" />
           </button>
-          <Link href={`/store/${subdomain}`} className="min-w-0 max-lg:absolute max-lg:left-1/2 max-lg:-translate-x-1/2" onClick={closeAll}>
+          <Link href={`/store/${subdomain}`} className="min-w-0 max-lg:absolute max-lg:left-1/2 max-lg:flex max-lg:max-w-[calc(100%-8.5rem)] max-lg:-translate-x-1/2 lg:shrink-0" onClick={closeAll}>
             <UrbanxLogo logoUrl={logoUrl} storeName={storeName} />
           </Link>
 
-          <nav className="hidden min-w-0 items-center gap-4 overflow-hidden lg:flex xl:gap-7" aria-label="Main" data-rg="category-strip">
+          <nav className="hidden h-6 min-w-0 flex-wrap items-center gap-x-4 gap-y-6 overflow-hidden lg:flex xl:gap-x-7" aria-label="Main" data-rg="category-strip">
             {navLinks.map((l) => (
               <Link key={l.href} href={l.href} className={navCls('active' in l ? l.active : false)}>
                 {l.label}

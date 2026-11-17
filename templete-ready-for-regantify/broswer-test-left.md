@@ -11,6 +11,7 @@ Petmart (2026-11-16, found by the contrast scan, page widths and structure check
 
 ## 2. Earlier notes that said "not looked at in a browser"
 
+
 - Mahabesh (2026-11-12): never looked at in a browser; its live migration note in `MAHABESH-baki-kaj.md`.
 - Belora (2026-11-16): hero picture crop, the feature panel overlap, the phone category row were never seen.
 - Stride, Vaelora, Chicwove, Chronics, Techzone, Solevo, PlayMate: built before this list; nothing recorded here about a recent check.
@@ -24,8 +25,8 @@ Petmart (2026-11-16, found by the contrast scan, page widths and structure check
 
 ## 4. Kits in this folder that are not installed (not asked for yet)
 
-evernest, urbanx, viva.
+evernest.
 
 ## Checked in a browser (with pictures)
 
-Sporteq, Tastehouse, Technova (2026-11-17, installed and checked the same day), Elevate, Estatepro, Furnilux, Gadgetstore, Glowerive, Drivecraft, Menaura, Minimog, Novatrend, Novella, Papernest, Quickbite, Shopease (2026-11-16, on shopnet, bugs fixed and kits synced).
+Sporteq, Tastehouse, Technova, Urbanx, Viva (2026-11-17, installed and checked the same day), Elevate, Estatepro, Furnilux, Gadgetstore, Glowerive, Drivecraft, Menaura, Minimog, Novatrend, Novella, Papernest, Quickbite, Shopease (2026-11-16, on shopnet, bugs fixed and kits synced).

@@ -2,7 +2,7 @@
    Viva: the Viva "Live Better" template (templete/others-templetes/General/viva) on StorePal's features. The store layout (and
    lib/portalRoot.ts for dialogs) adds data-skin="viva" next to data-theme="storepal". Warm cream page (#faf8f4) with white
    rounded panels and a soft green shadow, a deep forest green (#0d3b2e, hover #124a39, footer #082a20) for buttons, the search
-   button and the footer, sage (#d9e1b5, pale #eef2dc) soft areas, coral (#ef7b7b) discount tags, Fraunces serif headings over
+   button and the footer, sage (#d9e1b5, pale #eef2dc) soft areas, coral (#c94545, deeper than the template's #ef7b7b so white text reads) discount tags, Fraunces serif headings over
    Inter. Store > Branding's own colour and fonts still win. Shared StorePal parts that Solevo also draws read the sv-* classes
    and --sv-* variables, re-pointed to this look below.
    --------------------------------------------------------------------------------------------------------------------- */
@@ -232,5 +232,9 @@
   --color-canvas: #082a20;
   --color-accent: #0d3b2e;
   --color-accent-dark: #d9e1b5;
+}
+/* The footer is dark green: links coloured with the accent (the credit link) would be dark green on dark green, so they are sage. */
+[data-theme='storepal'][data-skin='viva'] footer[data-rg='footer'] .text-accent {
+  color: #d9e1b5;
 }
 

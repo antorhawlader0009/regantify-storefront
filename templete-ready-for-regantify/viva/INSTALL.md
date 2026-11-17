@@ -1,4 +1,4 @@
-# Viva: install into Regantify (not installed yet, kit only)
+# Viva: install into Regantify (installed and browser-checked 2026-11-17 on shopnet)
 
 Template: `templete/others-templetes/General/viva/viva` (VIVA, general store, "Live Better").
 Design (colours are exact, from the template's `tailwind.config.ts`): warm cream page `#faf8f4` with white rounded-3xl panels and a soft green shadow; deep forest green `#0d3b2e` (hover `#124a39`, deepest `#082a20` for the footer) for the top bar, buttons, the search button and the footer; sage `#d9e1b5` / pale `#eef2dc`; coral `#ef7b7b` discount tags; ink `#1c2a24`; **Fraunces** serif headings (exists, `--font-fraunces`) over **Inter** (exists). A cream header with a big pill search bar (green border, green button), a menu row with a green "All products" button, a soft sage hero card (serif headline, the picture fading in from the right, a green "sale" tag hanging from the top right when a badge is set), a white panel with a row of round category pictures, white "Top picks" panels with 5-across rounded product cards (coral tag, small round green cart button), three pastel promo tiles, a white feature strip, a dark green footer.
@@ -27,3 +27,6 @@ Hero card (a store's cover photo on the right under the cream fade; on a phone t
 
 ## Folder
 `storefront/themes/viva/*` (+ `demo/`), `storefront/globals.css.block`, `storefront/route-template-demo-viva/page.tsx`, `server/migration.sql`, `snippets/*`, `wire.js`.
+
+## Installed 2026-11-17
+Before installing: the coral tag default darkened from `#ef7b7b` (white 2.7:1) to `#c94545` (4.75:1), and a footer `.text-accent` rule added (sage `#d9e1b5`; the accent is dark green on the dark green footer). Installed with `wire.js`; local migration applied; `tsc` clean. Browser-checked the same day on shopnet (home, list, product, cart drawer, cart, checkout, sign-in with the Google button, wishlist, contact, FAQ, track order, Bangla, demo, 390 px phone): fixed the menu row repeating "All products" next to the green All products button (dropped from the default links).

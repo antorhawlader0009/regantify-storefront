@@ -40,7 +40,7 @@ export function StorePalProductTabs({
   description?: string | null;
   infoTabs?: { title: string; text: string }[] | null;
   /** PlayMate and Solevo draw the same content as the template's stacked sections (details, customer reviews, questions). */
-  look?: 'playmate' | 'solevo' | 'chicwove' | 'technova' | 'tastehouse' | 'sporteq' | 'shopease' | 'quickbite' | 'petmart' | 'papernest' | 'novella' | 'novatrend' | 'minimog' | 'menaura' | 'mallon' | 'groceryanto' | 'greenmart' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
+  look?: 'playmate' | 'solevo' | 'chicwove' | 'viva' | 'urbanx' | 'technova' | 'tastehouse' | 'sporteq' | 'shopease' | 'quickbite' | 'petmart' | 'papernest' | 'novella' | 'novatrend' | 'minimog' | 'menaura' | 'mallon' | 'groceryanto' | 'greenmart' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
 }) {
   const t = useStoreText();
   // Extra information tabs (TellMe idea 119) sit after the description: "info:0", "info:1", "info:2".
@@ -119,7 +119,7 @@ export function StorePalProductTabs({
       .catch((err) => setReviewsError(err instanceof Error ? err.message : 'Could not load reviews.'));
   }, [subdomain, slug, sort]);
 
-  if (look === 'playmate' || look === 'solevo' || look === 'chicwove' || look === 'technova' || look === 'tastehouse' || look === 'sporteq' || look === 'shopease' || look === 'quickbite' || look === 'petmart' || look === 'papernest' || look === 'novella' || look === 'novatrend' || look === 'minimog' || look === 'menaura' || look === 'mallon' || look === 'groceryanto' || look === 'greenmart' || look === 'glowerive' || look === 'gadgetstore' || look === 'furnilux' || look === 'estatepro' || look === 'drivecraft' || look === 'belora' || look === 'elevate' || look === 'chronics' || look === 'mahabesh' || look === 'techzone' || look === 'stride' || look === 'vaelora') {
+  if (look === 'playmate' || look === 'solevo' || look === 'chicwove' || look === 'viva' || look === 'urbanx' || look === 'technova' || look === 'tastehouse' || look === 'sporteq' || look === 'shopease' || look === 'quickbite' || look === 'petmart' || look === 'papernest' || look === 'novella' || look === 'novatrend' || look === 'minimog' || look === 'menaura' || look === 'mallon' || look === 'groceryanto' || look === 'greenmart' || look === 'glowerive' || look === 'gadgetstore' || look === 'furnilux' || look === 'estatepro' || look === 'drivecraft' || look === 'belora' || look === 'elevate' || look === 'chronics' || look === 'mahabesh' || look === 'techzone' || look === 'stride' || look === 'vaelora') {
     return (
       <PlaymateProductSections
         subdomain={subdomain}
