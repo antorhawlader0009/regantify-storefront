@@ -1,4 +1,4 @@
-# Tastehouse: install into Regantify (not installed yet, kit only)
+# Tastehouse: install into Regantify (installed 2026-11-17, browser-checked on shopnet)
 
 Template: `templete/others-templetes/Grocery and Food/Food/tastehouse/tastehouse` (TASTEHOUSE, food delivery, "Good Food, Good Mood").
 Design (colours exact, from the template's `tailwind.config.ts`): cream page `#FFFBF7`, orange `#F26A0F` (deeper `#D95A06`, pale `#FFF1E6`) for buttons and highlights, forest green `#1F5C34` for the green offer tile and the Site Banner bar, near-black ink `#16130F`, a cream light footer, **Plus Jakarta Sans** everywhere (new, added by `fonts-patch.js`) with extra-bold headings; a peach gradient hero card (photo fading in from the right, an orange "Order Now" and a white "Explore Menu" button, slide arrows are StorePal's dots), four soft feature cards, cuisine cards tinted green, lime, peach, pink and lilac with round photos, dish cards tinted soft peach with a round photo (white ring), name, rating and a small square orange add button, a green and a peach offer tile with a round dish photo spilling out of the corner.
@@ -27,3 +27,6 @@ Hero (a store's cover photo with the oval fade on the right, a phone shows it un
 
 ## Folder
 `storefront/themes/tastehouse/*` (+ `demo/`), `storefront/globals.css.block`, `storefront/route-template-demo-tastehouse/page.tsx`, `server/migration.sql`, `snippets/*`, `fonts-patch.js`, `wire.js`.
+
+## Installed 2026-11-17
+Installed with `wire.js` (Plus Jakarta Sans was already in `lib/fonts.ts`, so the font patch did nothing); local migration applied (production not yet). Browser check on shopnet (home, list with `?show=sale`, product, cart drawer, cart page, checkout, sign-in with the Google button, wishlist, contact, FAQ, track order, search, Bangla, demo, 390 px phone with no sideways scroll or header overlap). Fixed here and in the repo: the cream footer rule (footer was navy, call bar phone button white on white), the brand orange darkened from `#F26A0F` to `#C2560A` (hover `#A84A08`) so white text on it reads at 4.5:1 (CSS block and the call bar in `wire.js`; the dashboard preview card keeps the template orange), the active language in ink.

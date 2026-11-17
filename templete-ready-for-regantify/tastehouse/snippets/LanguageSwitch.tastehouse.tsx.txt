@@ -11,7 +11,7 @@ export function TastehouseLanguageSwitch({ className = '' }: { className?: strin
             onClick={() => setLanguage(l)}
             aria-pressed={language === l}
             lang={l}
-            className={`transition-colors ${language === l ? 'font-medium text-[var(--th-brand)] underline underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
+            className={`transition-colors ${language === l ? 'font-semibold text-ink underline decoration-[var(--th-brand)] decoration-2 underline-offset-4' : 'text-ink/60 hover:text-ink'}`}
           >
             {l === 'bn' ? 'বাং' : 'EN'}
           </button>

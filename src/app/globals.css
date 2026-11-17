@@ -7848,3 +7848,246 @@ body {
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
+
+/* ---------------------------------------------------------------------------------------------------------------------
+   Tastehouse: the TasteHouse food-delivery template (templete/others-templetes/Grocery and Food/Food/tastehouse) on StorePal's
+   features. The store layout (and lib/portalRoot.ts for dialogs) adds data-skin="tastehouse" next to data-theme="storepal". Warm
+   cream page (#FFFBF7), vivid orange (#C2560A, deeper #A84A08, pale #FFF1E6) for buttons and highlights, forest green (#1F5C34)
+   for the green offer, soft peach, green and lilac tinted cards with round dish photos, near-black ink (#16130F), a cream footer,
+   Plus Jakarta Sans everywhere with extra-bold headings. Store > Branding's own colour and fonts still win. Shared StorePal
+   parts that Solevo also draws read the sv-* classes and --sv-* variables, re-pointed to this look below.
+   --------------------------------------------------------------------------------------------------------------------- */
+[data-theme='storepal'][data-skin='tastehouse'] {
+  --color-ink: #16130F;
+  --color-canvas: #FFFBF7;
+  --color-surface: #ffffff;
+  --color-accent: #C2560A;
+  --color-accent-dark: #A84A08;
+  --color-accent-light: #FBF1E8;
+  --color-muted: #525252;
+  --color-line: #f0e6da;
+  --color-line-strong: rgba(0, 0, 0, 0.25);
+  --color-success: #15803d;
+  --color-success-bg: #e8f6ee;
+  --color-save: #C2560A;
+  --th-brand: #C2560A;
+  --th-brand-dark: #A84A08;
+  --th-latte: #e5e5e5;
+  --th-mocha: #C2560A;
+  --th-taupe: #C2560A;
+  --th-stone: #525252;
+  --th-soft: #FBF1E8;
+  --th-cream: #ffffff;
+  --th-sand: #FBF1E8;
+  --th-peach: #FBF1E8;
+  --th-card: #FBF1E8;
+  --th-panel: #FBF1E8;
+  --th-tan: #e5e5e5;
+  --th-blush: #FBF1E8;
+  --th-footer: #FFFBF7;
+  --th-ink: #16130F;
+  --th-deeper: #1F5C34;
+  --th-sage: #FBF1E8;
+  /* Names the shared Solevo/PlayMate parts read (cards, stars, soft boxes, copper highlights). */
+  --sv-gold: #C2560A;
+  --sv-gold-dark: #A84A08;
+  --sv-sand: #FBF1E8;
+  --sv-card: #FBF1E8;
+  --sv-panel: #FBF1E8;
+  --pm-card: #FBF1E8;
+  --pm-soft: #FBF1E8;
+  --pm-yellow: #C2560A;
+  --pm-yellow-strong: #A84A08;
+  --font-display: var(--font-jakarta), var(--font-bangla-store, var(--font-bangla)), Georgia, serif;
+  --font-sans: var(--font-jakarta), var(--font-bangla-store, var(--font-bangla)), ui-sans-serif, system-ui, sans-serif;
+  --shadow-card: 0 4px 18px rgba(120, 70, 20, 0.06);
+  --shadow-card-hover: 0 8px 30px rgba(120, 70, 20, 0.08);
+  --shadow-popover: 0 12px 32px rgba(0, 0, 0, 0.16);
+  font-family: var(--font-sans);
+  font-size: 14px;
+}
+
+/* The template's container (max-w-7xl, px-4 sm:px-6 lg:px-8). */
+[data-skin='tastehouse'] .th-wrap {
+  margin-left: auto;
+  margin-right: auto;
+  width: 100%;
+  max-width: 1200px;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+@media (min-width: 640px) {
+  [data-skin='tastehouse'] .th-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+@media (min-width: 1024px) {
+  [data-skin='tastehouse'] .th-wrap {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+/* The template's buttons: a green filled one and a green outline one. */
+[data-skin='tastehouse'] .th-btn-dark,
+[data-skin='tastehouse'] .th-btn-outline,
+[data-skin='tastehouse'] .sv-btn-dark,
+[data-skin='tastehouse'] .sv-btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.375rem;
+  padding: 0.7rem 1.5rem;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.15s, color 0.15s, border-color 0.15s;
+}
+[data-skin='tastehouse'] .th-btn-dark,
+[data-skin='tastehouse'] .sv-btn-dark {
+  background: #C2560A;
+  color: #fff;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+}
+[data-skin='tastehouse'] .th-btn-dark:hover,
+[data-skin='tastehouse'] .sv-btn-dark:hover {
+  background: #A84A08;
+}
+[data-skin='tastehouse'] .th-btn-outline,
+[data-skin='tastehouse'] .sv-btn-outline {
+  border: 1px solid #C2560A;
+  background: transparent;
+  color: #C2560A;
+}
+[data-skin='tastehouse'] .th-btn-outline:hover,
+[data-skin='tastehouse'] .sv-btn-outline:hover {
+  background: #FBF1E8;
+}
+[data-skin='tastehouse'] .sv-btn-outline.\!border-ink {
+  border-color: #C2560A !important;
+}
+[data-skin='tastehouse'] .th-no-scrollbar {
+  scrollbar-width: none;
+}
+[data-skin='tastehouse'] .th-no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+/* Hero picture fades into the gradient behind it (the template's hero-fade). */
+[data-skin='tastehouse'] .th-hero-fade {
+  -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 65%, transparent 100%);
+}
+@media (min-width: 768px) {
+  [data-skin='tastehouse'] .th-hero-fade {
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 40%);
+  }
+}
+@keyframes th-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes th-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+.th-fade-up {
+  animation: th-fade-up 0.5s ease both;
+}
+.th-fade-in {
+  animation: th-fade-in 0.4s ease both;
+}
+@keyframes th-marquee-right {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+[data-skin='tastehouse'] .th-marquee-track {
+  animation: th-marquee-right 32s linear infinite;
+  will-change: transform;
+}
+[data-skin='tastehouse'] .th-marquee:hover .th-marquee-track,
+[data-skin='tastehouse'] .th-marquee:focus-within .th-marquee-track {
+  animation-play-state: paused;
+}
+@media (prefers-reduced-motion: reduce) {
+  [data-skin='tastehouse'] .th-marquee-track {
+    animation: none;
+    transform: none;
+  }
+  [data-skin='tastehouse'] .th-marquee {
+    overflow-x: auto;
+  }
+  .th-fade-up,
+  .th-fade-in {
+    animation: none;
+  }
+}
+/* Simple pages (SkinPage): the intro line under the title lines up with it on the left. */
+[data-skin='tastehouse'] .th-page > p.text-center:first-child {
+  margin-top: -1rem;
+  text-align: left;
+}
+/* The account panel (shared with Solevo's markup): rounded inputs, the template's coral main button. */
+[data-skin='tastehouse'] .sv-auth input:not([type='checkbox']):not([type='radio']) {
+  border-radius: 0.375rem;
+}
+[data-skin='tastehouse'] .sv-auth input:focus {
+  border-color: #C2560A;
+  box-shadow: none;
+}
+[data-skin='tastehouse'] .sv-auth button[type='submit'] {
+  border-radius: 0.375rem;
+  background: #C2560A;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 500;
+}
+[data-skin='tastehouse'] .sv-auth button[type='submit']:hover {
+  background: #A84A08;
+}
+/* The product panel's tabs and quantity box take the corner radius of the template's cards. */
+[data-skin='tastehouse'] [data-rg='product-tabs'] .border-accent {
+  border-color: #C2560A;
+}
+[data-skin='tastehouse'] [data-rg='product-tabs'] span.rounded-full.bg-accent {
+  background-color: #C2560A;
+}
+/* Tastehouse's checkout page: StorePal's form cards become the template's white rounded boxes with the soft shadow. */
+[data-skin='tastehouse'] .th-checkout div.bg-surface.border-line.rounded-lg {
+  background: #fff;
+  border-color: rgba(242, 106, 15, 0.15);
+  border-radius: 0.75rem;
+  box-shadow: var(--shadow-card);
+}
+
+/* Tastehouse's footer is light cream: StorePal's footer colours are for its navy footer, so the footer is painted cream and its
+   colour variables are put back to dark-on-cream here (without this the footer stays navy and the call bar's white phone
+   button carries white text). Orange text on cream is too faint, so links in the footer use a deeper orange. */
+[data-theme='storepal'][data-skin='tastehouse'] footer[data-rg='footer'] {
+  background-color: var(--th-footer);
+  border-top: 1px solid #f0e4d8;
+  color: #57514a;
+  --color-ink: #16130f;
+  --color-muted: #6b645c;
+  --color-line: #f0e4d8;
+  --color-line-strong: #e2d3c4;
+  --color-surface: #ffffff;
+  --color-canvas: #fff6ee;
+}
+[data-theme='storepal'][data-skin='tastehouse'] footer[data-rg='footer'] .text-accent {
+  color: #b84f0a;
+}

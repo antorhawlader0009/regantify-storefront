@@ -113,7 +113,7 @@ function footerBlockFix(block) {
   // the footer is light, so the call bar is an orange band above it with white buttons
   const rep = (str, from, to) => str.split(from).join(to);
   let out = block;
-  out = rep(out, 'rounded-3xl bg-gradient-to-r from-[#EE5A52] to-[#F27A6F]', 'rounded-2xl bg-[#F26A0F]');
+  out = rep(out, 'rounded-3xl bg-gradient-to-r from-[#EE5A52] to-[#F27A6F]', 'rounded-2xl bg-[#C2560A]');
   out = rep(out, 'hover:bg-[var(--th-cream)]', 'hover:bg-[#fdf0e6]');
   out = rep(out, 'rounded-lg', 'rounded-md');
   out = rep(out, 'text-sm font-semibold', 'text-[13px] font-semibold');

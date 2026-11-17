@@ -11,6 +11,7 @@ export function resolveTheme(theme: string | null | undefined): StoreTheme {
   // feature); only its look differs, which storeSkin() below tells the StorePal components.
   // Solevo (2026-11-04) is the same: StorePal's pages and features with its own look.
   if (theme === 'STOREPAL' || theme === 'PLAYMATE' || theme === 'SOLEVO' || theme === 'CHICWOVE' || theme === 'CHRONICS' || theme === 'MAHABESH' || theme === 'TECHZONE' || theme === 'STRIDE' || theme === 'VAELORA') return 'STOREPAL';
+  if (theme === 'STOREPAL' || theme === 'PLAYMATE' || theme === 'SOLEVO' || theme === 'TASTEHOUSE' || theme === 'CHRONICS' || theme === 'MAHABESH' || theme === 'TECHZONE' || theme === 'STRIDE' || theme === 'VAELORA') return 'STOREPAL';
   if (theme === 'STOREPAL' || theme === 'PLAYMATE' || theme === 'SOLEVO' || theme === 'SPORTEQ' || theme === 'CHRONICS' || theme === 'MAHABESH' || theme === 'TECHZONE' || theme === 'STRIDE' || theme === 'VAELORA') return 'STOREPAL';
   if (theme === 'STOREPAL' || theme === 'PLAYMATE' || theme === 'SOLEVO' || theme === 'SHOPEASE' || theme === 'CHRONICS' || theme === 'MAHABESH' || theme === 'TECHZONE' || theme === 'STRIDE' || theme === 'VAELORA') return 'STOREPAL';
   if (theme === 'STOREPAL' || theme === 'PLAYMATE' || theme === 'SOLEVO' || theme === 'QUICKBITE' || theme === 'CHRONICS' || theme === 'MAHABESH' || theme === 'TECHZONE' || theme === 'STRIDE' || theme === 'VAELORA') return 'STOREPAL';
@@ -35,7 +36,7 @@ export function resolveTheme(theme: string | null | undefined): StoreTheme {
 
 /** The look a StorePal-family store draws with. Every page and feature is StorePal's; the skin changes colours, fonts
  * and a few parts (header, hero, cards, footer). A new template on StorePal's code adds a value here. */
-export type StoreSkin = 'storepal' | 'playmate' | 'solevo' | 'chicwove' | 'sporteq' | 'shopease' | 'quickbite' | 'petmart' | 'papernest' | 'novella' | 'novatrend' | 'minimog' | 'menaura' | 'mallon' | 'groceryanto' | 'greenmart' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
+export type StoreSkin = 'storepal' | 'playmate' | 'solevo' | 'chicwove' | 'tastehouse' | 'sporteq' | 'shopease' | 'quickbite' | 'petmart' | 'papernest' | 'novella' | 'novatrend' | 'minimog' | 'menaura' | 'mallon' | 'groceryanto' | 'greenmart' | 'glowerive' | 'gadgetstore' | 'furnilux' | 'estatepro' | 'drivecraft' | 'belora' | 'elevate' | 'chronics' | 'mahabesh' | 'techzone' | 'stride' | 'vaelora';
 
 export function storeSkin(theme: string | null | undefined): StoreSkin {
   if (theme === 'PLAYMATE') return 'playmate';
@@ -46,6 +47,7 @@ export function storeSkin(theme: string | null | undefined): StoreSkin {
   if (theme === 'STRIDE') return 'stride';
   if (theme === 'VAELORA') return 'vaelora';
   if (theme === 'CHICWOVE') return 'chicwove';
+  if (theme === 'TASTEHOUSE') return 'tastehouse';
   if (theme === 'SPORTEQ') return 'sporteq';
   if (theme === 'SHOPEASE') return 'shopease';
   if (theme === 'QUICKBITE') return 'quickbite';
@@ -71,5 +73,5 @@ export function storeSkin(theme: string | null | undefined): StoreSkin {
 /** A skin that draws the pages the template's own way: ordinary pages instead of StorePal's dialogs (checkout, account,
  * thank-you, tracking), the template's cart, wishlist, product list and product page. Every template skin is one. */
 export function isPageSkin(skin: StoreSkin | null | undefined): boolean {
-  return skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'sporteq' || skin === 'shopease' || skin === 'quickbite' || skin === 'petmart' || skin === 'papernest' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora';
+  return skin === 'playmate' || skin === 'solevo' || skin === 'chicwove' || skin === 'tastehouse' || skin === 'sporteq' || skin === 'shopease' || skin === 'quickbite' || skin === 'petmart' || skin === 'papernest' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora';
 }

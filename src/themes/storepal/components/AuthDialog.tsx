@@ -527,7 +527,7 @@ function AuthDialogPanel({ subdomain }: { subdomain: string }) {
   // Solevo: the template's AuthForm (square white card, serif title, black Sign In / Sign Up tabs).
   const skin = useStoreSkin();
   const pm = isPageSkin(skin);
-  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'sporteq' || skin === 'shopease' || skin === 'quickbite' || skin === 'petmart' || skin === 'papernest' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora';
+  const sv = skin === 'solevo' || skin === 'chicwove' || skin === 'tastehouse' || skin === 'sporteq' || skin === 'shopease' || skin === 'quickbite' || skin === 'petmart' || skin === 'papernest' || skin === 'novella' || skin === 'novatrend' || skin === 'minimog' || skin === 'menaura' || skin === 'mallon' || skin === 'groceryanto' || skin === 'greenmart' || skin === 'glowerive' || skin === 'gadgetstore' || skin === 'furnilux' || skin === 'estatepro' || skin === 'drivecraft' || skin === 'belora' || skin === 'elevate' || skin === 'chronics' || skin === 'mahabesh' || skin === 'techzone' || skin === 'stride' || skin === 'vaelora';
   const close = useAuthDialog((s) => s.close);
   const panelRef = useRef<HTMLDivElement>(null);
   const titleId = useId();
