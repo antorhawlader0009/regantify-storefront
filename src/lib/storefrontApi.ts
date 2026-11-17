@@ -122,9 +122,11 @@ export interface StorefrontInfo {
   /** Store > Branding: the font for Bangla letters; null = the default, Hind Siliguri. */
   brandBanglaFont?: string | null;
   brandCoverImageUrl?: string | null;
-  /** Store > Branding > Website cover photo: the first slide of StorePal's home page hero (not the link-preview picture above). */
+  /** Store > Branding > Website cover photo: no longer used by the hero (Store > Hero Section replaced it, see heroSlides). */
   brandSiteCoverUrl?: string | null;
   brandSiteCoverOnly?: boolean;
+  /** Store > Hero Section: the home hero's pictures, cut to the plan's limit by the server (lib/heroSlides.ts). */
+  heroSlides?: import('./heroSlides').StoreHeroSlide[];
   brandMetaTitle?: string | null;
   brandMetaDescription?: string | null;
   /** The vendor's own domain (Store > Domain), when they have one. */

@@ -23,7 +23,6 @@ import { FlashSaleSection } from '../components/FlashSaleSection';
 import { CampaignsStrip } from '../components/CampaignsStrip';
 import { HomeHighlights } from '../components/HomeHighlights';
 import { TrustStrip } from '../components/TrustStrip';
-import { StoreSetupGuide } from '../components/StoreSetupGuide';
 import { OpeningSoonBar, PlaceholderHero, PlaceholderProductGrid } from '../components/EmptyStorePreview';
 import { isEmptyStorePreview } from '@/components/store-preview/emptyStore';
 import { useStorePalDesign, useStoreSkin } from '../lib/designSettings';
@@ -104,6 +103,7 @@ import type { StorefrontSocialFeed } from '@/lib/storefrontApi';
 import { searchProducts } from '../lib/searchMatch';
 import { AskAssistantButton } from '../components/AskAssistantButton';
 import { CoverFloating } from '@/lib/floatingCover';
+import { heroSlideHref, type StoreHeroSlide } from '@/lib/heroSlides';
 
 // Products with no category are never dropped from the home page: they go into one
 // last "More products" section (other: true). It starts with OTHER_SECTION_STEP cards so a big
@@ -154,9 +154,8 @@ interface HomeViewProps {
   blogPosts?: StorefrontBlogCard[];
   blogTotal?: number;
   logoUrl?: string | null;
-  /** Store > Branding > Website cover photo: the hero's first slide; siteCoverOnly drops the category covers after it. */
-  siteCoverUrl?: string | null;
-  siteCoverOnly?: boolean;
+  /** Store > Hero Section: the home hero's pictures, in order, already cut to the plan's limit (lib/heroSlides.ts). */
+  heroSlides?: StoreHeroSlide[];
   /** Store > Footer - see StoreFooter's own prop-or-fetch doc comment. */
   footerConfig?: StoreFooterConfig | null;
   /** "Create custom link for this coupon" - the `?coupon=` query param a shopper lands on from a vendor-shared link (see lib/pendingCoupon.ts). StorePal-only prop; Medium/Minimal's HomeView has no equivalent. */
@@ -203,8 +202,7 @@ export function HomeView({
   blogPosts = [],
   blogTotal = 0,
   logoUrl,
-  siteCoverUrl,
-  siteCoverOnly,
+  heroSlides = [],
   footerConfig,
   couponLink,
   setup,
@@ -384,8 +382,8 @@ export function HomeView({
   // Nothing to sell yet (the server sends `setup` only then): the shop shows drawn sample products, Shopify style
   // (store-empty-preview.md), with the owner's setup board under them.
   const showPreview = isEmptyStorePreview({ productCount: products.length, isFiltered, setup });
-  // A website cover still makes the real hero; an empty store has no category covers (they come from its products).
-  const hasRealHero = Boolean(siteCoverUrl) || categoryDetails.some((c) => Boolean(c.coverPhotoUrl));
+  // Hero Section pictures make the real hero even before the store has products.
+  const hasRealHero = heroSlides.length > 0;
   // The samples sit where the store's own product rows would: Top Selling, else the category rows, else the end.
   const previewGridAt = homeSections.includes('TOP_SELLING')
     ? 'TOP_SELLING'
@@ -397,7 +395,7 @@ export function HomeView({
       <div className={HOME_WRAP}>
         <PlaceholderProductGrid />
       </div>
-      <StoreSetupGuide storeName={storeName} setup={setup} />
+      {/* The owner's "Finish setting up" board was removed from the store on 2026-11-17 (the owner's rule): no template shows it. */}
     </>
   );
   const grouped = useMemo(() => (!isFiltered ? groupByCategory(products) : null), [isFiltered, products]);
@@ -457,13 +455,15 @@ export function HomeView({
     const card = (product: StorefrontProduct) => <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />;
     switch (id) {
       case 'HERO': {
-        const covers = categoryDetails.filter((c) => c.coverPhotoUrl).slice(0, 4);
-        const slides: PmHeroSlide[] = [
-          ...(siteCoverUrl ? [{ key: '__site__', image: siteCoverUrl, title1: storeName, href: `/store/${subdomain}#products` }] : []),
-          ...(siteCoverUrl && siteCoverOnly
-            ? []
-            : covers.map((c) => ({ key: c.name, image: c.coverPhotoUrl, kicker: storeName, title1: c.name, href: categoryHref(c.name) }))),
-        ];
+        // Store > Hero Section only (category covers are no longer used in the hero).
+        const slides: PmHeroSlide[] = heroSlides.map((s) => ({
+          key: s.id,
+          image: s.imageUrl,
+          title1: s.title || storeName,
+          text: s.text || undefined,
+          alt: s.title || storeName,
+          href: heroSlideHref(s.link, subdomain) ?? `/store/${subdomain}#products`,
+        }));
         if (slides.length === 0) slides.push({ key: '__name__', title1: storeName, href: `/store/${subdomain}#products` });
         return (
           <PmHero
@@ -663,13 +663,15 @@ export function HomeView({
     const card = (product: StorefrontProduct) => <ProductCard key={product.id} product={product} subdomain={subdomain} storeName={storeName} />;
     switch (id) {
       case 'HERO': {
-        const covers = categoryDetails.filter((c) => c.coverPhotoUrl).slice(0, 4);
-        const slides: SvHeroSlide[] = [
-          ...(siteCoverUrl ? [{ key: '__site__', image: siteCoverUrl, title: [storeName], href: `/store/${subdomain}#products` }] : []),
-          ...(siteCoverUrl && siteCoverOnly
-            ? []
-            : covers.map((c) => ({ key: c.name, image: c.coverPhotoUrl, eyebrow: storeName, title: [c.name], href: categoryHref(c.name) }))),
-        ];
+        // Store > Hero Section only (category covers are no longer used in the hero).
+        const slides: SvHeroSlide[] = heroSlides.map((s) => ({
+          key: s.id,
+          image: s.imageUrl,
+          eyebrow: s.title ? storeName : undefined,
+          title: [s.title || storeName],
+          text: s.text || undefined,
+          href: heroSlideHref(s.link, subdomain) ?? `/store/${subdomain}#products`,
+        }));
         if (slides.length === 0) slides.push({ key: '__name__', title: [storeName], href: `/store/${subdomain}#products` });
         return (
           <P.Hero
@@ -1058,7 +1060,7 @@ export function HomeView({
                 return showPreview && !hasRealHero ? (
                   <PlaceholderHero key={id} storeName={storeName} />
                 ) : (
-                  <HeroBanner key={id} subdomain={subdomain} categoryDetails={categoryDetails} siteCoverUrl={siteCoverUrl} siteCoverOnly={siteCoverOnly} />
+                  <HeroBanner key={id} subdomain={subdomain} slides={heroSlides} storeName={storeName} />
                 );
               case 'FLASH_SALE':
                 return (

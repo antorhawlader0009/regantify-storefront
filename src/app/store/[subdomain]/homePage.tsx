@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import { cleanHeroSlides } from '@/lib/heroSlides';
 import {
   getStoreProducts,
   getStoreReviews,
@@ -231,9 +232,8 @@ export async function HomePage({ params, query }: HomeProps) {
         if (theme === 'STOREPAL') {
           // Campaigns still power StorePal's Marketing > Campaigns
           // landing pages (see storefront/[subdomain]/campaigns/[slug]);
-          // the homepage hero itself now cycles through Store >
-          // Categories' cover photos instead (see HeroBanner's doc
-          // comment) via categoryDetails below.
+          // the homepage hero shows Store > Hero Section's pictures
+          // (heroSlides below, see HeroBanner's doc comment).
           const campaigns = await getStoreCampaigns(subdomain);
           // Store > Magazine (TellMe idea 106): the latest posts for the home section; none on any hiccup.
           const blog = await getStoreBlog(subdomain, 5).catch(() => ({ posts: [], total: 0 }));
@@ -256,8 +256,7 @@ export async function HomePage({ params, query }: HomeProps) {
               blogPosts={blog.posts}
               blogTotal={blog.total}
               categoryDetails={categoryDetails}
-              siteCoverUrl={store.brandSiteCoverUrl}
-              siteCoverOnly={store.brandSiteCoverOnly}
+              heroSlides={cleanHeroSlides(store.heroSlides)}
               // A store with no public product yet shows the drawn sample shop and the setup steps (store-empty-preview.md).
               setup={data.setup}
               // "Create custom link for this coupon" - only StorePal

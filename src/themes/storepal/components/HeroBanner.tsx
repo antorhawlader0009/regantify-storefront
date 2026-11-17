@@ -4,92 +4,44 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
-import type { StorefrontCategoryDetail } from '@/lib/storefrontApi';
+import { heroSlideHref, isOutsideLink, type StoreHeroSlide } from '@/lib/heroSlides';
 
 interface HeroBannerProps {
   subdomain: string;
-  categoryDetails: StorefrontCategoryDetail[];
-  /** Store > Branding > Website cover photo: shown first; siteCoverOnly shows it alone. */
-  siteCoverUrl?: string | null;
-  siteCoverOnly?: boolean;
+  /** Store > Hero Section's pictures, already cut to the plan's limit by the server. */
+  slides: StoreHeroSlide[];
+  storeName: string;
 }
 
-interface HeroSlide {
-  key: string;
-  alt: string;
-  url: string;
-  /** null = the picture is not a link. */
-  href: string | null;
-}
-
-// How many banners the hero cycles through at most, and how long each
-// one stays up before auto-advancing - see the component doc comment
-// below for why this is randomized per page load rather than a fixed
-// server-picked order.
-const MAX_SLIDES = 5;
-const AUTO_SLIDE_MS = 5000;
-
-/** Fisher-Yates shuffle - used instead of `sort(() => Math.random() - 0.5)`,
- * which is a common but statistically biased shuffle. */
-function shuffle<T>(items: T[]): T[] {
-  const arr = [...items];
-  for (let i = arr.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [arr[i], arr[j]] = [arr[j], arr[i]];
-  }
-  return arr;
-}
+const AUTO_SLIDE_MS = 6000;
 
 /**
- * Home page hero: cycles through this vendor's own Store > Categories
- * cover photos (PUBLIC categories only - see StorefrontService's
- * getStoreProducts categoryDetails). Renders nothing when no category
- * has a cover photo set - an empty hero is preferable to a placeholder
- * that doesn't belong to this store. With exactly one cover photo
- * available, that one is shown with no dots/auto-advance (nothing to
- * cycle between). With more than one, a random subset of up to
- * MAX_SLIDES is picked fresh on every page load (so a vendor with more
- * categories than fit in the hero gets even rotation across visits
- * instead of always leading with the same one) and auto-advances every
- * AUTO_SLIDE_MS - the dots below still let a visitor jump to any slide.
- * The shuffle happens client-side after mount (not during server
- * render) so the server-rendered HTML and the first client render
- * match - picking randomly during SSR would cause a hydration mismatch
- * since the server and client would each roll their own order.
+ * StorePal's home page hero: the pictures the store chose in Store > Hero Section, in the store's own order (category covers are no longer
+ * used here, the owner's rule 2026-11-17). Nothing renders without a picture. With more than one it moves on every AUTO_SLIDE_MS, but stops
+ * while the pointer or keyboard focus is on it, while the tab is hidden, and never moves by itself for a shopper whose system asks for
+ * reduced motion (WCAG 2.2.2): arrows, dots and swiping still work.
  */
-export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCoverOnly }: HeroBannerProps) {
+export function HeroBanner({ subdomain, slides, storeName }: HeroBannerProps) {
   const [active, setActive] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const [reduced, setReduced] = useState(false);
 
-  const withCover = useMemo(
-    () => categoryDetails.filter((c): c is StorefrontCategoryDetail & { coverPhotoUrl: string } => Boolean(c.coverPhotoUrl)),
-    [categoryDetails],
-  );
-  // Shuffled only after mount, as the comment above says: the server and the first browser render both use the store's own
-  // order, so the HTML matches (shuffling during render gave each side its own order: a hydration mismatch that React does
-  // not repair, leaving the server's picture under the browser's slide).
-  const [shuffled, setShuffled] = useState<typeof withCover | null>(null);
   useEffect(() => {
-    setShuffled(shuffle(withCover));
-  }, [withCover]);
-  // The website cover (Store > Branding) is always the first slide and links nowhere; the category covers follow it unless the
-  // store asked for the cover alone. With no website cover this is exactly the old behaviour.
-  const slides = useMemo<HeroSlide[]>(() => {
-    const own: HeroSlide[] = siteCoverUrl ? [{ key: '__site_cover__', alt: 'Cover', url: siteCoverUrl, href: null }] : [];
-    if (siteCoverUrl && siteCoverOnly) return own;
-    const categories = (shuffled ?? withCover)
-      .slice(0, MAX_SLIDES - own.length)
-      .map((c) => ({ key: c.name, alt: c.name, url: c.coverPhotoUrl, href: `/store/${subdomain}?category=${encodeURIComponent(c.name)}` }));
-    return [...own, ...categories];
-  }, [withCover, shuffled, siteCoverUrl, siteCoverOnly, subdomain]);
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setReduced(mq.matches);
+    const on = () => setReduced(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
 
   // Restarts after every change (`active` in the deps), so a slide the shopper picked by hand gets its full time.
   useEffect(() => {
-    if (slides.length <= 1) return;
+    if (slides.length <= 1 || paused || reduced) return;
     const timer = setInterval(() => {
-      setActive((i) => (i + 1) % slides.length);
+      if (document.visibilityState === 'visible') setActive((i) => (i + 1) % slides.length);
     }, AUTO_SLIDE_MS);
     return () => clearInterval(timer);
-  }, [slides.length, active]);
+  }, [slides.length, active, paused, reduced]);
 
   const go = (step: number) => setActive((i) => (i + step + slides.length) % slides.length);
 
@@ -113,39 +65,58 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
   if (slides.length === 0) return null;
 
   const slide = slides[Math.min(active, slides.length - 1)];
+  const href = heroSlideHref(slide.link, subdomain);
+  const outside = href ? isOutsideLink(href) : false;
+  const hasWords = Boolean(slide.title || slide.text);
+  const alt = slide.title || `${storeName} ${active + 1}`;
 
   const picture = (
-    <Image
-      key={slide.key}
-      src={slide.url}
-      alt={slide.alt}
-      fill
-      sizes="(max-width: 1100px) 100vw, 1100px"
-      className="object-cover"
-      priority
-    />
+    <Image key={slide.id} src={slide.imageUrl} alt={alt} fill sizes="(max-width: 1100px) 100vw, 1100px" className="object-cover" priority={active === 0} />
+  );
+
+  const words = hasWords && (
+    <div className="pointer-events-none absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-black/15 to-transparent sm:items-center sm:bg-gradient-to-r sm:from-black/55 sm:via-black/20 sm:to-transparent">
+      <div className="max-w-[80%] p-4 text-white sm:max-w-[55%] sm:p-10">
+        {slide.title && <h2 className="text-lg font-bold leading-tight sm:text-3xl md:text-4xl">{slide.title}</h2>}
+        {slide.text && <p className="mt-1 text-xs text-white/90 sm:mt-3 sm:text-base">{slide.text}</p>}
+        {href && slide.buttonText && (
+          <span className="mt-3 inline-block rounded-md bg-white px-3 py-1.5 text-xs font-semibold text-ink sm:mt-5 sm:px-5 sm:py-2.5 sm:text-sm">
+            {slide.buttonText}
+          </span>
+        )}
+      </div>
+    </div>
   );
 
   return (
-    <section data-rg="hero" className="max-w-6xl mx-auto px-3 sm:px-6 pt-6">
-      {/* Fixed aspect ratio, the SAME ratio on every screen size (mobile,
-          tablet, desktop, ultra-wide) - matches the reference site's
-          own slider, which never changes shape, only scales with the
-          container. A vendor's cover photos of any source size/shape
-          all render at this one ratio via object-cover (crops to fill
-          rather than distorting or letterboxing). 21:9 mirrors the
-          reference site's wide, short banner proportions. */}
-      {/* An even shadow on all four sides (no offset) plus a faint outline, so the banner lifts off the grey page (2026-10-29). */}
+    <section data-rg="hero" className="max-w-6xl mx-auto px-3 sm:px-6 pt-6" aria-roledescription="carousel" aria-label={storeName}>
+      {/* One fixed 21:9 shape on every screen; any picture is cropped to fill it (object-cover). An even shadow lifts it off the page. */}
       <div
         onTouchStart={onTouchStart}
         onTouchEnd={onTouchEnd}
-        className="group relative rounded-lg overflow-hidden bg-surface aspect-[21/9] shadow-[0_0_0_1px_rgba(16,18,22,0.05),0_0_24px_rgba(16,18,22,0.14)]">
-        {slide.href ? (
-          <Link href={slide.href} className="absolute inset-0 block">
-            {picture}
-          </Link>
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onFocus={() => setPaused(true)}
+        onBlur={() => setPaused(false)}
+        className="group relative rounded-lg overflow-hidden bg-surface aspect-[21/9] shadow-[0_0_0_1px_rgba(16,18,22,0.05),0_0_24px_rgba(16,18,22,0.14)]"
+      >
+        {href ? (
+          outside ? (
+            <a href={href} target="_blank" rel="noopener noreferrer" className="absolute inset-0 block">
+              {picture}
+              {words}
+            </a>
+          ) : (
+            <Link href={href} className="absolute inset-0 block">
+              {picture}
+              {words}
+            </Link>
+          )
         ) : (
-          <div className="absolute inset-0">{picture}</div>
+          <div className="absolute inset-0">
+            {picture}
+            {words}
+          </div>
         )}
 
         {/* Computers: previous / next arrows that show while the mouse is over the banner (phones swipe instead). */}
@@ -169,9 +140,11 @@ export function HeroBanner({ subdomain, categoryDetails, siteCoverUrl, siteCover
           <div className="absolute left-1/2 -translate-x-1/2 bottom-3 flex gap-1.5">
             {slides.map((s, i) => (
               <button
-                key={s.key}
+                key={s.id}
+                type="button"
                 onClick={() => setActive(i)}
-                aria-label={`Show ${s.alt}`}
+                aria-label={`Show slide ${i + 1}`}
+                aria-current={i === active}
                 className={`w-2 h-2 rounded-full transition-colors ${i === active ? 'bg-white' : 'bg-white/50'}`}
               />
             ))}
